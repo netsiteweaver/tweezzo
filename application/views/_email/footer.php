@@ -32,7 +32,9 @@
 
                                 <tr>
                                     <td align='center'>
-                                        <img src="<?php echo base_url('assets/images/tweezzoisopensource4.jpg');?>" style='margin-top:30px;max-width:800px;border:1px solid #ccc;' alt="">
+                                        <a href="https://github.com/netsiteweaver/tweezzo?tab=GPL-3.0-1-ov-file">
+                                            <img src="<?php echo base_url('assets/images/tweezzo_is_opensource_white_bg.jpg');?>" style='margin-top:30px;max-width:800px;' alt="">
+                                        </a>
                                     </td>
                                 </tr>
                                 
