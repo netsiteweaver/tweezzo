@@ -1,48 +1,48 @@
 <style>
-img.user {
-    width: 25px;
-    border-radius: 50%;
-    border: 1px solid #4c4c4c;
-    /* padding:1px; */
-    background-color: #fff;
-    cursor: crosshair;
-    margin-bottom: 3px;
-}
-
-img.user:hover {
-    transform: scale(4);
-    -webkit-transition: all 0.5s ease;
-    -moz-transition: all 0.5s ease;
-    -ms-transition: all 0.5s ease;
-    transition: all 0.5s ease;
-}
-
-#users-list li {
-    margin-bottom: 5px;
-    border: 1px solid #ccc;
-}
-
-#users-list li.assigned {
-    background-color: rgb(183, 221, 210);
-    /* border:1px solid #ccc !important; */
-}
-
-#users-list li.assigned img {
-    border: 4px solid #20c997 !important;
-}
-
-@media print {
-    body {
-        color: #4c4c4c !important;
+    img.user {
+        width: 25px;
+        border-radius: 50%;
+        border: 1px solid #4c4c4c;
+        /* padding:1px; */
+        background-color: #fff;
+        cursor: crosshair;
+        margin-bottom: 3px;
     }
 
-    table tr th,
-    table tr td {
-        border-bottom: 2px solid #000 !important;
-        font-size: 16px;
-        line-height: 20px;
+    img.user:hover {
+        transform: scale(4);
+        -webkit-transition: all 0.5s ease;
+        -moz-transition: all 0.5s ease;
+        -ms-transition: all 0.5s ease;
+        transition: all 0.5s ease;
     }
-}
+
+    #users-list li {
+        margin-bottom: 5px;
+        border: 1px solid #ccc;
+    }
+
+    #users-list li.assigned {
+        background-color: rgb(183, 221, 210);
+        /* border:1px solid #ccc !important; */
+    }
+
+    #users-list li.assigned img {
+        border: 4px solid #20c997 !important;
+    }
+
+    @media print {
+        body {
+            color: #4c4c4c !important;
+        }
+
+        table tr th,
+        table tr td {
+            border: 2px solid #000 !important;
+            font-size: 16px;
+            line-height: 20px;
+        }
+    }
 </style>
 
 <div class="row no-print">
@@ -243,12 +243,12 @@ img.user:hover {
 
 <?php if( (!empty($tasks)) && (!empty($this->input->get("customer_id"))) ):?>
 <div class="row print-only">
-    <h3>
-        Task List for <?php echo "{$tasks[0]->company_name} - {$tasks[0]->project_name}";?>
-        <?php if(!empty($this->input->get("stage"))):?>
-        - Stage: <?php echo ucwords($tasks[0]->stage);?>
-        <?php endif;?>
-    </h3>
+    <h4>
+        <?php echo (!empty($this->input->get("customer_id"))) ? "<b>Customer</b>: {$tasks[0]->company_name}" : '';?>
+        <?php echo (!empty($this->input->get("project_id"))) ? " <b>Project</b>: {$tasks[0]->project_name}" : '';?>
+        <?php echo (!empty($this->input->get("sprint_id"))) ? " <b>Sprint</b>: {$tasks[0]->sprint_name}" : '';?>
+        <?php echo (!empty($this->input->get("stage"))) ? " <b>Stage</b>: " . strtoupper(str_replace("_"," ",$tasks[0]->stage)) : '';?>
+    </h4>
 </div>
 <?php endif;?>
 
