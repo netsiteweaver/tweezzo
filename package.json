@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "alertifyjs": "^1.13.1",
+    "bootstrap": "^3.4.1",
+    "bootstrap-icons": "^1.11.3",
+    "lightbox2": "^2.11.5",
+    "signature_pad": "^4.1.4",
+    "sweetalert2": "^11.14.5",
+    "toastr": "^2.1.4"
+  }
+}

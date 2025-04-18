@@ -1,0 +1,136 @@
+#controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #fff;
+    padding: 5px;
+}
+
+.login-page,
+.register-page {
+    background-color: #000000;
+    color: #eee;
+}
+
+.login-logo a,
+.register-logo a {
+    color: #fff;
+}
+
+div.bounce-out {
+    -webkit-animation: bounce-out .5s linear 0s 1 normal;
+    animation: bounce-out .5s linear 0s 1 normal;
+}
+
+@-webkit-keyframes bounce-out {
+    0% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        -webkit-transform: scale(0.3);
+        transform: scale(0.3);
+    }
+}
+
+@keyframes bounce-out {
+    0% {
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+}
+
+#background-video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    min-width: 100% !important;
+    max-height: 100% !important;
+    z-index: -1000;
+    overflow: hidden;
+    object-fit: cover;
+    -webkit-filter: blur(5px);
+    -moz-filter: blur(5px);
+    -o-filter: blur(5px);
+    -ms-filter: blur(5px);
+    filter: blur(5px) grayscale(.25);
+}
+
+.login-box {
+    margin: 7% auto;
+}
+
+.login-box-body,
+.register-box-body {
+    background: #fff;
+    padding: 20px;
+    border-top: 0;
+    color: #666;
+}
+#result.error{
+    font-weight: bold;
+    color: red;
+}
+.login-box-body .form-control-feedback,
+.register-box-body .form-control-feedback {
+    color: #777;
+}
+.login-result {
+    background-color: #fff;
+    color: #4c4c4c; 
+    padding: 20px; 
+    font-size: 36px; 
+    text-align: center;
+    font-weight: bold; 
+    border:2px solid #4c4c4c; 
+    border-radius:20px;
+}
+.overlay{ 
+    position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    background-color: #000000;
+    opacity: 0.9;
+}
+.normal-user-message {
+    position: absolute;
+    left:25vw;
+    width:50vw;
+    top:calc( (100vh - 100px)/2);
+    height:100px;
+    background-color:#fff;
+    border:3px solid #ccc;
+    color:#FF4c4c;
+    font-size:18px;
+    line-height: 100px;
+    text-align: center;
+}
+
+/* HTML: <div class="loader-simpleguy"></div> */
+.loader-simpleguy {
+    position: absolute;
+    top:40px;
+    left:10px;
+	width: 25px;
+	--b: 8px; 
+	aspect-ratio: 1;
+	border-radius: 50%;
+	padding: 1px;
+	background: conic-gradient(#0000 10%,#336ff0) content-box;
+	-webkit-mask:
+	  repeating-conic-gradient(#0000 0deg,#000 1deg 20deg,#0000 21deg 36deg),
+	  radial-gradient(farthest-side,#0000 calc(100% - var(--b) - 1px),#000 calc(100% - var(--b)));
+	-webkit-mask-composite: destination-in;
+			mask-composite: intersect;
+	animation:l4 1s infinite steps(10);
+  }
+  @keyframes l4 {to{transform: rotate(1turn)}}

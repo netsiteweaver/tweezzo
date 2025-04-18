@@ -1,0 +1,99 @@
+:root{
+    --customersPortalBackground: #a152d6;
+    --developersPortalBackground: #2cbfc6;
+}
+footer {
+    display: none;
+    padding: 5px;
+    background-color:#4c4c4c;
+    color: #fff;
+    text-align: center;
+    font-size: 0.8em;
+}
+ul.navbar-nav {
+    margin-left: 30px;;
+}
+.navbar-light .navbar-nav .nav-link {
+    border-bottom: 2px solid var(--customersPortalBackground);
+}
+.navbar-light .navbar-nav .nav-link{
+    letter-spacing: 2px;
+}
+.navbar-light .navbar-nav .nav-link.active, 
+.navbar-light .navbar-nav .show > .nav-link{
+    font-weight: bold !important;
+    background-color: var(--customersPortalBackground) !important;
+    color: #fff !important;
+    letter-spacing: 2px;
+    /* border-top-left-radius: 10px; */
+    /* border-top-right-radius: 10px; */
+}
+.logged-in-user {
+    position:absolute;
+    top: -40px;
+    right: 30px;
+    font-size: 0.9em;
+    font-weight: bold;
+    color:#a152d6
+}
+@media only screen and (max-width:990px){
+    .logged-in-user {
+        position:absolute;
+        top: -40px;
+        right: 100px;
+        font-size: 0.7em;
+        font-weight: normal;
+    }
+}
+@media only screen and (max-width:450px){
+    .logged-in-user {
+        display: none;
+    }
+}
+a {
+    text-decoration: none !important;
+    color: #4c4c4c;
+}
+
+a:hover {
+    text-decoration: none !important;
+    color: #000;
+}
+.ionicon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.btn {
+    border-radius: 0px !important;
+}
+.cursor-pointer {
+    cursor: pointer !important;
+}
+#overlay {
+	position: fixed;
+	width: 100vw;
+	height: 100vh;
+	background-color: #000;
+	opacity: 0.8;
+	z-index: 99999;
+	padding-left: calc(50vw - 50px);
+  	padding-top: calc(50vh - 50px);
+}
+/* HTML: <div class="loader"></div> */
+.loader {
+	width: 100px;
+	--b: 16px; 
+	aspect-ratio: 1;
+	border-radius: 50%;
+	padding: 1px;
+	background: conic-gradient(#0000 10%,#fff) content-box;
+	-webkit-mask:
+	  repeating-conic-gradient(#0000 0deg,#000 1deg 20deg,#0000 21deg 36deg),
+	  radial-gradient(farthest-side,#0000 calc(100% - var(--b) - 1px),#000 calc(100% - var(--b)));
+	-webkit-mask-composite: destination-in;
+			mask-composite: intersect;
+	animation:l4 2s infinite steps(24);
+  }
+  @keyframes l4 {to{transform: rotate(1turn)}}
