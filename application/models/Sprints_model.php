@@ -73,7 +73,7 @@ class Sprints_model extends CI_Model{
             $this->db->set('created_on',date('Y-m-d H:i:s'));
             $this->db->insert('sprints');
 
-            $members = $this->System_model->getParam("notification_create_task",true);
+            $members = $this->System_model->getParam("notification_create_sprints",true);
             $author = $this->db->select("*")->from("users")->where("id",$_SESSION['user_id'])->get()->row();
             $sprint = $this->db->select("s.*,p.name project_name, c.company_name, u.name author_name, u.email author_email")
                                 ->from("sprints s")

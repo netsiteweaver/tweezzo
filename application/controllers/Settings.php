@@ -116,17 +116,36 @@ class Settings extends MY_Controller {
     {
         //Access Control
         if(!isAuthorised(get_class(),"notifications")) return false;
+
+        $this->data['page_title'] = "Notifications";
         
-        $this->data['create_project'] = $this->system_model->getParam("notification_create_project",true);
-        $this->data['update_project'] = $this->system_model->getParam("notification_update_project",true);
-        $this->data['create_sprint'] = $this->system_model->getParam("notification_create_sprint",true);
-        $this->data['update_sprint'] = $this->system_model->getParam("notification_update_sprint",true);
-        $this->data['create_task'] = $this->system_model->getParam("notification_create_task",true);
-        $this->data['update_task'] = $this->system_model->getParam("notification_update_task",true);
-        $this->data['add_notes'] = $this->system_model->getParam("notification_add_notes",true);
+        $this->data['create_projects'] = $this->system_model->getParam("notification_create_projects",true);
+        $this->data['update_projects'] = $this->system_model->getParam("notification_update_projects",true);
+        $this->data['delete_projects'] = $this->system_model->getParam("notification_delete_projects",true);
+
+        $this->data['create_sprints'] = $this->system_model->getParam("notification_create_sprints",true);
+        $this->data['update_sprints'] = $this->system_model->getParam("notification_update_sprints",true);
+        $this->data['delete_sprints'] = $this->system_model->getParam("notification_delete_sprints",true);
+
+        $this->data['create_tasks'] = $this->system_model->getParam("notification_create_tasks",true);
+        $this->data['update_tasks'] = $this->system_model->getParam("notification_update_tasks",true);
+        $this->data['delete_tasks'] = $this->system_model->getParam("notification_delete_tasks",true);
+
+        $this->data['create_notes'] = $this->system_model->getParam("notification_create_notes",true);
+        $this->data['update_notes'] = $this->system_model->getParam("notification_update_notes",true);
         $this->data['delete_notes'] = $this->system_model->getParam("notification_delete_notes",true);
-        $this->data['add_customers'] = $this->system_model->getParam("notification_add_customers",true);
+
+        $this->data['create_customers'] = $this->system_model->getParam("notification_create_customers",true);
+        $this->data['update_customers'] = $this->system_model->getParam("notification_update_customers",true);
         $this->data['delete_customers'] = $this->system_model->getParam("notification_delete_customers",true);
+
+        $this->data['create_developers'] = $this->system_model->getParam("notification_create_developers",true);
+        $this->data['update_developers'] = $this->system_model->getParam("notification_update_developers",true);
+        $this->data['delete_developers'] = $this->system_model->getParam("notification_delete_developers",true);
+
+        $this->data['create_users'] = $this->system_model->getParam("notification_create_users",true);
+        $this->data['update_users'] = $this->system_model->getParam("notification_update_users",true);
+        $this->data['delete_users'] = $this->system_model->getParam("notification_delete_users",true);
 
         
         $this->mybreadcrumb->add('Notifications', base_url('settings/notifications'));

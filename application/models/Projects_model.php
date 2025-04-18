@@ -71,7 +71,7 @@ class Projects_model extends CI_Model{
             $this->db->set('created_on',date('Y-m-d H:i:s'));
             $this->db->insert('projects');
 
-            $members = $this->System_model->getParam("notification_create_task",true);
+            $members = $this->System_model->getParam("notification_create_tasks",true);
             $author = $this->db->select("*")->from("users")->where("id",$_SESSION['user_id'])->get()->row();
             $project = $this->db->select("p.*,c.company_name, u.name author_name, u.email author_email")
                                 ->from("projects p")

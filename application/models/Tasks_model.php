@@ -182,7 +182,7 @@ class Tasks_model extends CI_Model{
             $taskId = $this->db->insert_id();
             $this->saveFiles($uploadedFiles,$taskId);
 
-            $members = $this->System_model->getParam("notification_create_task",true);
+            $members = $this->System_model->getParam("notification_create_tasks",true);
             foreach($members as $m){
                 $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
 
@@ -214,7 +214,7 @@ class Tasks_model extends CI_Model{
             $taskId = $this->db->select("id")->from("tasks")->where("uuid",$data['uuid'])->get()->row()->id;
             $this->saveFiles($uploadedFiles,$taskId);
 
-            $members = $this->System_model->getParam("notification_update_task",true);
+            $members = $this->System_model->getParam("notification_update_tasks",true);
             foreach($members as $m){
                 $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
                 
@@ -363,7 +363,7 @@ class Tasks_model extends CI_Model{
         $content = $this->load->view("_email/header",$emailData, true);
         $content .= $this->load->view("_email/noteHasBeenAdded",$emailData, true);
         $content .= $this->load->view("_email/footer",[], true);
-        $admins = $this->system_model->getParam("notification_add_notes",true);
+        $admins = $this->system_model->getParam("notification_create_notes",true);
         foreach($admins as $admin){
             $user = $this->db->select("*")->from("users")->where("id",$admin)->get()->row();
             $check = $this->Email_model3->save($user->email,"A note has been added",$content);

@@ -203,8 +203,8 @@ class Customers_model extends CI_Model
         }
 
         //send admins email for account creation
-        $notification_add_customers = $this->system_model->getParam("notification_add_customers",true);
-        foreach($notification_add_customers as $admin){
+        $notification_create_customers = $this->system_model->getParam("notification_create_customers",true);
+        foreach($notification_create_customers as $admin){
             $email = $this->db->select("email")->from("users")->where("id",$admin)->get()->row()->email;
 
             $this->load->model("Email_model3");
