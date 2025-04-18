@@ -26,6 +26,7 @@ class Customers extends CI_Controller
         $this->load->model("system_model");
         $this->load->model("Customersportal_model");
         $this->data['logo'] = $this->system_model->getParam("logo");
+        $this->data['page_title'] = "";
 
     }
 
@@ -40,7 +41,7 @@ class Customers extends CI_Controller
             redirect('portal/customers/projects');
         }
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
-        $this->data['page_title'] = "Departments";
+        $this->data['page_title'] = "Signin";
         $this->load->view("/portal/customers/signin_18",$this->data);
     }
 
@@ -67,6 +68,8 @@ class Customers extends CI_Controller
 
     public function projects()
     {
+        $this->data['page_title'] = "Projects";
+
         $this->data['projects'] = $this->Customersportal_model->getProjects($_SESSION['customer_id']);
         $this->data['content'][] = $this->load->view("/portal/customers/projects",$this->data,true);
         // debug($this->data['projects']);
@@ -75,6 +78,8 @@ class Customers extends CI_Controller
 
     public function sprints()
     {
+        $this->data['page_title'] = "Sprints";
+
         $project_id = $this->input->get("project_id");
         $this->data['sprints'] = $this->Customersportal_model->getSprints($project_id);
         $this->data['content'][] = $this->load->view("/portal/customers/sprints",$this->data,true);
@@ -84,6 +89,8 @@ class Customers extends CI_Controller
 
     public function tasks()
     {
+        $this->data['page_title'] = "Tasks";
+
         $sprint_id = $this->input->get("sprint_id");
         $sort_by = $this->input->get("sort_by");
         $sort_dir = $this->input->get("sort_dir");
@@ -100,6 +107,8 @@ class Customers extends CI_Controller
 
     public function view()
     {
+        $this->data['page_title'] = "View";
+
         $uuid = $this->input->get("uuid");
         $this->data['task'] = $this->Customersportal_model->getTask($uuid);
         // debug($this->data['task']);

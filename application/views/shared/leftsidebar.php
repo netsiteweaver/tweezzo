@@ -1,9 +1,9 @@
   <!-- Main Sidebar Container -->
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <a href="<?php echo base_url();?>" class="brand-link elevation-4">
-      <img src="<?php echo base_url("assets/AdminLTE-3.2.0/");?>/dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-      <span class="brand-text font-weight-light">Control Panel</span>
+    <a href="<?php echo base_url();?>" class="brand-link elevation-4 text-center">
+      <!-- <img src="<?php echo base_url("assets/favicon/android-icon-36x36.png");?>" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8"> -->
+      <span class="brand-text font-weight-light">Tweezzo <div style="font-weight:normal; font-size:12px;color:#ccc;">v<?php echo $version;?></div></span>
     </a>
 
     <!-- Sidebar -->
@@ -22,10 +22,10 @@
             <img src="<?php echo base_url("assets/images/photo-placeholder.webp");?>" class="img-circle elevation-2">
           <?php endif;?>
         </div>
-        <div class="info">
+        <div class="info mt-2">
           <a href="<?php echo base_url("users/myprofile?referer=".$this->uri->segment(1).DIRECTORY_SEPARATOR.$this->uri->segment(2).DIRECTORY_SEPARATOR.$this->uri->segment(3)); ?>" class="d-block">
           <div class="user"><?php echo $authenticated_user->name;?></div>
-          <div class="department"><?php echo $authenticated_user->department;?></div>
+          <!-- <div class="department"><?php //echo $authenticated_user->department;?></div> -->
           </a>
         </div>
       </div>

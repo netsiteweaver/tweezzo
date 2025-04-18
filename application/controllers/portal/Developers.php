@@ -20,6 +20,7 @@ class Developers extends CI_Controller
         $this->load->model("system_model");
         $this->load->model("developersportal_model");
         $this->data['logo'] = $this->system_model->getParam("logo");
+        $this->data['page_title'] = "";
 
     }
 
@@ -32,7 +33,7 @@ class Developers extends CI_Controller
     {
         //Breadcrumbs
         // $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
-        $this->data['page_title'] = "Departments";
+        $this->data['page_title'] = "Signin";
 
         $this->load->view("/portal/developers/signin_18",$this->data);
         
@@ -76,6 +77,8 @@ class Developers extends CI_Controller
 
     public function tasks()
     {
+        $this->data['page_title'] = "Tasks";
+
         $this->load->model("developersportal_model");
         $this->data['tasks'] = $this->developersportal_model->getMyTasks($_SESSION['developer_id'],$this->input->get("customer_id"),$this->input->get("project_id"),$this->input->get("sprint_id"),$this->input->get("stage"),$this->input->get("order_by"),$this->input->get("order_dir"),1,999,$this->input->get('notes_only'));
         $this->data['myProjects'] = $this->developersportal_model->getMyProjects($_SESSION['developer_id']);
@@ -89,6 +92,8 @@ class Developers extends CI_Controller
 
     public function view()
     {
+        $this->data['page_title'] = "View";
+
         $uuid = $this->uri->segment(4);
         $this->load->model("developersportal_model");
         $this->data['task'] = $this->developersportal_model->getSingleTask($uuid);
@@ -100,6 +105,8 @@ class Developers extends CI_Controller
 
     public function myCustomers()
     {
+        $this->data['page_title'] = "Customers";
+
         $this->load->model("developersportal_model");
         $this->data['myCustomers'] = $this->developersportal_model->getMyCustomers($_SESSION['developer_id']);
         // $this->load->view("/portal/developers/myCustomers",$this->data);
@@ -110,6 +117,8 @@ class Developers extends CI_Controller
 
     public function myProjects()
     {
+        $this->data['page_title'] = "Projects";
+
         $this->load->model("developersportal_model");
         $this->data['myProjects'] = $this->developersportal_model->getMyProjects($_SESSION['developer_id']);
         // $this->load->view("/portal/developers/myProjects",$this->data);
@@ -119,6 +128,8 @@ class Developers extends CI_Controller
 
     public function mySprints()
     {
+        $this->data['page_title'] = "Sprints";
+        
         $this->load->model("developersportal_model");
         $this->data['mySprints'] = $this->developersportal_model->getMySprints($_SESSION['developer_id']);
         // $this->load->view("/portal/developers/mySprints",$this->data);

@@ -48,13 +48,15 @@
  * This can be set to anything, but default usage is:
  *
  *     development
- *     testing
+ *     staging
  *     production
  *
  * NOTE: If you change these, also change the error_reporting() code below
  */
 
 // define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'development');
+// CodeIgniter's default way of getting the environment is by using apache's SetEnv CI_ENV {your_environment}. 
+// This does not work properly when cron access it, so we prefer setting below. 
 define('ENVIRONMENT','development');
 
 if (defined('ENVIRONMENT'))
