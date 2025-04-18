@@ -3,7 +3,7 @@
 
 <head>
 
-    <title>Task Manager</title>
+    <title><?php echo $page_title;?> | Tweezzo</title>
     <base href="<?php echo base_url();?>">
 
     <!-- Required meta tags -->
