@@ -20,6 +20,12 @@ application/logs/*
 application/config/development/config.php
 application/config/development/database.php
 
+application/config/staging/config.php
+application/config/staging/database.php
+
+application/config/production/config.php
+application/config/production/database.php
+
 application/logs/*.*
 *.zip
 
