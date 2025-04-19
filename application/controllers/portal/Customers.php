@@ -134,14 +134,10 @@ class Customers extends CI_Controller
     public function deleteNote()
     {
         $note_id = $this->input->post("note_id");
-        $this->db->where(array(
-            "id"                    =>  $note_id,
-            "created_by_customer"   =>  $_SESSION['customer_id']
-        ))->delete("task_notes");
-
+        $affected_rows = $this->Customersportal_model->deleteNote($note_id,'customer');
         echo json_encode(array(
             "result"    =>  true,
-            "affected_rows" =>  $this->db->affected_rows()
+            "affected_rows" =>  $affected_rows
         ));
         exit;
     }

@@ -157,14 +157,10 @@ class Developers extends CI_Controller
     public function deleteNote()
     {
         $note_id = $this->input->post("note_id");
-        $this->db->where(array(
-            "id"            =>  $note_id,
-            "created_by"    =>  $_SESSION['developer_id']
-        ))->delete("task_notes");
-
+        $affected_rows = $this->developersportal_model->deleteNote($note_id,'developer');
         echo json_encode(array(
             "result"    =>  true,
-            "affected_rows" =>  $this->db->affected_rows()
+            "affected_rows" =>  $affected_rows
         ));
         exit;
     }
