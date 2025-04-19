@@ -156,8 +156,9 @@ class Developers extends CI_Controller
 
     public function deleteNote()
     {
+        $this->load->model("Notes_model");
         $note_id = $this->input->post("note_id");
-        $affected_rows = $this->developersportal_model->deleteNote($note_id,'developer');
+        $affected_rows = $this->Notes_model->deleteNote($note_id, 'developer');
         echo json_encode(array(
             "result"    =>  true,
             "affected_rows" =>  $affected_rows

@@ -259,33 +259,4 @@ class Customersportal_model extends CI_Model
         return $this->db->get()->result();
 	}
 
-    public function deleteNote($note_id, $user_type)
-    {
-        $this->load->model("Notes_model");
-        $this->load->model("Email_model3");
-        $this->load->model("system_model");
-
-        $note = $this->Notes_model->getById($note_id,$user_type);
-        
-        $emailData = [
-            'type'          =>  $user_type,
-            'note'          =>  $note,
-            'logo'          =>  $this->system_model->getParam("logo"),
-            // 'link'          =>  base_url('tasks/view/'.$data['uuid']),
-            // 'link_label'    =>  'View Task',
-            // 'stageColors'   =>  $stageColors
-        ];
-        $content = $this->load->view("_email/header",$emailData, true);
-        $content .= $this->load->view("_email/noteDeleted",$emailData, true);
-        $content .= $this->load->view("_email/footer",[], true);
-
-        $this->Email_model3->save('reeaz@ramoly.info',"Note Deleted",$content);
-        
-         // $this->db->where(array(
-        //     "id"            =>  $note_id,
-        //     "created_by"    =>  $_SESSION['user_id']
-        // ))->delete("task_notes");
-        // return $this->db->affected_rows();
-        return 1;
-    }
 }

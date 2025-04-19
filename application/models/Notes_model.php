@@ -34,4 +34,44 @@ class Notes_model extends CI_Model{
 
         return $note;
     }
+
+    public function deleteNote($note_id,$user_type)
+    {
+        $this->load->model("Notes_model");
+        $this->load->model("Email_model3");
+        $this->load->model("system_model");
+
+        $note = $this->getById($note_id,$user_type);
+        $emailData = [
+            'type'          =>  $user_type,
+            'note'          =>  $note,
+            'logo'          =>  $this->system_model->getParam("logo"),
+            // 'link'          =>  base_url('tasks/view/'.$data['uuid']),
+            // 'link_label'    =>  'View Task',
+            // 'stageColors'   =>  $stageColors
+        ];
+        $content = $this->load->view("_email/header",$emailData, true);
+        $content .= $this->load->view("_email/noteDeleted",$emailData, true);
+        $content .= $this->load->view("_email/footer",[], true);
+
+        $this->Email_model3->save($note->deleted_by->email,"Note Deleted",$content);
+
+        $notification_delete_notes = $this->system_model->getParam("notification_delete_notes",true);
+        foreach($notification_delete_notes as $admin){
+            $email = $this->db->select("email")->from("users")->where("id",$admin)->get()->row()->email;
+            $this->Email_model3->save($email,"Note Deleted",$content);
+        }
+        
+        $this->db->where("id",$note_id);
+        if($user_type == 'user'){
+            $this->db->where("created_by",$_SESSION['user_id']);
+        }elseif($user_type == 'developer'){
+            $this->db->where("created_by",$_SESSION['developer_id']);
+        }elseif($user_type == 'customer'){
+            $this->db->where("created_by_customer",$_SESSION['customer_id']);
+        }
+        $this->db->delete("task_notes");
+
+        return $this->db->affected_rows();
+    }
 }

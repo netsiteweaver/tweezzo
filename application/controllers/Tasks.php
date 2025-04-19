@@ -345,8 +345,9 @@ class Tasks extends MY_Controller {
 
     public function deleteNote()
     {
+        $this->load->model("Notes_model");
         $note_id = $this->input->post('note_id');
-        $affected_rows = $this->Tasks_model->deleteNote($note_id,'user');
+        $affected_rows = $this->Notes_model->deleteNote($note_id,'user');
         echo json_encode(array(
             "result"    =>  true,
             "affected_rows" =>  $affected_rows
