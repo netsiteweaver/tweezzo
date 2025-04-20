@@ -38,7 +38,7 @@
                 <td>You will receive another email for your account details, including your login credentials</td>
             </tr>
             <tr>
-                <td>The portal easily allow your initiate the Forgot Password process, whenever you may need to reset your password (lost, forgot or for security reason). </td>
+                <td>The portal easily allow your initiate the Forgot Password process, in case you need to reset your password (lost, forgot or for security reason). </td>
             </tr>
             <!-- <tr>
                 <td valign="top">Email: <a class="" href="mailto:homeclassicsltd@gmail.com"><?php //echo $email;?></a>
