@@ -30,7 +30,7 @@ class Sprints extends MY_Controller {
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
 
         $this->load->model('Projects_model');
-        $this->data['projects'] = $this->Projects_model->lookup("projects");
+        $this->data['projects'] = $this->Projects_model->lookup();
 
         $this->data["content"]=$this->load->view("/sprints/add",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   
@@ -50,7 +50,7 @@ class Sprints extends MY_Controller {
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
 
         $this->load->model('Projects_model');
-        $this->data['projects'] = $this->Projects_model->lookup("projects");
+        $this->data['projects'] = $this->Projects_model->lookup();
 
         $this->data["content"]=$this->load->view("/sprints/edit",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   
@@ -71,7 +71,7 @@ class Sprints extends MY_Controller {
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
 
         $this->load->model('Projects_model');
-        $this->data['projects'] = $this->Projects_model->lookup("projects");
+        $this->data['projects'] = $this->Projects_model->lookup();
 
         $this->data["content"]=$this->load->view("/sprints/view",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   
