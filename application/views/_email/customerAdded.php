@@ -46,12 +46,12 @@
     <p>And below is your login credentials:</p>
     <table align="center" border="1" cellpadding="10" cellspacing="0" role="presentation" style="width:100%;">
         <tbody>
-            <tr>
+            <!-- <tr>
             <th style='text-align:left; width: 150px;'>Customer's Portal</th>
                 <td>
                     <a href="<?php echo base_url("portal/customers/signin");?>">Access Portal</a>
                 </td>
-            </tr>
+            </tr> -->
             <tr>
                 <th style='text-align:left; width: 150px;'>Email</th>
                 <td><?php echo $customer['email'];?></td>
