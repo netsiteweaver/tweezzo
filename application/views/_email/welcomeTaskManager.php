@@ -31,8 +31,8 @@
                 <td valign="top"><b>Task Manager</b></td>
             </tr>
             <tr>
-                <td valign="top"><a style='text-decoration: none; color:#000000;' href="https://tasks.netsiteweaver.com/portal/customers/"
-                        class="moz-txt-link-freetext">https://tweezzo.online/portal/customers/</a></td>
+                <td valign="top"><a style='text-decoration: none; color:#000000;' href="https://app.tweezzo.online/portal/customers/signin"
+                        class="moz-txt-link-freetext">https://app.tweezzo.online/portal/customers/signin</a></td>
             </tr>
             <tr>
                 <td>You will receive another email for your account details, including your login credentials</td>
