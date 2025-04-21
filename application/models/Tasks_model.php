@@ -310,6 +310,8 @@ class Tasks_model extends CI_Model{
 
     public function notifyUsers($taskDetails, $data, $userEmail, $public='public')
     {
+        $valid = true;
+        $errorMessage = "";
         $query = "SELECT t.*, s.name sprint_name, p.name project_name, c.email customer_email, c.company_name customer, u.email developer_email, u.name developer_name
                     FROM tasks t 
                     Left join sprints s on s.id = t.sprint_id 
@@ -341,8 +343,10 @@ class Tasks_model extends CI_Model{
             $content .= $this->load->view("_email/footer",[], true);
             $check = $this->Email_model3->save($result[0]->customer_email,"A note has been added",$content);
 
-            if($check == '401'){
-                return array('result'=>false,'reason'=>'Mail Server: Not Authorised');
+            if(!empty($check['result'])){
+                $valid = false;
+                $errorMessage .= print_r($check['reason']);
+                // return array('result'=>false,'reason'=>print_r($check));
             }
         }
 
@@ -352,10 +356,16 @@ class Tasks_model extends CI_Model{
         $content .= $this->load->view("_email/noteHasBeenAdded",$emailData, true);
         $content .= $this->load->view("_email/footer",[], true);
         foreach($result as $developer){
+            if(empty($developer->developer_email)) continue;
             $check = $this->Email_model3->save($developer->developer_email,"A note has been added",$content);
-            if($check == '401'){
-                return array('result'=>false,'reason'=>'Mail Server: Not Authorised');
+            if(!empty($check['result'])){
+                $valid = false;
+                $errorMessage .= print_r($check['reason']);
+                // return array('result'=>false,'reason'=>print_r($check));
             }
+            // if($check == '401'){
+            //     return array('result'=>false,'reason'=>'Mail Server: Not Authorised');
+            // }
         }
 
         //then send to admins, if defined
@@ -367,12 +377,21 @@ class Tasks_model extends CI_Model{
         foreach($admins as $admin){
             $user = $this->db->select("*")->from("users")->where("id",$admin)->get()->row();
             $check = $this->Email_model3->save($user->email,"A note has been added",$content);
-            if($check == '401'){
-                return array('result'=>false,'reason'=>'Mail Server: Not Authorised');
+            if(!empty($check['result'])){
+                $valid = false;
+                $errorMessage .= print_r($check['reason']);
+                // return array('result'=>false,'reason'=>print_r($check));
             }
+            // if($check == '401'){
+            //     return array('result'=>false,'reason'=>'Mail Server: Not Authorised');
+            // }
         }
 
-        return array('result'=>true);
+        if(!$valid){
+            return array("result"=>false,"reason"=>$errorMessage);
+        }else{
+            return array("result"=>true);
+        }
     }
 
     public function delete($uuid)
