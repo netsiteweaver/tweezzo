@@ -264,14 +264,20 @@
                             <th># <?php echo ( (empty($this->input->get("order_by"))) || ($this->input->get("order_by") == "task_number") ) ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>Section <?php echo ($this->input->get("order_by") == "section") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>Task <?php echo ($this->input->get("order_by") == "name") ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <?php if(empty($this->input->get("sprint_id"))):?>
                             <th>Sprint <?php echo ($this->input->get("order_by") == "sprint_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <?php endif;?>
+                            <?php if(empty($this->input->get("project_id"))):?>
                             <th>Project <?php echo ($this->input->get("order_by") == "project_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <?php endif;?>
+                            <?php if(empty($this->input->get("customer_id"))):?>
                             <th>Customer <?php echo ($this->input->get("order_by") == "company_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <?php endif;?>
                             <th>Stage <?php echo ($this->input->get("order_by") == "stage") ? "<i class='fa fa-sort'></i>" : '';?></th>
-                            <th>Due Date <?php echo ($this->input->get("order_by") == "due_date") ? "<i class='fa fa-sort'></i>" : '';?></th>
-                            <th>Hours</th>
-                            <th>Developers</th>
-                            <th><i class="fa fa-comments"></i></th>
+                            <th class='no-print'>Due Date <?php echo ($this->input->get("order_by") == "due_date") ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <th class='no-print'>Hours</th>
+                            <th class='no-print'>Developers</th>
+                            <th class='no-print'><i class="fa fa-comments"></i></th>
                             <th class='no-print'>Actions</th>
                             <?php if( ($perms['edit']) || ($perms['delete'])):?>
                             <th class='no-print'>
@@ -302,28 +308,34 @@
                                 <?php echo $task->name; ?>
                                 <?php echo ( (!empty($task->description)) && ($task->description != $task->name) )? "<br>" . nl2br($task->description) : '';?>
                             </td>
+                            <?php if(empty($this->input->get("sprint_id"))):?>
                             <td><?php echo $task->sprint_name; ?></td>
+                            <?php endif;?>
+                            <?php if(empty($this->input->get("project_id"))):?>
                             <td><?php echo $task->project_name; ?></td>
+                            <?php endif;?>
+                            <?php if(empty($this->input->get("customer_id"))):?>
                             <td><a style='color:#4c4c4c; text-decoration:none;'
                                     href='tasks/listing?customer_id=<?php echo $task->customer_id;?>'><?php echo "{$task->company_name}"; ?></a>
                             </td>
+                            <?php endif;?>
                             <td class='text-center'>
                                 <div style='color:#fff;background-color:<?php echo $stageColors[$task->stage];?>;padding:5px 10px;border-radius:2px;text-align:center;'>
                                     <?php echo ucwords(str_replace("_"," ",$task->stage)); ?>
                                 </div>
                             </td>
-                            <td class='text-center <?php echo ( (!empty($task->due_date)) && ( strtotime($task->due_date) <= time()) ) ? 'red text-bold' : ''?>'>
+                            <td class='no-print text-center <?php echo ( (!empty($task->due_date)) && ( strtotime($task->due_date) <= time()) ) ? 'red text-bold' : ''?>'>
                                 <?php echo (!empty($task->due_date)) ? date_format(date_create($task->due_date),'Y-m-d') : '';?>
                             </td>
-                            <td class='text-center'><?php echo $task->estimated_hours;?></td>
-                            <td>
+                            <td class='text-center no-print'><?php echo $task->estimated_hours;?></td>
+                            <td class='no-print'>
                                 <?php foreach($task->users as $user):?>
                                 <img title="<?php echo $user->name;?>" class='user'
                                     src="uploads/users/<?php echo $user->photo;?>" alt="">
                                 <?php endforeach;?>
                             </td>
 
-                            <td class=''><?php echo $task->notes;?><br><i class="fa fa-eye view-notes cursor-pointer"></i></td>
+                            <td class='no-print'><?php echo $task->notes;?><br><i class="fa fa-eye view-notes cursor-pointer"></i></td>
 
                             <td class='no-print' style='width:150px;'>
                                 <?php if($perms['view']): ?>
@@ -375,7 +387,7 @@
     </div>
 </div>
 
-<div class="row mb-5">
+<div class="row mb-5 no-print">
     <div class="col-md-4"></div>
     <div class="col-md-4 text-center">
         <img class='img-thumbnail' src="assets/images/stageColors.png" alt="">
