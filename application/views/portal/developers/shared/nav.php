@@ -9,7 +9,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <ul class="navbar-nav mb-2 mb-lg-0">
                 <li class="nav-item">
                     <a class="nav-link <?php echo (!in_array($this->uri->segment(3),['myCustomers','myProjects','mySprints']))?'active':'';?>" href="portal/developers/tasks"><i class="bi bi-list-task"></i> Tasks</a>
                 </li>
@@ -42,6 +42,14 @@
                 <div class="nav-item">
                     <a href="portal/developers/signout" class="nav-link"><i class="bi bi-door-open"></i> Signout</a>
                 </div>
+            </ul>
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item cursor-pointer add-task" style='margin-right:25px;'>
+                    <img src="assets/images/more-32px.png" style='width:32px;height:32px;' alt="">
+                </li>
+                <!-- <li class="nav-item cursor-pointer add-user-access">
+                    <img src="assets/images/contact-32px.png" style='width:32px;height:32px;' alt="">
+                </li> -->
             </ul>
             <!-- <form class="d-flex">
                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">

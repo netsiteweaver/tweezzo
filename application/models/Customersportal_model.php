@@ -7,8 +7,9 @@ class Customersportal_model extends CI_Model
     public function authenticate($user_info) {
         $this->db->select("c.customer_id, c.company_name, c.full_name, c.email");
         $this->db->from("customers c");
-        $this->db->where("c.password", md5($user_info['password']), true );
-        $this->db->where("c.email", trim($user_info['email']));
+        $this->db->join("customer_access ca","ca.customer_id = c.customer_id");
+        $this->db->where("ca.password", md5($user_info['password']), true );
+        $this->db->where("ca.email", trim($user_info['email']));
         $this->db->where("c.status", '1');
         $result = $this->db->get()->row();
         $this->recordSignIn($result, trim($user_info['email']));
@@ -49,7 +50,7 @@ class Customersportal_model extends CI_Model
                         ->result();
     }
 
-    public function getSprints($project_id)
+    public function getSprints($project_id="")
     {
         $this->db->select("s.*,u.name createdBy, p.name project_name, count(t.id) tasks_count")
                         ->from("sprints s")

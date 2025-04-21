@@ -122,7 +122,7 @@
 						<textarea name="notes" id="" rows="5" class="form-control" placeholder="Enter your notes. Other users will be able to view your notes." ></textarea>
 					</div>
 					<div class="form-group">
-						<button type="submit" class="btn btn-flat btn-info" id="saveNote"><i class='fa fa-save'></i> Save</button>
+						<button type="submit" class="btn btn-flat btn-info" id="saveNote"><i class='fa fa-edit'></i> Save Note</button>
 					</div>
 				</form>
 

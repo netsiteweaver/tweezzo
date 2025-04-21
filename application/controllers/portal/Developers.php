@@ -22,6 +22,12 @@ class Developers extends CI_Controller
         $this->data['logo'] = $this->system_model->getParam("logo");
         $this->data['page_title'] = "";
 
+        if(isset($_SESSION['developer_id'])){
+            $this->data['customers'] = $this->developersportal_model->getMyCustomers($_SESSION['developer_id']);
+            $this->data['projects'] = $this->developersportal_model->getMyProjects($_SESSION['developer_id']);
+            $this->data['sprints'] = $this->developersportal_model->getMySprints($_SESSION['developer_id']);
+        }
+
     }
 
     public function index()

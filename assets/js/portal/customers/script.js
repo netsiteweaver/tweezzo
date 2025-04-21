@@ -1,8 +1,82 @@
 jQuery(function(){
 
+    $('.select-customer').on('click', function() {
+        reset();
+        let customer_id = $(this).data("customer-id");
+        $('#addTaskModal .select-customer').removeClass("selected");
+        $(this).addClass("selected")
+        $('#addTaskModal input[name=customer_id]').val(customer_id);
+        $('.list-group.projects').closest('.form-group').removeClass('d-none');
+        $('.list-group.projects .list-group-item').each(function(){
+            if($(this).data('customer-id') == customer_id){
+                $(this).removeClass('d-none')
+            }else{
+                $(this).addClass('d-none');
+            }
+        })
+    })
+
+    $('.select-project').on('click', function() {
+        let project_id = $(this).data("project-id");console.log(project_id)
+        $('#addTaskModal .select-project').removeClass("selected");
+        $(this).addClass("selected")
+        $('#addTaskModal input[name=project_id]').val(project_id);
+        $('.list-group.sprints').closest('.form-group').removeClass('d-none');
+        $('.list-group.sprints .list-group-item').each(function(){
+            if($(this).data('project-id') == project_id){
+                $(this).removeClass('d-none')
+            }else{
+                $(this).addClass('d-none');
+            }
+        })
+    })
+
+    $('.select-sprint').on('click', function() {
+        let sprint_id = $(this).data("sprint-id");console.log(sprint_id)
+        $('#addTaskModal .select-sprint').removeClass("selected");
+        $(this).addClass("selected")
+        $('#addTaskModal input[name=sprint_id]').val(sprint_id);
+
+        $('.data-input').removeClass('d-none');
+
+    })
+
+    function reset()
+    {
+        $('.list-group.projects .list-group-item').removeClass('d-none');
+        $('.list-group.projects').closest('.form-group').addClass('d-none');
+        $('.list-group.sprints .list-group-item').removeClass('d-none');
+        $('.list-group.sprints').closest('.form-group').addClass('d-none');
+        $('#addTaskModal input[name=customer_id]').val('');
+        $('#addTaskModal input[name=project_id]').val('');
+        $('#addTaskModal input[name=sprint_id]').val('');
+    }
+
+    $('.create-task').on('click', function(){
+        let project_id = $('input[name=project_id]').val();
+        let sprint_id = $('input[name=sprint_id]').val();
+        let section = $('input[name=section]').val();
+        let task_number = $('input[name=task_number]').val();
+        let name = $('input[name=name]').val();
+        let description = $('textarea[name=description]').val();
+        let due_date = $('input[name=due_date]').val();
+        console.log(project_id, sprint_id,section,task_number,name,description,due_date)
+
+        alertify.alert("Not yet imeplemented")
+    })
+
     $('.autosubmit').on("change", function(){
         $('.apply').trigger("click");
     })
+
+    $('.add-task').on('click', function(){
+        $('#addTaskModal').modal("show")
+    })
+
+    $('.add-user-access').on('click', function(){
+        $('#addUserAccessModal').modal("show")
+    })
+
 
     $('.view-notes').on("click", function() {
         let taskId = $(this).closest("tr").data("id");

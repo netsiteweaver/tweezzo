@@ -27,7 +27,10 @@ class Customers extends CI_Controller
         $this->load->model("Customersportal_model");
         $this->data['logo'] = $this->system_model->getParam("logo");
         $this->data['page_title'] = "";
-
+        if(isset($_SESSION['customer_id'])){
+            $this->data['projects'] = $this->Customersportal_model->getProjects($_SESSION['customer_id']);
+            $this->data['sprints'] = $this->Customersportal_model->getSprints();
+        }
     }
 
     public function index()

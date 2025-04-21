@@ -79,7 +79,7 @@
             <footer>Netsiteweaver Ltd</footer>
         </div>
 
-
+        <?php $this->load->view("portal/developers/shared/add_task_modal");?>
         <!-- Optional JavaScript; choose one of the two! -->
 
         <!-- Option 1: Bootstrap Bundle with Popper -->

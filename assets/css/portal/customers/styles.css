@@ -30,11 +30,12 @@ ul.navbar-nav {
 }
 .logged-in-user {
     position:absolute;
-    top: -40px;
+    top: -60px;
     right: 30px;
     font-size: 0.9em;
-    font-weight: bold;
-    color:#a152d6
+    font-weight: normal;
+    /* color:#a152d6 */
+    color:#929293;
 }
 @media only screen and (max-width:990px){
     .logged-in-user {

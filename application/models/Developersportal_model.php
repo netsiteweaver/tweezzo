@@ -117,6 +117,8 @@ class Developersportal_model extends CI_Model{
                         c.customer_id = p.customer_id
                     WHERE
                         tu.user_id ={$developer_id}
+                    AND 
+                        c.status = 1
                     ORDER BY c.company_name";
         return $this->db->query($query)->result();
 

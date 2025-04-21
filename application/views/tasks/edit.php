@@ -13,6 +13,9 @@
 	.myCursor {
 		cursor: url('../../assets/images/delete-16px.png'), auto;
 	}
+	tr.private td{
+		background-color:#eee;
+	}
 </style>
 
 <div class="row">
@@ -152,16 +155,16 @@
 						<textarea name="notes" id="" rows="5" class="form-control" placeholder="Enter your notes. Other users will be able to view your notes." ></textarea>
 					</div>
 					<div class="form-group">
-						<button type="submit" class="btn btn-flat btn-info" id="saveNote"><i class='fa fa-save'></i> Save</button>
+						<button type="submit" class="btn btn-flat btn-info" id="saveNote"><i class='fa fa-edit'></i> Save Note</button>
 					</div>
 				</form>
 
 				<!-- Display Previous Notes Here -->
 				<?php if(!empty($task->notes)):?>
-					<table id='previousNotes' class="table table-bordered table-hover">
+					<table id='previousNotes' class="table table-bordered">
 						<tbody>
 						<?php foreach($task->notes as $i => $note):?>
-							<tr>
+							<tr class='<?php echo ($note->display_type == 'private') ? 'private' : '';?>'>
 								<td><?php echo $i+1;?></td>
 								<td><?php echo nl2br($note->notes);?><br>
 									<span class="float-right" style='color:#4c4c4c; padding:3px 8px; font-size:0.8em; font-style:italic;'>
