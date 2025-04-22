@@ -118,8 +118,11 @@ class Tasks extends MY_Controller {
         $this->load->model('Sprints_model');
         $this->data['sprints'] = $this->Sprints_model->lookup();
 
-        $this->load->model('Users_model');
-        $this->data['users'] = $this->Users_model->lookup();
+        // $this->load->model('Users_model');
+        // $this->data['users'] = $this->Users_model->lookup();
+
+        $this->load->model("Developers_model");
+        $this->data['developers'] = $this->Developers_model->lookup();
 
         // $this->loadStyleSheet("node_modules/lightbox2/dist/css/lightbox.min.css");
         // $this->loadScript("node_modules/lightbox2/dist/js/lightbox.min.js");
@@ -300,11 +303,11 @@ class Tasks extends MY_Controller {
         }
 
         $uploadedFiles = [];
-        if($_FILES['file1']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file1","uploads/tasks/",['width'=>100,'height'=>100,'thumb_name'=>'thumb']);
-        if($_FILES['file2']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file2","uploads/tasks/",['width'=>100,'height'=>100,'thumb_name'=>'thumb']);
-        if($_FILES['file3']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file3","uploads/tasks/",['width'=>100,'height'=>100,'thumb_name'=>'thumb']);
-        if($_FILES['file4']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file4","uploads/tasks/",['width'=>100,'height'=>100,'thumb_name'=>'thumb']);
-        if($_FILES['file5']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file5","uploads/tasks/",['width'=>100,'height'=>100,'thumb_name'=>'thumb']);
+        if($_FILES['file1']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file1","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
+        if($_FILES['file2']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file2","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
+        if($_FILES['file3']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file3","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
+        if($_FILES['file4']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file4","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
+        if($_FILES['file5']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file5","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
 
         $data = $this->input->post();
         $response = $this->Tasks_model->save($data,$uploadedFiles);

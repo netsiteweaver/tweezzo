@@ -115,7 +115,7 @@
 								</div>
 								</td>
 								<td>
-									<?php if($notes->created_by_customer == $_SESSION['customer_id']):?>
+									<?php if($notes->created_by_customer == $_SESSION['customer_access_id']):?>
 										<div class="btn btn-sm btn-danger deleteNote" data-note-id='<?php echo $notes->id;?>'><i class="bi bi-trash"></i></div>
 									<?php endif;?>
 								</td>

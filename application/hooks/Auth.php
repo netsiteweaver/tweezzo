@@ -19,7 +19,7 @@ class Auth extends CI_Controller {
 
 		if($controller == "portal") {
 			if( ($this->uri->segment(2) == "customers") && ($this->uri->segment(3) != "signin") ){
-				if (empty($_SESSION['customer_id'])){
+				if (empty($_SESSION['customer_access_id'])){
 					
 				}
 			}elseif( ($this->uri->segment(2) == "developers") && ( ($this->uri->segment(3) == "authenticate") || ($this->uri->segment(3) == "forgotPassword")  || ($this->uri->segment(3) == "processForgotPassword")) ){

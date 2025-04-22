@@ -8,7 +8,7 @@ class Customers extends CI_Controller
     {
         parent::__construct();
 
-        if( ( !in_array( $this->uri->segment(3) , ['signin', 'authenticate', 'forgotPassword','processForgotPassword']) ) && (!isset($_SESSION['customer_id'])) ){
+        if( ( !in_array( $this->uri->segment(3) , ['signin', 'authenticate', 'forgotPassword','processForgotPassword']) ) && (!isset($_SESSION['customer_access_id'])) ){
             redirect('portal/customers/signin');
         }
 
@@ -27,8 +27,8 @@ class Customers extends CI_Controller
         $this->load->model("Customersportal_model");
         $this->data['logo'] = $this->system_model->getParam("logo");
         $this->data['page_title'] = "";
-        if(isset($_SESSION['customer_id'])){
-            $this->data['projects'] = $this->Customersportal_model->getProjects($_SESSION['customer_id']);
+        if(isset($_SESSION['customer_access_id'])){
+            $this->data['projects'] = $this->Customersportal_model->getProjects($_SESSION['customer_access_id']);
             $this->data['sprints'] = $this->Customersportal_model->getSprints();
         }
     }
@@ -40,7 +40,7 @@ class Customers extends CI_Controller
 
     public function signin()
     {
-        if(isset($_SESSION['customer_id'])){
+        if(isset($_SESSION['customer_access_id'])){
             redirect('portal/customers/projects');
         }
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
@@ -58,7 +58,7 @@ class Customers extends CI_Controller
         $result = $this->Customersportal_model->authenticate($_POST);
 
         if($result) {
-            $_SESSION['customer_id'] = $result->customer_id;
+            $_SESSION['customer_access_id'] = $result->customer_access_id;
             $_SESSION['customer_email'] = $result->email;
             $_SESSION['customer_name'] = $result->company_name;
         }
@@ -73,7 +73,7 @@ class Customers extends CI_Controller
     {
         $this->data['page_title'] = "Projects";
 
-        $this->data['projects'] = $this->Customersportal_model->getProjects($_SESSION['customer_id']);
+        $this->data['projects'] = $this->Customersportal_model->getProjects($_SESSION['customer_access_id']);
         $this->data['content'][] = $this->load->view("/portal/customers/projects",$this->data,true);
         // debug($this->data['projects']);
         $this->load->view("/portal/customers/shared/layout",$this->data);
@@ -105,6 +105,17 @@ class Customers extends CI_Controller
         $this->data['tasks'] = $this->Customersportal_model->getTasks($sprint_id,$sort_by,$sort_dir,$stages,$notes_only);
         $this->data['content'][] = $this->load->view("/portal/customers/tasks",$this->data,true);
         // debug($this->data['tasks']);
+        $this->load->view("/portal/customers/shared/layout",$this->data);
+    }
+
+    public function notes()
+    {
+        $this->data['page_title'] = "Notes";
+
+        $project_id = $this->input->get("project_id");
+        // $this->data['sprints'] = $this->Customersportal_model->getSprints($project_id);
+        // $this->data['content'][] = $this->load->view("/portal/customers/sprints",$this->data,true);
+        // debug($this->data['sprints']);
         $this->load->view("/portal/customers/shared/layout",$this->data);
     }
 
@@ -148,7 +159,7 @@ class Customers extends CI_Controller
 
     public function signout()
     {
-        unset($_SESSION['customer_id']);
+        unset($_SESSION['customer_access_id']);
         redirect(base_url("portal/customers/signin"));
     }
 
@@ -199,7 +210,7 @@ class Customers extends CI_Controller
         $this->data['notes'] = $this->Tasks_model->loadNotes($task_id);
         echo json_encode(array(
             "result"    =>  true,
-            "user_id"   =>  $_SESSION['customer_id'],
+            "user_id"   =>  $_SESSION['customer_access_id'],
             "notes"     =>  $this->data['notes']
         ));
         exit;

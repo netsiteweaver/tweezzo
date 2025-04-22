@@ -143,6 +143,18 @@ class Developers extends CI_Controller
         $this->load->view("/portal/developers/shared/layout",$this->data);
     }
 
+    public function notes()
+    {
+        $this->data['page_title'] = "Sprints";
+        
+        $past_days = $this->input->get("past_days");
+        $this->load->model("Notes_model");
+        $this->data['notes'] = $this->Notes_model->getNotesByUserId($_SESSION['developer_id'], ($past_days=="") ? 5 : $past_days);
+        // $this->load->view("/portal/developers/mySprints",$this->data);
+        $this->data['content'][] = $this->load->view("/portal/developers/notes",$this->data,true);
+        $this->load->view("/portal/developers/shared/layout",$this->data);
+    }
+
     public function saveNotes()
     {
         // debug($_POST);

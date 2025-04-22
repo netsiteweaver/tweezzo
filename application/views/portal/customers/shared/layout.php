@@ -69,7 +69,7 @@
 
         <?php 
 
-        foreach($content as $block){
+        if(isset($content)) foreach($content as $block){
             echo $block;
         }
             

@@ -116,21 +116,21 @@ class Customers_model extends CI_Model
         //     $error_message .= "Phone Number is Mandatory<br>";
         //     $valid = false;
         // }
-        if(empty($this->input->post("email"))) {
-            $error_message .= "Email is Mandatory<br>";
-            $valid = false;
-        }
+        // if(empty($this->input->post("email"))) {
+        //     $error_message .= "Email is Mandatory<br>";
+        //     $valid = false;
+        // }
         if( !$valid ) {
             return array("result"=>false,"reason"=>$error_message);
         }
         $this->db->set("company_name",$this->input->post("company_name"));
-        $this->db->set("full_name",$this->input->post("full_name"));
+        // $this->db->set("full_name",$this->input->post("full_name"));
         $this->db->set("address",$this->input->post("address"));
-        $this->db->set("email",$this->input->post("email"));
+        // $this->db->set("email",$this->input->post("email"));
         $this->db->set("phone_number1",$_POST['phone_number1']);
         $this->db->set("phone_number2",$_POST['phone_number2']);
-        $this->db->set("vat",$_POST['vat']);
-        $this->db->set("brn",$_POST['brn']);
+        // $this->db->set("vat",$_POST['vat']);
+        // $this->db->set("brn",$_POST['brn']);
         $this->db->set("remarks",$this->input->post("remarks"));
         $this->db->set("status","1");
 
@@ -141,10 +141,17 @@ class Customers_model extends CI_Model
             $_POST['uuid'] = gen_uuid();
             $_POST['password'] = genPassword(12);
             $this->db->set("uuid",$_POST['uuid']);
-            $this->db->set("password",md5($_POST['password']));
             $this->db->set("created_by",$_SESSION['user_id']);
             $this->db->set("created_date","NOW()",FALSE);
             $this->db->insert("customers");
+            $customer_id = $this->db->insert_id();
+
+            // $this->db->set("password",md5($_POST['password']));
+            // $this->db->set("name",$this->input->post("full_name"));
+            // $this->db->set("job_description",$this->input->post("job_description"));
+            // $this->db->set("email",$this->input->post("email"));
+            // $this->db->set("customer_id",$customer_id);
+            // $this->db->insert("customer_access");
 
             $check = $this->db->error();
             if($check['code']>0){
@@ -174,8 +181,8 @@ class Customers_model extends CI_Model
             //send customer introduction email
             $emailData = [
                 'email'        =>  $data['email'],
-                'password'     =>  $data['password'],
-                'title'         =>  'New Task Created',
+                // 'password'     =>  $data['password'],
+                'title'         =>  'New Customer Created',
                 'logo'          =>  $this->system_model->getParam("logo"),
                 'link'          =>  base_url('customers/view/'.$data['uuid']),
                 'link_label'    =>  'View Customer'

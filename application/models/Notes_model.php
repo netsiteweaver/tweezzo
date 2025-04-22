@@ -28,7 +28,7 @@ class Notes_model extends CI_Model{
             ))->get()->row();
         }elseif($type == 'customer'){
             $note->deleted_by = $this->db->select("customer_id as id, company_name as name, email")->from("customers")->where(array(
-                'customer_id'        =>  $_SESSION['customer_id']
+                'customer_id'        =>  $_SESSION['customer_access_id']
             ))->get()->row();
         }
 
@@ -68,10 +68,44 @@ class Notes_model extends CI_Model{
         }elseif($user_type == 'developer'){
             $this->db->where("created_by",$_SESSION['developer_id']);
         }elseif($user_type == 'customer'){
-            $this->db->where("created_by_customer",$_SESSION['customer_id']);
+            $this->db->where("created_by_customer",$_SESSION['customer_access_id']);
         }
         $this->db->delete("task_notes");
 
         return $this->db->affected_rows();
+    }
+
+    public function getNotesByUserId($id,$interval=7)
+    {
+        $query = "select 
+                DISTINCT tn.id, 
+                tn.notes, 
+                tn.created_on ,
+                tn.display_type ,
+                c.company_name customerName,
+                c.email customerEmail,
+                u.id userId,
+                u.name userName,
+                u.email userEmail,
+                t.name taskName,
+                t.task_number taskNumber,
+                t.section taskSection,
+                s.name sprintName,
+                p.name projectName,
+                c2.company_name 
+                from task_notes tn 
+                join users author ON author.id = tn.created_by 
+                left join customers c ON c.customer_id = tn.created_by_customer 
+                left join users u ON u.id = tn.created_by 
+                join tasks t ON t.id = tn.task_id 
+                join task_user tu ON tu.task_id = t.id 
+                JOIN sprints s on s.id = t.sprint_id 
+                JOIN projects p on p.id = s.project_id 
+                JOIN customers c2 ON c2.customer_id = p.customer_id 
+                where u.id = '$id'
+                AND tn.created_on >= CURDATE() - INTERVAL $interval DAY
+                ORDER BY tn.created_on DESC";
+        $notes = $this->db->query($query)->result();
+        return $notes;
     }
 }

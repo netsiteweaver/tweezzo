@@ -1,13 +1,13 @@
 <form id="save_customers" role="form" action="<?php echo base_url('customers/update/'); ?>" method="post" autocomplete="off">
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-12">
 
         <input type="hidden" name="referer" value="<?php echo $this->input->get("referer");?>">
         <div class="row">
             <!-- <div class="col-md-12"> -->
                 <!-- <div class="row"> -->
                     <?php foreach($fields as $f):?>
-                        <div class="<?php echo (strtolower(trim($f['type'])) == 'hidden') ? '' : 'col-md-12';?>">
+                        <div class="<?php echo (strtolower(trim($f['type'])) == 'hidden') ? '' : 'col-lg-3 col-md-4 col-sm-6';?>">
                         <?php if( in_array( (strtolower(trim($f['type']))),['text','number','email','date','password'] ) ):?>
                             <div class="form-group">
                                 <label class="<?php echo ($f['required']) ? 'asterisk' :'';?>"><?php echo $f['label'];?></label>

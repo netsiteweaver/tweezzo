@@ -216,7 +216,7 @@
 			</div>
 			<div class="card-body">
 				<ul id="users-list" class="list-group">
-					<?php foreach($users as $user):?>
+					<?php foreach($developers as $user):?>
 					<?php if($user->user_type != 'developer') continue;?>
 					<li data-id="<?php echo $user->id;?>" class="list-group-item select-user <?php echo in_array($user->id, $task->assigned_users) ? 'assigned':'';?>">
 						<img style='width:50px;padding:2px;background-color:#eee;border:1px solid #ccc;border-radius: 50%;' src="uploads/users/<?php echo $user->photo;?>" alt="">

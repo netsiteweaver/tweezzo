@@ -5,7 +5,7 @@ class Customersportal_model extends CI_Model
     var $data;
 
     public function authenticate($user_info) {
-        $this->db->select("c.customer_id, c.company_name, c.full_name, c.email");
+        $this->db->select("c.customer_id, c.company_name, c.full_name, c.email, ca.id customer_access_id");
         $this->db->from("customers c");
         $this->db->join("customer_access ca","ca.customer_id = c.customer_id");
         $this->db->where("ca.password", md5($user_info['password']), true );
@@ -62,7 +62,7 @@ class Customersportal_model extends CI_Model
 
         $this->db->where(["s.status"=>'1']);
         if(empty($project_id)){
-            $this->db->where(["c.customer_id"=>$_SESSION['customer_id']]);
+            $this->db->where(["c.customer_id"=>$_SESSION['customer_access_id']]);
         }else{
             $this->db->where(["s.project_id"=>$project_id]);
         }
@@ -96,7 +96,7 @@ class Customersportal_model extends CI_Model
         }
 
         if(empty($sprint_id)){
-            $this->db->where(["c.customer_id"=>$_SESSION['customer_id']]);
+            $this->db->where(["c.customer_id"=>$_SESSION['customer_access_id']]);
         }else{
             $this->db->where(["t.sprint_id"=>$sprint_id]);
         }
@@ -145,7 +145,7 @@ class Customersportal_model extends CI_Model
     {
         $this->db->set("task_id",$task_id);
         $this->db->set("notes",$note);
-        $this->db->set("created_by_customer",$_SESSION['customer_id']);
+        $this->db->set("created_by_customer",$_SESSION['customer_access_id']);
         $this->db->set("created_on",date("Y-m-d H:i:s"));
         $this->db->set("display_type",'public');
         $this->db->set("status",'1');
@@ -158,7 +158,7 @@ class Customersportal_model extends CI_Model
         $taskDetails = $this->Tasks_model->fetchSingle($taskUuid);
 
         // get customer email
-        $userEmail = $this->db->select("email")->from('customers')->where('customer_id',$_SESSION['customer_id'])->get()->row()->email;
+        $userEmail = $this->db->select("email")->from('customers')->where('customer_id',$_SESSION['customer_access_id'])->get()->row()->email;
 
         $this->Tasks_model->notifyUsers($taskDetails, ['task_id'=>$task_id, 'notes'=>$note], $userEmail);
 
@@ -174,7 +174,7 @@ class Customersportal_model extends CI_Model
             $this->db->query("SET @current_user_email = '{$_SESSION['customer_email']}'");
             $this->db->query("SET @current_user_ip = '{$_SERVER['REMOTE_ADDR']}'");
             $this->db->query("SET @current_user_agent = '{$_SERVER['HTTP_USER_AGENT']}'");
-            $this->db->query("SET @current_user_id = " . (int) $_SESSION['customer_id']);
+            $this->db->query("SET @current_user_id = " . (int) $_SESSION['customer_access_id']);
             $this->db->query("SET @current_user_type = 'customer'");
             $this->db->query("SET @@session.time_zone = '+04:00'");
 
