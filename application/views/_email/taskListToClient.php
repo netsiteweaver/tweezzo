@@ -32,7 +32,7 @@
                 </td>
                 <td>
 <?php foreach($task->users as $i => $u):?>
-                    <img style='width:30px;height:30px;padding:3px;border:1px solid #CCCCCC;' src="<?php echo base_url("uploads/users/96px/".$u->photo);?>" alt="<?php echo $u->display_name;?>">
+                    <img style='width:30px;height:30px;padding:3px;border:1px solid #CCCCCC;' src="<?php echo base_url("uploads/users/".$u->photo);?>" alt="<?php echo $u->display_name;?>">
 <?php //echo $u->display_name. ( ( (count($task->users)-1) == $i) ? '' : ',') ;?>
 <?php endforeach;?>
                 </td>
