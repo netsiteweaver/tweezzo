@@ -75,36 +75,26 @@ class Notes_model extends CI_Model{
         return $this->db->affected_rows();
     }
 
-    public function getNotesByUserId($id,$interval=7)
+    public function getNotesByUserId($id,$start_date="",$end_date="",$project_id="",$sprint_id="",$customer_id="")
     {
-        $query = "select 
-                DISTINCT tn.id, 
-                tn.notes, 
-                tn.created_on ,
-                tn.display_type ,
-                c.company_name customerName,
-                c.email customerEmail,
-                u.id userId,
-                u.name userName,
-                u.email userEmail,
-                t.name taskName,
-                t.task_number taskNumber,
-                t.section taskSection,
-                s.name sprintName,
-                p.name projectName,
-                c2.company_name 
+        $query = "select COALESCE(u1.name, c.company_name) author, tn.notes, tn.created_on, t.name taskName, t.task_number taskNumber , t.`section` taskSection , s.id sprintId, s.name sprintName, p.id projectId, p.name projectName, c2.customer_id customerId, c2.company_name 
                 from task_notes tn 
-                join users author ON author.id = tn.created_by 
-                left join customers c ON c.customer_id = tn.created_by_customer 
-                left join users u ON u.id = tn.created_by 
-                join tasks t ON t.id = tn.task_id 
-                join task_user tu ON tu.task_id = t.id 
+                left join users u1 ON u1.id = tn.created_by 
+                left join customers c on c.customer_id = tn.created_by_customer 
+                join tasks t on t.id = tn.task_id 
+                join task_user tu on tu.task_id = t.id 
                 JOIN sprints s on s.id = t.sprint_id 
                 JOIN projects p on p.id = s.project_id 
                 JOIN customers c2 ON c2.customer_id = p.customer_id 
-                where u.id = '$id'
-                AND tn.created_on >= CURDATE() - INTERVAL $interval DAY
-                ORDER BY tn.created_on DESC";
+                where tu.user_id = '$id'";
+        if(!empty($start_date)) $query .= "and date(tn.created_on) >= '$start_date' ";
+        if(!empty($end_date)) $query .= "and date(tn.created_on) <= '$end_date' ";
+        if(!empty($project_id)) $query .= "and s.project_id = '$project_id' ";
+        if(!empty($sprint_id)) $query .= "and t.sprint_id = '$sprint_id' ";
+        if(!empty($customer_id)) $query .= "and c2.customer_id = '$customer_id' ";
+                // -- AND tn.created_on >= CURDATE() - INTERVAL $interval DAY
+        $query .= "ORDER BY tn.created_on DESC";
+        // echo $query;die;
         $notes = $this->db->query($query)->result();
         return $notes;
     }

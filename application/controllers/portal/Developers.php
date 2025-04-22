@@ -147,9 +147,14 @@ class Developers extends CI_Controller
     {
         $this->data['page_title'] = "Sprints";
         
-        $past_days = $this->input->get("past_days");
+        // $past_days = $this->input->get("past_days");
+        $start_date = (!empty($this->input->get("start_date"))) ? $this->input->get("start_date") : date("Y-m-01");
+        $end_date = (!empty($this->input->get("end_date"))) ? $this->input->get("end_date") : date("Y-m-t");
+        $customer_id = $this->input->get("customer_id");
+        $project_id = $this->input->get("project_id");
+        $sprint_id = $this->input->get("sprint_id");
         $this->load->model("Notes_model");
-        $this->data['notes'] = $this->Notes_model->getNotesByUserId($_SESSION['developer_id'], ($past_days=="") ? 5 : $past_days);
+        $this->data['notes'] = $this->Notes_model->getNotesByUserId($_SESSION['developer_id'], $start_date,$end_date,$project_id,$sprint_id,$customer_id);
         // $this->load->view("/portal/developers/mySprints",$this->data);
         $this->data['content'][] = $this->load->view("/portal/developers/notes",$this->data,true);
         $this->load->view("/portal/developers/shared/layout",$this->data);

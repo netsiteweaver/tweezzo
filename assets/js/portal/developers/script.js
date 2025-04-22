@@ -71,6 +71,46 @@ jQuery(function(){
         alertify.alert("Not yet imeplemented")
     })
 
+    $('.monitor').on('change',function(){
+        let startDate = $('input[name=start_date]').val();
+        let endDate = $('input[name=end_date]').val();
+        let projectId = $('input[name=project_id]').val();
+        let sprintId = $('input[name=sprint_id]').val();
+        let customerId = $('input[name=customer_id]').val();
+        let qs = "?start_date=" + startDate + "&end_date=" + endDate + "&project_id=" + projectId + "&sprint_id=" + sprintId + "&customer_id=" + customerId;
+        window.location.href = base_url + "portal/developers/notes" + qs;
+    })
+
+    $('#notes .filter-project').on('click', function() {
+        let projectId = $(this).data('project-id');
+        let sprintId = $('input[name=sprint_id]').val();
+        let customerId = $('input[name=customer_id]').val();
+        let startDate = $('input[name=start_date]').val();
+        let endDate = $('input[name=end_date]').val();
+        let qs = "?start_date=" + startDate + "&end_date=" + endDate + "&project_id=" + projectId + "&sprint_id=" + sprintId + "&customer_id=" + customerId;
+        window.location.href = base_url + "portal/developers/notes" + qs;
+    })
+
+    $('#notes .filter-sprint').on('click', function() {
+        let sprintId = $(this).data('sprint-id');
+        let projectId = $('input[name=project_id]').val();
+        let customerId = $('input[name=customer_id]').val();
+        let startDate = $('input[name=start_date]').val();
+        let endDate = $('input[name=end_date]').val();
+        let qs = "?start_date=" + startDate + "&end_date=" + endDate + "&project_id=" + projectId + "&sprint_id=" + sprintId + "&customer_id=" + customerId;
+        window.location.href = base_url + "portal/developers/notes" + qs;
+    })
+
+    $('#notes .filter-customer').on('click', function() {
+        let customerId = $(this).data('customer-id');
+        let projectId = $('input[name=project_id]').val();
+        let sprintId = $('input[name=sprint_id]').val();
+        let startDate = $('input[name=start_date]').val();
+        let endDate = $('input[name=end_date]').val();
+        let qs = "?start_date=" + startDate + "&end_date=" + endDate + "&project_id=" + projectId + "&sprint_id=" + sprintId + "&customer_id=" + customerId;
+        window.location.href = base_url + "portal/developers/notes" + qs;
+    })
+
     $('#mySprints td.select-sprint').on("click", function() {
         let sprintId = $(this).closest("tr").data("sprint-id");
         let projectId = $(this).closest("tr").data("project-id");
