@@ -9,6 +9,7 @@
                 <tr>
                     <th>Note</th>
                     <th>Date</th>
+                    <th>Author</th>
                     <th>Sprint</th>
                     <th>Project</th>
                     <th>Customer</th>
@@ -20,6 +21,13 @@
                 <tr>
                     <td><?php echo nl2br($note->notes);?></td>
                     <td><?php echo $note->created_on;?></td>
+                    <td><?php 
+                    if(!empty($note->customerName)){
+                        echo $note->customerName;
+                    }elseif(!empty($note->userName)){
+                        echo $note->userName;
+                    }?>
+                    </td>
                     <td><?php echo $note->projectName;?></td>
                     <td><?php echo $note->sprintName;?></td>
                     <td><?php echo $note->company_name;?></td>
