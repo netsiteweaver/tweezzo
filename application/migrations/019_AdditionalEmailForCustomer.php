@@ -17,6 +17,7 @@ class Migration_AdditionalEmailForCustomer extends CI_Migration
                         `created_by` int null,
                         `created_by_customer` int null,
                         `created_by_type` enum('user','customer') not null,
+                        `status` int not null DEFAULT '1',
                         PRIMARY KEY (`id`),
                         KEY `fk_access_customer` (`customer_id`),
                         CONSTRAINT `fk_access_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`customer_id`)
