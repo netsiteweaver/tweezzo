@@ -306,7 +306,10 @@ function getMaxTaskNumberBySprintId(sprint_id)
                 //         $('input[name=section]').trigger('focus');
                 //     }
                 //     , 100);
-                $("input[name='task_number']").attr('placeholder','Max Used: '+response.maxTaskNumber);
+                $("input[name='task_number']").attr('placeholder', response.maxTaskNumber);
+                window.setTimeout(function(){
+                    $("input[name='task_number']").attr('value', response.maxTaskNumber);
+                },1500)
                 // }
                 Overlay("off")
             }else{

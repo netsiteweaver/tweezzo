@@ -491,11 +491,14 @@ class Tasks_model extends CI_Model{
             }else{
                 $stage = 'new';
             }
+            $maxTN = $this->db->query("SELECT MAX(task_number) as tn FROM tasks WHERE sprint_id = '$sprint_id' AND status = 1")->row()->tn;
+            $taskNumber = incrementTaskNumber($maxTN);
             $data = array(
                 'uuid'          =>  gen_uuid(), 
                 'name'          =>  $row[0],
                 'description'   =>  $row[1],
-                'task_number'   =>  str_pad(++$task_count, 2, '0', STR_PAD_LEFT),
+                // 'task_number'   =>  str_pad(++$task_count, 3, '0', STR_PAD_LEFT),
+                'task_number'   =>  $taskNumber,
                 'sprint_id'     =>  $sprint_id,
                 'progress'      =>  0,
                 'section'       =>  $row[3],

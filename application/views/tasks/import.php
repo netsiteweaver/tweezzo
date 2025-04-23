@@ -36,12 +36,15 @@
 						</select>
 					</div>
 
-                    <p>
-                        The format required is a csv file with at least four columns, namely, <code>task name, task description, stage and section</code>. <br>
-                        Stage can have any of these values: <code>new, in progress, staging, validated, completed</code>, with a default value of <code>new</code> if it is empty or if data received does not match any of those mentioned.<br>
-                        Section is optional, however it is useful if the application have many sections, or it may refer to controller/method to help developers.
-                        A task number will be automatically added to each task.
-                    </p>
+					<p>The format required is a csv file with at least four columns, namely, <code>task name, task description, stage and section</code>.</p>
+					<p>You can download a template <a href="<?php echo base_url("templates/importTasks.csv");?>">here</a></p>
+					<p>Stage can have any of these values: <code>new, in progress, staging, validated, completed</code>, with a default value of <code>new</code> if it is empty or if data received does not match any of those mentioned.</p>
+					<p>Section is optional, however it is useful if the application have many sections, or it may refer to controller/method to help developers.</p>
+					<p>A task number will be automatically added to each task.</p>
+					<hr>
+					<p>A sprint is a short, fixed period of time (usually 1 - 4 weeks) during which a team works to complete a set of tasks or deliver a specific piece of a project. To read more about sprints, click on the image below:</p>
+					<p class='text-center'><a target="_blank" href="https://en.wikipedia.org/wiki/Scrum_(software_development)#Sprint"><img src="assets/images/wikipedia.png" alt=""></a></p>
+					<hr>
 
 					<div class="form-group">
 						<label for="">Select File</label>

@@ -633,7 +633,7 @@ class Tasks extends MY_Controller {
         $tn = $this->db->query("SELECT MAX(task_number) as tn FROM tasks WHERE sprint_id = '$sprint_id' AND status = 1")->row()->tn;
         echo json_encode(array(
             'result'    =>  true,
-            'maxTaskNumber' =>  $tn
+            'maxTaskNumber' =>  incrementTaskNumber($tn)
         ));
         exit;
     }
