@@ -1,0 +1,4 @@
+task name,task description,stage,section
+Display count of contracts created today by logged in user,"Display the no of contracts created by logged in user in the upper part of dashboard, in today's activities",new,Dashboard
+To display only operator that are active,"Add a new field for users: 'active'. Use it everywhere in the system, hiding non-active users",new,Calls / Listing
+Group payment types by bank,we could add another option like By Payment Type but instead By Payment Group,new,Reports / Payments
