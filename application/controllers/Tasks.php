@@ -91,7 +91,7 @@ class Tasks extends MY_Controller {
         $sprint_id = $this->input->post('sprint_id');
         $this->data['headers'] = $this->Tasks_model->process_import($sprint_id);
 
-        redirect(base_url("tasks/listing"));
+        redirect(base_url("tasks/listing?customer_id=".$this->input->post("customer_id")."&project_id=".$this->input->post("project_id")."&sprint_id=".$this->input->post("sprint_id")));
     }
 
     public function edit()

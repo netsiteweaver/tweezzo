@@ -587,8 +587,10 @@ function incrementTaskNumber($taskNumber) {
         $incremented = str_pad($number + 1, strlen($number), '0', STR_PAD_LEFT);
 
         return $prefix . $incremented;
+    } else {
+        return str_pad(intval($taskNumber) + 1, 3, '0', STR_PAD_LEFT);
     }
 
     // Return original if it doesn't match the expected format
-    return $taskNumber;
+    // return $taskNumber;
 }
