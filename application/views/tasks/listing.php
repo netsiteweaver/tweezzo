@@ -51,8 +51,10 @@
         <a href="<?php echo base_url("tasks/add"); ?>"><button
                 class="btn btn-flat btn-success"><i class="fa fa-plus"></i> Add</button></a>
         <?php endif; ?>
-        <a href="<?php echo base_url("tasks/import/"); ?>"><button class="btn btn-flat btn-info"><i
+        <?php if($perms['import']): ?>
+            <a href="<?php echo base_url("tasks/import/"); ?>"><button class="btn btn-flat btn-info"><i
                     class="fa fa-upload"></i> Import</button></a>
+        <?php endif; ?>
     </div>
 </div>
 <div class="row no-print">

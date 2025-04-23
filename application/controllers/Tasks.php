@@ -16,6 +16,7 @@ class Tasks extends MY_Controller {
         $this->data['perms']['edit'] = $this->accesscontrol_model->authorised("tasks","edit");
         $this->data['perms']['view'] = $this->accesscontrol_model->authorised("tasks","view");
         $this->data['perms']['delete'] = $this->accesscontrol_model->authorised("tasks","delete");
+        $this->data['perms']['import'] = $this->accesscontrol_model->authorised("tasks","import");
 
         $this->data['stageColors'] = array(
             'new'		    =>	'#1c8be6',
@@ -62,7 +63,7 @@ class Tasks extends MY_Controller {
     public function import()
     {
         //Access Control
-        if(!isAuthorised(get_class(),"add")) return false;
+        if(!isAuthorised(get_class(),"import")) return false;
 
         //Breadcrumbs
         $this->mybreadcrumb->add('Tasks', base_url('tasks/listing'));
