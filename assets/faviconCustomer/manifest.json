@@ -1,6 +1,6 @@
 {
-    "name": "Tweezzo",
-    "short_name": "Tweezzo",
+    "name": "Tweezzo - Customer",
+    "short_name": "Tweezzo C",
     "start_url": "/",
     "display": "standalone",
     "theme_color": "#da1884",
