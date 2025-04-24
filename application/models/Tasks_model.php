@@ -534,19 +534,20 @@ class Tasks_model extends CI_Model{
         foreach($customers as $c){
             $query = "select 
                         c.company_name,
-                        COUNT(CASE WHEN t.stage = 'new' THEN 1 END) AS tasksNew,
-                        COUNT(CASE WHEN t.stage = 'in_progress' THEN 1 END) AS tasksInProgress,
-                        COUNT(CASE WHEN t.stage = 'testing' THEN 1 END) AS tasksTesting,
-                        COUNT(CASE WHEN t.stage = 'staging' THEN 1 END) AS tasksStaging,
-                        COUNT(CASE WHEN t.stage = 'validated' THEN 1 END) AS tasksValidated,
-                        COUNT(CASE WHEN t.stage = 'completed' THEN 1 END) AS tasksCompleted,
+                        -- COUNT(CASE WHEN t.stage = 'new' THEN 1 END) AS tasksNew,
+                        -- COUNT(CASE WHEN t.stage = 'in_progress' THEN 1 END) AS tasksInProgress,
+                        -- COUNT(CASE WHEN t.stage = 'testing' THEN 1 END) AS tasksTesting,
+                        -- COUNT(CASE WHEN t.stage = 'staging' THEN 1 END) AS tasksStaging,
+                        -- COUNT(CASE WHEN t.stage = 'validated' THEN 1 END) AS tasksValidated,
+                        -- COUNT(CASE WHEN t.stage = 'completed' THEN 1 END) AS tasksCompleted,
                         COUNT(1) AS tasksAll,
                         ROUND(COUNT(CASE WHEN t.stage = 'new' THEN 1 END) / COUNT(1) * 100) AS pctNew,
                         ROUND(COUNT(CASE WHEN t.stage = 'in_progress' THEN 1 END) / COUNT(1) * 100) AS pctInProgress,
                         ROUND(COUNT(CASE WHEN t.stage = 'testing' THEN 1 END) / COUNT(1) * 100) AS pctTesting,
                         ROUND(COUNT(CASE WHEN t.stage = 'staging' THEN 1 END) / COUNT(1) * 100) AS pctStaging,
                         ROUND(COUNT(CASE WHEN t.stage = 'validated' THEN 1 END) / COUNT(1) * 100) AS pctValidated,
-                        ROUND(COUNT(CASE WHEN t.stage = 'completed' THEN 1 END) / COUNT(1) * 100) AS pctCompleted
+                        ROUND(COUNT(CASE WHEN t.stage = 'completed' THEN 1 END) / COUNT(1) * 100) AS pctCompleted,
+                        ROUND(COUNT(CASE WHEN t.stage = 'on_hold' THEN 1 END) / COUNT(1) * 100) AS pctOnHold
                     from tasks t
                     join sprints s on s.id = t.sprint_id 
                     join projects p on p.id = s.project_id 
