@@ -1,7 +1,7 @@
 {
     "name": "Tweezzo - Developer",
     "short_name": "Tweezzo D",
-    "start_url": "/",
+    "start_url": "/portal/developers/",
     "display": "standalone",
     "theme_color": "#da1884",
     "background_color": "#ffffff",

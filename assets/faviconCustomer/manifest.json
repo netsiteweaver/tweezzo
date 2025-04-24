@@ -1,7 +1,7 @@
 {
     "name": "Tweezzo - Customer",
     "short_name": "Tweezzo C",
-    "start_url": "/",
+    "start_url": "/portal/customers/",
     "display": "standalone",
     "theme_color": "#da1884",
     "background_color": "#ffffff",
