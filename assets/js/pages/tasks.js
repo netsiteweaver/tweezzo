@@ -64,6 +64,36 @@ jQuery(function(){
         });
     })
 
+    $('#previousNotes').on('click', '.outOfScope', function(e){
+        e.preventDefault();
+        let task_id = $('input[name=task_id]').val();
+        let note_id = $(this).data('note-id');
+
+        alertify.confirm('Out Of Scope', 'Are you sure this note is out of scope?', function(){
+            Overlay("on")
+            $.ajax({
+                url: base_url + "tasks/outOfScope",
+                method: "POST",
+                dataType: "JSON",
+                data: {note_id:note_id},
+                success: function(response)
+                {
+                    if(response.result){
+                        Overlay("off")
+                        alertify.success('Note marked out of scope');
+                        loadNotes(task_id);
+                    }
+                },
+                complete: function(){
+                    Overlay("off")
+                }
+            })
+        }
+        , function(){
+            alertify.error('Cancel');
+        });
+    })
+
     $('select[name=stage]').on("change", function(){
         let stage = $(this).val();
         if(stage == 'new'){

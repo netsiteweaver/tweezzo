@@ -1,5 +1,10 @@
 {
- "name": "App",
+"name": "Tweezzo",
+"short_name": "Tweezzo",
+"start_url": "/",
+"display": "standalone",
+"theme_color": "#da1884",
+"background_color": "#ffffff",
  "icons": [
   {
    "src": "\/android-icon-36x36.png",
