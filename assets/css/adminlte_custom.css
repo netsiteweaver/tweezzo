@@ -11,6 +11,12 @@
 	--dark-gray: #4c4c4c;
 	--red: #ff0000;
 }
+.delius-regular {
+	font-family: "Delius", cursive;
+	font-weight: 400;
+	font-style: normal;
+  }
+  
 body{
 	font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
 	font-size: 16px;

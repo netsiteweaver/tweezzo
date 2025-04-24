@@ -307,8 +307,8 @@
                             <td class='task-number'><?php echo $task->task_number;?></td>
                             <td class='task-section'><?php echo $task->section; ?></td>
                             <td class='task-name'>
-                                <?php echo $task->name; ?>
-                                <?php echo ( (!empty($task->description)) && ($task->description != $task->name) )? "<br>" . nl2br($task->description) : '';?>
+                                <div style='border-bottom:1px dashed #ccc;padding-bottom:3px;margin-bottom:-5px;'><?php echo $task->name; ?></div>
+                                <?php echo ( (!empty($task->description)) && ($task->description != $task->name) )? "<br><i class='delius-regular'>" . nl2br($task->description) . "</i>": '';?>
                             </td>
                             <?php if(empty($this->input->get("sprint_id"))):?>
                             <td><?php echo $task->sprint_name; ?></td>
