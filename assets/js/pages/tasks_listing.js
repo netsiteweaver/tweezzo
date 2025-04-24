@@ -243,6 +243,11 @@ jQuery(function(){
     $('.proceed').on("click", function(){
         let taskIds = [];
         let userIds = [];
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const customerId = urlParams.get('customer_id');
+        const projectId = urlParams.get('project_id');
+        const sprintId = urlParams.get('sprint_id');
 
         $(":checkbox.select_task:checked").each(function(i,j){
             taskIds.push($(this).closest("tr").data("id"));
@@ -250,7 +255,7 @@ jQuery(function(){
         $('ul#users-list li.select-user.assigned').each(function(i,j){
             userIds.push($(this).data("id"));
         })
-        assignUsers(taskIds,userIds);
+        assignUsers(taskIds,userIds,customerId,projectId,sprintId);
     })
 
     $('.setDueDate').on("click", function(){
@@ -287,14 +292,14 @@ jQuery(function(){
 
 })
 
-function assignUsers(taskIds, userIds)
+function assignUsers(taskIds, userIds,customerId,projectId,sprintId)
 {
     Overlay("on")
     $.ajax({
         url: base_url + "tasks/assignUsers",
         method: "POST",
         dataType: "JSON",
-        data: {taskIds:taskIds, userIds:userIds},
+        data: {taskIds:taskIds, userIds:userIds,customerId:customerId,projectId:projectId,sprintId:sprintId},
         success: function(response)
         {
             if(response.result){

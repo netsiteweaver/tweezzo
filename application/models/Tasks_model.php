@@ -140,6 +140,21 @@ class Tasks_model extends CI_Model{
         return $this->fetchSingle($uuid);
     }
 
+    public function getByIds($ids)
+    {
+        $this->db->select('t.*, c.customer_id, c.company_name, c.full_name, p.id project_id, p.name project_name, s.name sprint_name');
+        $this->db->from('tasks t');
+        $this->db->join('sprints s','s.id=t.sprint_id','left');
+        $this->db->join('projects p','p.id=s.project_id','left');
+        $this->db->join('customers c','c.customer_id=p.customer_id','left');
+        $this->db->where_in('t.id',$ids);
+        $this->db->where('t.status',1);
+        $this->db->order_by("task_number");
+        $tasks = $this->db->get()->result();
+        return $tasks;
+    }
+
+
     public function save($data,$uploadedFiles)
     {
         $this->load->model("System_model");
