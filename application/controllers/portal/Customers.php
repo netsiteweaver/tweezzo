@@ -112,9 +112,9 @@ class Customers extends CI_Controller
     {
         $this->data['page_title'] = "Notes";
 
-        $project_id = $this->input->get("project_id");
+        // $project_id = $this->input->get("project_id");
         // $this->data['sprints'] = $this->Customersportal_model->getSprints($project_id);
-        // $this->data['content'][] = $this->load->view("/portal/customers/sprints",$this->data,true);
+        $this->data['content'][] = $this->load->view("/portal/customers/notes",$this->data,true);
         // debug($this->data['sprints']);
         $this->load->view("/portal/customers/shared/layout",$this->data);
     }

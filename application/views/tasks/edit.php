@@ -164,7 +164,7 @@
 					<table id='previousNotes' class="table table-bordered">
 						<tbody>
 						<?php foreach($task->notes as $i => $note):?>
-							<tr class='<?php echo ($note->display_type == 'private') ? 'private' : '';?>'>
+							<tr class='<?php echo ($note->display_type == 'private') ? 'private' : '';?> <?php echo ($note->out_of_scope == '1') ? 'alert alert-danger' : '';?>'>
 								<td><?php echo $i+1;?></td>
 								<td><?php echo nl2br($note->notes);?><br>
 									<span class="float-right" style='color:#4c4c4c; padding:3px 8px; font-size:0.8em; font-style:italic;'>
@@ -175,6 +175,13 @@
 									<?php if($note->created_by == $_SESSION['user_id']):?>
 										<div class="btn btn-xs btn-danger deleteNote" data-note-id='<?php echo $note->id;?>'><i class="fa fa-trash"></i></div>
 									<?php endif;?>	
+								</td>
+								<td>
+									<?php if($note->out_of_scope == '0'):?>
+									<div class="cursor-pointer outOfScope" data-note-id='<?php echo $note->id;?>'>
+										<img style='width:24px; height:24px;' src="<?php echo base_url('assets/images/OUT-OF-SCOPE-36PX.png');?>" alt="">
+									</div>
+									<?php endif;?>
 								</td>
 							</tr>
 						<?php endforeach;?>

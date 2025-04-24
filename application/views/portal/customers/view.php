@@ -4,6 +4,13 @@
 		color:#4c4c4c;
 		font-size:0.8em;
 	}
+	#previous_notes .developer {
+		padding-top: 5px; padding-bottom:5px;color:#4c4c4c;font-size:0.8em;
+	}
+	tr.out-of-scope, #previous_notes tr.out-of-scope .developer {
+		color:#fff;
+		background-color:#ff0000;
+	}
 </style>
 <div class="row mb-5">
     <div class="col-md-6">
@@ -106,17 +113,20 @@
 					<table id='previous_notes' class="table table-bordered">
 						<tbody>
 						<?php foreach($task->notes as $i => $notes):?>
-							<tr>
+							<tr class='<?php echo ($notes->out_of_scope == '1') ? 'out-of-scope' : '';?>'>
 								<td><?php echo $i+1;?></td>
 								<td>
 								<?php echo nl2br($notes->notes);?>
-								<div class="float-end developer" style='padding-top: 5px; padding-bottom:5px;color:#4c4c4c;font-size:0.8em;'>
+								<div class="float-end developer" style=''>
 								<?php echo "by {$notes->developer}{$notes->customer} on " . date_format(date_create($notes->created_on),'Y m d @ H:i');?>
 								</div>
 								</td>
-								<td>
+								<td >
 									<?php if($notes->created_by_customer == $_SESSION['customer_access_id']):?>
 										<div class="btn btn-sm btn-danger deleteNote" data-note-id='<?php echo $notes->id;?>'><i class="bi bi-trash"></i></div>
+									<?php endif;?>
+									<?php if($notes->out_of_scope == '1'):?>
+										<img style='width:24px; height:24px;' src="<?php echo base_url('assets/images/OUT-OF-SCOPE-36PX.png');?>" alt="">
 									<?php endif;?>
 								</td>
 							</tr>

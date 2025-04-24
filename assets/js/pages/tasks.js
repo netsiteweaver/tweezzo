@@ -220,7 +220,9 @@ function loadNotes(task_id)
                 $('#previousNotes').empty();
                 $(response.notes).each(function(i,j){
                     console.log(j)
-                    let row = `<tr>`
+                    let row = `<tr class='`
+                    if(j.out_of_scope == '1') row += 'alert alert-danger'
+                    row += `'>`
                     row += `<td>${i+1}</td>`
                     row += `<td>${j.notes}<br><span class='float-right' style='color:#4c4c4c; padding:3px 8px; font-size:0.8em; font-style:italic;'>`;
                     if(j.name !== null) row += j.name;

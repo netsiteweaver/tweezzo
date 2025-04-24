@@ -359,6 +359,18 @@ class Tasks extends MY_Controller {
         exit;
     }
 
+    public function outOfScope()
+    {
+        $this->load->model("Notes_model");
+        $note_id = $this->input->post('note_id');
+        $affected_rows = $this->Notes_model->outOfScope($note_id);
+        echo json_encode(array(
+            "result"    =>  true,
+            "affected_rows" =>  $affected_rows
+        ));
+        exit;
+    }
+
     public function loadNotes()
     {
         $task_id = $this->input->post('task_id');
