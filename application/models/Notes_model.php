@@ -163,4 +163,45 @@ class Notes_model extends CI_Model{
         return $notes;
     }
 
+    public function fetchAll($customer_id="",$stage="",$order_by="",$order_dir="",$page="",$per_page="")
+    {
+        if( (empty($page)) || ($page <= 0) ) $page =1;
+        $offset = ( ($page-1)*$per_page); 
+
+        $query = "select DISTINCT tn.id, t.uuid task_uuid, COALESCE(u1.name, c.company_name) author, tn.notes, tn.created_on, tn.out_of_scope, t.name taskName, t.task_number taskNumber , t.`section` taskSection , s.id sprintId, s.name sprintName, p.id projectId, p.name projectName, c2.customer_id customerId, c2.company_name 
+                from task_notes tn 
+                left join users u1 ON u1.id = tn.created_by 
+                left join customers c on c.customer_id = tn.created_by_customer 
+                join tasks t on t.id = tn.task_id 
+                join task_user tu on tu.task_id = t.id 
+                JOIN sprints s on s.id = t.sprint_id 
+                JOIN projects p on p.id = s.project_id 
+                JOIN customers c2 ON c2.customer_id = p.customer_id ";
+                // where c2.customer_id = '$customer_id'";
+        // if(!empty($start_date)) $query .= "and date(tn.created_on) >= '$start_date' ";
+        // if(!empty($end_date)) $query .= "and date(tn.created_on) <= '$end_date' ";
+        // if(!empty($project_id)) $query .= "and s.project_id = '$project_id' ";
+        // if(!empty($sprint_id)) $query .= "and t.sprint_id = '$sprint_id' ";
+        // if(!empty($customer_id)) $query .= "and c2.customer_id = '$customer_id' ";
+                // -- AND tn.created_on >= CURDATE() - INTERVAL $interval DAY
+        $query .= "ORDER BY tn.created_on DESC ";
+        $query .= "LIMIT $per_page OFFSET $offset";
+        $notes = $this->db->query($query)->result();
+        return $notes;
+    }
+
+    public function totalRows($customer_id="",$stage="")
+    {
+        $query = "SELECT COUNT(DISTINCT tn.id) as total
+                from task_notes tn 
+                left join users u1 ON u1.id = tn.created_by 
+                left join customers c on c.customer_id = tn.created_by_customer 
+                join tasks t on t.id = tn.task_id 
+                join task_user tu on tu.task_id = t.id 
+                JOIN sprints s on s.id = t.sprint_id 
+                JOIN projects p on p.id = s.project_id 
+                JOIN customers c2 ON c2.customer_id = p.customer_id";
+        return $this->db->query($query)->row()->total;
+    }
+
 }
