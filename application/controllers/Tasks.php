@@ -104,6 +104,7 @@ class Tasks extends MY_Controller {
 
         $this->data['progress'] = ($this->data['task']->progress == 0) ? "bg-danger" : (($this->data['task']->progress == 100) ? "bg-success" : "bg-warning");
 
+        $this->data['qs'] = $_SERVER["QUERY_STRING"];
 
         //Breadcrumbs
         $this->mybreadcrumb->add('Tasks', base_url('tasks/listing'));
@@ -170,6 +171,8 @@ class Tasks extends MY_Controller {
         $this->mybreadcrumb->add('Tasks', base_url('tasks/listing'));
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
         $this->data['page_title'] = "Tasks";
+
+        $this->data['qs'] = $_SERVER["QUERY_STRING"];
 
         $customer_id = $this->input->get('customer_id');
         $project_id = $this->input->get('project_id');
@@ -314,14 +317,15 @@ class Tasks extends MY_Controller {
         $response = $this->Tasks_model->save($data,$uploadedFiles);
         if($response['result']== false){
             flashDanger($response['reason']);
-            redirect(base_url("tasks"));
+            redirect(base_url("tasks/listing?".$this->input->post('qs')));
             return;
         }
         if(!empty($this->input->post('add_more'))){
             flashSuccess("Task has been added successfully");
-            redirect(base_url("tasks/add?customer_id=".$data['customer_id']."&project_id=".$data['project_id']."&sprint_id=".$data['sprint_id'].'&add_more=1'));
+            redirect(base_url("tasks/add?".$this->input->post("qs").'&add_more=1'));
         }else{
-            redirect(base_url("tasks/listing?customer_id=".$data['customer_id']."&stage=".$data['stage']));
+            flashSuccess("Task has been added successfully");
+            redirect(base_url("tasks/listing?".$this->input->post('qs')));
         }
         
     }

@@ -33,6 +33,7 @@
 				<form id="add_user" action="tasks/save" method="post" enctype="multipart/form-data">
 					<input type="hidden" name="uuid" value="<?php echo $task->uuid;?>">
 					<input type="hidden" name="id" value="<?php echo $task->id;?>">
+					<input type="hidden" name="qs" value="<?php echo $qs;?>">
 					<!-- <input type="hidden" name="stage" value="<?php echo $this->input->get("stage");?>"> -->
 					<input type="hidden" name="_customer_id" value="<?php echo $this->input->get("customer_id");?>">
 					
@@ -144,7 +145,7 @@
 					<!-- /.card-body -->
 
 					<div class="card-footer ready">
-						<button type="submit" class="btn btn-success" id="save"><i class='fa fa-save'></i> Save</button>
+						<button type="submit" class="btn btn-success" id="save"><i class='fa fa-save'></i> Save Task</button>
 					</div>
 				</form>
 

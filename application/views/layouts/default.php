@@ -129,6 +129,7 @@
     <!-- /.content -->
   </div>
   <!-- /.content-wrapper -->
+  <?php $this->load->view("shared/alerts",$this->data);?>
 
   <?php $this->load->view("shared/footer",$this->data);?>
 

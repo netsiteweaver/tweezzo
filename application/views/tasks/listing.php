@@ -349,7 +349,7 @@
                                 <?php endif; ?>
                                 <?php if($perms['edit']): ?>
                                 <a
-                                    href="<?php echo base_url('tasks/edit/' . $task->uuid."?customer_id=".$this->input->get("customer_id")."&stage=".$this->input->get("stage")); ?>">
+                                    href="<?php echo base_url('tasks/edit/' . $task->uuid."?".$qs); ?>">
                                     <div class="btn btn-flat btn-primary"><i class='fas fa-edit'></i><span
                                             class='ButtonLabel'></span></div>
                                 </a>
