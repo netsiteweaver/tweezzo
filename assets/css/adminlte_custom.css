@@ -1108,3 +1108,8 @@ img.img-24 {
 	border-radius: 2px;
 	border: 1px solid #CCC;
 }
+
+.out-of-scope{
+    background-color: rgb(220, 20, 60);
+    color: #ffffff;
+}

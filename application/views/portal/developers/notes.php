@@ -52,7 +52,7 @@
             </thead>
             <tbody>
                 <?php foreach ($notes as $i=>$note):?>
-                <tr>
+                <tr class='<?php echo ($note->out_of_scope == 1) ? "out-of-scope" : "";?>'>
                     <td style='color:#999;font-size:0.9em;text-align:center;'><?php echo $i+1;?></td>
                     <td><?php echo nl2br($note->notes);?></td>
                     <td><?php echo $note->created_on;?></td>

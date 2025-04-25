@@ -142,3 +142,8 @@ input[type=checkbox] {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -54px -98px;
 }
+
+.out-of-scope{
+    background-color: rgb(220, 20, 60);
+    color: #ffffff;
+}

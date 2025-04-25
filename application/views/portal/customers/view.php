@@ -7,10 +7,10 @@
 	#previous_notes .developer {
 		padding-top: 5px; padding-bottom:5px;color:#4c4c4c;font-size:0.8em;
 	}
-	tr.out-of-scope, #previous_notes tr.out-of-scope .developer {
+	/* tr.out-of-scope, #previous_notes tr.out-of-scope .developer {
 		color:#fff;
 		background-color:#ff0000;
-	}
+	} */
 </style>
 <div class="row mb-5">
     <div class="col-md-6">

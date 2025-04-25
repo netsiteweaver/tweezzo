@@ -131,7 +131,7 @@
 					<table id='previousNotes' class="table table-bordered table-hover">
 						<tbody>
 						<?php foreach($task->notes as $i => $note):?>
-							<tr>
+							<tr class='<?php echo ($note->out_of_scope == '1') ? 'out-of-scope' : '';?>'>
 								<td><?php echo $i+1;?></td>
 								<td><?php echo nl2br($note->notes);?><br>
 									<span class="float-right" style='color:#4c4c4c; padding:3px 8px; font-size:0.8em; font-style:italic;'>

@@ -79,7 +79,7 @@
 
                 <table class="table table-bordered">
                 <?php foreach($task->notes as $i =>  $notes):?>
-                <tr>
+                <tr class='<?php echo ($notes->out_of_scope == '1') ? 'out-of-scope' : '';?>'>
                     <td><?php echo $i+1;?></td>
                     <td>
                         <?php echo nl2br($notes->notes);?>  
