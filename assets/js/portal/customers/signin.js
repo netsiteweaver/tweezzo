@@ -55,7 +55,7 @@ jQuery(function(){
                     }else{
                         localStorage.removeItem('email');
                     }
-                    window.location.href = base_url + "portal/customers/projects";
+                    window.location.href = base_url + "portal/customers/notes";
                 }else{
                     $('.login__submit').removeClass("running");
                     alertify.alert('Authentication failed')
