@@ -38,5 +38,6 @@
                 <td><?php //echo "{$note->deleted_by->name} / {$note->deleted_by->email}";?></td>
             </tr> -->
         </tbody>
+        <p>Just a quick reminder that to keep our sprint on track and ensure timely delivery, it's important that we respect the defined scope of each task.<br>At the moment, our portal doesn't support creating tasks, so any new requests or scope changes during a sprint can disrupt the flow and delay progress.<br>If you have ideas or changes in mind, feel free to note them down separately or send them our way — we'll make sure to revisit them when planning the next sprint.<br>Thanks a lot for your understanding and collaboration!</p>
     </table>
 </div>
