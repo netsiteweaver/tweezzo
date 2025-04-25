@@ -80,12 +80,12 @@
                     <tbody>
                         <?php foreach($notes as $i => $note): ?>
                         <tr>
-                            <td><?php echo $note->id;?></td>
+                            <td style='font-size:12px;color:#ccc;'><?php echo $note->id;?></td>
                             <td><?php echo $note->created_on;?></td>
                             <td><?php echo $note->notes;?></td>
                             <td><?php echo $note->author;?></td>
                             <td><?php echo $note->company_name;?></td>
-                            <td><?php echo "[{$note->taskNumber}]{$note->taskSection}/{$note->taskName}/{$note->sprintName}/{$note->projectName}/{$note->company_name}";?>
+                            <td><?php echo "[{$note->taskNumber}] {$note->taskSection} / {$note->taskName} / {$note->sprintName} / {$note->projectName}";?>
                             </td>
                             <td>
                                 <?php if($perms['view']): ?>
@@ -94,12 +94,21 @@
                                             class='ButtonLabel'> View</span></div>
                                 </a>
                                 <?php endif; ?>
-                                <?php if($perms['delete']): ?>
-                                <button data-url="<?php echo base_url("notes/delete"); ?>"
-                                    data-uuid="<?php echo $note->task_uuid;?>"
-                                    class="deleteAjaxx btn btn-flat btn-danger"><i class='fa fa-trash'></i><span
-                                        class='ButtonLabel'></span></button>
-                                <?php endif; ?>
+                                <!-- Example single danger button -->
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown"
+                                        aria-expanded="false">
+                                        Action
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="<?php echo base_url("tasks/view/".$note->task_uuid);?>"><i class="fa fa-eye"></i> View Task</a>
+                                        <!-- <a class="dropdown-item" href="#"><i class="fa fa-comment"></i> View Note</a> -->
+                                        <?php if($perms['delete']): ?>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="<?php echo base_url("notes/confirm_delete/".$note->note_id);?>"><i class="fa fa-trash"></i> Delete Note</a>
+                                        <?php endif;?>
+                                    </div>
+                                </div>
 
                             </td>
                         </tr>

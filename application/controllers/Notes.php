@@ -136,13 +136,52 @@ class Notes extends MY_Controller {
         redirect(base_url("notes/listing?customer_id=".$data['customer_id']."&stage=".$data['stage']));
     }
 
+    public function confirm_delete()
+    {
+        //Access Control
+        if(!isAuthorised(get_class(),"delete")) return false;
+
+        $this->data['page_title'] = "Delete Note";
+
+        $id = $this->uri->segment(3);
+        $this->data['note'] = $this->Notes_model->getById($id);
+
+        //Breadcrumbs
+        $this->mybreadcrumb->add('Notes', base_url('notes/listing'));
+        $this->mybreadcrumb->add('Delete', base_url('notes/delete'));
+        $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
+
+        $this->data["content"]=$this->load->view("/notes/confirm_delete",$this->data,true);
+        $this->load->view("/layouts/default",$this->data);   
+    }
+
+    public function confirmed_delete()
+    {
+        //Access Control
+        if(!isAuthorised(get_class(),"delete")) return false;
+
+        $id = $this->uri->segment(3);
+        $this->load->model("Notes_model");
+        $affected_rows = $this->Notes_model->deleteNote($id,'user');
+
+        if($affected_rows > 0){
+            flashSuccess("Note deleted successfully.");
+            redirect(base_url("notes/listing"));
+        }else if($affected_rows == 0){
+            flashWarning("Note not found.");
+            redirect(base_url("notes/listing"));
+        }else{
+            flashDanger("Failed to delete note.");
+        }
+    }
+
     public function delete()
     {
         //Access Control
         if(!isAuthorised(get_class(),"delete")) return false;
 
-        $uuid = $this->input->post('uuid');
-        $affected_rows = $this->Notes_model->delete($uuid);
+        $id = $this->input->post('id');
+        $affected_rows = $this->Notes_model->delete($id);
 
         echo json_encode(array(
             "result"    =>  true,
