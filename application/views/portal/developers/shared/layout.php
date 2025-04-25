@@ -18,6 +18,8 @@
     <!-- AlertifyJS -->
     <link rel="stylesheet" href="<?php echo base_url();?>node_modules/alertifyjs/build/css/alertify.min.css">
     <link rel="stylesheet" href="<?php echo base_url();?>node_modules/alertifyjs/build/css/themes/bootstrap.min.css">
+    <!-- Summernote CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="./node_modules/lightbox2/dist/css/lightbox.min.css">
 
@@ -79,8 +81,10 @@
     <script src="<?php echo base_url("node_modules/lightbox2/dist/js/lightbox.min.js");?>"></script>
     <!-- Alertify -->
     <script src="<?php echo base_url('node_modules/alertifyjs/build/alertify.min.js'); ?>"></script>
+    <!-- Summernote JS -->
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.js"></script>
 
-        <script src="<?php echo base_url("assets/js/portal/developers/script.js?t=".date("YmdHis"));?>"></script>
+    <script src="<?php echo base_url("assets/js/portal/developers/script.js?t=".date("YmdHis"));?>"></script>
 
         <!-- Option 2: Separate Popper and Bootstrap JS -->
         <!--

@@ -83,7 +83,7 @@
 							</div>
 							<div class="form-group">
 								<label>Description</label>
-								<textarea name="description" id="" rows="5" class="form-control"><?php echo $task->description;?></textarea>
+								<textarea name="description" id="" rows="5" class="summernote form-control"><?php echo $task->description;?></textarea>
 							</div>
 							<div class="row">
 								
@@ -153,7 +153,7 @@
 					<input type="hidden" name="task_id" value="<?php echo $task->id;?>">
 					<div class="form-group">
 						<label for="">Notes</label>
-						<textarea name="notes" id="" rows="5" class="form-control" placeholder="Enter your notes. Other users will be able to view your notes." ></textarea>
+						<textarea name="notes" id="" rows="5" class="summernote form-control" placeholder="Enter your notes. Other users will be able to view your notes." ></textarea>
 					</div>
 					<div class="form-group">
 						<button type="submit" class="btn btn-flat btn-info" id="saveNote"><i class='fa fa-edit'></i> Save Note</button>

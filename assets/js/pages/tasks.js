@@ -219,7 +219,6 @@ function loadNotes(task_id)
                 Overlay("off")
                 $('#previousNotes').empty();
                 $(response.notes).each(function(i,j){
-                    console.log(j)
                     let row = `<tr class='`
                     if(j.out_of_scope == '1') row += 'alert alert-danger'
                     row += `'>`

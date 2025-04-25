@@ -134,7 +134,7 @@ $(document).ready(function(){
 			  document.execCommand('insertHtml', false, bufferText);
 			}
 		},
-		height: 250,
+		height: 150,
 		tabsize: 4,
 		placeholder: 'Enter text here ...',
 		toolbar: [

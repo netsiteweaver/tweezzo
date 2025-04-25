@@ -99,7 +99,7 @@
 					<input type="hidden" name="task_id" value="<?php echo $task->id;?>">
 					<div class="form-group">
 						<label for="">Notes</label>
-						<textarea name="notes" id="" rows="5" class="form-control" placeholder="Enter your notes. Other users will be able to view your notes." required></textarea>
+						<textarea name="notes" id="summernote" rows="5" class=" form-control" placeholder="Enter your notes. Other users will be able to view your notes." required></textarea>
 					</div>
 					<div class="form-group">
 						<div class="btn btn-flat btn-info float-end" id="saveNote"><img class='ionicon' src='assets/ionicons/save-outline.svg'></i>Save Note</div>

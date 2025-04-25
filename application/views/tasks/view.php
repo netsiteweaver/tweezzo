@@ -71,7 +71,8 @@
 				</div>
 				<div class="form-group">
 					<label for="">Description</label>
-					<textarea name="description" id="" rows="5" class="form-control" disabled><?php echo $task->description;?></textarea>
+					<div class='form-control' style='height:150px; overflow-y:scroll;background-color: #e9ecef;'><?php echo $task->description;?></div>
+					<!-- <textarea name="description" id="" rows="5" class="form-control" disabled><?php echo strip_tags($task->description);?></textarea> -->
 				</div>
 				<div class="row">
 					<div class="col-md-6">
@@ -119,7 +120,7 @@
 					<input type="hidden" name="task_id" value="<?php echo $task->id;?>">
 					<div class="form-group">
 						<label for="">Notes</label>
-						<textarea name="notes" id="" rows="5" class="form-control" placeholder="Enter your notes. Other users will be able to view your notes." ></textarea>
+						<textarea name="notes" id="" rows="5" class="summernote form-control" placeholder="Enter your notes. Other users will be able to view your notes." ></textarea>
 					</div>
 					<div class="form-group">
 						<button type="submit" class="btn btn-flat btn-info" id="saveNote"><i class='fa fa-edit'></i> Save Note</button>

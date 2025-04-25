@@ -12,6 +12,16 @@
         #users-list li.assigned img {
             border: 4px solid #20c997 !important;
         }
+        .note-editable p {
+            font-weight: normal !important;
+        }
+        .note-editable > *:first-child {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+        .note-editable {
+            line-height: 1;
+        }
         </style>
 
         <div class="row">
@@ -101,7 +111,7 @@
                     <input type="hidden" name="task_uuid" value="<?php echo $task->uuid;?>">
                     <div class="form-group">
                         <label for="">Notes</label>
-                        <textarea name="notes" id="" rows='5' class="form-control" minlength='5' required></textarea>
+                        <textarea name="notes" id="summernote" rows='5' class="form-control" minlength='5' required></textarea>
                     </div>
                     <div class="row mt-2">
                         <div class="col-md-6">

@@ -1,5 +1,35 @@
 jQuery(function(){
 
+    $('#summernote').summernote({
+		callbacks: {
+			// callback for pasting text only (no formatting)
+			onPaste: function (e) {
+			  var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData('Text');
+			  console.log(bufferText)
+			  e.preventDefault();
+			  bufferText = bufferText.replace(/\r?\n/g, '<br>');
+			  document.execCommand('insertHtml', false, bufferText);
+			}
+		},
+		height: 150,
+		tabsize: 4,
+		placeholder: 'Enter text here ...',
+		toolbar: [
+		  // [groupName, [list of button]]
+		  ['style', ['bold', 'italic', 'underline', 'clear']],
+		  ['font', ['strikethrough']],
+		//   ['fontsize', ['fontsize']],
+		  ['color', ['color']],
+		  ['para', ['ul', 'ol', 'paragraph']],
+		//   ['height', ['height']],
+		  ['view', ['fullscreen', 'codeview']],
+		],
+        onInit: function() {
+            // Remove any bold styling from the default paragraph
+            $('#editor').summernote('formatBlock', 'p');
+        }
+	});
+
     $('.select-customer').on('click', function() {
         reset();
         let customer_id = $(this).data("customer-id");
