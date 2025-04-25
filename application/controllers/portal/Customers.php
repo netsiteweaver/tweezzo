@@ -111,11 +111,16 @@ class Customers extends CI_Controller
     public function notes()
     {
         $this->data['page_title'] = "Notes";
-
-        // $project_id = $this->input->get("project_id");
-        // $this->data['sprints'] = $this->Customersportal_model->getSprints($project_id);
+        
+        // $past_days = $this->input->get("past_days");
+        $start_date = (!empty($this->input->get("start_date"))) ? $this->input->get("start_date") : date("Y-m-01");
+        $end_date = (!empty($this->input->get("end_date"))) ? $this->input->get("end_date") : date("Y-m-t");
+        $project_id = $this->input->get("project_id");
+        $sprint_id = $this->input->get("sprint_id");
+        $this->load->model("Notes_model");
+        $this->data['notes'] = $this->Notes_model->getNotesByCustomerId($_SESSION['customer_access_id'], $start_date,$end_date,$project_id,$sprint_id);
+        // $this->load->view("/portal/developers/mySprints",$this->data);
         $this->data['content'][] = $this->load->view("/portal/customers/notes",$this->data,true);
-        // debug($this->data['sprints']);
         $this->load->view("/portal/customers/shared/layout",$this->data);
     }
 
@@ -125,6 +130,9 @@ class Customers extends CI_Controller
 
         $uuid = $this->input->get("uuid");
         $this->data['task'] = $this->Customersportal_model->getTask($uuid);
+        if(empty($this->data['task'])){
+            redirect(base_url("portal/customers/tasks?error=Task not found"));
+        }
         // debug($this->data['task']);
         $this->data['content'][] = $this->load->view("/portal/customers/view",$this->data,true);
         $this->load->view("/portal/customers/shared/layout",$this->data);

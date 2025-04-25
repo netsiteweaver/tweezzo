@@ -52,6 +52,9 @@ class Developersportal_model extends CI_Model{
                     LEFT JOIN customers c ON c.customer_id = p.customer_id
                     WHERE t.uuid = '$uuid'";
         $task = $this->db->query($query)->row();
+        if(empty($task)) {
+            return false;
+        }
         $task->assigned_to = $this->db->select("u.name,u.email,u.user_type, u.photo")
                                     ->from("task_user tu")
                                     ->join("users u","u.id=tu.user_id","left")

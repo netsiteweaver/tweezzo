@@ -104,6 +104,11 @@ class Developers extends CI_Controller
         $this->load->model("developersportal_model");
         $this->data['task'] = $this->developersportal_model->getSingleTask($uuid);
 
+        if(empty($this->data['task'])) {
+            flashSuccess("assas");
+            redirect(base_url("portal/developers/tasks?error=Task not found"));
+        }
+
         $this->data['content'][] = $this->load->view("/portal/developers/view",$this->data,true);
         $this->load->view("/portal/developers/shared/layout",$this->data);
         

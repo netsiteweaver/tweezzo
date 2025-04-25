@@ -119,6 +119,9 @@ class Customersportal_model extends CI_Model
                             ->order_by("t.task_number")
                             ->get()
                             ->row();
+        if(empty($task)) {
+            return false;
+        }
         $task->notes = $this->db->select("t.*, u.name developer, c.company_name customer")
                                 ->from("task_notes t")
                                 ->join("users u","u.id=t.created_by","left")

@@ -61,6 +61,11 @@
                     <td style='text-decoration:underline;' data-sprint-id='<?php echo $note->sprintId;?>' class='filter-sprint cursor-pointer'><?php echo $note->sprintName;?></td>
                     <td style='text-decoration:underline;' data-customer-id='<?php echo $note->customerId;?>' class='filter-customer cursor-pointer'><?php echo $note->company_name;?></td>
                     <td><?php echo "[{$note->taskNumber}] {$note->taskSection} / {$note->taskName} / {$note->company_name}";?></td>
+                    <td>
+                        <a href="portal/developers/view/<?php echo $note->task_uuid;?>">
+                            <div class="btn" style='background-color: var(--developersPortalBackground)'><img src="assets/images/show.png" alt=""></div>
+                        </a>
+                    </td>
                 </tr>
                 <?php endforeach;?>
             </tbody>
