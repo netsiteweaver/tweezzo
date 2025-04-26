@@ -168,7 +168,7 @@ class Notes_model extends CI_Model{
         if( (empty($page)) || ($page <= 0) ) $page =1;
         $offset = ( ($page-1)*$per_page); 
 
-        $query = "select DISTINCT tn.id, t.uuid task_uuid, tn.id note_id, COALESCE(u1.name, c.company_name) author, tn.notes, tn.created_on, tn.out_of_scope, t.name taskName, t.task_number taskNumber , t.`section` taskSection , s.id sprintId, s.name sprintName, p.id projectId, p.name projectName, c2.customer_id customerId, c2.company_name 
+        $query = "select DISTINCT tn.id, t.uuid task_uuid, tn.id note_id, COALESCE(u1.name, c.company_name) author, tn.notes, tn.created_on, tn.out_of_scope, t.name taskName, t.task_number taskNumber , t.`section` taskSection , tn.out_of_scope, s.id sprintId, s.name sprintName, p.id projectId, p.name projectName, c2.customer_id customerId, c2.company_name 
                 from task_notes tn 
                 left join users u1 ON u1.id = tn.created_by 
                 left join customers c on c.customer_id = tn.created_by_customer 

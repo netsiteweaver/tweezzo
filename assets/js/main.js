@@ -73,6 +73,8 @@ $(document).ready(function(){
 				$('.searchText').val('')
 			}else if (e.originalEvent.target.className.includes('task-listing-search')) {
 				$('#search_text').val("");
+			}else if(e.originalEvent.target.className.includes('note-editable')){
+                $('#userSelectModal').modal('show');
 			}
 		}
         if ((e.key == 'Enter') || (e.keyCode == 13)) {

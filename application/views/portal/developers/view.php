@@ -111,7 +111,7 @@
                     <input type="hidden" name="task_uuid" value="<?php echo $task->uuid;?>">
                     <div class="form-group">
                         <label for="">Notes</label>
-                        <textarea name="notes" id="summernote" rows='5' class="form-control" minlength='5' required></textarea>
+                        <textarea name="notes" id="" rows='5' class="summernote form-control" minlength='5' required></textarea>
                     </div>
                     <div class="row mt-2">
                         <div class="col-md-6">

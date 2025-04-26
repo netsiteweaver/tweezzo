@@ -79,7 +79,7 @@
                     </thead>
                     <tbody>
                         <?php foreach($notes as $i => $note): ?>
-                        <tr>
+                        <tr class="<?php echo ($note->out_of_scope == '1') ? "out-of-scope" : ""; ?>">
                             <td style='font-size:12px;color:#ccc;'><?php echo $note->id;?></td>
                             <td><?php echo $note->created_on;?></td>
                             <td><?php echo $note->notes;?></td>

@@ -133,6 +133,8 @@
 
   <?php $this->load->view("shared/footer",$this->data);?>
 
+  <?php $this->load->view("shared/_modalSelectUser",$this->data);?>
+
 </div>
 <!-- ./wrapper -->
 
@@ -169,6 +171,7 @@
 
 <script src="<?php echo base_url('assets/js/createModal.js')."?".date("YmdHis"); ?>"></script>
 <script src="<?php echo base_url('assets/js/main.js')."?".date("YmdHis"); ?>"></script>
+<script src="<?php echo base_url('assets/js/userSelectModal.js')."?".date("YmdHis"); ?>"></script>
 <!-- <script src="<?php echo base_url('assets/js/messages.min.js')."?".date("YmdHis"); ?>"></script> -->
 
 <!-- AUTO LOADER FOR JS -->

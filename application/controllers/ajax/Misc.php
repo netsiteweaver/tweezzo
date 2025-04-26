@@ -238,4 +238,48 @@ class Misc extends CI_Controller
         echo json_encode(array("result"=>true,"rate"=>$result->rate));
         exit;
     }
+
+    public function getCustomerByTaskUuid()
+    {
+        $uuid = '44120bb8-2d59-476d-9db8-9aba27db1b12';//$this->input->post("uuid");
+        //get client related to task
+        $query = "select CONCAT('*',ca.name) AS personName, ca.email
+                    from tasks t 
+                    join sprints s on s.id = t.sprint_id 
+                    JOIN projects p on p.id  = s.project_id 
+                    JOIN customers c on c.customer_id = p.customer_id 
+                    JOIN customer_access ca on ca.customer_id = c.customer_id 
+                    where t.uuid = '$uuid'";
+        $client = $this->db->query($query)->result();
+        // get developers attached to task                    
+        $query2 = "select CONCAT('**',u.name) AS personName, u.email
+                    from task_user tu 
+                    join tasks t on t.id = tu.task_id 
+                    join users u on u.id = tu.user_id 
+                    where t.uuid = '$uuid' 
+                    AND u.user_type = 'developer'
+                    AND u.status = '1'";
+        $developers = $this->db->query($query2)->result();
+        // debug($developers,false);
+        // get admins
+        $query3 = "SELECT u.name personName, u.email FROM users u WHERE u.user_type != 'developer' AND u.status = '1'";
+        $admins = $this->db->query($query3)->result();
+        // debug($admins,false);
+
+        $result = array_merge((array)$client,(array)$developers,(array)$admins);
+        // debug($result,false);
+        $output = array();
+        foreach($result as $key => $value){
+            if(!empty($value->email)){
+                $output[$value->email] = $value;
+            }
+        }
+        $result = array_values($output);
+        // remove duplicates
+        $result = array_unique($result, SORT_REGULAR);
+        // debug($result,false);
+        // debug($result);
+        echo json_encode(array("result"=>true,"data"=>$result));
+        exit;
+    }
 }

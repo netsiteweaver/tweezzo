@@ -1,6 +1,6 @@
 jQuery(function(){
 
-    $('#summernote').summernote({
+    $('.summernote').summernote({
 		callbacks: {
 			// callback for pasting text only (no formatting)
 			onPaste: function (e) {

@@ -63,6 +63,8 @@
             
         ?>
 
+        <?php $this->load->view("shared/_modalSelectUser",$this->data);?>
+
         <div class="fixed-bottom">
             <footer>Netsiteweaver Ltd</footer>
         </div>
@@ -83,7 +85,7 @@
     <script src="<?php echo base_url('node_modules/alertifyjs/build/alertify.min.js'); ?>"></script>
     <!-- Summernote JS -->
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.js"></script>
-
+    <script src="<?php echo base_url('assets/js/userSelectModal.js')."?".date("YmdHis"); ?>"></script>
     <script src="<?php echo base_url("assets/js/portal/developers/script.js?t=".date("YmdHis"));?>"></script>
 
         <!-- Option 2: Separate Popper and Bootstrap JS -->
