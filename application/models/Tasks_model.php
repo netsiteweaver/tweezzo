@@ -220,6 +220,7 @@ class Tasks_model extends CI_Model{
                 $content .= $this->load->view("_email/footer",[], true);
 
                 $this->Email_model3->save($user->email,"New Task Created",$content);
+                $this->assignUser($_SESSION['user_id'],$taskId);
                 
             }
         }else{
@@ -253,25 +254,6 @@ class Tasks_model extends CI_Model{
 
                 $this->Email_model3->save($user->email,"Task Updated",$content);
 
-                // $content = "Dear {$user->name}<br>";
-                // $content .= "A task has been updated as follows:<br><br>";
-                // $content .= "<b>Customer</b>: {$projectInfo->customerName}<br>";
-                // $content .= "<b>Project</b>: {$projectInfo->projectName}<br>";
-                // $content .= "<b>Sprint</b>: {$projectInfo->sprintName}<br>";
-                // $content .= "<b>Task Name</b>: {$data['name']}<br>";
-                // $content .= "<b>Task Description</b>: {$data['description']}<br>";
-                // $content .= "<b>Task Number</b>: {$data['task_number']}<br>";
-                // $content .= "<b>Section</b>: {$data['section']}<br><br>";
-
-                // $subject = "Task has been updated";
-
-                // $email = $this->load->view("email/tasks/test",[
-                //     'subject'   =>  $subject,
-                //     'blocks'   =>  [
-                //         $content
-                //     ]
-                // ],true);
-                // $this->email_model2->save($user->email,$subject,$email);
             }
         }
         return array('result'=>true,'data'=>$data);
@@ -559,6 +541,93 @@ class Tasks_model extends CI_Model{
             $result[$idx] = $data;
         }
         return $result;
+    }
+
+    public function assignUser($userId,$taskId)
+    {
+        $check = $this->db->select("count(1) as ct")->from("task_user")->where(array('task_id'=>$taskId,'user_id'=>$userId))->get()->row()->ct;
+
+        if($check > 0){
+            return false;
+
+        }else{
+            $this->db->set("task_id",$taskId);
+            $this->db->set("user_id",$userId);
+            $this->db->insert("task_user");
+
+            $this->load->model("Email_model3");
+            $this->load->model("Tasks_model");
+            $this->load->model("system_model");
+
+            $user = $this->db->select("email, name")->from("users")->where("id",$userId)->get()->row();
+            $task = $this->Tasks_model->getSingleById($taskId);
+
+            $emailData = [
+                'user'      =>  $user,
+                'task'      =>  $task,
+                'logo'      =>  $this->system_model->getParam("logo"),
+                'link'      =>  "",
+                'link_label'=>  ""
+            ];
+
+            $content = $this->load->view("_email/header",$emailData, true);
+            $content .= $this->load->view("_email/userHasBeenAssignedTask",$emailData, true);
+            $content .= $this->load->view("_email/footer",[], true);
+            $this->Email_model3->save($user->email,"You have been assigned a task",$content);
+
+            return true;
+        }
+    }
+
+    public function assignUsers()
+    {
+        $userIds = $this->input->post("userIds");
+        $taskIds = $this->input->post("taskIds");
+        $customerId = $this->input->post("customerId");
+        $projectId = $this->input->post("projectId");
+        $sprintId = $this->input->post("sprintId");
+
+        $this->load->model("Email_model3");
+        $this->load->model("Tasks_model");
+        $this->load->model("system_model");
+
+        if(!empty($customerId)) $customer = $this->db->select('company_name')->from('customers')->where(['status'=>1,'customer_id'=>$customerId])->get()->row()->company_name;
+        if(!empty($projectId)) $project = $this->db->select('name')->from('projects')->where(['status'=>1,'id'=>$projectId])->get()->row()->name;
+        if(!empty($sprintId)) $sprint = $this->db->select('name')->from('sprints')->where(['status'=>1,'id'=>$sprintId])->get()->row()->name;
+
+        //fetch all selected tasks
+        $tasks = $this->Tasks_model->getByIds($taskIds);
+
+        //first remove all users to task then assign the users
+        foreach($taskIds as $taskId){
+            $this->db->where("task_id",$taskId)->delete("task_user");
+        }
+        foreach($userIds as $userId){
+            foreach($taskIds as $taskId){
+                $this->db->set("task_id",$taskId);
+                $this->db->set("user_id",$userId);
+                $this->db->insert("task_user");
+            }
+            $user = $this->db->select("email, name")->from("users")->where("id",$userId)->get()->row();
+
+                $emailData = [
+                    'stageColors'   =>  $this->data['stageColors'],
+                    'user'      =>  $user,
+                    'customer'  =>  isset($customer) ? $customer : '',
+                    'project'   =>  isset($project) ? $project : '',
+                    'sprint'    =>  isset($sprint) ? $sprint : '',
+                    'tasks'      =>  $tasks,
+                    'logo'      =>  $this->system_model->getParam("logo"),
+                    'link'      =>  "",
+                    'link_label'=>  ""
+                ];
+
+                $content = $this->load->view("_email/header",$emailData, true);
+                $content .= $this->load->view("_email/userHasBeenAssignedTasks",$emailData, true);
+                $content .= $this->load->view("_email/footer",[], true);
+                // echo $content;
+                $this->Email_model3->save($user->email,"You have been assigned some tasks",$content);
+        }
     }
 
 }

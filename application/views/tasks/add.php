@@ -1,3 +1,12 @@
+<style>
+		#users-list li.assigned{
+		background-color:rgb(183, 221, 210);
+		/* border:1px solid #ccc !important; */
+	}
+	#users-list li.assigned img {
+		border:4px solid #20c997 !important;
+	}
+</style>
 <div class="row">
     <div class="col-md-6">
         <div class="card card-secondary">
@@ -16,6 +25,7 @@
 				<input type="hidden" name="_customer_id" value="<?php echo $this->input->get("customer_id");?>">
 				<input type="hidden" name="_project_id" value="<?php echo $this->input->get("project_id");?>">
 				<input type="hidden" name="_sprint_id" value="<?php echo $this->input->get("sprint_id");?>">
+				<input type="hidden" name="userIds" value="[]">
                 <div class="card-body">
 					<div class="form-group">
 						<label for="customer_id">Customer</label>
@@ -116,6 +126,25 @@
             </form>
         </div>
     </div>
+	<div class="col-md-6">
+		<div class="card card-secondary">
+			<div class="card-header bg-teal">
+				<h3>Assign User(s)</h3>
+			</div>
+			<div class="card-body">
+				<ul id="users-list" class="list-group">
+					<?php foreach($developers as $user):?>
+					<?php if($user->user_type != 'developer') continue;?>
+					<li data-id="<?php echo $user->id;?>" class="list-group-item add-user">
+						<img style='width:50px;padding:2px;background-color:#eee;border:1px solid #ccc;border-radius: 50%;' src="uploads/users/<?php echo $user->photo;?>" alt="">
+						<?php echo "{$user->email} ({$user->name})";?>
+					</li>
+					<?php endforeach;?>
+				</ul>
+			</div>
+		</div>
+
+	</div>
 </div>
 <div class="row">
 	<div class="col-md-2">

@@ -182,6 +182,25 @@ jQuery(function(){
         }
     })
 
+    $('.add-user').on('click', function(){
+        if($(this).hasClass("assigned")){
+            $(this).removeClass("assigned");
+        }else{
+            $(this).addClass("assigned");
+        }
+        let users = [];
+        $('ul#users-list li').each(function(i,j){
+            
+            if($(this).hasClass("assigned")){
+                let userId = $(this).data("id");
+                users.push(userId);
+            }
+            
+        })
+        console.log(users)
+        $('input[name=userIds]').val(JSON.stringify(users));
+    })
+
     $('#project_id').on('change', function(){
         let project_id = $(this).val();
         getByProjectId(project_id);
