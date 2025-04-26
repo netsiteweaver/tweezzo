@@ -26,6 +26,7 @@
 				<input type="hidden" name="_project_id" value="<?php echo $this->input->get("project_id");?>">
 				<input type="hidden" name="_sprint_id" value="<?php echo $this->input->get("sprint_id");?>">
 				<input type="hidden" name="userIds" value="[]">
+				<input type="hidden" name="deleted_images" value="[]">
                 <div class="card-body">
 					<div class="form-group">
 						<label for="customer_id">Customer</label>

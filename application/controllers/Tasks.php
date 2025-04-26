@@ -422,7 +422,7 @@ class Tasks extends MY_Controller {
     {
         $userId = $this->input->post("userId");
         $taskId = $this->input->post("taskId");
-        $result = $this->Tasks_model->assignUser($taskId,$userId);
+        $result = $this->Tasks_model->assignUser($userId,$taskId);
         if($result) {
             echo json_encode(array(
                 "result"    =>  true
@@ -438,7 +438,13 @@ class Tasks extends MY_Controller {
 
     public function assignUsers()
     {
-        $this->Tasks_model->assignUsers();
+        $userIds = $this->input->post("userIds");
+        $taskIds = $this->input->post("taskIds");
+        $customerId = $this->input->post("customerId");
+        $projectId = $this->input->post("projectId");
+        $sprintId = $this->input->post("sprintId");
+
+        $this->Tasks_model->assignUsers($userIds,$taskIds,$customerId,$projectId,$sprintId);
 
         echo json_encode(array(
             "result"    =>  true

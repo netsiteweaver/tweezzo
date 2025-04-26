@@ -20,6 +20,13 @@ class Email_model3 extends CI_Model{
 
     public function save($recipient,$subject,$content)
     {
+        if(ENVIRONMENT == "development")
+        {
+            $subject = "**" . $subject;
+        }elseif(ENVIRONMENT == "staging")
+        {
+            $subject = "##" . $subject;
+        }
         $httpcode = 0;
         $var = array(
             'uuid'          =>  gen_uuid(),

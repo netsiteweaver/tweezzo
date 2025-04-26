@@ -220,9 +220,17 @@ class Tasks_model extends CI_Model{
                 $content .= $this->load->view("_email/footer",[], true);
 
                 $this->Email_model3->save($user->email,"New Task Created",$content);
-                $this->assignUser($_SESSION['user_id'],$taskId);
                 
             }
+            //notify developers of newly created task which has been assigned to them
+            $newTask = $this->db->query("SELECT p.id project_id, c.customer_id, s.id sprint_id
+                                            FROM tasks t
+                                            join sprints s on s.id = t.sprint_id
+                                            join projects p on p.id = s.project_id
+                                            join customers c on c.customer_id = p.customer_id
+                                            where t.id = '$taskId'")->row();
+            $this->assignUsers(json_decode($data['userIds']),[$taskId],$newTask->customer_id,$newTask->project_id,$newTask->sprint_id);
+
         }else{
             $this->db->where('uuid',$data['uuid']);
             $this->db->update('tasks');
@@ -579,13 +587,8 @@ class Tasks_model extends CI_Model{
         }
     }
 
-    public function assignUsers()
+    public function assignUsers($userIds,$taskIds,$customerId,$projectId,$sprintId)
     {
-        $userIds = $this->input->post("userIds");
-        $taskIds = $this->input->post("taskIds");
-        $customerId = $this->input->post("customerId");
-        $projectId = $this->input->post("projectId");
-        $sprintId = $this->input->post("sprintId");
 
         $this->load->model("Email_model3");
         $this->load->model("Tasks_model");
