@@ -48,7 +48,7 @@
 <div class="row no-print">
     <div class="col-xs-2 mt-4">
         <?php if($perms['add']): ?>
-        <a href="<?php echo base_url("tasks/add"); ?>"><button
+        <a href="<?php echo base_url("tasks/add?customer_id=".$this->input->get('customer_id')."&sprint_id=".$this->input->get("sprint_id")."&project_id=".$this->input->get("project_id")); ?>"><button
                 class="btn btn-flat btn-success"><i class="fa fa-plus"></i> Add</button></a>
         <?php endif; ?>
         <?php if($perms['import']): ?>
