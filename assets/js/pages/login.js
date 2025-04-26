@@ -83,7 +83,12 @@ $(function() {
                             localStorage.removeItem("password");
                             localStorage.setItem("rememberMe",0)
                         }
-                        window.location = base_url + "dashboard/index"
+                        console.log(response)
+                        if(response.expired_url){
+                            window.location = base_url + response.expired_url;
+                        }else{
+                            window.location = base_url + "dashboard/index"
+                        }
                     }
                 },
                 error: function() {
