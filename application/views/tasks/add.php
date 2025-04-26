@@ -12,7 +12,10 @@
 				</div>
 			 </div>
             <form id="add_user" action="tasks/save" method="post" enctype="multipart/form-data">
+				<input type="hidden" name="qs" value="<?php echo $_SERVER["QUERY_STRING"];?>">
 				<input type="hidden" name="_customer_id" value="<?php echo $this->input->get("customer_id");?>">
+				<input type="hidden" name="_project_id" value="<?php echo $this->input->get("project_id");?>">
+				<input type="hidden" name="_sprint_id" value="<?php echo $this->input->get("sprint_id");?>">
                 <div class="card-body">
 					<div class="form-group">
 						<label for="customer_id">Customer</label>
