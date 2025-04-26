@@ -1,5 +1,9 @@
 jQuery(function(){
 
+    if($('select[name=sprint_id]').val() != null){
+        getMaxTaskNumberBySprintId($('select[name=sprint_id]').val());
+    }
+
     $('#saveNote').on('click', function(e){
         e.preventDefault();
         let task_id = $('#task_notes input[name=task_id]').val();
@@ -340,7 +344,7 @@ function getMaxTaskNumberBySprintId(sprint_id)
                 $("input[name='task_number']").attr('placeholder', response.maxTaskNumber);
                 window.setTimeout(function(){
                     $("input[name='task_number']").attr('value', response.maxTaskNumber);
-                },1500)
+                },500)
                 // }
                 Overlay("off")
             }else{
