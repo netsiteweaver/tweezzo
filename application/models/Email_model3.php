@@ -20,13 +20,6 @@ class Email_model3 extends CI_Model{
 
     public function save($recipient,$subject,$content)
     {
-        if(ENVIRONMENT == "development")
-        {
-            $subject = "**" . $subject;
-        }elseif(ENVIRONMENT == "staging")
-        {
-            $subject = "##" . $subject;
-        }
         $httpcode = 0;
         $var = array(
             'uuid'          =>  gen_uuid(),
@@ -50,20 +43,13 @@ class Email_model3 extends CI_Model{
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($var));
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 "Authorization: Bearer {$this->token}",
-                "Origin: https://tweezzo.com"
             ]);
             $response = curl_exec($ch);
             $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE); // Get HTTP status code
             $err = curl_error($ch); // Check for curl error
-            if(curl_error($ch))
-            {
-                return $httpcode;
-            }else{
-                return $response;
-            }
             curl_close($ch);    
             // debug($response);
-            // return $httpcode;
+            return $httpcode;
         }
     }
 
