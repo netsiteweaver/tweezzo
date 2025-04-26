@@ -1,13 +1,3 @@
-<div class="row">
-    <div class="col-md-8"></div>
-    <div class="col-md-4">
-        <button type="button" id="openUserModal" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userSelectModal">
-        Select User
-        </button>
-    </div>
-</div>
-
-
 <!-- Modal -->
 <div class="modal fade" id="userSelectModal" tabindex="-1" aria-labelledby="userSelectModalLabel" aria-hidden="true">
   <div class="modal-dialog">
