@@ -83,7 +83,7 @@
 							</div>
 							<div class="form-group">
 								<label>Description</label>
-								<textarea name="description" id="" rows="5" class="summernote form-control"><?php echo $task->description;?></textarea>
+								<textarea name="description" id="" rows="5" class="form-control"><?php echo $task->description;?></textarea>
 							</div>
 							<div class="row">
 								
@@ -161,13 +161,14 @@
 				</form>
 
 				<!-- Display Previous Notes Here -->
-				<?php if(!empty($task->notes)):?>
+				
 					<table id='previousNotes' class="table table-bordered">
 						<tbody>
+						<?php if(!empty($task->notes)):?>
 						<?php foreach($task->notes as $i => $note):?>
 							<tr class='<?php echo ($note->display_type == 'private') ? 'private' : '';?> <?php echo ($note->out_of_scope == '1') ? 'alert alert-danger' : '';?>'>
 								<td><?php echo $i+1;?></td>
-								<td><?php echo nl2br($note->notes);?><br>
+								<td><?php echo nl2br($note->notes);?>
 									<span class="float-right" style='color:#4c4c4c; padding:3px 8px; font-size:0.8em; font-style:italic;'>
 										<?php echo $note->name.$note->customer;?> - <?php echo date('d-M-Y h:i A',strtotime($note->created_on));?>
 									</span>
@@ -186,9 +187,10 @@
 								</td>
 							</tr>
 						<?php endforeach;?>
+						<?php endif;?>
 						</tbody>
 					</table>
-				<?php endif;?>
+				
 			</div>
         </div>
     </div>

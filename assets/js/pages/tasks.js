@@ -22,12 +22,14 @@ jQuery(function(){
             success: function(response)
             {
                 if(response.result){
+                    $('.summernote').summernote('code', '');
+                    $('#task_notes textarea[name=notes]').val('');
                     alertify.success('Note saved successfully');
                     loadNotes(task_id);
-                    $('#task_notes textarea[name=notes]').val('');
                 }else{
-                    alertify.error(response.reason);
+                    $('.summernote').summernote('code', '');
                     $('#task_notes textarea[name=notes]').val('');
+                    alertify.error(response.reason);
                     loadNotes(task_id);
                 }
             },
@@ -246,7 +248,7 @@ function loadNotes(task_id)
                     if(j.out_of_scope == '1') row += 'alert alert-danger'
                     row += `'>`
                     row += `<td>${i+1}</td>`
-                    row += `<td>${j.notes}<br><span class='float-right' style='color:#4c4c4c; padding:3px 8px; font-size:0.8em; font-style:italic;'>`;
+                    row += `<td>${j.notes}<span class='float-right' style='color:#4c4c4c; padding:3px 8px; font-size:0.8em; font-style:italic;'>`;
                     if(j.name !== null) row += j.name;
                     if(j.customer !== null) row += j.customer;
                     row += ` - ${j.created_on}</span></td>`

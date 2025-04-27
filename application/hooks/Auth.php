@@ -32,9 +32,14 @@ class Auth extends CI_Controller {
 			}elseif( ($this->uri->segment(2) == "customers") && ( ($this->uri->segment(3) == "authenticate") || ($this->uri->segment(3) == "forgotPassword")  || ($this->uri->segment(3) == "processForgotPassword")) ){
 
 			}
-
+		
 		}else{
-			if(empty($userid)) {
+			if( 
+				(strtolower(trim($this->uri->segment(1)))=='ajax') && 
+				(strtolower(trim($this->uri->segment(2))) == 'misc') && 
+				(strtolower(trim($this->uri->segment(3))) == 'getusersbytaskuuid') ){
+					
+			}elseif(empty($userid)) {
 				if( 
 					( ($controller == "users") && (in_array($method,['signin','authenticate','forget-password','forget_password_process','forget_password','check_user_level','isUserPermanent'])) ) || 
 					($controller == 'api') || 
@@ -53,8 +58,6 @@ class Auth extends CI_Controller {
 					redirect( base_url("users/signin") );
 				}
 			}
-		}
-		
-		
+		}		
 	}
 }
