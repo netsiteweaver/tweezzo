@@ -299,6 +299,7 @@ jQuery(function(){
                     $('#addTaskModal .thankyou').removeClass("d-none");
                 }else{
                     alertify.error(response.reason);
+                    $('.submit-task').removeClass("d-none");   
                 }
             },
             complete: function(response) {
