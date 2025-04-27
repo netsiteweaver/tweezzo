@@ -89,15 +89,14 @@
                     <td><?php echo $task->due_date;?></td>
                     <td class="text-center">
                         <button type="button"
-                            style='color:#fff;background-color:<?php echo $stageColors[$task->stage];?>'
-                            class="btn btn-block ">
+                            class="stage-button stage-button-<?php echo $task->stage;?>">
                             <?php echo strtoupper($task->stage);?>
                         </button>
 
                     </td>
                     <td class=''><?php echo $task->notes_count;?><br><i class="bi bi-eye view-notes cursor-pointer"></i></td>
                     <td>
-                        <a href="portal/customers/view?uuid=<?php echo $task->uuid;?>">
+                        <a href="portal/customers/view?task_uuid=<?php echo $task->uuid;?>">
                             <div class="btn btn-outline-secondary" style="color:#fff; background-color: var(--customersPortalBackground)"><i class="bi bi-eye"></i> View</div>
                         </a>
                     </td>

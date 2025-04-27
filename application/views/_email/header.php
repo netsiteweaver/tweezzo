@@ -11,86 +11,83 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
     <style type="text/css">
-    #outlook a {
-        padding: 0;
-    }
-
-    body {
-        margin: 0;
-        padding: 0;
-        -webkit-text-size-adjust: 100%;
-        -ms-text-size-adjust: 100%;
-        font-family: "Source Sans 3", sans-serif;
-    }
-
-    table,
-    td {
-        border-collapse: collapse;
-        mso-table-lspace: 0pt;
-        mso-table-rspace: 0pt;
-    }
-
-    img {
-        border: 0;
-        height: auto;
-        line-height: 100%;
-        outline: none;
-        text-decoration: none;
-        -ms-interpolation-mode: bicubic;
-    }
-
-    p {
-        display: block;
-        margin: 13px 0;
-    }
-    </style>
-    <style type="text/css">
-    @media only screen and (min-width:480px) {
-        .mj-column-per-100 {
-            width: 100% !important;
-            max-width: 100%;
-        }
-    }
-    </style>
-    <style type="text/css">
-    @media only screen and (max-width:480px) {
-        table.mj-full-width-mobile {
-            width: 100% !important;
+        #outlook a {
+            padding: 0;
         }
 
-        td.mj-full-width-mobile {
-            width: auto !important;
+        body {
+            margin: 0;
+            padding: 0;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            font-family: "Source Sans 3", sans-serif;
         }
-    }
-    </style>
-    <style type="text/css">
-    a,
-    span,
-    td,
-    th {
-        -webkit-font-smoothing: antialiased !important;
-        -moz-osx-font-smoothing: grayscale !important;
-    }
-    a.btn .label{
-        background-color: rgb(31, 89, 156);
-        padding:10px 20px;
-        border:1px solid #091b36;
-        border-radius: 3px;
-        width: 200px;
-        text-align: center;
-        text-transform: uppercase;
-    }
-    a.btn{
-        text-decoration: none;
-        font-family: Arial, Helvetica, sans-serif;
-        color: #ffffff;
-    }
-    th.text-left {
-        text-align: left;
-    }
-    th.text-right {
-        text-align: right;
-    }
+
+        table,
+        td {
+            border-collapse: collapse;
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+
+        img {
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+            -ms-interpolation-mode: bicubic;
+        }
+
+        p {
+            display: block;
+            margin: 13px 0;
+        }
+
+        @media only screen and (min-width:480px) {
+            .mj-column-per-100 {
+                width: 100% !important;
+                max-width: 100%;
+            }
+        }
+
+        @media only screen and (max-width:480px) {
+            table.mj-full-width-mobile {
+                width: 100% !important;
+            }
+
+            td.mj-full-width-mobile {
+                width: auto !important;
+            }
+        }
+        a,
+        span,
+        td,
+        th {
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+        }
+        a.btn .label{
+            background-color: rgb(31, 89, 156);
+            padding:10px 20px;
+            border:1px solid #091b36;
+            border-radius: 3px;
+            width: 200px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        a.btn{
+            text-decoration: none;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #ffffff;
+        }
+        th.text-left {
+            text-align: left;
+        }
+        th.text-right {
+            text-align: right;
+        }
+        <?php include('assets/css/stages.css');?>
     </style>
 </head>
 

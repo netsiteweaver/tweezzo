@@ -1,10 +1,12 @@
 <style>
 .list-group-item:hover {
-    border: 1px solid #2cbfc6;
+    /* border: 1px solid #2cbfc6; */
 }
 
 .list-group-item.selected {
-    background-color: rgb(124, 182, 185);
+    /* background-color: rgb(124, 182, 185); */
+    background-color: #4c4c4c;
+    color: #fff;
 }
 p{
   font-weight: bold;

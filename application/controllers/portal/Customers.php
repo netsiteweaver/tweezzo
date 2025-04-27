@@ -12,16 +12,6 @@ class Customers extends CI_Controller
             redirect('portal/customers/signin');
         }
 
-        $this->data['stageColors'] = array(
-            'new'		    =>	'#1c8be6',
-            'in_progress'	=>	'#44ab8e',
-            'testing'	    =>	'#98c363',
-            'staging'	    =>	'#f36930',
-            'validated'	    =>	'#c44866',
-            'completed'	    =>	'#4e67c7',
-            'on_hold'	    =>	'#ff0000'
-        );
-        
         $this->load->library("migration");
         $this->load->model("system_model");
         $this->load->model("Customersportal_model");
@@ -128,8 +118,8 @@ class Customers extends CI_Controller
     {
         $this->data['page_title'] = "View";
 
-        $uuid = $this->input->get("uuid");
-        $this->data['task'] = $this->Customersportal_model->getTask($uuid);
+        $task_uuid = $this->input->get("task_uuid");
+        $this->data['task'] = $this->Customersportal_model->getTask($task_uuid);
         if(empty($this->data['task'])){
             redirect(base_url("portal/customers/tasks?error=Task not found"));
         }

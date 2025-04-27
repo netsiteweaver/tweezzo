@@ -78,7 +78,7 @@
                     <td style='text-decoration:underline;' data-sprint-id='<?php echo $note->sprintId;?>' class='filter-sprint cursor-pointer'><?php echo $note->sprintName;?></td>
                     <?php endif;?>
                     <td>
-                        <a href="portal/developers/view/<?php echo $note->task_uuid;?>">
+                        <a href="portal/developers/view?task_uuid=<?php echo $note->task_uuid;?>">
                             <div class="btn" style='background-color: var(--developersPortalBackground)'><img src="assets/images/show.png" alt=""></div>
                         </a>
                     </td>

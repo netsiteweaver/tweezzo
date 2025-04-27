@@ -6,16 +6,6 @@ class Developers extends CI_Controller
     {
         parent::__construct();
 
-        $this->data['stageColors'] = array(
-            'new'		    =>	'#1c8be6',
-            'in_progress'	=>	'#44ab8e',
-            'testing'	    =>	'#98c363',
-            'staging'	    =>	'#f36930',
-            'validated'	    =>	'#c44866',
-            'completed'	    =>	'#4e67c7',
-            'on_hold'	    =>	'#ff0000'
-        );
-        
         $this->load->library("migration");
         $this->load->model("system_model");
         $this->load->model("developersportal_model");
@@ -100,9 +90,9 @@ class Developers extends CI_Controller
     {
         $this->data['page_title'] = "View";
 
-        $uuid = $this->uri->segment(4);
+        $task_uuid = $this->input->get("task_uuid");
         $this->load->model("developersportal_model");
-        $this->data['task'] = $this->developersportal_model->getSingleTask($uuid);
+        $this->data['task'] = $this->developersportal_model->getSingleTask($task_uuid);
 
         if(empty($this->data['task'])) {
             flashSuccess("assas");
@@ -174,12 +164,12 @@ class Developers extends CI_Controller
         $public = ($this->input->post("display_type") == null ) ? 'private' : 'public';
 
         if(empty($notes)) {
-            redirect(base_url("portal/developers/view/".$task_uuid));
+            redirect(base_url("portal/developers/view?task_uuid=".$task_uuid));
         }
         
         $this->load->model("developersportal_model");
         $this->developersportal_model->saveNotes($task_id, $notes, $public);
-        redirect(base_url("portal/developers/view/".$task_uuid));
+        redirect(base_url("portal/developers/view?task_uuid=".$task_uuid));
     }
 
     public function deleteNote()

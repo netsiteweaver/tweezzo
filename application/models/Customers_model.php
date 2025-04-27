@@ -201,7 +201,6 @@ class Customers_model extends CI_Model
                 'logo'          =>  $this->system_model->getParam("logo"),
                 'link'          =>  base_url('portal/customers/signin/'),
                 'link_label'    =>  "Access Portal",
-                // 'stageColors'   =>  $stageColors
             ];
             $content = $this->load->view("_email/header",$emailData, true);
             $content .= $this->load->view("_email/customerAdded",$emailData, true);
@@ -222,7 +221,6 @@ class Customers_model extends CI_Model
                 'logo'          =>  $this->system_model->getParam("logo"),
                 'link'          =>  base_url('portal/customers/signin/'),
                 'link_label'    =>  "Access Portal",
-                // 'stageColors'   =>  $stageColors
             ];
             $content = $this->load->view("_email/header",$emailData, true);
             $content .= $this->load->view("_email/customerAdded",$emailData, true);

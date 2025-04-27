@@ -107,7 +107,7 @@
                                         Action
                                     </button>
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item" href="<?php echo base_url("tasks/view/".$note->task_uuid);?>"><i class="fa fa-eye"></i> View Task</a>
+                                        <a class="dropdown-item" href="<?php echo base_url("tasks/view?task_uuid=".$note->task_uuid);?>"><i class="fa fa-eye"></i> View Task</a>
                                         <!-- <a class="dropdown-item" href="#"><i class="fa fa-comment"></i> View Note</a> -->
                                         <?php if($perms['delete']): ?>
                                         <div class="dropdown-divider"></div>

@@ -25,7 +25,7 @@
                 <td><?php echo $task->sprint_name;?></td>
                 <td><?php echo $task->project_name;?></td>
                 <td>
-                    <div style="background-color:<?php echo $stageColors[$task->stage];?>;color:#FFFFFF;padding:5px 10px; text-align:center;">
+                    <div class="stage-button stage-button-<?php echo $task->stage;?>">
                     <?php echo strtoupper(str_replace("_"," ",$task->stage));?>
                     </div>
                 </td>

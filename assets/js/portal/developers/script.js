@@ -1,5 +1,7 @@
 jQuery(function(){
 
+    // init('developers');
+
     $('.resetFilter').on('click', function(){
         window.location.href = base_url + "portal/developers/notes";
     })

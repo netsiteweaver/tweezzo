@@ -1,5 +1,7 @@
 jQuery(function(){
 
+    // init('customers');
+
     $('.resetFilter').on('click', function(){
         window.location.href = base_url + "portal/customers/notes";
     })
@@ -193,7 +195,7 @@ jQuery(function(){
             success: function(response) {
                 if(response.result) {
                     // window.location.href = "portal/customers/tasks?sprint_id="+sprintId;
-                    window.location.href = "portal/customers/view?uuid="+taskUuid;
+                    window.location.href = "portal/customers/view?task_uuid="+taskUuid;
                 }else{
                     alert(response.reason)
                 }

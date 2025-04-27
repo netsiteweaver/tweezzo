@@ -1,11 +1,13 @@
 <style>
 .list-group-item:hover {
     /* border: 1px solid #2cbfc6; */
-    background-color: #2cbfc6;
+    /* background-color: #2cbfc6; */
 }
 
 .list-group-item.selected {
-    background-color: #2cbfc6;
+    /* background-color: #2cbfc6; */
+    background-color: #4c4c4c;
+    color: #fff;
 }
 
 p.title {

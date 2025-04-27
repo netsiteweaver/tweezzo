@@ -18,16 +18,8 @@ class Tasks extends MY_Controller {
         $this->data['perms']['delete'] = $this->accesscontrol_model->authorised("tasks","delete");
         $this->data['perms']['import'] = $this->accesscontrol_model->authorised("tasks","import");
 
-        $this->data['stageColors'] = array(
-            'new'		    =>	'#1c8be6',
-            'in_progress'	=>	'#44ab8e',
-            'testing'	    =>	'#98c363',
-            'staging'	    =>	'#f36930',
-            'validated'	    =>	'#c44866',
-            'completed'	    =>	'#4e67c7',
-            'on_hold'	    =>	'#ff0000'
-        );
-        
+        $this->data['qs'] = $_SERVER["QUERY_STRING"];
+
         // $this->data['companyInfo'] = $this->system_model->getCompanyInfo();
     }
 
@@ -102,12 +94,10 @@ class Tasks extends MY_Controller {
         //Access Control 
         if(!isAuthorised(get_class(),"edit")) return false;
 
-        $uuid = $this->uri->segment(3);
-        $this->data['task'] = $this->Tasks_model->fetchSIngle($uuid);
+        $task_uuid = $this->input->get("task_uuid");
+        $this->data['task'] = $this->Tasks_model->fetchSIngle($task_uuid);
 
         $this->data['progress'] = ($this->data['task']->progress == 0) ? "bg-danger" : (($this->data['task']->progress == 100) ? "bg-success" : "bg-warning");
-
-        $this->data['qs'] = $_SERVER["QUERY_STRING"];
 
         //Breadcrumbs
         $this->mybreadcrumb->add('Tasks', base_url('tasks/listing'));
@@ -141,8 +131,8 @@ class Tasks extends MY_Controller {
         //Access Control 
         if(!isAuthorised(get_class(),"view")) return false;
 
-        $uuid = $this->uri->segment(3);
-        $this->data['task'] = $this->Tasks_model->fetchSIngle($uuid);
+        $task_uuid = $this->input->get("task_uuid");
+        $this->data['task'] = $this->Tasks_model->fetchSIngle($task_uuid);
 
         //Breadcrumbs
         $this->mybreadcrumb->add('Tasks', base_url('tasks/listing'));
@@ -174,8 +164,6 @@ class Tasks extends MY_Controller {
         $this->mybreadcrumb->add('Tasks', base_url('tasks/listing'));
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
         $this->data['page_title'] = "Tasks";
-
-        $this->data['qs'] = $_SERVER["QUERY_STRING"];
 
         $customer_id = $this->input->get('customer_id');
         $project_id = $this->input->get('project_id');
@@ -271,7 +259,6 @@ class Tasks extends MY_Controller {
             $this->load->model("Email_model3");
             $this->load->model("system_model");
             $emailData = [
-                'stageColors'   =>  $this->data['stageColors'],
                 'tasks'     =>  $tasks,
                 'logo'      =>  $this->system_model->getParam("logo"),
                 'link'      =>  base_url($link)."?email=".$email,

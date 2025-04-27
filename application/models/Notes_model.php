@@ -50,9 +50,8 @@ class Notes_model extends CI_Model{
             'type'          =>  $user_type,
             'note'          =>  $note,
             'logo'          =>  $this->system_model->getParam("logo"),
-            // 'link'          =>  base_url('tasks/view/'.$data['uuid']),
+            // 'link'          =>  base_url('tasks/view?task_uuid='.$data['uuid']),
             // 'link_label'    =>  'View Task',
-            // 'stageColors'   =>  $stageColors
         ];
         $content = $this->load->view("_email/header",$emailData, true);
         $content .= $this->load->view("_email/noteDeleted",$emailData, true);
@@ -89,9 +88,8 @@ class Notes_model extends CI_Model{
         $emailData = [
             'note'          =>  $note,
             'logo'          =>  $this->system_model->getParam("logo"),
-            // 'link'          =>  base_url('tasks/view/'.$data['uuid']),
+            // 'link'          =>  base_url('tasks/view?task_uuid='.$data['uuid']),
             // 'link_label'    =>  'View Task',
-            // 'stageColors'   =>  $stageColors
         ];
         $content = $this->load->view("_email/header",$emailData, true);
         $content .= $this->load->view("_email/noteOutOfScope",$emailData, true);

@@ -177,16 +177,6 @@ class Tasks_model extends CI_Model{
         $this->db->set('estimated_hours',!empty($data['estimated_hours']) ? $data['estimated_hours'] : null);
         $this->db->set('progress',floatval($data['progress']));
 
-        $stageColors = array(
-            'new'		    =>	'#1c8be6',
-            'in_progress'	=>	'#44ab8e',
-            'testing'	    =>	'#98c363',
-            'staging'	    =>	'#f36930',
-            'validated'	    =>	'#c44866',
-            'completed'	    =>	'#4e67c7',
-            'on_hold'	    =>	'#ff0000'
-        );
-
         if(empty($data['uuid'])){
             $uuid = gen_uuid();
             $this->db->set('uuid',$uuid);
@@ -211,15 +201,14 @@ class Tasks_model extends CI_Model{
                     'projectInfo'   =>  $projectInfo,
                     'data'          =>  $data,
                     'logo'          =>  $this->system_model->getParam("logo"),
-                    'link'          =>  base_url('tasks/view/'.$uuid),
+                    'link'          =>  base_url('tasks/view?task_uuid='.$uuid),
                     'link_label'    =>  'View Task',
-                    'stageColors'   =>  $stageColors
                 ];
                 $content = $this->load->view("_email/header",$emailData, true);
                 $content .= $this->load->view("_email/taskCreatedOrUpdated",$emailData, true);
                 $content .= $this->load->view("_email/footer",[], true);
-
-                $this->Email_model3->save($user->email,"New Task Created",$content);
+echo $content;die;
+                // $this->Email_model3->save($user->email,"New Task Created",$content);
                 
             }
             //notify developers of newly created task which has been assigned to them
@@ -252,9 +241,8 @@ class Tasks_model extends CI_Model{
                     'projectInfo'   =>  $projectInfo,
                     'data'          =>  $data,
                     'logo'          =>  $this->system_model->getParam("logo"),
-                    'link'          =>  base_url('tasks/view/'.$data['uuid']),
+                    'link'          =>  base_url('tasks/view?task_uuid='.$data['uuid']),
                     'link_label'    =>  'View Task',
-                    'stageColors'   =>  $stageColors
                 ];
                 $content = $this->load->view("_email/header",$emailData, true);
                 $content .= $this->load->view("_email/taskCreatedOrUpdated",$emailData, true);
@@ -614,7 +602,6 @@ class Tasks_model extends CI_Model{
             $user = $this->db->select("email, name")->from("users")->where("id",$userId)->get()->row();
 
                 $emailData = [
-                    'stageColors'   =>  $this->data['stageColors'],
                     'user'      =>  $user,
                     'customer'  =>  isset($customer) ? $customer : '',
                     'project'   =>  isset($project) ? $project : '',

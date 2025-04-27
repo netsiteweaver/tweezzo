@@ -302,7 +302,7 @@ class Developersportal_model extends CI_Model{
             $emailData = [
                 'task'      =>  $result,
                 'logo'      =>  $this->system_model->getParam("logo"),
-                'url'       =>  'portal/customers/view?uuid='.$result->task_uuid
+                'url'       =>  'portal/customers/view?task_uuid='.$result->task_uuid
             ];
             $content = $this->load->view("_email/header",$emailData, true);
             $content .= $this->load->view("_email/taskStageChange",$emailData, true);

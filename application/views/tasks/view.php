@@ -21,6 +21,7 @@
 			<input type="hidden" name="task_id" value="<?php echo $task->id;?>">
 			<input type="hidden" name="customer_id" value="<?php echo $this->input->get("customer_id");?>">
 			<input type="hidden" name="stage" value="<?php echo $this->input->get("stage");?>">
+			<input type="hidden" name="qs" value="<?php echo $qs;?>">
 			<div class="card-header bg-purple">
 				<h3>Task Information</h3>
 			</div>

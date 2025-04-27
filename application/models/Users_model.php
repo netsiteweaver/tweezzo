@@ -498,4 +498,54 @@ class Users_model extends CI_Model{
                         ->get()->result();
     }
 
+    public function getUsersByTaskUUID()
+    {
+        $uuid = $this->input->get("taskUuid");
+        if(empty($uuid)) return;
+
+        //get client related to task
+        $queryCustomer = "select CONCAT('*',ca.name) AS personName, ca.email, 'customer' as type
+                    from tasks t 
+                    join sprints s on s.id = t.sprint_id 
+                    JOIN projects p on p.id  = s.project_id 
+                    JOIN customers c on c.customer_id = p.customer_id 
+                    JOIN customer_access ca on ca.customer_id = c.customer_id 
+                    where t.uuid = '$uuid'";
+        // echo $query;die;
+        $customer = $this->db->query($queryCustomer)->result();
+        // get developers attached to task                    
+        $queryDevelopers = "select CONCAT('**',u.name) AS personName, u.email, 'developer' as type
+                    from task_user tu 
+                    join tasks t on t.id = tu.task_id 
+                    join users u on u.id = tu.user_id 
+                    where t.uuid = '$uuid' 
+                    AND u.user_type = 'developer'
+                    AND u.status = '1'";
+        $developers = $this->db->query($queryDevelopers)->result();
+        // echo $query2;die;
+        // debug($developers,false);
+        // get admins
+        $queryAdmins = "SELECT u.name personName, u.email, 'admin' as type FROM users u WHERE u.user_type != 'developer' AND u.status = '1'";
+        $admins = $this->db->query($queryAdmins)->result();
+        // echo $query3;die;
+        // debug($admins,false);
+
+        $result = array_merge((array)$customer,(array)$developers,(array)$admins);
+        // debug($result,false);
+        $output = array();
+        foreach($result as $key => $value){
+            if(!empty($value->email)){
+                $output[$value->email] = $value;
+            }
+        }
+        $result = array_values($output);
+        // remove duplicates
+        $result = array_unique($result, SORT_REGULAR);
+        return array(
+            'customer'      =>  $customer,
+            'developers'    =>  $developers,
+            'admins'        =>  $admins
+        );
+    }
+
 }

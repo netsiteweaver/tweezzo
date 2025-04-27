@@ -60,7 +60,7 @@
                         <td><?php echo $task->sprint_name;?></td>
                         <th>Stage</th>
                         <td>
-                            <div style='text-align:center; border-radius:5px; padding: 5px 10px; color:#fff;background-color:<?php echo $stageColors[$task->stage];?>'>
+                            <div class="stage-button stage-button-<?php echo $task->stage;?>">
                             <?php echo strtoupper(str_replace("_"," ",$task->stage));?>
                             </div>
                         </td>
@@ -129,22 +129,23 @@
                     <img src="./assets/images/file-transfer.png" alt="">
                 </h3>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <?php if($task->stage == 'new'):?>
-                        <div data-stage='in_progress' style='width:180px; text-align:center; border-radius:5px; padding: 5px 10px; color:#fff;background-color:<?php echo $stageColors['in_progress'];?>' class="changeStage"><img src="./assets/images/file-transfer.png" alt=""> In Progress <i class="bi bi-chevron-right"></i></div>
+                        <div data-stage='in_progress' class="stage-button stage-button-in_progress changeStage"><img src="./assets/images/file-transfer.png" alt=""> In Progress <i class="bi bi-chevron-right"></i></div>
                         <?php elseif($task->stage == 'in_progress'):?>
-                        <div data-stage='testing' style='width:180px; text-align:center; border-radius:5px; padding: 5px 10px; color:#fff;background-color:<?php echo $stageColors['testing'];?>' class="changeStage"><img src="./assets/images/file-transfer.png" alt=""> Testing <i class="bi bi-chevron-right"></i></div>
+                        <div data-stage='testing' class="stage-button stage-button-testing changeStage"><img src="./assets/images/file-transfer.png" alt=""> Testing <i class="bi bi-chevron-right"></i></div>
                         <?php elseif($task->stage == 'testing'):?>
-                        <div data-stage='staging' style='width:180px; text-align:center; border-radius:5px; padding: 5px 10px; color:#fff;background-color:<?php echo $stageColors['staging'];?>' class="changeStage"><img src="./assets/images/file-transfer.png" alt=""> Staging <i class="bi bi-chevron-right"></i></div>
+                        <div data-stage='staging' class="stage-button stage-button-in staging changeStage"><img src="./assets/images/file-transfer.png" alt=""> Staging <i class="bi bi-chevron-right"></i></div>
                         <?php elseif($task->stage == 'validated'):?>
-                        <div data-stage='completed' style='width:180px; text-align:center; border-radius:5px; padding: 5px 10px; color:#fff;background-color:<?php echo $stageColors['completed'];?>' class="changeStage"><img src="./assets/images/file-transfer.png" alt=""> Completed <i class="bi bi-chevron-right"></i></div>
+                        <div data-stage='completed' class="stage-button stage-button-completed changeStage"><img src="./assets/images/file-transfer.png" alt=""> Completed <i class="bi bi-chevron-right"></i></div>
                         <?php endif;?>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4"></div>
+                    <div class="col-md-4">
                         <?php if($task->stage == 'on_hold'):?>
-                        <div data-stage='in_progress' style='width:180px; text-align:center; border-radius:5px; padding: 5px 10px; color:#fff;background-color:<?php echo $stageColors['in_progress'];?>' class="changeStage float-end"><img src="./assets/images/file-transfer.png" alt=""> In Progress <i class="bi bi-play-circle"></i></div>
+                        <div data-stage='in_progress' class="stage-button stage-button-in_progress changeStage"><img src="./assets/images/file-transfer.png" alt=""> In Progress <i class="bi bi-play-circle"></i></div>
                         <?php else:?>
-                        <div data-stage='on_hold' style='width:180px; text-align:center; border-radius:5px; padding: 5px 10px; color:#fff;background-color:<?php echo $stageColors['on_hold'];?>' class="changeStage float-end"><img src="./assets/images/file-transfer.png" alt=""> On Hold <i class="bi bi-stop-circle"></i></div>
+                        <div data-stage='on_hold' class="stage-button stage-button-on_hold changeStage"><img src="./assets/images/file-transfer.png" alt=""> On Hold <i class="bi bi-stop-circle"></i></div>
                         <?php endif;?>
                     </div>
                 </div>

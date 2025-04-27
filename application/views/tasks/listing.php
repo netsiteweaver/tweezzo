@@ -322,7 +322,7 @@
                             </td>
                             <?php endif;?>
                             <td class='text-center'>
-                                <div style='color:#fff;background-color:<?php echo $stageColors[$task->stage];?>;padding:5px 10px;border-radius:2px;text-align:center;'>
+                                <div class="stage-button stage-button-<?php echo $task->stage;?>">
                                     <?php echo ucwords(str_replace("_"," ",$task->stage)); ?>
                                 </div>
                             </td>
@@ -342,14 +342,14 @@
                             <td class='no-print' style='width:150px;'>
                                 <?php if($perms['view']): ?>
                                 <a
-                                    href="<?php echo base_url('tasks/view/' . $task->uuid."?customer_id=".$this->input->get("customer_id")."&stage=".$this->input->get("stage")); ?>">
+                                    href="<?php echo base_url('tasks/view?task_uuid=' . $task->uuid."&".$qs); ?>">
                                     <div class="btn btn-flat btn-default"><i class='fas fa-eye'></i><span
                                             class='ButtonLabel'></span></div>
                                 </a>
                                 <?php endif; ?>
                                 <?php if($perms['edit']): ?>
                                 <a
-                                    href="<?php echo base_url('tasks/edit/' . $task->uuid."?".$qs); ?>">
+                                    href="<?php echo base_url('tasks/edit?task_uuid=' . $task->uuid."&".$qs); ?>">
                                     <div class="btn btn-flat btn-primary"><i class='fas fa-edit'></i><span
                                             class='ButtonLabel'></span></div>
                                 </a>
