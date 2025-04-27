@@ -10,6 +10,8 @@ jQuery(function(){
         downloadTableAsCSV('notes','notes',{ includeColumns: [1,2,3,4] });
     })
 
+    zoomIconForSeconds(10);
+
     $('.summernote').summernote({
 		callbacks: {
 			// callback for pasting text only (no formatting)
@@ -274,6 +276,49 @@ jQuery(function(){
        
     })
 
+    $('.submit-task').on('click',function(){
+        $(this).addClass("d-none");
+        let name = $('input[name=name]').val();
+        let section = $('input[name=section]').val();
+        let description = $('textarea[name=description]').val();
+        let scope_when_done = $('textarea[name=scope_when_done]').val();   
+        let scope_not_included = $('textarea[name=scope_not_included]').val();
+        let scope_client_expectation = $('textarea[name=scope_client_expectation]').val();
+
+        Overlay("on");
+        $.ajax({
+            url: base_url + "portal/customers/submitTask",
+            method: "POST",
+            dataType: "JSON",
+            data: {name:name,section:section,description:description,scope_when_done:scope_when_done,scope_not_included:scope_not_included,scope_client_expectation:scope_client_expectation},
+            success: function(response)
+            {
+                if(response.result){
+                    alertify.success("Task submitted");
+                    $('#addTaskModal .submission').addClass("d-none");
+                    $('#addTaskModal .thankyou').removeClass("d-none");
+                }else{
+                    alertify.error(response.reason);
+                }
+            },
+            complete: function(response) {
+                Overlay("off");
+            }
+        })
+    })
+
+    $('#addTaskModal').on('hidden.bs.modal', function (e) {
+        $('#addTaskModal .submission').removeClass("d-none");
+        $('#addTaskModal .thankyou').addClass("d-none");
+        $('#addTaskModal input[name=name]').val('');
+        $('#addTaskModal input[name=section]').val('');
+        $('#addTaskModal textarea[name=description]').val('');        
+        $('#addTaskModal textarea[name=scope_when_done]').val('');        
+        $('#addTaskModal textarea[name=scope_not_included]').val('');        
+        $('#addTaskModal textarea[name=scope_client_expectation]').val('');     
+        $('.submit-task').removeClass("d-none");   
+    })
+
 })
 
 function nl2br (str, is_xhtml) {
@@ -297,3 +342,13 @@ function Overlay(option)
 		$('#overlay').addClass('d-none');
 	}
 }
+
+function zoomIconForSeconds(seconds) {
+    const icon = document.getElementById('submitTask');
+    
+    icon.classList.add('zoom-animation'); // Start animation
+    
+    setTimeout(() => {
+      icon.classList.remove('zoom-animation'); // Stop animation after X seconds
+    }, seconds * 1000); // seconds → milliseconds
+  }

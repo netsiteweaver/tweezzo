@@ -177,6 +177,10 @@ class Tasks_model extends CI_Model{
         $this->db->set('estimated_hours',!empty($data['estimated_hours']) ? $data['estimated_hours'] : null);
         $this->db->set('progress',floatval($data['progress']));
 
+        if(!empty($data['scope_client_expectation'])) $this->db->set('scope_client_expectation',$data['scope_client_expectation']);
+        if(!empty($data['scope_not_included'])) $this->db->set('scope_not_included',$data['scope_not_included']);
+        if(!empty($data['scope_when_done'])) $this->db->set('scope_when_done',$data['scope_when_done']);
+
         if(empty($data['uuid'])){
             $uuid = gen_uuid();
             $this->db->set('uuid',$uuid);
@@ -207,8 +211,8 @@ class Tasks_model extends CI_Model{
                 $content = $this->load->view("_email/header",$emailData, true);
                 $content .= $this->load->view("_email/taskCreatedOrUpdated",$emailData, true);
                 $content .= $this->load->view("_email/footer",[], true);
-echo $content;die;
-                // $this->Email_model3->save($user->email,"New Task Created",$content);
+                // echo $content;die;
+                $this->Email_model3->save($user->email,"New Task Created",$content);
                 
             }
             //notify developers of newly created task which has been assigned to them

@@ -263,4 +263,52 @@ class Customersportal_model extends CI_Model
         return $this->db->get()->result();
 	}
 
+    public function submitTask()
+    {
+        $valid = true;
+        $errorMessage = "";
+        $name = $this->input->post("name");
+        $section = $this->input->post("section");
+        $description = $this->input->post("description");
+        $scope_when_done = $this->input->post("scope_when_done");
+        $scope_not_included = $this->input->post("scope_not_included"); 
+        $scope_client_expectation = $this->input->post("scope_client_expectation");
+
+        if(empty($name) || empty($section) || empty($description) ) {
+            $errorMessage .= "Please fill all the required fields (name, section, description).<br>";
+            $valid = false;
+        }
+
+        if(!$valid) {
+            return [
+                "result"    =>  false,
+                "reason"   =>  $errorMessage
+            ];
+        }
+
+        $this->db->set("uuid",gen_uuid());
+        $this->db->set("created_by",$_SESSION['customer_access_id']);
+        $this->db->set("created_on",date("Y-m-d H:i:s"));
+        $this->db->set("name",$name);
+        $this->db->set("section",$section);
+        $this->db->set("description",$description);
+        $this->db->set("scope_client_expectation",$scope_client_expectation);
+        $this->db->set("scope_not_included",$scope_not_included);
+        $this->db->set("scope_when_done",$scope_when_done);
+        $this->db->set("stage","new");
+        $this->db->set("status","1");
+        $this->db->insert("submitted_tasks");
+        $insert_id = $this->db->insert_id();
+        if($insert_id) {
+            return [
+                "result"    =>  true
+            ];
+        }else{
+            return [
+                "result"    =>  false,
+                "reason"   =>  "Unable to create task. Please try again."
+            ];
+        }
+    }
+
 }

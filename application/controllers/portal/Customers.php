@@ -213,5 +213,22 @@ class Customers extends CI_Controller
         ));
         exit;
     }
+
+    public function submitTask()
+    {
+        $this->load->model("Customersportal_model");
+        $status = $this->Customersportal_model->submitTask($_POST);
+        if($status['result'] == false){
+            echo json_encode(array(
+                "result"    =>  false,
+                "reason"    =>  $status['reason']
+            ));
+        }else{
+            echo json_encode(array(
+                "result"    =>  true
+            ));
+        }
+        exit;
+    }
     
 }
