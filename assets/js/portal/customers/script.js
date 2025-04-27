@@ -1,5 +1,13 @@
 jQuery(function(){
 
+    $('.resetFilter').on('click', function(){
+        window.location.href = base_url + "portal/customers/notes";
+    })
+
+    $('.download').on('click', function(){
+        downloadTableAsCSV('notes','notes',{ includeColumns: [1,2,3,4] });
+    })
+
     $('.summernote').summernote({
 		callbacks: {
 			// callback for pasting text only (no formatting)
@@ -29,6 +37,24 @@ jQuery(function(){
             $('#editor').summernote('formatBlock', 'p');
         }
 	});
+
+    $('#notes .filter-project').on('click', function() {
+        let projectId = $(this).data('project-id');
+        let sprintId = $('input[name=sprint_id]').val();
+        let startDate = $('input[name=start_date]').val();
+        let endDate = $('input[name=end_date]').val();
+        let qs = "?start_date=" + startDate + "&end_date=" + endDate + "&project_id=" + projectId + "&sprint_id=" + sprintId;
+        window.location.href = base_url + "portal/customers/notes" + qs;
+    })
+
+    $('#notes .filter-sprint').on('click', function() {
+        let sprintId = $(this).data('sprint-id');
+        let projectId = $('input[name=project_id]').val();
+        let startDate = $('input[name=start_date]').val();
+        let endDate = $('input[name=end_date]').val();
+        let qs = "?start_date=" + startDate + "&end_date=" + endDate + "&project_id=" + projectId + "&sprint_id=" + sprintId;
+        window.location.href = base_url + "portal/customers/notes" + qs;
+    })
 
     $('.select-customer').on('click', function() {
         reset();

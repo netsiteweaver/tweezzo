@@ -1,5 +1,13 @@
 jQuery(function(){
 
+    $('.resetFilter').on('click', function(){
+        window.location.href = base_url + "portal/developers/notes";
+    })
+
+    $('.download').on('click', function(){
+        downloadTableAsCSV('notes','notes',{ includeColumns: [1,2,3,4] });
+    })
+
     $('.summernote').summernote({
 		callbacks: {
 			// callback for pasting text only (no formatting)

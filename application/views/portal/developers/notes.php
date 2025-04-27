@@ -32,6 +32,10 @@
         <div class="form-control"><?php echo $notes[0]->sprintName;?></div>
     </div>
     <?php endif;?>
+    <div class="col-md-2 mt-4">
+        <div class="btn btn-warning resetFilter" title="Reset filters"><i class="bi bi-arrow-counterclockwise"></i></div>
+        <div class="btn btn-info download" title="Download the list in csv format (for LibrOffice, Excel or otherwise)"><i class="bi bi-download"></i></div>
+    </div>
 </div>
 </form>
 <div class="row mt-5 table-responsive">
@@ -44,10 +48,16 @@
                     <th>Note</th>
                     <th>Date</th>
                     <th>Author</th>
-                    <th>Sprint</th>
-                    <th>Project</th>
-                    <th>Customer</th>
                     <th>Task: [#] Section / Task Name / Customer</th>
+                    <?php if(empty($this->input->get("sprint_id"))):?>
+                    <?php if(empty($this->input->get("customer_id"))):?>
+                    <th>Customer</th>
+                    <?php endif;?>
+                    <th>Sprint</th>
+                    <?php endif;?>
+                    <?php if(empty($this->input->get("project_id"))):?>
+                    <th>Project</th>
+                    <?php endif;?>
                 </tr>
             </thead>
             <tbody>
@@ -57,10 +67,16 @@
                     <td><?php echo nl2br($note->notes);?></td>
                     <td><?php echo $note->created_on;?></td>
                     <td><?php echo $note->author;?></td>
-                    <td style='text-decoration:underline;' data-project-id='<?php echo $note->projectId;?>' class='filter-project cursor-pointer'><?php echo $note->projectName;?></td>
-                    <td style='text-decoration:underline;' data-sprint-id='<?php echo $note->sprintId;?>' class='filter-sprint cursor-pointer'><?php echo $note->sprintName;?></td>
-                    <td style='text-decoration:underline;' data-customer-id='<?php echo $note->customerId;?>' class='filter-customer cursor-pointer'><?php echo $note->company_name;?></td>
                     <td><?php echo "[{$note->taskNumber}] {$note->taskSection} / {$note->taskName} / {$note->company_name}";?></td>
+                    <?php if(empty($this->input->get("customer_id"))):?>
+                    <td style='text-decoration:underline;' data-customer-id='<?php echo $note->customerId;?>' class='filter-customer cursor-pointer'><?php echo $note->company_name;?></td>
+                    <?php endif;?>
+                    <?php if(empty($this->input->get("project_id"))):?>
+                    <td style='text-decoration:underline;' data-project-id='<?php echo $note->projectId;?>' class='filter-project cursor-pointer'><?php echo $note->projectName;?></td>
+                    <?php endif;?>
+                    <?php if(empty($this->input->get("sprint_id"))):?>
+                    <td style='text-decoration:underline;' data-sprint-id='<?php echo $note->sprintId;?>' class='filter-sprint cursor-pointer'><?php echo $note->sprintName;?></td>
+                    <?php endif;?>
                     <td>
                         <a href="portal/developers/view/<?php echo $note->task_uuid;?>">
                             <div class="btn" style='background-color: var(--developersPortalBackground)'><img src="assets/images/show.png" alt=""></div>

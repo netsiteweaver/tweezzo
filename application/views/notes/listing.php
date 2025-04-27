@@ -21,14 +21,19 @@
                 </option>
                 <option value="month" <?php echo ($this->input->get("period") == "month") ? "selected" : ""; ?>>Month
                 </option>
-                <option value="year" <?php echo ($this->input->get("period") == "year") ? "selected" : ""; ?>>Year
+                <option value="year" <?php echo ($this->input->get("period") == "year") ? "selected" : ""; ?> disabled>Year
                 </option>
             </select>
         </div>
         <div class="col-md-2">
             <label for="">Order By</label>
             <select name="order_by" id="order_by" class="form-control monitor">
-                <option value="">...</option>
+                <option value="">Select</option>
+                <option value="">Date</option>
+                <option value="">Task Number</option>
+                <option value=""></option>
+                <option value=""></option>
+                <option value=""></option>
             </select>
         </div>
         <div class="col-md-1">
@@ -56,6 +61,7 @@
         </div>
         <div class="col-md-2 mt-4">
             <button class="btn btn-info">Apply</button>
+            <div data-target="notes_list" id="exportToCsv" class="btn btn-success export"><i class="fa fa-download"></i></div>
         </div>
     </div>
 </form>
@@ -65,7 +71,7 @@
         <div class="box">
             <?php if( (isset($notes)) && (!empty($notes)) ): ?>
             <div class="box-body table-responsive no-padding">
-                <table uuid="tbl1" class="table table-border table-hover extended-bottom-margin">
+                <table id="notes_list" uuid="tbl1" class="table table-border table-hover extended-bottom-margin">
                     <thead>
                         <tr class='text-center' style='text-transform:uppercase;'>
                             <th style='font-size:12px;color:#ccc;'>#</th>

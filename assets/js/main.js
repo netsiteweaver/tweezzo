@@ -56,6 +56,11 @@ $(document).ready(function(){
         'disableScrolling': true,
 	})
 
+	$("#exportToCsv").on("click", function(){
+		let target = $(this).data('target');
+		downloadTableAsCSV(target,"notes",{ skipColumns: [6] });
+	})
+
 	// const debouncedLog = debounce(searchSerial,300);
 
 	// $('#search_serialnumber').on("keyup change",function(){

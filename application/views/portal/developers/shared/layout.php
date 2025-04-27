@@ -87,6 +87,7 @@
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.js"></script>
     <script src="<?php echo base_url('assets/js/userSelectModal.js')."?".date("YmdHis"); ?>"></script>
     <script src="<?php echo base_url("assets/js/portal/developers/script.js?t=".date("YmdHis"));?>"></script>
+    <script src="<?php echo base_url("assets/js/downloadTableAsCSV.js?t=".date("YmdHis"));?>"></script>
 
         <!-- Option 2: Separate Popper and Bootstrap JS -->
         <!--
