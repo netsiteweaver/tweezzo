@@ -65,7 +65,8 @@
             <!-- </ul> -->
             <ul class="navbar-nav mb-2 mb-lg-0">
                 <li class="nav-item cursor-pointer add-task" style='margin-right:25px;'>
-                    <div class="bg-icon bg-add_task_24px"></div>
+                    <img id="submitTask" style="width:24px;" src="assets/images/add_task_48px.png" alt="">
+                    <!-- <div id="submitTask" class="bg-icon bg-add_task_24px"></div> -->
                 </li>
             </ul>
             <ul class="navbar-nav mb-2 mb-lg-0">

@@ -35,9 +35,25 @@
 				</div>
 				<div class="form-group">
 					<label for="">Description</label>
-					<textarea name="description" id="" rows="5" class="form-control" disabled><?php echo $task->description;?></textarea>
+					<div class="form-control"><?php echo $task->description;?></div>
 				</div>
-				<div class="row">
+				<p class='mt-5'>SCOPE</p>
+				<div class="form-group">
+					<label for="">What's expected from this task</label>
+					<p class="notes-black">What is expected from this task. This can be in terms of display, print, performance or any other</p>
+					<textarea name="" id="" rows='5' class="form-control"></textarea>
+				</div>
+				<div class="form-group">
+					<label for="">What's not included</label>
+					<p class="notes-black">what is not included in this task. If nothing is specified here, the scope of this task will be limited strictly to the task description.</p>
+					<textarea name="" id="" rows='5' class="form-control"></textarea>
+				</div>
+				<div class="form-group">
+					<label for="">When it's considered done</label>
+					<p class="notes-black">what is expected from this task for it to be considered completed.</p>
+					<textarea name="" id="" rows='5' class="form-control"></textarea>
+				</div>
+				<div class="row mt-5">
 					<div class="col-md-3">
 						<div class="form-group">
 							<label for="">Stage</label>
@@ -99,7 +115,7 @@
 					<input type="hidden" name="task_id" value="<?php echo $task->id;?>">
 					<div class="form-group">
 						<label for="">Notes</label>
-						<textarea name="notes" id="" rows="5" class="summernote form-control" placeholder="Enter your notes. Other users will be able to view your notes." required></textarea>
+						<textarea name="notes" id="" rows="5" class="summernote form-control" placeholder="Please make sure to enter notes that are related to the task description and scope to avoid being flagged as out of scope and rejected." required></textarea>
 					</div>
 					<div class="form-group">
 						<div class="btn btn-flat btn-info float-end" id="saveNote"><img class='ionicon' src='assets/ionicons/save-outline.svg'></i>Save Note</div>

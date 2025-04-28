@@ -83,7 +83,7 @@
 							</div>
 							<div class="form-group">
 								<label>Description</label>
-								<textarea name="description" id="" rows="5" class="form-control"><?php echo $task->description;?></textarea>
+								<textarea name="description" id="" rows="5" class="summernote form-control"><?php echo $task->description;?></textarea>
 							</div>
 							<div class="row">
 								

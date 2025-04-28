@@ -147,3 +147,16 @@ input[type=checkbox] {
     background-color: rgb(220, 20, 60);
     color: #ffffff;
 }
+
+@keyframes zoomInOut {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(2);
+    }
+  }
+  
+  .zoom-animation {
+    animation: zoomInOut 1.5s ease-in-out infinite;
+  }

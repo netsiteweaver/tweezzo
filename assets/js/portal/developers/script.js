@@ -2,6 +2,12 @@ jQuery(function(){
 
     // init('developers');
 
+    zoomIconForSeconds(6);
+
+    $('#submitTask').hover(function(){
+        zoomIconForSeconds(3)
+    })
+
     $('.resetFilter').on('click', function(){
         window.location.href = base_url + "portal/developers/notes";
     })
@@ -41,15 +47,18 @@ jQuery(function(){
 	});
 
     $('.select-customer').on('click', function() {
-        reset();
+        // reset();
         let customer_id = $(this).data("customer-id");
+        let customer_name = $(this).data("customer-name");
         $('#addTaskModal .select-customer').removeClass("selected");
-        $(this).addClass("selected")
         $('#addTaskModal input[name=customer_id]').val(customer_id);
         $('.list-group.projects').closest('.form-group').removeClass('d-none');
         $('.list-group.projects .list-group-item').each(function(){
             if($(this).data('customer-id') == customer_id){
-                $(this).removeClass('d-none')
+                $(this).removeClass('d-none');
+                $('#selection').closest('.row').removeClass('d-none');
+                $('.list-group.customers').closest('.form-group').addClass('d-none');
+                $('#selection #selected-customer').text(customer_name)
             }else{
                 $(this).addClass('d-none');
             }
@@ -57,14 +66,16 @@ jQuery(function(){
     })
 
     $('.select-project').on('click', function() {
-        let project_id = $(this).data("project-id");console.log(project_id)
+        let project_id = $(this).data("project-id");
+        let project_name = $(this).data("project-name");
         $('#addTaskModal .select-project').removeClass("selected");
-        $(this).addClass("selected")
         $('#addTaskModal input[name=project_id]').val(project_id);
         $('.list-group.sprints').closest('.form-group').removeClass('d-none');
         $('.list-group.sprints .list-group-item').each(function(){
             if($(this).data('project-id') == project_id){
                 $(this).removeClass('d-none')
+                $('#selection #selected-project').text(project_name)
+                $('.list-group.projects').closest('.form-group').addClass('d-none');
             }else{
                 $(this).addClass('d-none');
             }
@@ -72,25 +83,56 @@ jQuery(function(){
     })
 
     $('.select-sprint').on('click', function() {
-        let sprint_id = $(this).data("sprint-id");console.log(sprint_id)
+        let sprint_id = $(this).data("sprint-id");
+        let sprint_name = $(this).data("sprint-name");
         $('#addTaskModal .select-sprint').removeClass("selected");
-        $(this).addClass("selected")
         $('#addTaskModal input[name=sprint_id]').val(sprint_id);
-
-        $('.data-input').removeClass('d-none');
-
+        $('.data-input-left').removeClass('d-none');
+        $('#addTaskModal .modal-dialog').removeClass('modal-lg').addClass('modal-xl');
+        $('.data-input-right').removeClass('d-none');
+        $('#selection #selected-sprint').text(sprint_name)
+        $('.list-group.sprints').closest('.form-group').addClass('d-none');
     })
 
-    function reset()
+    $('#resetModalAddTask').on('click', function() {
+        resetModalAddTask();
+    })
+
+    function resetModalAddTask()
     {
-        $('.list-group.projects .list-group-item').removeClass('d-none');
-        $('.list-group.projects').closest('.form-group').addClass('d-none');
-        $('.list-group.sprints .list-group-item').removeClass('d-none');
-        $('.list-group.sprints').closest('.form-group').addClass('d-none');
         $('#addTaskModal input[name=customer_id]').val('');
         $('#addTaskModal input[name=project_id]').val('');
         $('#addTaskModal input[name=sprint_id]').val('');
+
+        $('.list-group.customers').closest('.form-group').removeClass('d-none');
+        $('.list-group.projects').closest('.form-group').addClass('d-none');
+        $('.list-group.sprints').closest('.form-group').addClass('d-none');
+
+        $('.list-group.projects .list-group-item').addClass('d-none');
+        $('.list-group.sprints .list-group-item').addClass('d-none');
+
+        $('.data-input-right').addClass('d-none');
+        $('.data-input-left').addClass('d-none');
+        // selection bar with reset
+        $('#selection').closest('.row').addClass('d-none');
+
+        $('#selection #selected-customer').text('')
+        $('#selection #selected-project').text('')
+        $('#selection #selected-sprint').text('')
+
+        $('#addTaskModal .modal-dialog').removeClass('modal-xl').addClass('modal-lg');
     }
+
+    // function reset()
+    // {
+    //     $('.list-group.projects .list-group-item').removeClass('d-none');
+    //     $('.list-group.projects').closest('.form-group').addClass('d-none');
+    //     $('.list-group.sprints .list-group-item').removeClass('d-none');
+    //     $('.list-group.sprints').closest('.form-group').addClass('d-none');
+    //     $('#addTaskModal input[name=customer_id]').val('');
+    //     $('#addTaskModal input[name=project_id]').val('');
+    //     $('#addTaskModal input[name=sprint_id]').val('');
+    // }
 
     $('.add-task').on('click', function(){
         $('#addTaskModal').modal("show")
@@ -300,3 +342,13 @@ function Overlay(option)
 		$('#overlay').addClass('d-none');
 	}
 }
+
+function zoomIconForSeconds(seconds) {
+    const icon = document.getElementById('submitTask');
+    
+    icon.classList.add('zoom-animation'); // Start animation
+    
+    setTimeout(() => {
+      icon.classList.remove('zoom-animation'); // Stop animation after X seconds
+    }, seconds * 1000); // seconds → milliseconds
+  }

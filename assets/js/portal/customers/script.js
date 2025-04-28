@@ -10,7 +10,12 @@ jQuery(function(){
         downloadTableAsCSV('notes','notes',{ includeColumns: [1,2,3,4] });
     })
 
-    zoomIconForSeconds(10);
+    zoomIconForSeconds(6);
+
+    $('#submitTask').hover(function(){
+        zoomIconForSeconds(3)
+    })
+
 
     $('.summernote').summernote({
 		callbacks: {

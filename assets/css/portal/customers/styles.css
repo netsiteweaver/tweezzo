@@ -156,3 +156,8 @@ a:hover {
     animation: zoomInOut 1.5s ease-in-out infinite;
   }
   
+.notes-black {
+    color: #4c4c4c;
+    font-style: italic;
+    font-size: 0.9em;
+}
