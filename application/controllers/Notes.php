@@ -29,15 +29,21 @@ class Notes extends MY_Controller {
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
         $this->data['page_title'] = "Notes";
 
-        $customer_id = $this->input->get('customer_id');
-        $stage = $this->input->get('stage');
+        $start_date = $this->input->get('start_date');
+        $for = $this->input->get('for');
+        $period = $this->input->get('period');
         $order_by = $this->input->get('order_by');
         $order_dir = $this->input->get('order_dir');
+        $display = $this->input->get('display');
+        $project_id = $this->input->get('project_id');
+        $sprint_id = $this->input->get('sprint_id');
+        $customer_id = $this->input->get('customer_id');
 
         $page = $this->uri->segment(3);
         $per_page = (!empty($this->input->get("display"))) ? $this->input->get("display") : $this->system_model->getParam("rows_per_page");
-        $this->data['notes'] = $this->Notes_model->fetchAll($customer_id,$stage,$order_by,$order_dir,$page,$per_page);
-        $total_rows = $this->Notes_model->totalRows($customer_id,$stage);
+        $this->data['default_per_page'] =  $this->system_model->getParam("rows_per_page");
+        $this->data['notes'] = $this->Notes_model->fetchAll($start_date,$for,$period,$project_id,$sprint_id,$customer_id, $order_by,$order_dir,$page,$per_page);
+        $total_rows = $this->Notes_model->totalRows();
         $this->data['pagination'] = getPagination("notes/listing",$total_rows,$per_page);
         $this->load->model('Customers_model');
         $this->data['customers'] = $this->Customers_model->lookup();

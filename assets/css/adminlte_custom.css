@@ -1110,6 +1110,11 @@ img.img-24 {
 }
 
 .out-of-scope{
-    background-color: rgb(220, 20, 60);
-    color: #ffffff;
+    background-color: rgb(255, 190, 203);
+    /* color: #ffffff; */
+}
+.out-of-scope:hover, .table-hover tbody tr.out-of-scope:hover{
+    background-color: rgb(255, 190, 203);
+	border-bottom: 5px solid #751717;
+    /* color: #ffffff; */
 }
