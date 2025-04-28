@@ -8,7 +8,7 @@
     background-color: #4c4c4c;
     color: #fff;
 }
-p{
+p.text-bold{
   font-weight: bold;
   margin-bottom:0px;
   margin-top: 20px;
@@ -23,13 +23,13 @@ p{
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              <div class="row"><div class="col-md-12"><p class="text-center">
-                Tasks created are submitted 
-              </p></div></div>
+              <!-- <div class="row"><div class="col-md-12"><p class="text-bold text-center"> -->
+                <!-- Tasks submitted will be grouped in the next sprint. We will send an estimate for your approval before starting to work on it. Please ensure that the task is well defined and includes all the necessary information. -->
+              <!-- </p></div></div> -->
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group mb-5">
-                            <p>Select a Customer</p>
+                            <p class='text-bold'>Select a Customer</p>
                             <input type="hidden" name='customer_id' value="">
                             <input type="hidden" name='project_id' value="">
                             <input type="hidden" name='sprint_id' value="">
@@ -43,7 +43,7 @@ p{
                             </ul>
                         </div>
                         <div class="form-group mb-5 d-none">
-                            <p>Select a Project</p>
+                            <p class='text-bold'>Select a Project</p>
                             <ul class="list-group projects">
                                 <?php foreach($projects as $project):?>
                                 <li data-customer-id="<?php echo $project->customer_id;?>"
@@ -55,7 +55,7 @@ p{
                             </ul>
                         </div>
                         <div class="form-group mb-5 d-none">
-                            <p>Select Sprint</p>
+                            <p class='text-bold'>Select Sprint</p>
                             <ul class="list-group sprints">
                                 <?php foreach($sprints as $sprint):?>
                                 <li data-project-id="<?php echo $sprint->project_id;?>"
@@ -68,23 +68,23 @@ p{
                     </div>
                     <div class="col-md-6 data-input d-none">
                         <div class="form-group">
-                            <p>Section</p>
+                            <p class='text-bold'>Section</p>
                             <input type="text" name="section" class="form-control">
                         </div>
                         <div class="form-group">
-                            <p>Task Number</p>
+                            <p class='text-bold'>Task Number</p>
                             <input type="text" name="task_number" class="form-control">
                         </div>
                         <div class="form-group">
-                            <p>Task Name</p>
+                            <p class='text-bold'>Task Name</p>
                             <input type="text" name="name" class="form-control">
                         </div>
                         <div class="form-group">
-                            <p>Task Description</p>
+                            <p class='text-bold'>Task Description</p>
                             <textarea type="text" rows='5' name="description" class="form-control"></textarea>
                         </div>
                         <div class="form-group">
-                            <p>Preferred due Date</p>
+                            <p class='text-bold'>Preferred due Date</p>
                             <input type="date" name="due_date" class="form-control">
                         </div>
                     </div>
