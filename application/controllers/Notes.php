@@ -43,7 +43,7 @@ class Notes extends MY_Controller {
         $per_page = (!empty($this->input->get("display"))) ? $this->input->get("display") : $this->system_model->getParam("rows_per_page");
         $this->data['default_per_page'] =  $this->system_model->getParam("rows_per_page");
         $this->data['notes'] = $this->Notes_model->fetchAll($start_date,$for,$period,$project_id,$sprint_id,$customer_id, $order_by,$order_dir,$page,$per_page);
-        $total_rows = $this->Notes_model->totalRows();
+        $total_rows = $this->Notes_model->totalRows($start_date,$for,$period,$project_id,$sprint_id,$customer_id);
         $this->data['pagination'] = getPagination("notes/listing",$total_rows,$per_page);
         $this->load->model('Customers_model');
         $this->data['customers'] = $this->Customers_model->lookup();

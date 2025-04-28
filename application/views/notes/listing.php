@@ -3,7 +3,7 @@
         <div class="col-md-2">
             <label for="">Start Date</label>
             <input type="date" name="start_date" class='form-control'
-                value="<?php echo !empty($this->input->get("start_date")) ? $this->input->get("start_date") : date('Y-m-d');?>">
+                value="<?php echo !empty($this->input->get("start_date")) ? $this->input->get("start_date") : date('Y-m-d', strtotime('-1 week'));?>">
         </div>
         <div class="col-md-1">
             <label for="">For</label>
@@ -13,54 +13,30 @@
         <div class="col-md-2">
             <label for="">Period</label>
             <select name="period" id="" class="form-control">
-                <option value="">Select</option>
-                <option value="day"
-                    <?php echo ( (empty($this->input->get("period"))) || ($this->input->get("period") ) == "day") ? "selected" : ""; ?>>
-                    Day</option>
-                <option value="week" <?php echo ($this->input->get("period") == "week") ? "selected" : ""; ?>>Week
-                </option>
-                <option value="month" <?php echo ($this->input->get("period") == "month") ? "selected" : ""; ?>>Month
-                </option>
-                <option value="year" <?php echo ($this->input->get("period") == "year") ? "selected" : ""; ?> disabled>Year
-                </option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label for="">Order By</label>
-            <select name="order_by" id="order_by" class="form-control monitor">
-                <option value="">Select</option>
-                <option value="">Date</option>
-                <option value="">Task Number</option>
-                <option value=""></option>
-                <option value=""></option>
-                <option value=""></option>
-            </select>
-        </div>
-        <div class="col-md-1">
-            <label for="">Asc/Desc</label>
-            <select name="order_dir" id="order_dir" class="form-control monitor">
-                <option value="asc" <?php echo ($this->input->get("order_dir") == "asc") ? "selected" : ""; ?>>Asc
-                </option>
-                <option value="desc" <?php echo ($this->input->get("order_dir") == "desc") ? "selected" : ""; ?>>Desc
-                </option>
+                <!-- <option value="">Select</option> -->
+                <option value="day" <?php echo ($this->input->get("period") == "day") ? "selected" : ""; ?>>Day</option>
+                <option value="week" <?php echo ( (empty($this->input->get("period"))) || ($this->input->get("period") == "week") ) ? "selected" : ""; ?>>Week</option>
+                <option value="month" <?php echo ($this->input->get("period") == "month") ? "selected" : ""; ?>>Month</option>
+                <option value="year" <?php echo ($this->input->get("period") == "year") ? "selected" : ""; ?> disabled>Year</option>
             </select>
         </div>
         <div class="col-md-2">
             <label for="">Display</label>
             <select name="display" id="display" class="form-control monitor">
-                <option value="">...</option>
-                <option value="10" <?php echo ($this->input->get("display") == "10") ? "selected" : ""; ?>>10 lines
+                <option value="">Default</option>
+                <option value="10" <?php echo ( ( (empty($this->input->get("display"))) && ($default_per_page == '10') ) || ($this->input->get("display") == "10")) ? "selected" : ""; ?>>10 lines
                 </option>
-                <option value="25" <?php echo ($this->input->get("display") == "25") ? "selected" : ""; ?>>25 lines
+                <option value="25" <?php echo ( ( (empty($this->input->get("display"))) && ($default_per_page == '10') ) || ($this->input->get("display") == "25")) ? "selected" : ""; ?>>25 lines
                 </option>
-                <option value="50" <?php echo ($this->input->get("display") == "50") ? "selected" : ""; ?>>50 lines
+                <option value="50" <?php echo ( ( (empty($this->input->get("display"))) && ($default_per_page == '10') ) || ($this->input->get("display") == "50")) ? "selected" : ""; ?>>50 lines
                 </option>
-                <option value="100" <?php echo ($this->input->get("display") == "100") ? "selected" : ""; ?>>100 lines
+                <option value="100" <?php echo ( ( (empty($this->input->get("display"))) && ($default_per_page == '10') ) || ($this->input->get("display") == "100")) ? "selected" : ""; ?>>100 lines
                 </option>
             </select>
         </div>
         <div class="col-md-2 mt-4">
-            <button class="btn btn-info">Apply</button>
+            <button class="btn btn-info"><i class="fa fa-check"></i> Apply</button>
+            <div class="btn btn-warning resetFilter" title="Reset filters"><i class="fa fa-undo"></i></div>
             <div data-target="notes_list" id="exportToCsv" class="btn btn-success export"><i class="fa fa-download"></i></div>
         </div>
     </div>
@@ -79,6 +55,8 @@
                             <th>Note</th>
                             <th>Author</th>
                             <th>Customer</th>
+                            <th>Project</th>
+                            <th>Sprint</th>
                             <th>Task</th>
                             <th>Actions</th>
                         </tr>
@@ -88,10 +66,12 @@
                         <tr class="<?php echo ($note->out_of_scope == '1') ? "out-of-scope" : ""; ?>">
                             <td style='font-size:12px;color:#ccc;'><?php echo $note->id;?></td>
                             <td><?php echo $note->created_on;?></td>
-                            <td><?php echo $note->notes;?></td>
+                            <td><?php echo nl2br($note->notes);?></td>
                             <td><?php echo $note->author;?></td>
-                            <td><?php echo $note->company_name;?></td>
-                            <td><?php echo "[{$note->taskNumber}] {$note->taskSection} / {$note->taskName} / {$note->sprintName} / {$note->projectName}";?>
+                            <td class='cursor-pointer active-filter' data-type='customer' style='text-decoration:underline' data-customer-id="<?php echo $note->customerId;?>"><?php echo $note->company_name;?></td>
+                            <td class='cursor-pointer active-filter' data-type='project' style='text-decoration:underline' data-project-id="<?php echo $note->projectId;?>"><?php echo $note->projectName;?></td>
+                            <td class='cursor-pointer active-filter' data-type='sprint' style='text-decoration:underline' data-sprint-id="<?php echo $note->sprintId;?>"><?php echo $note->sprintName;?></td>
+                            <td><?php echo "[{$note->taskNumber}] {$note->taskSection} / {$note->taskName}";?>
                             </td>
                             <td>
                                 <?php if($perms['view']): ?>

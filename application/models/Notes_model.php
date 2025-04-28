@@ -161,7 +161,7 @@ class Notes_model extends CI_Model{
         return $notes;
     }
 
-    public function fetchAll($customer_id="",$stage="",$order_by="",$order_dir="",$page="",$per_page="")
+    public function fetchAll($start_date="",$for="",$period="",$project_id="",$sprint_id="",$customer_id="",$order_by="",$order_dir="",$page="",$per_page="")
     {
         if( (empty($page)) || ($page <= 0) ) $page =1;
         $offset = ( ($page-1)*$per_page); 
@@ -176,11 +176,16 @@ class Notes_model extends CI_Model{
                 JOIN projects p on p.id = s.project_id 
                 JOIN customers c2 ON c2.customer_id = p.customer_id ";
                 // where c2.customer_id = '$customer_id'";
-        // if(!empty($start_date)) $query .= "and date(tn.created_on) >= '$start_date' ";
-        // if(!empty($end_date)) $query .= "and date(tn.created_on) <= '$end_date' ";
-        // if(!empty($project_id)) $query .= "and s.project_id = '$project_id' ";
-        // if(!empty($sprint_id)) $query .= "and t.sprint_id = '$sprint_id' ";
-        // if(!empty($customer_id)) $query .= "and c2.customer_id = '$customer_id' ";
+        if(empty($start_date)) {
+            $query .= "and date(tn.created_on) >= DATE_ADD('".date('Y-m-d')."' , INTERVAL -1 week) ";
+            $query .= "and date(tn.created_on) < DATE_ADD('".date('Y-m-d')."' , INTERVAL 1 week) ";
+        }else{
+            $query .= "and date(tn.created_on) >= '$start_date' ";
+            $query .= "and date(tn.created_on) < DATE_ADD('$start_date' , INTERVAL $for $period) ";
+        }
+        if(!empty($project_id)) $query .= "and s.project_id = '$project_id' ";
+        if(!empty($sprint_id)) $query .= "and t.sprint_id = '$sprint_id' ";
+        if(!empty($customer_id)) $query .= "and c2.customer_id = '$customer_id' ";
                 // -- AND tn.created_on >= CURDATE() - INTERVAL $interval DAY
         $query .= "ORDER BY tn.created_on DESC ";
         $query .= "LIMIT $per_page OFFSET $offset";
@@ -188,7 +193,7 @@ class Notes_model extends CI_Model{
         return $notes;
     }
 
-    public function totalRows($customer_id="",$stage="")
+    public function totalRows($start_date="",$for="",$period="",$project_id="",$sprint_id="",$customer_id="")
     {
         $query = "SELECT COUNT(DISTINCT tn.id) as total
                 from task_notes tn 
@@ -198,7 +203,17 @@ class Notes_model extends CI_Model{
                 join task_user tu on tu.task_id = t.id 
                 JOIN sprints s on s.id = t.sprint_id 
                 JOIN projects p on p.id = s.project_id 
-                JOIN customers c2 ON c2.customer_id = p.customer_id";
+                JOIN customers c2 ON c2.customer_id = p.customer_id ";
+        if(empty($start_date)) {
+            $query .= "and date(tn.created_on) >= DATE_ADD('".date('Y-m-d')."' , INTERVAL -1 week) ";
+            $query .= "and date(tn.created_on) < DATE_ADD('".date('Y-m-d')."' , INTERVAL 1 week) ";
+        }else{
+            $query .= "and date(tn.created_on) >= '$start_date' ";
+            $query .= "and date(tn.created_on) < DATE_ADD('$start_date' , INTERVAL $for $period) ";
+        }
+        if(!empty($project_id)) $query .= "and s.project_id = '$project_id' ";
+        if(!empty($sprint_id)) $query .= "and t.sprint_id = '$sprint_id' ";
+        if(!empty($customer_id)) $query .= "and c2.customer_id = '$customer_id' ";                
         return $this->db->query($query)->row()->total;
     }
 
