@@ -31,18 +31,6 @@
         border: 4px solid #20c997 !important;
     }
 
-    @media print {
-        body {
-            color: #4c4c4c !important;
-        }
-
-        table tr th,
-        table tr td {
-            border: 2px solid #000 !important;
-            font-size: 16px;
-            line-height: 20px;
-        }
-    }
 </style>
 
 <div class="row no-print">
@@ -245,12 +233,12 @@
 
 <?php if( (!empty($tasks)) && (!empty($this->input->get("customer_id"))) ):?>
 <div class="row print-only">
-    <h4>
+    <p class='page-title'>
         <?php echo (!empty($this->input->get("customer_id"))) ? "<b>Customer</b>: {$tasks[0]->company_name}" : '';?>
         <?php echo (!empty($this->input->get("project_id"))) ? " <b>Project</b>: {$tasks[0]->project_name}" : '';?>
         <?php echo (!empty($this->input->get("sprint_id"))) ? " <b>Sprint</b>: {$tasks[0]->sprint_name}" : '';?>
         <?php echo (!empty($this->input->get("stage"))) ? " <b>Stage</b>: " . strtoupper(str_replace("_"," ",$tasks[0]->stage)) : '';?>
-    </h4>
+    </p>
 </div>
 <?php endif;?>
 

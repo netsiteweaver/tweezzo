@@ -1123,3 +1123,16 @@ img.img-24 {
 .textarea-200{
 	min-height:200px
 }
+
+@media print {
+	body {
+		color: #4c4c4c !important;
+	}
+
+	table tr th,
+	table tr td {
+		border: 1px solid #000 !important;
+		font-size: 16px;
+		line-height: 20px;
+	}
+}

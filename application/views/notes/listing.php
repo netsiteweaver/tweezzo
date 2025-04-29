@@ -1,5 +1,12 @@
+<?php
+$from = !empty($this->input->get("start_date")) ? $this->input->get("start_date") : date('Y-m-d', strtotime('-1 week'));
+$for = !empty($this->input->get("for")) ? $this->input->get("for") : 1;
+$period = empty($this->input->get('period')) ? 'week' : $this->input->get('period');
+$dt = date_create($from); 
+$to = date_format(date_add($dt, date_interval_create_from_date_string($for . ' '. $period)),'Y-m-d');
+?>
 <form action="">
-    <div class="row">
+    <div class="row no-print">
         <div class="col-md-2">
             <label for="">Start Date</label>
             <input type="date" name="start_date" class='form-control'
@@ -62,9 +69,18 @@
             <button class="btn btn-info"><i class="fa fa-check"></i> Apply</button>
             <div class="btn btn-warning resetFilter" title="Reset filters"><i class="fa fa-undo"></i></div>
             <div data-target="notes_list" id="exportToCsv" class="btn btn-success export"><i class="fa fa-download"></i></div>
+            <div class="btn btn-default print"><i class="fa fa-print"></i></div>
         </div>
     </div>
 </form>
+<div class="row print-only">
+    <div class="col-md-12">
+        <p class='page-title'>
+            <?php echo "Notes Listing From {$from} to {$to}";?>
+            <?php echo (!empty($this->input->get("customer_id"))) ? " - " . $notes[0]->company_name : '';?>
+        </p>
+    </div>
+</div>
 
 <div class="row">
     <div class="col-xs-12 col-sm-12">
@@ -74,7 +90,7 @@
                 <table id="notes_list" uuid="tbl1" class="table table-border table-hover extended-bottom-margin">
                     <thead>
                         <tr class='text-center' style='text-transform:uppercase;'>
-                            <th style='font-size:12px;color:#ccc;'>#</th>
+                            <th class="no-print" style='font-size:12px;color:#ccc;'>#</th>
                             <th>Date</th>
                             <th>Note</th>
                             <th>Author</th>
@@ -82,13 +98,13 @@
                             <th>Project</th>
                             <th>Sprint</th>
                             <th>Task</th>
-                            <th>Actions</th>
+                            <th class="no-print">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach($notes as $i => $note): ?>
                         <tr class="<?php echo ($note->out_of_scope == '1') ? "out-of-scope" : ""; ?>">
-                            <td style='font-size:12px;color:#ccc;'><?php echo $note->id;?></td>
+                            <td class="no-print" style='font-size:12px;color:#ccc;'><?php echo $note->id;?></td>
                             <td><?php echo $note->created_on;?></td>
                             <td><?php echo nl2br($note->notes);?></td>
                             <td><?php echo $note->author;?></td>
@@ -97,7 +113,7 @@
                             <td class='cursor-pointer active-filter' data-type='sprint' style='text-decoration:underline' data-sprint-id="<?php echo $note->sprintId;?>"><?php echo $note->sprintName;?></td>
                             <td><?php echo "[{$note->taskNumber}] {$note->taskSection} / {$note->taskName}";?>
                             </td>
-                            <td>
+                            <td class="no-print">
                                 <?php if($perms['view']): ?>
                                 <a href="<?php echo base_url('notes/view?task_uuid=' . $note->task_uuid . '&note_id='.$note->note_id . '&'.$qs); ?>">
                                     <div class="btn btn-xs btn-flat btn-default"><i class='fas fa-eye'></i><span
