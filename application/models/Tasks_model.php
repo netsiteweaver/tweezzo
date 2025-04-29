@@ -442,6 +442,25 @@ class Tasks_model extends CI_Model{
         
     }
 
+    public function upload_file($sprint_id)
+    {
+        $this->load->model("files_model");
+        $data = $this->files_model->uploadCSV("file");
+        // return $data;
+    //     $this->parseUploadedFile($data);
+    // }
+
+    // public function parseUploadedFile()
+    // {
+        $handle = fopen($data['full_path'], "r");
+        $header = fgetcsv($handle);
+        $output = [];
+        while (($row = fgetcsv($handle)) !== FALSE) {
+            $output[] = $row;
+        }
+        return $output;
+    }
+
     public function process_import($sprint_id)
     {
         $this->load->model("files_model");

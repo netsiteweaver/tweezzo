@@ -163,6 +163,11 @@ jQuery(function(){
         })
     })
 
+    $('select[name=sprint_id]').on('change', function(){
+        let sprint_id = $(this).val();
+        $('input[name=selected_sprint_id]').val(sprint_id);
+    })
+
     $('#sprint_id').on('change', function(){
         let sprint_id = $(this).val();
         if( sprint_id.length > 0){
@@ -227,6 +232,47 @@ jQuery(function(){
         }
         getByCustomerId(customer_id);
     })
+
+    $('#uploadForm').on('submit', function(e) {
+        e.preventDefault();
+    
+        var formData = new FormData(this);
+        formData.append('file', $('#fileInput')[0].files[0]);
+        formData.append('selected_sprint_id', $('input[name=selected_sprint_id]').val());
+
+    // console.log(formData);return;
+        var totalRows = 0;
+        $.ajax({
+            url: base_url + 'tasks/upload_file', // your server-side script
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                // console.log(response.data)
+                let received = JSON.parse(response);
+                console.log(received)
+                $('#modalPreview table#preview_import tbody').empty();
+                $(received.data).each(function(i,j){
+                    totalRows++
+                    let tr = "<tr>";
+                    tr += `<td>${i+1}</td>`;
+                    for(x = 1; x<7; x++)
+                    {
+                        tr += `<td>${j[x]}</td>`;
+                    }
+                    //<td>${j[0]}</td><td>${j[0]}</td><td>${j[0]}</td><td>${j[0]}</td><td>${j[0]}</td>`
+                    tr += "</tr>";
+                    $('#modalPreview table#preview_import tbody').append(tr);
+                })
+                $('#modalPreview tfoot tr th').text("Total rows = " + totalRows)
+                $('#modalPreview').modal("show");
+            },
+            error: function() {
+                $('#result').html("An error occurred.");
+            }
+        });
+    });
     
 })
 
