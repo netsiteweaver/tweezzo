@@ -143,10 +143,11 @@ input[type=checkbox] {
     background: url('../../../images/css_sprites.png') -54px -98px;
 }
 
-.out-of-scope{
-    background-color: rgb(220, 20, 60);
-    color: #ffffff;
+.out-of-scope, .out-of-scope:hover, .table-hover tbody tr.out-of-scope:hover{
+    background-color: rgb(255, 190, 203);
+    /* color: #ffffff; */
 }
+
 
 @keyframes zoomInOut {
     0%, 100% {

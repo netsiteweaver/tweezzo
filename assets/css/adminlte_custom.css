@@ -1109,12 +1109,17 @@ img.img-24 {
 	border: 1px solid #CCC;
 }
 
-.out-of-scope{
+.out-of-scope, .out-of-scope:hover, .table-hover tbody tr.out-of-scope:hover{
     background-color: rgb(255, 190, 203);
     /* color: #ffffff; */
 }
-.out-of-scope:hover, .table-hover tbody tr.out-of-scope:hover{
-    background-color: rgb(255, 190, 203);
-	border-bottom: 5px solid #751717;
-    /* color: #ffffff; */
+
+.textarea{
+	overflow-y: auto;
+}
+.textarea-100{
+	min-height:100px
+}
+.textarea-200{
+	min-height:200px
 }

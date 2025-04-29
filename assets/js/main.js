@@ -143,7 +143,7 @@ $(document).ready(function(){
 		},
 		height: 150,
 		tabsize: 4,
-		placeholder: 'Enter text here ...',
+		placeholder: 'Enter your notes. Use @ to get a list people connected to this task ...',
 		toolbar: [
 		  // [groupName, [list of button]]
 		  ['style', ['bold', 'italic', 'underline', 'clear']],

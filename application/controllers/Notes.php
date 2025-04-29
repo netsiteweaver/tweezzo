@@ -16,6 +16,9 @@ class Notes extends MY_Controller {
         $this->data['perms']['edit'] = $this->accesscontrol_model->authorised("notes","edit");
         $this->data['perms']['view'] = $this->accesscontrol_model->authorised("notes","view");
         $this->data['perms']['delete'] = $this->accesscontrol_model->authorised("notes","delete");
+
+        $this->data['perms']['view_task'] = $this->accesscontrol_model->authorised("tasks","view");
+        $this->data['perms']['edit_task'] = $this->accesscontrol_model->authorised("tasks","edit");
         // $this->data['companyInfo'] = $this->system_model->getCompanyInfo();
     }
 
@@ -43,6 +46,7 @@ class Notes extends MY_Controller {
         $per_page = (!empty($this->input->get("display"))) ? $this->input->get("display") : $this->system_model->getParam("rows_per_page");
         $this->data['default_per_page'] =  $this->system_model->getParam("rows_per_page");
         $this->data['notes'] = $this->Notes_model->fetchAll($start_date,$for,$period,$project_id,$sprint_id,$customer_id, $order_by,$order_dir,$page,$per_page);
+        // debug($this->data['notes']);
         $total_rows = $this->Notes_model->totalRows($start_date,$for,$period,$project_id,$sprint_id,$customer_id);
         $this->data['pagination'] = getPagination("notes/listing",$total_rows,$per_page);
         $this->load->model('Customers_model');
@@ -97,16 +101,18 @@ class Notes extends MY_Controller {
         //Access Control 
         if(!isAuthorised(get_class(),"view")) return false;
 
-        $uuid = $this->uri->segment(3);
-        $this->data['project'] = $this->Notes_model->fetchSIngle($uuid);
+        $uuid = $this->input->get('task_uuid');
+        $this->load->model("Tasks_model");
+        $this->data['notes'] = $this->Tasks_model->fetchSIngle($uuid);
+        if(empty($this->data['notes'])){
+            flashDanger("Not found");
+            redirect("notes/listing?" . $this->data['qs']);
+        }
 
         //Breadcrumbs
         $this->mybreadcrumb->add('Notes', base_url('notes/listing'));
         $this->mybreadcrumb->add('View', base_url('notes/view'));
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
-
-        $this->load->model('Customers_model');
-        $this->data['customers'] = $this->Customers_model->lookup();
 
         $this->data["content"]=$this->load->view("/notes/view",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   

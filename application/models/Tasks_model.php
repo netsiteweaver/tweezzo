@@ -107,6 +107,7 @@ class Tasks_model extends CI_Model{
         $this->db->where('t.uuid',$uuid);
         $this->db->where('t.status',1);
         $task = $this->db->get()->row();
+        if(empty($task)) return [];
         $task->notes = $this->db->select('tn.id, tn.notes,tn.created_by, tn.created_on,u.name, tn.out_of_scope, c.company_name customer')
                                 ->from('task_notes tn')
                                 ->join('users u','u.id=tn.created_by','left')

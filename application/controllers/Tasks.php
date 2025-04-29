@@ -150,6 +150,7 @@ class Tasks extends MY_Controller {
 
         // $this->loadStyleSheet("node_modules/lightbox2/dist/css/lightbox.min.css");
         // $this->loadScript("node_modules/lightbox2/dist/js/lightbox.min.js");
+        $this->data['page_title'] = "View Task";
 
         $this->data["content"]=$this->load->view("/tasks/view",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   

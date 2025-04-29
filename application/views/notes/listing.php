@@ -75,14 +75,14 @@
                             </td>
                             <td>
                                 <?php if($perms['view']): ?>
-                                <a href="<?php echo base_url('notes/view/' . $note->task_uuid); ?>">
-                                    <div class="btn btn-flat btn-default"><i class='fas fa-eye'></i><span
+                                <a href="<?php echo base_url('notes/view?task_uuid=' . $note->task_uuid . '&note_id='.$note->note_id . '&'.$qs); ?>">
+                                    <div class="btn btn-xs btn-flat btn-default"><i class='fas fa-eye'></i><span
                                             class='ButtonLabel'> View</span></div>
                                 </a>
                                 <?php endif; ?>
                                 <!-- Example single danger button -->
                                 <div class="btn-group">
-                                    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown"
+                                    <button type="button" class="btn btn-xs btn-info dropdown-toggle" data-toggle="dropdown"
                                         aria-expanded="false">
                                         Action
                                     </button>

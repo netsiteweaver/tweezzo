@@ -23,7 +23,7 @@
 			<input type="hidden" name="stage" value="<?php echo $this->input->get("stage");?>">
 			<input type="hidden" name="qs" value="<?php echo $qs;?>">
 			<div class="card-header bg-purple">
-				<h3>Task Information</h3>
+				<h3 class='card-title'>Task Information</h3>
 			</div>
 			<div class="card-body">
 				<div class="form-group">
@@ -161,9 +161,38 @@
     </div>
 
 	<div class="col-md-6">
+		<div class="card">
+			<div class="card-header bg-danger">
+				<h3 class='card-title'>Scope</h3>
+			</div>
+			<div class="card-body">
+				<div class="row">
+					<div class="col-md-12">
+						<p class="title">What's expected from this task</p>
+						<textarea class="form-control textarea textarea-200" name="" id=""><?php echo nl2br($task->scope_client_expectation);?></textarea>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12">
+						<p class="title">What's not included</p>
+						<textarea class="form-control textarea textarea-200" name="" id=""><?php echo nl2br($task->scope_not_included);?></textarea>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12">
+						<p class="title">When it's considered done</p>
+						<textarea class="form-control textarea textarea-200" name="" id=""><?php echo nl2br($task->scope_when_done);?></textarea>
+					</div>
+				</div>
+
+			</div>
+			<div class="card-footer">
+
+			</div>
+		</div>
 		<div class="card card-secondary">
 			<div class="card-header bg-purple">
-				<h3>Stage History</h3>
+				<h3 class='card-title'>Stage History</h3>
 			</div>
 			<div class="card-body">
 				<table class="table table-bordered table-striped">
@@ -188,7 +217,7 @@
 		</div>
 		<div class="card card-secondary">
 			<div class="card-header bg-purple">
-				<h3>Assigned Users</h3>
+				<h3 class='card-title'>Assigned Users</h3>
 			</div>
 			<div class="card-body">
 				<ul id="users-list" class="list-group">

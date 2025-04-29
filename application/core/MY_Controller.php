@@ -35,6 +35,8 @@ class MY_Controller extends CI_Controller{
         $this->data['flashInfo']        = getFlashMessage("info"); 
         $this->data['upload_folder'] = $this->config->item("upload_folder");
 
+        $this->data['qs'] = $_SERVER["QUERY_STRING"];
+
         // $this->load->library('migration');
 
         $this->mybreadcrumb->add('Dashboard', base_url('dashboard/index'));
