@@ -78,6 +78,21 @@ class Tasks extends MY_Controller {
         $this->load->view("/layouts/default",$this->data);   
     }
 
+    public function upload_file()
+    {
+        //Access Control
+        if(!isAuthorised(get_class(),"add")) return false;
+
+        $selected_sprint_id = $this->input->post('selected_sprint_id');
+        $result = $this->Tasks_model->upload_file($selected_sprint_id);
+        echo json_encode(array(
+            'result'    =>  true,
+            'data'      =>  $result
+        ));
+        // $this->Tasks_model-parseUploadedFile($result->full_path);
+        // redirect(base_url("tasks/listing?customer_id=".$this->input->post("customer_id")."&project_id=".$this->input->post("project_id")."&sprint_id=".$this->input->post("sprint_id")));
+    }
+
     public function process_import()
     {
         //Access Control
