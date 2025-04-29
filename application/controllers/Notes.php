@@ -103,8 +103,8 @@ class Notes extends MY_Controller {
 
         $uuid = $this->input->get('task_uuid');
         $this->load->model("Tasks_model");
-        $this->data['notes'] = $this->Tasks_model->fetchSIngle($uuid);
-        if(empty($this->data['notes'])){
+        $this->data['task'] = $this->Tasks_model->fetchSIngle($uuid);
+        if(empty($this->data['task'])){
             flashDanger("Not found");
             redirect("notes/listing?" . $this->data['qs']);
         }
