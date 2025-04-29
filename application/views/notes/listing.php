@@ -87,11 +87,16 @@
                                         Action
                                     </button>
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item" href="<?php echo base_url("tasks/view?task_uuid=".$note->task_uuid);?>"><i class="fa fa-eye"></i> View Task</a>
+                                        <?php if($perms['view_task']): ?>
+                                        <a target="_blank" class="dropdown-item" href="<?php echo base_url("tasks/view?task_uuid=".$note->task_uuid);?>"><i class="fa fa-eye"></i> View Task</a>
+                                        <?php endif;?>
+                                        <?php if($perms['edit_task']): ?>
+                                        <a target="_blank" class="dropdown-item" href="<?php echo base_url("tasks/edit?task_uuid=".$note->task_uuid);?>"><i class="fa fa-edit"></i> Edit Task</a>
+                                        <?php endif;?>
                                         <!-- <a class="dropdown-item" href="#"><i class="fa fa-comment"></i> View Note</a> -->
                                         <?php if($perms['delete']): ?>
                                         <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="<?php echo base_url("notes/confirm_delete/".$note->note_id);?>"><i class="fa fa-trash"></i> Delete Note</a>
+                                        <a style='color:red;font-weight:bold;' class="dropdown-item" href="<?php echo base_url("notes/confirm_delete/".$note->note_id);?>"><i class="fa fa-trash"></i> Delete Note</a>
                                         <?php endif;?>
                                     </div>
                                 </div>
