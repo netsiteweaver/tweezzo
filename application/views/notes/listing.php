@@ -69,7 +69,10 @@ $to = date_format(date_add($dt, date_interval_create_from_date_string($for . ' '
             <button class="btn btn-info"><i class="fa fa-check"></i> Apply</button>
             <div class="btn btn-warning resetFilter" title="Reset filters"><i class="fa fa-undo"></i></div>
             <div data-target="notes_list" id="exportToCsv" class="btn btn-success export"><i class="fa fa-download"></i></div>
-            <div class="btn btn-default print"><i class="fa fa-print"></i></div>
+            
+        </div>
+        <div class="col-md-1 mt-4">
+            <div class="btn btn-default print"><i class="fa fa-print"></i> Print</div>
         </div>
     </div>
 </form>

@@ -1123,11 +1123,25 @@ img.img-24 {
 .textarea-200{
 	min-height:200px
 }
+.tweezzo-footer-container {
+	display: none;
+}
 
 @media print {
 	body {
 		color: #4c4c4c !important;
 	}
+	body#listing::after, body#report::after {
+		content: '';
+		position: fixed;
+		top: 0px;
+		right: 0px;
+		bottom: 0px;
+		left: 0px;
+		background: url('../images/LOGO-TWEEZZO-HORIZONTAL-padded\ for\ watermark.png');
+		opacity: 0.1;
+		pointer-events: none;
+	  }
 
 	table tr th,
 	table tr td {
@@ -1135,4 +1149,20 @@ img.img-24 {
 		font-size: 16px;
 		line-height: 20px;
 	}
+	.tweezzo-footer-container {
+		display: block;
+		position: fixed;
+		bottom: 50px;
+		border-top: 1px solid #ccc;
+		width:100%;
+	}
+	.tweezzo-footer {
+		text-align: center;
+		font-size: .9em;
+		position: fixed;
+		bottom: 30px;
+		right: 25px;
+		color:#ccc;
+	}
 }
+

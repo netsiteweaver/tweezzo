@@ -34,6 +34,7 @@ class MY_Controller extends CI_Controller{
         $this->data['flashDanger']      = getFlashMessage("danger");
         $this->data['flashInfo']        = getFlashMessage("info"); 
         $this->data['upload_folder'] = $this->config->item("upload_folder");
+        $this->data['pageType'] = "listing";
 
         $this->data['qs'] = $_SERVER["QUERY_STRING"];
 

@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?php echo isset($page_title)?strip_tags($page_title) . " | ":"";?><?php echo $company->name; ?></title>
+  <title>
+    <?php echo isset($page_title) ? strip_tags($page_title) : "";?>
+  </title>
 
   <base href="<?php echo base_url();?>">
 
@@ -72,9 +74,9 @@
   </script>
 </head>
 <?php if($_SESSION['user_level'] == 'Normal'):?>
-<body class="hold-transition sidebar-mini layout-fixed sidebar-collapse">
+<body id="<?php echo ((isset($pageType)) && (!empty($pageType)) ) ? $pageType : '';?>" class="hold-transition sidebar-mini layout-fixed sidebar-collapse'">
 <?php else:?>
-<body class="hold-transition sidebar-mini layout-fixed <?php echo ((isset($sidebar_collapse))&&($sidebar_collapse==1))?"sidebar-collapse":"";?>">
+<body id="<?php echo ((isset($pageType)) && (!empty($pageType)) ) ? $pageType : '';?>" class="hold-transition sidebar-mini layout-fixed <?php echo ((isset($sidebar_collapse))&&($sidebar_collapse==1))?"sidebar-collapse":"";?>">
 <?php endif;?>
 <div id="overlay" class='hidden'><div class="loader"></div></div>
 <!-- Site wrapper -->
@@ -130,7 +132,7 @@
     <!-- /.content -->
   </div>
   <!-- /.content-wrapper -->
-  <?php $this->load->view("shared/alerts",$this->data);?>
+  <?php $this->load->view("shared/tweezzo_footer",$this->data);?>
 
   <?php $this->load->view("shared/footer",$this->data);?>
 

@@ -232,7 +232,7 @@
 </div>
 
 <?php if( (!empty($tasks)) && (!empty($this->input->get("customer_id"))) ):?>
-<div class="row print-only">
+<div class="row print-only listing">
     <p class='page-title'>
         <?php echo (!empty($this->input->get("customer_id"))) ? "<b>Customer</b>: {$tasks[0]->company_name}" : '';?>
         <?php echo (!empty($this->input->get("project_id"))) ? " <b>Project</b>: {$tasks[0]->project_name}" : '';?>

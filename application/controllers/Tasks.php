@@ -164,7 +164,7 @@ class Tasks extends MY_Controller {
         //Breadcrumbs
         $this->mybreadcrumb->add('Tasks', base_url('tasks/listing'));
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
-        $this->data['page_title'] = "Tasks";
+        $this->data['page_title'] = "Tasks List";
 
         $customer_id = $this->input->get('customer_id');
         $project_id = $this->input->get('project_id');
@@ -176,12 +176,23 @@ class Tasks extends MY_Controller {
         $notes_only = $this->input->get('notes_only');
         $search_text = $this->input->get('search_text');
 
+
         $page = $this->uri->segment(3);
         $per_page = (!empty($this->input->get("display"))) ? $this->input->get("display") : $this->system_model->getParam("rows_per_page");
         $this->data['tasks'] = $this->Tasks_model->fetchAll($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$page,$per_page,"",$notes_only,$search_text);
         $total_rows = $this->Tasks_model->totalRows($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$notes_only,$search_text);
         $this->data['total_rows'] = $total_rows;
         $this->data['pagination'] = getPagination("tasks/listing",$total_rows,$per_page);
+
+        if(!empty($customer_id)){
+            $this->data['page_title'] .= " - " . $this->data['tasks'][0]->company_name;
+        }
+        if(!empty($project_id)){
+            $this->data['page_title'] .= " - " . $this->data['tasks'][0]->project_name;
+        }
+        if(!empty($sprint_id)){
+            $this->data['page_title'] .= " - " . $this->data['tasks'][0]->sprint_name;
+        }
 
         $this->load->model('Users_model');
         $this->data['users'] = $this->Users_model->lookup();
