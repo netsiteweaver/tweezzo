@@ -34,6 +34,30 @@
                 </option>
             </select>
         </div>
+        <?php if(!empty($this->input->get('customer_id'))):?>
+        <div class="col-md-2">
+            <label for="">Customer</label>
+            <div class="form-control">
+                <?php echo (!empty($this->input->get('customer_id'))) ? $notes[0]->company_name : '';?>
+            </div>
+        </div>
+        <?php endif;?>
+        <?php if(!empty($this->input->get('project_id'))):?>
+            <div class="col-md-2">
+            <label for="">Project</label>
+            <div class="form-control">
+                <?php echo (!empty($this->input->get('project_id'))) ? $notes[0]->projectName : '';?>
+            </div>
+        </div>
+        <?php endif;?>
+        <?php if(!empty($this->input->get('sprint_id'))):?>
+        <div class="col-md-2">
+            <label for="">Sprint</label>
+            <div class="form-control">
+                <?php echo (!empty($this->input->get('sprint_id'))) ? $notes[0]->sprintName : '';?>
+            </div>
+        </div>
+        <?php endif;?>
         <div class="col-md-2 mt-4">
             <button class="btn btn-info"><i class="fa fa-check"></i> Apply</button>
             <div class="btn btn-warning resetFilter" title="Reset filters"><i class="fa fa-undo"></i></div>
