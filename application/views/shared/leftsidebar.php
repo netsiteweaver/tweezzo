@@ -31,7 +31,7 @@
       </div>
 
       <!-- Sidebar Menu -->
-      <nav class="mt-2">
+      <nav class="mt-2 mb-5">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
@@ -72,6 +72,22 @@
             <a href="<?php echo base_url('users/signout'); ?>" class="nav-link">
               <i class='fas fa-sign-out-alt'></i>
               <p>Sign Out</p>
+            </a>
+          </li>
+
+          <li class="nav-header"><hr></li>
+          <li class="nav-item"><a href="" class='nav-link ml-4 text-bold'><p>Portal Access</p></a></li>
+          
+          <li class="nav-item">
+            <a target="_blank" href="<?php echo base_url('portal/developers'); ?>" class="nav-link">
+              <i style="color:#2cbfc6" class='fas fa-users'></i>
+              <p>Developers</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a target="_blank" href="<?php echo base_url('portal/customers'); ?>" class="nav-link">
+              <i style="color:#a152d6" class='fas fa-users'></i>
+              <p>Customers</p>
             </a>
           </li>
         </ul>
