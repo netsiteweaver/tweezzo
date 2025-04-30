@@ -87,11 +87,13 @@ jQuery(function(){
         let sprint_name = $(this).data("sprint-name");
         $('#addTaskModal .select-sprint').removeClass("selected");
         $('#addTaskModal input[name=sprint_id]').val(sprint_id);
-        $('.data-input-left').removeClass('d-none');
-        $('#addTaskModal .modal-dialog').removeClass('modal-lg').addClass('modal-xl');
-        $('.data-input-right').removeClass('d-none');
+        $('.data-input').removeClass('d-none');
+        // $('#addTaskModal .modal-dialog').removeClass('modal-lg').addClass('modal-xl');
+        // $('.data-input-right').removeClass('d-none');
         $('#selection #selected-sprint').text(sprint_name)
         $('.list-group.sprints').closest('.form-group').addClass('d-none');
+
+        $('#addTaskModal input[name=task_number]').trigger("focus");
     })
 
     $('#resetModalAddTask').on('click', function() {
@@ -111,8 +113,8 @@ jQuery(function(){
         $('.list-group.projects .list-group-item').addClass('d-none');
         $('.list-group.sprints .list-group-item').addClass('d-none');
 
-        $('.data-input-right').addClass('d-none');
-        $('.data-input-left').addClass('d-none');
+        $('.data-input').addClass('d-none');
+        // $('.data-input-left').addClass('d-none');
         // selection bar with reset
         $('#selection').closest('.row').addClass('d-none');
 
@@ -120,19 +122,77 @@ jQuery(function(){
         $('#selection #selected-project').text('')
         $('#selection #selected-sprint').text('')
 
-        $('#addTaskModal .modal-dialog').removeClass('modal-xl').addClass('modal-lg');
+        $("#addTaskModal .data-input input, #addTaskModal .data-input textarea").val("")
+
+        // $('#addTaskModal .modal-dialog').removeClass('modal-xl').addClass('modal-lg');
     }
 
-    // function reset()
-    // {
-    //     $('.list-group.projects .list-group-item').removeClass('d-none');
-    //     $('.list-group.projects').closest('.form-group').addClass('d-none');
-    //     $('.list-group.sprints .list-group-item').removeClass('d-none');
-    //     $('.list-group.sprints').closest('.form-group').addClass('d-none');
-    //     $('#addTaskModal input[name=customer_id]').val('');
-    //     $('#addTaskModal input[name=project_id]').val('');
-    //     $('#addTaskModal input[name=sprint_id]').val('');
-    // }
+    $('#addTaskModal .monitorx').on("keyup",function(){
+        let valid = true;
+        
+        $('#addTaskModal .monitorx').each(function(){
+            let elem = $(this).val();
+            if(elem == "") valid = false;
+        })
+        if(valid) {
+            $('#addTaskModal .submit-task').removeClass("d-none");
+        }else{
+            $('#addTaskModal .submit-task').addClass("d-none");
+        }
+    })
+
+    $('.submit-task').on('click',function(){
+        let btn = $(this);
+        if($(this).hasClass("running")) return;
+
+        // $(this).addClass("running");
+        let sprint_id = $('#addTaskModal input[name=sprint_id]').val();
+        let task_number = $('input[name=task_number]').val();
+        let name = $('input[name=name]').val();
+        let section = $('input[name=section]').val();
+        let description = $('textarea[name=description]').val();
+        let scope_when_done = $('textarea[name=scope_when_done]').val();   
+        let scope_not_included = $('textarea[name=scope_not_included]').val();
+        let scope_client_expectation = $('textarea[name=scope_client_expectation]').val();
+
+        Overlay("on");
+        $.ajax({
+            url: base_url + "portal/developers/submitTask",
+            method: "POST",
+            dataType: "JSON",
+            data: {sprint_id:sprint_id,task_number:task_number,name:name,section:section,description:description,scope_when_done:scope_when_done,scope_not_included:scope_not_included,scope_client_expectation:scope_client_expectation},
+            success: function(response)
+            {
+                if(response.result){
+                    alertify.success("Task submitted");
+                    $('#addTaskModal .submission').addClass("d-none");
+                    $('#addTaskModal .thankyou').removeClass("d-none");
+                    $('button.submit-task').addClass("d-none").removeClass("running");
+                    $('button.submit-another-task').removeClass("d-none");
+                    resetModalAddTask();
+                }else{
+                    alertify.error(response.reason);
+                    $('.submit-task').removeClass("d-none");   
+                }
+                $(btn).removeClass("running")
+            },
+            complete: function(response) {
+                Overlay("off");
+                $(btn).removeClass("running")
+            }
+        })
+    })
+
+    $('.submit-another-task').on('click',function(){
+        $(this).addClass("d-none");
+        $('button.submit-task').removeClass("d-none");
+        $('#addTaskModal .thankyou').addClass("d-none");
+        $('#addTaskModal .submission.selection').removeClass("d-none");
+    })
+
+    $("#addTaskModal").on('hidden.bs.modal',function(){
+        resetModalAddTask();
+    })
 
     $('.add-task').on('click', function(){
         $('#addTaskModal').modal("show")
@@ -306,6 +366,41 @@ jQuery(function(){
         )
        
     })
+
+    $(document).ready(function () {
+        const $modal = $('#myModal');
+    
+        $modal.on('hide.bs.modal', function (e) {
+          // Prevent Bootstrap from immediately hiding the modal
+          e.preventDefault();
+    
+          const $dialog = $modal.find('.modal-dialog');
+          $dialog.css({
+            transform: 'scale(1.7)',
+            opacity: '0'
+          });
+    
+          // Wait for the animation to finish before closing
+          setTimeout(function () {
+            // Actually hide the modal
+            $modal.modal('hide');
+            // Reset dialog transform for next open
+            $dialog.css({
+              transform: '',
+              opacity: ''
+            });
+          }, 300); // Match CSS transition duration
+        });
+    
+        $modal.on('show.bs.modal', function () {
+          const $dialog = $modal.find('.modal-dialog');
+          $dialog.css({
+            transform: 'scale(1)',
+            opacity: '1'
+          });
+        });
+      });
+
 })
 
 function resetForm()

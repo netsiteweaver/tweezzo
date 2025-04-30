@@ -321,4 +321,90 @@ class Developersportal_model extends CI_Model{
 		return $this->db->get()->result();
 	}
 
+    public function submitTask()
+    {
+        $valid = true;
+        $errorMessage = "";
+        // $customer_id = $this->input->post("customer_id");
+        // $project_id = $this->input->post("project_id");
+        // Mandatory fields
+        $sprint_id = $this->input->post("sprint_id");
+        $section = $this->input->post("section");
+        $name = $this->input->post("name");
+        $description = $this->input->post("description");
+        // Non Mandatory fields
+        $task_number = $this->input->post("task_number");
+        $due_date = $this->input->post("due_date");
+        $scope_when_done = $this->input->post("scope_when_done");
+        $scope_not_included = $this->input->post("scope_not_included"); 
+        $scope_client_expectation = $this->input->post("scope_client_expectation");
+
+        if(empty($sprint_id) || empty($name) || empty($section) || empty($description) ) {
+            $errorMessage .= "Please fill all the required fields (name, section, description).<br>";
+            $valid = false;
+        }
+
+        if(!$valid) {
+            return [
+                "result"    =>  false,
+                "reason"   =>  $errorMessage
+            ];
+        }
+
+        $this->db->set("uuid",gen_uuid());
+        $this->db->set("created_by_developer",$_SESSION['developer_id']);
+        $this->db->set("created_on",date("Y-m-d H:i:s"));
+        $this->db->set("sprint_id",$sprint_id);
+        $this->db->set("name",$name);
+        $this->db->set("section",$section);
+        $this->db->set("description",$description);
+        $this->db->set("scope_client_expectation",$scope_client_expectation);
+        $this->db->set("scope_not_included",$scope_not_included);
+        $this->db->set("scope_when_done",$scope_when_done);
+        $this->db->set("stage","new");
+        $this->db->set("status","1");
+        $this->db->insert("submitted_tasks");
+        $insert_id = $this->db->insert_id();
+        if($insert_id) {
+            $this->emailForTaskCreated($insert_id);
+            return [
+                "result"    =>  true
+            ];
+        }else{
+            return [
+                "result"    =>  false,
+                "reason"   =>  "Unable to create task. Please try again."
+            ];
+        }
+    }
+
+    private function emailForTaskCreated($task_id)
+    {
+        $this->load->model("Email_model3");
+        $this->load->model("System_model");
+        $submitted_task = $this->db->query("SELECT st.*, s.name sprintName, p.name projectName, c.company_name customerName, u.name developerName, u.email developerEmail
+                            FROM submitted_tasks st
+                            JOIN sprints s ON s.id = st.sprint_id
+                            JOIN projects p ON p.id = s.project_id
+                            JOIN customers c ON c.customer_id = p.customer_id
+                            JOIN users u on u.id = st.created_by_developer
+                            WHERE st.id = $task_id")->row();
+        $emailData = [
+            'title'     =>  'Task Submitted',
+            'task'      =>  $submitted_task,
+            'logo'      =>  $this->System_model->getParam("logo"),
+        ];
+        $content = $this->load->view("_email/header",$emailData, true);
+        $content .= $this->load->view("_email/taskSubmittedDeveloper",$emailData, true);
+        $content .= $this->load->view("_email/footer",[], true);
+        $this->Email_model3->save($_SESSION['developer_email'],"Task Submitted",$content);
+
+        // notify admins for task created
+        $members = $this->System_model->getParam("notification_create_tasks",true);
+        foreach($members as $m){
+            $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
+            $this->Email_model3->save($user->email,"{$_SESSION['developer_name']} Submitted a Task",$content);
+        }
+    }
+
 }

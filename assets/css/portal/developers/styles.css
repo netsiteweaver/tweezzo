@@ -147,7 +147,21 @@ input[type=checkbox] {
     background-color: rgb(255, 190, 203);
     /* color: #ffffff; */
 }
+p.notes {
+    font-size: 0.8em;
+    color:#929292;
+}
 
+label {
+    margin-top: 10px;
+}
+/* label:has(+ input:required), label:has(+ textarea:required) {
+    font-weight: bold;
+} */
+label:has(+ input:required):after, label:has(+ textarea:required):after {
+    content: ' *';
+    color: red;
+}
 
 @keyframes zoomInOut {
     0%, 100% {
