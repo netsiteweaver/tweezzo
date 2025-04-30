@@ -1,4 +1,10 @@
 jQuery(function(){
+
+	// $("#exportToCsv").on("click", function(){
+	// 	let target = $(this).data('target');
+	// 	downloadTableAsCSV(target,"notes",{ skipColumns: [6] });
+	// })
+
     $('#notes_list .active-filter').on('click', function() {
         let startDate = $('input[name=start_date]').val();
         let forPeriod = $('input[name=for]').val();

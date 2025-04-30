@@ -6,9 +6,19 @@ function downloadTableAsCSV(tableId, filename = 'table', options = {}) {
 
     for (let row of table.rows) {
         let rowData = [];
-        for (let i = 0; i < row.cells.length; i++) {
-            const shouldSkip = skipColumns.includes(i);
-            const shouldInclude = includeColumns ? includeColumns.includes(i) : true;
+        const totalCells = row.cells.length;
+
+        // Normalize skipColumns (handle negative indices)
+        const resolvedSkipColumns = skipColumns.map(i => (i < 0 ? totalCells + i : i));
+
+        // Normalize includeColumns if defined
+        const resolvedIncludeColumns = includeColumns
+            ? includeColumns.map(i => (i < 0 ? totalCells + i : i))
+            : null;
+
+        for (let i = 0; i < totalCells; i++) {
+            const shouldSkip = resolvedSkipColumns.includes(i);
+            const shouldInclude = resolvedIncludeColumns ? resolvedIncludeColumns.includes(i) : true;
 
             if (shouldSkip || !shouldInclude) continue;
 

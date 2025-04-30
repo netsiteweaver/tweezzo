@@ -190,6 +190,9 @@
             </div>
         </div>
     </div>
+    <div class="col-md-1 mt-4">
+        <div data-target="task-list" data-skip-columns="[0,-1,-2,-3,-4]" data-include-columns="" id="downloadTableAsCSV" data-filename="tasks" class="btn btn-success export"><i class="fa fa-download"></i></div>
+    </div>
     <!-- <div class="col-md-2 mt-4">
         <div class="btn btn-block btn-default email-developer">
             <i class="fa fa-at"></i> Email Developer
@@ -357,7 +360,11 @@
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
-                    <tfoot>
+                   
+
+                </table>
+                <table class="table table-bordered">
+                <tfoot>
                         <tr>
                             <th colspan='14'>
                                 <?php echo "NEW: {$totals['new']}, IN PROGRESS: {$totals['in_progress']}, TESTING: {$totals['testing']}, STAGING: {$totals['staging']}, VALIDATED: {$totals['validated']}, COMPLETED: {$totals['completed']}, ON HOLD: {$totals['on_hold']}. TOTAL DISPLAYED: " . count($tasks);?>
@@ -367,7 +374,6 @@
                             <th colspan='14'>TOTAL ROWS: <?php echo $total_rows;?></th>
                         </tr>
                     </tfoot>
-
                 </table>
             </div>
             <?php else: ?>

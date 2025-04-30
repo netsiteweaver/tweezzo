@@ -56,9 +56,19 @@ $(document).ready(function(){
         'disableScrolling': true,
 	})
 
-	$("#exportToCsv").on("click", function(){
+	$("#downloadTableAsCSV").on("click", function(){
 		let target = $(this).data('target');
-		downloadTableAsCSV(target,"notes",{ skipColumns: [6] });
+		let filename = $(this).data("filename") ?? 'export';
+		let includeColumns = $(this).data("include-columns");
+		let skipColumns = $(this).data("skip-columns");
+		if(includeColumns != "") {
+			var options = {includeColumns: includeColumns};
+		}else if(skipColumns != "") {
+			var options = {skipColumns: skipColumns};
+		}else {
+			var options = {}
+		}
+		downloadTableAsCSV(target,filename,options);
 	})
 
 	// const debouncedLog = debounce(searchSerial,300);
