@@ -17,6 +17,18 @@ class Customers extends CI_Controller
         $this->load->model("Customersportal_model");
         $this->data['logo'] = $this->system_model->getParam("logo");
         $this->data['page_title'] = "";
+
+        if(isset($_SESSION['customer_access_id'])){
+            $this->data['user_access'] = $this->db->query("
+                SELECT c.company_name, ca.name userName, ca.email userEmail, COALESCE(ca.admin, null) isAdmin
+                FROM customers c
+                LEFT JOIN customer_access ca ON ca.customer_id = c.customer_id
+                WHERE c.status = 1 AND c.customer_id = {$_SESSION['customer_access_id']} 
+                ORDER BY ca.name
+            ")->result();
+        }
+
+
         if(isset($_SESSION['customer_access_id'])){
             $this->data['projects'] = $this->Customersportal_model->getProjects($_SESSION['customer_access_id']);
             $this->data['sprints'] = $this->Customersportal_model->getSprints();
@@ -50,7 +62,8 @@ class Customers extends CI_Controller
         if($result) {
             $_SESSION['customer_access_id'] = $result->customer_access_id;
             $_SESSION['customer_email'] = $result->email;
-            $_SESSION['customer_name'] = $result->company_name;
+            $_SESSION['customer_company_name'] = $result->company_name;
+            $_SESSION['customer_name'] = $result->name;
         }
 
         echo json_encode(array(

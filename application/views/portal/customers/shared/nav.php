@@ -50,7 +50,7 @@
                     <!-- <div id="submitTask" class="bg-icon bg-add_task_24px"></div> -->
                 </li>
                 <li class="nav-item cursor-pointer add-user-access">
-                    <div class="bg-icon bg-add_user_24px"></div>
+                    <img id="addUser" style="width:24px;" src="assets/images/add-user-48px.png" alt="">
                 </li>
             </ul>
             <ul class="navbar-nav mb-2 mb-lg-0">

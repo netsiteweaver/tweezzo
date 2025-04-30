@@ -9,12 +9,16 @@ jQuery(function(){
     $('.download').on('click', function(){
         downloadTableAsCSV('notes','notes',{ includeColumns: [1,2,3,4] });
     })
+    
+    zoomIconForSeconds('submitTask',6);
+    setTimeout(function(){
+        zoomIconForSeconds('addUser',9);
+    },1000)
+    
 
-    zoomIconForSeconds(6);
-
-    $('#submitTask').hover(function(){
-        zoomIconForSeconds(3)
-    })
+    // $('#submitTask').hover(function(){
+    //     zoomIconForSeconds('submitTask',3)
+    // })
 
 
     $('.summernote').summernote({
@@ -349,8 +353,8 @@ function Overlay(option)
 	}
 }
 
-function zoomIconForSeconds(seconds) {
-    const icon = document.getElementById('submitTask');
+function zoomIconForSeconds(elementID, seconds) {
+    const icon = document.getElementById(elementID);
     
     icon.classList.add('zoom-animation'); // Start animation
     

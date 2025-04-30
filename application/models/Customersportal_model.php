@@ -5,7 +5,7 @@ class Customersportal_model extends CI_Model
     var $data;
 
     public function authenticate($user_info) {
-        $this->db->select("c.customer_id, c.company_name, c.full_name, c.email, ca.id customer_access_id");
+        $this->db->select("c.customer_id, c.company_name, ca.name, ca.email, ca.id customer_access_id");
         $this->db->from("customers c");
         $this->db->join("customer_access ca","ca.customer_id = c.customer_id");
         $this->db->where("ca.password", md5($user_info['password']), true );
@@ -287,7 +287,7 @@ class Customersportal_model extends CI_Model
         }
 
         $this->db->set("uuid",gen_uuid());
-        $this->db->set("created_by",$_SESSION['customer_access_id']);
+        $this->db->set("created_by_customer",$_SESSION['customer_access_id']);
         $this->db->set("created_on",date("Y-m-d H:i:s"));
         $this->db->set("name",$name);
         $this->db->set("section",$section);
@@ -300,6 +300,7 @@ class Customersportal_model extends CI_Model
         $this->db->insert("submitted_tasks");
         $insert_id = $this->db->insert_id();
         if($insert_id) {
+            $this->emailForTaskCreated($insert_id);
             return [
                 "result"    =>  true
             ];
@@ -311,4 +312,29 @@ class Customersportal_model extends CI_Model
         }
     }
 
+    private function emailForTaskCreated($task_id)
+    {
+        $this->load->model("Email_model3");
+        $this->load->model("System_model");
+        $submitted_task = $this->db->query("SELECT st.*, ca.name customerName, ca.email customerEmail
+                            FROM submitted_tasks st
+                            JOIN customer_access ca on ca.customer_id = st.created_by_customer
+                            WHERE st.id = $task_id")->row();
+        $emailData = [
+            'title'     =>  'Task Submitted',
+            'task'      =>  $submitted_task,
+            'logo'      =>  $this->System_model->getParam("logo"),
+        ];
+        $content = $this->load->view("_email/header",$emailData, true);
+        $content .= $this->load->view("_email/taskSubmittedCustomer",$emailData, true);
+        $content .= $this->load->view("_email/footer",[], true);
+        $this->Email_model3->save($_SESSION['customer_email'],"Task Submitted",$content);
+
+        // notify admins for task created
+        $members = $this->System_model->getParam("notification_create_tasks",true);
+        foreach($members as $m){
+            $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
+            $this->Email_model3->save($user->email,"{$_SESSION['customer_name']} Submitted a Task",$content);
+        }
+    }
 }
