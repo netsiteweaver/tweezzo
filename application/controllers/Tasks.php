@@ -200,13 +200,13 @@ class Tasks extends MY_Controller {
         $this->data['pagination'] = getPagination("tasks/listing",$total_rows,$per_page);
 
         if(!empty($customer_id)){
-            $this->data['page_title'] .= " - " . $this->data['tasks'][0]->company_name;
+            if(isset($this->data['tasks'][0]->company_name)) $this->data['page_title'] .= " - " . $this->data['tasks'][0]->company_name;
         }
         if(!empty($project_id)){
-            $this->data['page_title'] .= " - " . $this->data['tasks'][0]->project_name;
+            if(isset($this->data['tasks'][0]->project_name)) $this->data['page_title'] .= " - " . $this->data['tasks'][0]->project_name;
         }
         if(!empty($sprint_id)){
-            $this->data['page_title'] .= " - " . $this->data['tasks'][0]->sprint_name;
+            if(isset($this->data['tasks'][0]->sprint_name)) $this->data['page_title'] .= " - " . $this->data['tasks'][0]->sprint_name;
         }
 
         $this->load->model('Users_model');

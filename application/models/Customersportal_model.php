@@ -37,8 +37,10 @@ class Customersportal_model extends CI_Model
 		$this->db->insert("portal_login_history");
 	}
 
-    public function getProjects($customer_id)
+    public function getProjects($customer_access_id)
     {
+        //get master customer id
+        $customer_id = $this->db->select()->from("customer_access")->where("id",$customer_access_id)->get()->row()->customer_id;
         return $this->db->select("p.*,u.name createdBy, count(s.id) sprints_count")
                         ->from("projects p")
                         ->join("users u","u.id=p.created_by","")
@@ -52,6 +54,8 @@ class Customersportal_model extends CI_Model
 
     public function getSprints($project_id="")
     {
+        //get master customer id
+        $customer_id = $this->db->select()->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row()->customer_id;
         $this->db->select("s.*,u.name createdBy, p.name project_name, count(t.id) tasks_count")
                         ->from("sprints s")
                         ->join("projects p","p.id=s.project_id")
@@ -62,7 +66,7 @@ class Customersportal_model extends CI_Model
 
         $this->db->where(["s.status"=>'1']);
         if(empty($project_id)){
-            $this->db->where(["c.customer_id"=>$_SESSION['customer_access_id']]);
+            $this->db->where(["c.customer_id"=>$customer_id]);
         }else{
             $this->db->where(["s.project_id"=>$project_id]);
         }
@@ -74,6 +78,8 @@ class Customersportal_model extends CI_Model
 
     public function getTasks($sprint_id,$sort_by="task_number",$sort_dir="asc",$stages,$notes_only="")
     {
+        //get master customer id
+        $customer_id = $this->db->select()->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row()->customer_id;
         $this->db->select("t.*,u.name createdBy, p.name project_name, s.name sprint_name, count(tn.id) notes_count")
                         ->from("tasks t")
                         ->join("sprints s","s.id=t.sprint_id")
@@ -96,7 +102,7 @@ class Customersportal_model extends CI_Model
         }
 
         if(empty($sprint_id)){
-            $this->db->where(["c.customer_id"=>$_SESSION['customer_access_id']]);
+            $this->db->where(["c.customer_id"=>$customer_id]);
         }else{
             $this->db->where(["t.sprint_id"=>$sprint_id]);
         }
@@ -112,6 +118,8 @@ class Customersportal_model extends CI_Model
 
     public function getTask($uuid)
     {
+        //get master customer id
+        $customer_id = $this->db->select()->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row()->customer_id;
         $task = $this->db->select("t.*,u.name createdBy")
                             ->from("tasks t")
                             ->join("users u","u.id=t.created_by","")
@@ -122,10 +130,10 @@ class Customersportal_model extends CI_Model
         if(empty($task)) {
             return false;
         }
-        $task->notes = $this->db->select("t.*, u.name developer, c.company_name customer")
+        $task->notes = $this->db->select("t.*, u.name developer, ca.name as customer, COALESCE(u.name, ca.name) as author")
                                 ->from("task_notes t")
                                 ->join("users u","u.id=t.created_by","left")
-                                ->join("customers c","c.customer_id=t.created_by_customer","left")
+                                ->join("customer_access ca","ca.id=t.created_by_customer","left")
                                 ->where("t.task_id",$task->id)
                                 ->where("t.display_type","public")
                                 ->order_by("created_on","desc")
@@ -146,6 +154,8 @@ class Customersportal_model extends CI_Model
 
     public function saveNote($task_id, $note)
     {
+        //get master customer id
+        // $customer_id = $this->db->select()->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row()->customer_id;
         $this->db->set("task_id",$task_id);
         $this->db->set("notes",$note);
         $this->db->set("created_by_customer",$_SESSION['customer_access_id']);
@@ -161,7 +171,7 @@ class Customersportal_model extends CI_Model
         $taskDetails = $this->Tasks_model->fetchSingle($taskUuid);
 
         // get customer email
-        $userEmail = $this->db->select("email")->from('customers')->where('customer_id',$_SESSION['customer_access_id'])->get()->row()->email;
+        $userEmail = $this->db->select("email")->from('customer_access')->where('id',$_SESSION['customer_access_id'])->get()->row()->email;
 
         $this->Tasks_model->notifyUsers($taskDetails, ['task_id'=>$task_id, 'notes'=>$note], $userEmail);
 
@@ -335,6 +345,65 @@ class Customersportal_model extends CI_Model
         foreach($members as $m){
             $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
             $this->Email_model3->save($user->email,"{$_SESSION['customer_name']} Submitted a Task",$content);
+        }
+    }
+
+    public function createUserAccess($name,$email,$password)
+    {
+        $customer = $this->db->select("customer_id, email, name")->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row();
+
+        $existing_users = $this->db->select("count(id) as ct")->from("customer_access")->where("customer_id",$customer->customer_id)->get()->row()->ct;
+
+        if($existing_users >= 5){
+            return [
+                "result"    =>  false,
+                "reason"    =>  'Exceeded quota. Maximum 5 users allowed'
+            ];
+        }
+        $this->db->set("name",$name);
+        $this->db->set("email",$email);
+        $this->db->set("password",md5($password),true);
+        $this->db->set("created_by_customer",$_SESSION['customer_access_id']);
+        $this->db->set("customer_id",$customer->customer_id);
+        $this->db->set("created_on",'NOW()',true);
+        $this->db->set("created_by_type","customer");
+        $this->db->insert("customer_access");
+
+        $this->emailForUserCreated($name,$email,$customer);
+
+        //return existing customer access for customer
+        $users = $this->db->query("SELECT *
+                        FROM customer_access
+                        WHERE customer_id = $customer->customer_id")->result();
+        return [
+            'result'    =>  true,
+            'users'     =>  $users
+        ];
+    }
+
+    private function emailForUserCreated($name,$email,$customer)
+    {
+        $this->load->model("Email_model3");
+        $this->load->model("System_model");
+        // $submitted_task = $this->db->query("SELECT st.*, ca.name customerName, ca.email customerEmail
+        //                     FROM submitted_tasks st
+        //                     JOIN customer_access ca on ca.customer_id = st.created_by_customer
+        //                     WHERE st.id = $task_id")->row();
+        $emailData = [
+            'user_created'  =>  ["name"=>$name,"email"=>$email],
+            'customer'      =>  $customer,
+            'logo'          =>  $this->System_model->getParam("logo"),
+        ];
+        $content = $this->load->view("_email/header",$emailData, true);
+        $content .= $this->load->view("_email/userAdded",$emailData, true);
+        $content .= $this->load->view("_email/footer",[], true);
+        $this->Email_model3->save($customer->email,"User Added",$content);
+
+        // notify admins for task created
+        $members = $this->System_model->getParam("notification_create_users",true);
+        foreach($members as $m){
+            $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
+            $this->Email_model3->save($user->email,"{$customer->name} Added a User",$content);
         }
     }
 }

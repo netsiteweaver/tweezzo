@@ -137,8 +137,10 @@ class Notes_model extends CI_Model{
         return $notes;
     }
 
-    public function getNotesByCustomerId($customer_id,$start_date="",$end_date="",$project_id="",$sprint_id="")
+    public function getNotesByCustomerId($customer_access_id,$start_date="",$end_date="",$project_id="",$sprint_id="")
     {
+        //get master customer id
+        $customer_id = $this->db->select()->from("customer_access")->where("id",$customer_access_id)->get()->row()->customer_id;
         $query = "select DISTINCT tn.id, t.uuid task_uuid, COALESCE(u1.name, c.company_name) author, tn.notes, tn.created_on, tn.out_of_scope, t.name taskName, t.task_number taskNumber , t.`section` taskSection , s.id sprintId, s.name sprintName, p.id projectId, p.name projectName, c2.customer_id customerId, c2.company_name 
                 from task_notes tn 
                 left join users u1 ON u1.id = tn.created_by 

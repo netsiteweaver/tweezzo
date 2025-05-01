@@ -11,20 +11,24 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="">Name</label>
-                            <input type="text" class="form-control">
+                            <input name="name" type="text" class="form-control">
                         </div>
                         <div class="form-group">
                             <label for="">Email</label>
-                            <input type="text" class="form-control">
+                            <input name="email" type="email" class="form-control">
                         </div>
                         <div class="form-group">
                             <label for="">Password</label>
-                            <input type="text" class="form-control">
+                            <input name="password" type="password" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="">Confirm Password</label>
+                            <input name="confirm_password" type="password" class="form-control">
                         </div>
                     </div>
                     <div class="col-md-6">
-                      <p>Exting Users</p>
-                      <table class="table">
+                      <p class='label-existing-users'><?php echo count($user_access) . " Existing User".( count($user_access)>1?'s':'' );?> <i>(max 5 users)</i></p>
+                      <table id='existing_users' class="table">
                         <thead>
                           <tr>
                             <th>User</th>
@@ -34,12 +38,14 @@
                         </thead>
                         <tbody>
                           <?php foreach($user_access as $user):?>
-                          <tr>
+                          <tr class='<?php echo ($user->isAdmin) ? 'text-bold' : '';?>'>
                             <td><?php echo $user->userName;?></td>
                             <td><?php echo $user->userEmail;?></td>
                             <td>
                               <?php if(!$user->isAdmin):?>
                               <i class="bi-trash"></i>
+                              <?php else:?>
+                                <img src="assets/images/crown.png" style='width:16px;' alt="">
                               <?php endif;?>
                             </td>
                           </tr>
@@ -50,10 +56,12 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i>
                     Close</button>
+                    <?php if(count($user_access)<5):?>
                 <button type="button" class="btn btn-info create-user-access"><i class="bi bi-save"></i> Create User
                     Access</button>
+                    <?php endif;?>
             </div>
         </div>
     </div>

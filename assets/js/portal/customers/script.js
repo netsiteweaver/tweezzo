@@ -134,6 +134,72 @@ jQuery(function(){
         alertify.alert("Not yet imeplemented")
     })
 
+    $('.create-user-access').on('click', function(){
+        let name = $("#addUserAccessModal input[name=name]").val();
+        let email = $("#addUserAccessModal input[name=email]").val();
+        let pswd = $("#addUserAccessModal input[name=password]").val();
+        let pswd2 = $("#addUserAccessModal input[name=confirm_password]").val();
+        let valid = true;
+        let errorMessage = "";
+        console.log(name,email,pswd,pswd2)
+
+        if(name.length < 4){
+            valid = false;
+            errorMessage += "Please enter a name (4 chars min)<br>";
+        }
+
+        if(!validEmail(email)){
+            valid = false;
+            errorMessage += "Please enter a valid email<br>";
+        }
+
+        if(pswd.length < 4){
+            valid = false;
+            errorMessage += "Please enter a password (4 chars min)<br>";
+        }
+
+        if(pswd != pswd2){
+            valid = false;
+            errorMessage += "Confirmation password does not match<br>";
+        }
+        
+        if(!valid){
+            alertify.error(errorMessage);
+            return false;
+        }
+
+        $.ajax({
+            url: base_url + "portal/customers/createUserAccess",
+            method: "POST",
+            dataType: "json",
+            data:{name:name,email:email,password:pswd},
+            success:function(response)
+            {
+                if(!response.result){
+                    alertify.alert(response.reason)
+                }else{
+                    $("#addUserAccessModal #existing_users tbody").empty();
+                    $("#addUserAccessModal .label-existing-users").html(response.users.length + " Existing User" + (( response.users.count >1 ) ? 's' : '') + " <i>(Max 5 Users)</i>")
+                    if(response.users.length >= 5){
+                        $("#addUserAccessModal .create-user-access").remove();
+                    }
+                    $(response.users).each(function(i,j){
+                        let row = "<tr>";
+                        row += `<td>${j.name}</td>`;
+                        row += `<td>${j.email}</td>`;
+                        row += "<td></td>";
+                        $("#addUserAccessModal #existing_users tbody").append(row);
+                    })
+                    alertify.alert("User has been added");
+                    $("#addUserAccessModal input[name=name]").val("");
+                    $("#addUserAccessModal input[name=email]").val("");
+                    $("#addUserAccessModal input[name=password]").val("");
+                    $("#addUserAccessModal input[name=confirm_password]").val("");
+                }
+            }
+        })
+    })
+
     $('.autosubmit').on("change", function(){
         $('.apply').trigger("click");
     })
@@ -362,3 +428,8 @@ function zoomIconForSeconds(elementID, seconds) {
       icon.classList.remove('zoom-animation'); // Stop animation after X seconds
     }, seconds * 1000); // seconds → milliseconds
   }
+
+function validEmail(email) {
+    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return pattern.test(email);
+}  

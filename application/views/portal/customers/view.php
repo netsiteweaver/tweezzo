@@ -35,23 +35,23 @@
 				</div>
 				<div class="form-group">
 					<label for="">Description</label>
-					<div class="form-control"><?php echo $task->description;?></div>
+					<div class="form-control" style='min-height:150px'><?php echo $task->description;?></div>
 				</div>
 				<p class='mt-5'>SCOPE</p>
 				<div class="form-group">
 					<label for="">What's expected from this task</label>
 					<p class="notes-black">What is expected from this task. This can be in terms of display, print, performance or any other</p>
-					<textarea name="" id="" rows='5' class="form-control"></textarea>
+					<textarea name="" id="" rows='5' class="form-control" disabled></textarea>
 				</div>
 				<div class="form-group">
 					<label for="">What's not included</label>
 					<p class="notes-black">what is not included in this task. If nothing is specified here, the scope of this task will be limited strictly to the task description.</p>
-					<textarea name="" id="" rows='5' class="form-control"></textarea>
+					<textarea name="" id="" rows='5' class="form-control" disabled></textarea>
 				</div>
 				<div class="form-group">
 					<label for="">When it's considered done</label>
 					<p class="notes-black">what is expected from this task for it to be considered completed.</p>
-					<textarea name="" id="" rows='5' class="form-control"></textarea>
+					<textarea name="" id="" rows='5' class="form-control" disabled></textarea>
 				</div>
 				<div class="row mt-5">
 					<div class="col-md-3">

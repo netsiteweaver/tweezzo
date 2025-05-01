@@ -23,7 +23,7 @@ class Customers extends CI_Controller
                 SELECT c.company_name, ca.name userName, ca.email userEmail, COALESCE(ca.admin, null) isAdmin
                 FROM customers c
                 LEFT JOIN customer_access ca ON ca.customer_id = c.customer_id
-                WHERE c.status = 1 AND c.customer_id = {$_SESSION['customer_access_id']} 
+                WHERE c.status = 1 AND c.customer_id = (SELECT customer_id FROM customer_access WHERE id = {$_SESSION['customer_access_id']})
                 ORDER BY ca.name
             ")->result();
         }
@@ -241,6 +241,47 @@ class Customers extends CI_Controller
                 "result"    =>  true
             ));
         }
+        exit;
+    }
+
+    public function createUserAccess()
+    {
+        $name = trim($this->input->post("name"));
+        $email = trim($this->input->post("email"));
+        $password = trim($this->input->post("password"));
+        // $confirm_password = trim($this->input->post("confirm_password"));
+        $valid = true;
+        $php_errormsg = "";
+
+        if(strlen($name)<4){;
+            $php_errormsg .= "Please enter a name (4 chars min)<br>";
+            $valid = false;
+        }
+        if(!filter_var($email,FILTER_VALIDATE_EMAIL)){
+            $php_errormsg .= "Please enter a valid email<br>";
+            $valid = false;
+        }
+        if(strlen($password)<4){
+            $php_errormsg .= "Please enter a password (4 chars min)<br>";
+            $valid = false;
+        }
+
+        if(!$valid){
+            echo json_encode(['result'=>false,'reason'=>$php_errormsg]);
+            exit;
+        }
+
+        $ct = $this->db->select("count(id) as ct")->from("customer_access")->where("email",$email)->get()->row()->ct;
+        
+        if($ct>0){
+            echo json_encode(['result'=>false,'reason'=>"Email already used"]);
+            exit;
+        }
+
+        $result = $this->Customersportal_model->createUserAccess($name, $email, $password);
+
+        echo json_encode($result);
+
         exit;
     }
     
