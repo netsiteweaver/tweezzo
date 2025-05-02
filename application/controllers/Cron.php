@@ -104,4 +104,29 @@ class Cron extends CI_Controller {
         
     }
 
+    public function fetchQuotes()
+    {
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, "https://zenquotes.io/api/quotes");
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        $this->data['quotes'] = curl_exec($curl);
+        $quotes = json_decode($this->data['quotes']);
+        curl_close($curl);
+
+        $this->saveQuotes($quotes);
+    }
+
+    private function saveQuotes($quotes)
+    {
+        foreach($quotes as $quote){
+            $this->db->set("quote_text",$quote->q);
+            $this->db->set("author_name",$quote->a);
+            $this->db->set("character_count",$quote->c);
+            $this->db->set("html",$quote->h);
+            $this->db->set("fetched_on","NOW()",false);
+            $this->db->set("quote_text",$quote->q);
+            $this->db->insert_batch("quotes");
+        }
+    }
+
 }
