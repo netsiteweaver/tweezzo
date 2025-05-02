@@ -246,7 +246,7 @@
     <!-- <div id="modal-overlay" class="hidden"><div class="lds-dual-ring"></div></div> -->
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title text-center" id="exampleModalLongTitle">Login</h3>
+        <h3 class="modal-title text-center" id="exampleModalLongTitle">Session Expired</h3>
         <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button> -->
@@ -264,7 +264,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-        <div class="btn btn-info" id="modal-signin"><i class="fa fa-sign-in"></i> Sign In</div>
+        <div class="btn btn-info" id="keep-session"><i class="fa fa-sign-in"></i> Sign In</div>
       </div>
     </div>
   </div>

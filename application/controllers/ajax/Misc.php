@@ -261,4 +261,23 @@ class Misc extends CI_Controller
         exit;
 
     }
+
+    public function keep_session()
+    {
+        $this->load->model("Users_model");
+        $user = $this->Users_model->keep_session();
+        if(!$user){
+            echo json_encode(["result"=>false,"reason"=>"Invalid credentials"]);
+            exit;
+        }else{
+            $_SESSION['authenticated_user']=$user;
+            $_SESSION['user_id'] 	= $user->id;
+            $_SESSION['user_name']  = $user->username;
+            $_SESSION['user_level'] 	= $user->user_level;
+            $_SESSION['photo'] 	= $user->photo;
+            echo json_encode(["result"=>true]);
+            exit;
+        }
+        
+    }
 }

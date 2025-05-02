@@ -37,7 +37,8 @@ class Auth extends CI_Controller {
 			if( 
 				(strtolower(trim($this->uri->segment(1)))=='ajax') && 
 				(strtolower(trim($this->uri->segment(2))) == 'misc') && 
-				(strtolower(trim($this->uri->segment(3))) == 'getusersbytaskuuid') ){
+				( (strtolower(trim($this->uri->segment(3))) == 'getusersbytaskuuid') || (strtolower(trim($this->uri->segment(3))) == 'keep_session') )
+			){
 					
 			}elseif(empty($userid)) {
 				if( 
@@ -48,12 +49,13 @@ class Auth extends CI_Controller {
 	
 				}else{
 					$s1=$this->uri->segment(1);$s2=$this->uri->segment(2);$s3=$this->uri->segment(3);
-					$_SESSION['expired_url'] = $s1. ((!empty($s2))?"/".$s2.((!empty($s3))?"/".$s3:""):"");
 					if($s1=='ajax'){
 						echo json_encode(array(
 							"result"=>false,
 							"reason"=>"login"));
 						exit;
+					}else{
+						$_SESSION['expired_url'] = $s1. ((!empty($s2))?"/".$s2.((!empty($s3))?"/".$s3:""):"");
 					}
 					redirect( base_url("users/signin") );
 				}

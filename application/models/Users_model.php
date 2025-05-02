@@ -170,6 +170,29 @@ class Users_model extends CI_Model{
         return $result;
     }
     
+    public function keep_session() {
+        $inputEmail = $this->input->post('inputEmail');
+        $inputPassword = $this->input->post('inputPassword');
+        $this->db->select("users.id, username, users.name, photo, user_level, user_type, users.email, created, last_login, ip, job_title, users.status,department_id");
+        $this->db->where("password", md5($inputPassword), true );
+        $this->db->where("users.email", $inputEmail);
+        $this->db->where("status", '1');
+        $result = $this->db->get("users")->row();
+        // if(empty($result->email)){
+        //     $result->status=99;
+        // }
+        if($result) {
+            $this->recordSignIn($result->id);
+            $this->recordLogin($result);
+        }else{
+            $user = new stdClass;
+            $user->id = null;
+            $user->username = $user_info['inputEmail'];
+            $this->recordLogin($user);
+        }
+        return $result;
+    }
+
     public function recordSignIn($id)
     {
         $ip = $this->input->ip_address();

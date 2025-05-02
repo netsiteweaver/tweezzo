@@ -4,6 +4,7 @@ var GlobalFormStatus = true;
 var latest_logins_id = 0;
 var latest_orders_id = 0;
 var deviceInfo = navigator;
+var pingActive;
 
 function message(data)
 {
@@ -21,6 +22,10 @@ function message(data)
 }
 
 $(document).ready(function(){
+
+	pingActive = setInterval(function(){
+		isLoggedIn();
+	},5000)
 
 	// window.setTimeout(function(){
 	// 	$('#search_serialnumber').trigger("focus")
@@ -590,7 +595,7 @@ $(document).ready(function(){
 		$('#issuesModal').modal("show");
 	})
 
-	$('#modal-signin').on("click",function(){
+	$('#keep-session').on("click",function(){
 		let valid = true;
 		let email = $('input[name=modal-email]').val();
 		let pswd = $('input[name=modal-password]').val();
@@ -607,21 +612,21 @@ $(document).ready(function(){
 		if(!valid) return false;
 
 		$.ajax({
-			url:base_url+"users/authenticate",
+			url:base_url+"ajax/misc/keep_session",
 			type:"POST",
 			dataType:"JSON",
-			data:{inputEmail:$('input[name=modal-email]').val(),inputPassword:$('input[name=modal-password]').val()},
+			data:{inputEmail:email, inputPassword:pswd},
 			success:function(response){
 			  if(response.result == false){
-				$("#signin").removeClass("hidden");
-				$("#result").addClass("alert alert-danger").text(response.reason);
+				// $("#signin").removeClass("hidden");
+				$("#login-modal #result").addClass("alert alert-danger").text(response.reason);
 			  }else{
-				toastr.success("Success");
-				$('#login-modal').modal("hide");
+				toastr.success("Authentication Successful!");
+				isLoggedIn();
 				setTimeout(function(){
-					getVersionHistory();
-				},500)
-				
+					window.location.href = base_url + "dashboard/index";
+				},1000)
+				$('#login-modal').modal("hide");
 			  }
 			},
 			error:function(){
@@ -1042,4 +1047,23 @@ function Filter(searchBox, tableToFilter, searchColumns) {
 function valid(email) {
     const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return pattern.test(email);
+}
+
+
+function isLoggedIn()
+{
+	$.ajax({
+		url: base_url + "ajax/ping",
+		method: "get",
+		dataType:"json",
+		success: function(response)
+		{
+			console.log(response)
+			if( (response.result==false) && (response.reason == 'login') )
+			{
+				clearInterval(pingActive);
+				$('#login-modal').modal("show");
+			}
+		}
+	})
 }
