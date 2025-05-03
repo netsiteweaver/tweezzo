@@ -20,9 +20,9 @@
                 <li class="nav-item">
                     <a class="nav-link <?php echo ($this->uri->segment(3)=='tasks')?'active':'';?>" href="portal/customers/tasks"><div class="bg-icon bg-checklist_24px"></div>Tasks</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php echo ($this->uri->segment(3)=='notes')?'active':'';?>" href="portal/customers/notes"><div class="bg-icon bg-chat_24px"></div>Notes</a>
-                </li>
+                <!-- <li class="nav-item">
+                    <a class="nav-link <?php //echo ($this->uri->segment(3)=='notes')?'active':'';?>" href="portal/customers/notes"><div class="bg-icon bg-chat_24px"></div>Notes</a>
+                </li> -->
                 <!-- <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
@@ -63,3 +63,9 @@
         </div>
     </div>
 </nav>
+<div class="row">
+    <div class="random-quote-container">
+        <span class="quote-text"><?php echo $random_quote->quote_text;?></span>
+        <span class="author-name"><?php echo $random_quote->author_name;?></span>
+    </div>
+</div>

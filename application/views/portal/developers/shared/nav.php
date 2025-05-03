@@ -79,8 +79,9 @@
         </div>
     </div>
 </nav>
-<!-- <div class="row">
-    <div class="col-md-12" style='position:relative;'>
-        <p class="logged-in-user"><?php echo "{$_SESSION['developer_name']} &lt;{$_SESSION['developer_email']}&gt";?></p>
+<div class="row">
+    <div class="random-quote-container">
+        <span class="quote-text"><?php echo $random_quote->quote_text;?></span>
+        <span class="author-name"><?php echo $random_quote->author_name;?></span>
     </div>
-</div> -->
+</div>

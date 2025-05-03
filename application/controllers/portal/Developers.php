@@ -12,6 +12,9 @@ class Developers extends CI_Controller
         $this->data['logo'] = $this->system_model->getParam("logo");
         $this->data['page_title'] = "";
 
+        $this->load->model("Quotes_model");
+        $this->data['random_quote'] = $this->Quotes_model->getRandomQuote();
+
         if(isset($_SESSION['developer_id'])){
             $this->data['customers'] = $this->Developersportal_model->getMyCustomers($_SESSION['developer_id']);
             $this->data['projects'] = $this->Developersportal_model->getMyProjects($_SESSION['developer_id']);

@@ -38,6 +38,9 @@ class MY_Controller extends CI_Controller{
 
         $this->data['qs'] = $_SERVER["QUERY_STRING"];
 
+        $this->load->model("Quotes_model");
+        $this->data['random_quote'] = $this->Quotes_model->getRandomQuote();
+
         // $this->load->library('migration');
 
         $this->mybreadcrumb->add('Dashboard', base_url('dashboard/index'));

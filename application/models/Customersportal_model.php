@@ -367,6 +367,7 @@ class Customersportal_model extends CI_Model
         $this->db->set("customer_id",$customer->customer_id);
         $this->db->set("created_on",'NOW()',true);
         $this->db->set("created_by_type","customer");
+        $this->db->set("admin","0");
         $this->db->insert("customer_access");
 
         $this->emailForUserCreated($name,$email,$customer);

@@ -18,6 +18,9 @@ class Customers extends CI_Controller
         $this->data['logo'] = $this->system_model->getParam("logo");
         $this->data['page_title'] = "";
 
+        $this->load->model("Quotes_model");
+        $this->data['random_quote'] = $this->Quotes_model->getRandomQuote();
+
         if(isset($_SESSION['customer_access_id'])){
             $this->data['user_access'] = $this->db->query("
                 SELECT c.company_name, ca.name userName, ca.email userEmail, COALESCE(ca.admin, null) isAdmin

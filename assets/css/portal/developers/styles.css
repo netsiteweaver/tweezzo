@@ -175,3 +175,18 @@ label:has(+ input:required):after, label:has(+ textarea:required):after {
   .zoom-animation {
     animation: zoomInOut 1.5s ease-in-out infinite;
   }
+
+.random-quote-container {
+    text-align: right;
+    /* padding: 3px; */
+    /* border-bottom: 1px solid #eee; */
+    color: #ccc;
+}
+.random-quote-container .quote-text {
+    font-size: 0.9em;
+}
+
+.random-quote-container .author-name {
+    font-size: 0.8em;
+    font-style: italic;
+}

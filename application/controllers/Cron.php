@@ -118,6 +118,8 @@ class Cron extends CI_Controller {
 
     private function saveQuotes($quotes)
     {
+        $this->db->set("deleted_on","NOW()",false)->where("deleted_on IS NULL")->update("quotes");
+
         foreach($quotes as $quote){
             $this->db->set("quote_text",$quote->q);
             $this->db->set("author_name",$quote->a);
@@ -125,7 +127,7 @@ class Cron extends CI_Controller {
             $this->db->set("html",$quote->h);
             $this->db->set("fetched_on","NOW()",false);
             $this->db->set("quote_text",$quote->q);
-            $this->db->insert_batch("quotes");
+            $this->db->insert("quotes");
         }
     }
 
