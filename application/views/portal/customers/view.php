@@ -134,7 +134,7 @@
 								<td>
 								<?php echo nl2br($notes->notes);?>
 								<div class="float-end developer" style=''>
-								<?php echo "by {$notes->developer}{$notes->customer} on " . date_format(date_create($notes->created_on),'Y m d @ H:i');?>
+								<?php echo "by {$notes->developer}{$notes->customer} <i class='flag flag-mu'></i> on " . date_format(date_create($notes->created_on),'Y m d @ H:i');?>
 								</div>
 								</td>
 								<td >

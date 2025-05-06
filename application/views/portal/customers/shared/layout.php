@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="./node_modules/lightbox2/dist/css/lightbox.min.css">
 
     <link rel="stylesheet" href="./node_modules/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="./assets/css/country-flags.css">
 
     <!-- AlertifyJS -->
     <link rel="stylesheet" href="<?php echo base_url();?>node_modules/alertifyjs/build/css/alertify.min.css">
