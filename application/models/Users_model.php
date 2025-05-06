@@ -527,7 +527,7 @@ class Users_model extends CI_Model{
         if(empty($uuid)) return;
 
         //get client related to task
-        $queryCustomer = "select CONCAT('*',ca.name) AS personName, ca.email, 'customer' as type
+        $queryCustomer = "select ca.name AS personName, ca.email, 'customer' as type
                     from tasks t 
                     join sprints s on s.id = t.sprint_id 
                     JOIN projects p on p.id  = s.project_id 
@@ -537,7 +537,7 @@ class Users_model extends CI_Model{
         // echo $query;die;
         $customer = $this->db->query($queryCustomer)->result();
         // get developers attached to task                    
-        $queryDevelopers = "select CONCAT('**',u.name) AS personName, u.email, 'developer' as type
+        $queryDevelopers = "select u.name AS personName, u.email, 'developer' as type
                     from task_user tu 
                     join tasks t on t.id = tu.task_id 
                     join users u on u.id = tu.user_id 

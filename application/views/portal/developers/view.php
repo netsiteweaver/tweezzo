@@ -135,7 +135,7 @@
                         <?php elseif($task->stage == 'in_progress'):?>
                         <div data-stage='testing' class="stage-button stage-button-testing changeStage"><img src="./assets/images/file-transfer.png" alt=""> Testing <i class="bi bi-chevron-right"></i></div>
                         <?php elseif($task->stage == 'testing'):?>
-                        <div data-stage='staging' class="stage-button stage-button-in staging changeStage"><img src="./assets/images/file-transfer.png" alt=""> Staging <i class="bi bi-chevron-right"></i></div>
+                        <div data-stage='staging' class="stage-button stage-button-staging changeStage"><img src="./assets/images/file-transfer.png" alt=""> Staging <i class="bi bi-chevron-right"></i></div>
                         <?php elseif($task->stage == 'validated'):?>
                         <div data-stage='completed' class="stage-button stage-button-completed changeStage"><img src="./assets/images/file-transfer.png" alt=""> Completed <i class="bi bi-chevron-right"></i></div>
                         <?php endif;?>
