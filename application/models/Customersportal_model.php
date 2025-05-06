@@ -338,13 +338,14 @@ class Customersportal_model extends CI_Model
         $content = $this->load->view("_email/header",$emailData, true);
         $content .= $this->load->view("_email/taskSubmittedCustomer",$emailData, true);
         $content .= $this->load->view("_email/footer",[], true);
-        $this->Email_model3->save($_SESSION['customer_email'],"Task Submitted",$content);
+        $subject = "{$_SESSION['customer_name']} Submitted a Task";
+        $this->Email_model3->save($_SESSION['customer_email'],$subject,$content);
 
         // notify admins for task created
         $members = $this->System_model->getParam("notification_create_tasks",true);
         foreach($members as $m){
             $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
-            $this->Email_model3->save($user->email,"{$_SESSION['customer_name']} Submitted a Task",$content);
+            $this->Email_model3->save($user->email,$subject,$content);
         }
     }
 
@@ -398,13 +399,14 @@ class Customersportal_model extends CI_Model
         $content = $this->load->view("_email/header",$emailData, true);
         $content .= $this->load->view("_email/userAdded",$emailData, true);
         $content .= $this->load->view("_email/footer",[], true);
-        $this->Email_model3->save($customer->email,"User Added",$content);
+        $subject = "{$customer->name} Added a User";
+        $this->Email_model3->save($customer->email,$subject,$content);
 
         // notify admins for task created
         $members = $this->System_model->getParam("notification_create_users",true);
         foreach($members as $m){
             $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
-            $this->Email_model3->save($user->email,"{$customer->name} Added a User",$content);
+            $this->Email_model3->save($user->email,$subject,$content);
         }
     }
 }

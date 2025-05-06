@@ -22,7 +22,7 @@
     <div class="col-md-6">
         <div class="card ">
 			<div class="card-header bg-teal">
-				<h3>Task Information</h3>
+				<h3 class='card-title'>Task Information</h3>
 			</div>
 			<div class="card-body">
 				<div class="row">
@@ -86,7 +86,6 @@
 								<textarea name="description" id="" rows="5" class="form-control"><?php echo $task->description;?></textarea>
 							</div>
 							<div class="row">
-								
 								<div class="col-md-6">
 									<div class="form-group">
 										<label>Due Date</label>
@@ -101,25 +100,21 @@
 								</div>
 								
 							</div>
+							<div class="alert alert-danger">Scope Definition</div>
 							<div class="form-group">
-								<label>Stage</label>
-								<select class="form-control required" name="stage" required>
-									<option value="" disabled>Select</option>
-									<option value="new" <?php echo ($task->stage == 'new') ? 'selected' : '';?>>New</option>
-									<option value="in_progress" <?php echo ($task->stage == 'in_progress') ? 'selected' : '';?>>In Progress</option>
-									<option value="testing" <?php echo ($task->stage == 'testing') ? 'selected' : '';?>>Testing</option>
-									<option value="staging" <?php echo ($task->stage == 'staging') ? 'selected' : '';?>>Staging</option>
-									<option value="validated" <?php echo ($task->stage == 'validated') ? 'selected' : '';?>>Validated</option>
-									<option value="completed" <?php echo ($task->stage == 'completed') ? 'selected' : '';?>>Completed</option>
-									<option value="on_hold" <?php echo ($task->stage == 'on_hold') ? 'selected' : '';?>>On Hold</option>
-									<option value="stopped" <?php echo ($task->stage == 'stopped') ? 'selected' : '';?>>Stopped</option>
+								<label for="">What's expected from this task</label>
+								<textarea name="scope_client_expectation" id="" rows='5' class="form-control" placeholder="Tell us what you expect from this task. This can be in terms of display, print, performance or any other"><?php echo $task->scope_client_expectation;?></textarea>
+							</div>
+							<div class="form-group">
+								<label for="">What's not included</label>
+								<textarea name="scope_not_included" id="" rows='5' class="form-control" placeholder="To avoid confusion and delay, let us know what is not included in this task. If nothing is specified here, the scope of this task will be limited strictly to the task description."><?php echo $task->scope_not_included;?></textarea>
+							</div>
+							<div class="form-group">
+								<label for="">When it's considered done</label>
+								<textarea name="scope_when_done" id="" rows='5' class="form-control" placeholder="Tell us what you expect from this task for it to be completed."><?php echo $task->scope_when_done;?></textarea>
+							</div>
 
-								</select>
-							</div>
-							<div class="form-group col-md-2">
-								<label>Progress</label>
-								<input type="text" class="form-control text-right" name="progress" value="<?php echo $task->progress;?> %" readonly>
-							</div>
+							
 							<input type="hidden" name="deleted_images" value="[]">
 							<div class="row">
 								<?php foreach($task->files as $file):?>	
@@ -145,7 +140,7 @@
 					<!-- /.card-body -->
 
 					<div class="card-footer ready">
-						<button type="submit" class="btn btn-success" id="save"><i class='fa fa-save'></i> Save Task</button>
+						<button type="submit" class="btn btn-success" id="save"><i class='fa fa-save'></i> Update Task</button>
 					</div>
 				</form>
 
@@ -159,6 +154,7 @@
 						<button type="submit" class="btn btn-flat btn-info" id="saveNote"><i class='fa fa-edit'></i> Save Note</button>
 					</div>
 				</form>
+
 
 				<!-- Display Previous Notes Here -->
 				
@@ -194,10 +190,23 @@
 			</div>
         </div>
     </div>
+	<!-- <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-danger">
+                    <h3 class="card-title">Scope Definition</h3>
+                </div>
+                <div class="card-body">
+                    
+                </div>
+                <div class="card-footer">
+
+                </div>
+            </div>
+        </div> -->
 	<div class="col-md-6">
 		<div class="card card-secondary">
-			<div class="card-header bg-teal">
-				<h3>Stage History</h3>
+			<div class="card-header bg-warning">
+				<h3 class='card-title'>Stage History</h3>
 			</div>
 			<div class="card-body">
 				<table class="table table-bordered table-striped">
@@ -222,7 +231,7 @@
 		</div>
 		<div class="card card-secondary">
 			<div class="card-header bg-teal">
-				<h3>Assigned Users</h3>
+				<h3 class='card-title'>Assigned Users</h3>
 			</div>
 			<div class="card-body">
 				<ul id="users-list" class="list-group">
@@ -234,6 +243,38 @@
 					</li>
 					<?php endforeach;?>
 				</ul>
+			</div>
+		</div>
+		<div class="card card-secondary">
+			<div class="card-header bg-orange">
+				<h3 class="card-title">Move Stage</h3>
+			</div>
+			<div class="card-body">
+				<form action="tasks/move_stage" method="post">
+					<input type="hidden" name="task_uuid" value="<?php echo $task->uuid;?>">
+					<input type="hidden" name="qs" value="<?php echo $qs;?>">
+					<div class="form-group">
+						<label>Stage</label>
+						<select class="form-control required" name="stage" required>
+							<option value="" disabled>Select</option>
+							<option value="new" <?php echo ($task->stage == 'new') ? 'selected' : '';?>>New</option>
+							<option value="in_progress" <?php echo ($task->stage == 'in_progress') ? 'selected' : '';?>>In Progress</option>
+							<option value="testing" <?php echo ($task->stage == 'testing') ? 'selected' : '';?>>Testing</option>
+							<option value="staging" <?php echo ($task->stage == 'staging') ? 'selected' : '';?>>Staging</option>
+							<option value="validated" <?php echo ($task->stage == 'validated') ? 'selected' : '';?>>Validated</option>
+							<option value="completed" <?php echo ($task->stage == 'completed') ? 'selected' : '';?>>Completed</option>
+							<option value="on_hold" <?php echo ($task->stage == 'on_hold') ? 'selected' : '';?>>On Hold</option>
+							<!-- <option value="stopped" <?php echo ($task->stage == 'stopped') ? 'selected' : '';?>>Stopped</option> -->
+						</select>
+					</div>
+					<div class="form-group col-md-2">
+						<label>Progress</label>
+						<input type="text" class="form-control text-right" name="progress" value="<?php echo $task->progress;?> %" readonly>
+					</div>
+					<div class="form-group col-md-2">
+						<button class="btn btn-info">Move Task</button>
+					</div>
+				</form>
 			</div>
 		</div>
 

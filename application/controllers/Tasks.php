@@ -347,6 +347,23 @@ class Tasks extends MY_Controller {
         
     }
 
+    public function move_stage()
+    {
+        //Access Control
+        if(!isAuthorised(get_class(),"add")) return false;
+
+        $data = $this->input->post();
+        $response = $this->Tasks_model->move_stage($data);
+        if($response['result']== false){
+            flashDanger($response['reason']);
+            redirect(base_url("tasks/listing?".$this->input->post('qs')));
+            return;
+        }
+        flashSuccess("Task ".$data['task_number']." stage has been updated successfully");
+        redirect(base_url("tasks/listing?".$this->input->post('qs')));
+        
+    }
+
     public function saveNote()
     {
         //Access Control

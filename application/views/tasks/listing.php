@@ -32,7 +32,12 @@
     }
 
 </style>
-
+<?php 
+// Parse the query string into an array
+parse_str($qs, $queryArray);
+if(isset($queryArray['task_uuid'])) unset($queryArray['task_uuid']);
+$cleanQuery = http_build_query($queryArray);
+?>
 <div class="row no-print">
     <div class="col-xs-2 mt-4">
         <?php if($perms['add']): ?>
@@ -333,14 +338,14 @@
                             <td class='no-print' style='width:150px;'>
                                 <?php if($perms['view']): ?>
                                 <a
-                                    href="<?php echo base_url('tasks/view?task_uuid=' . $task->uuid."&".$qs); ?>">
+                                    href="<?php echo base_url('tasks/view?task_uuid=' . $task->uuid."&".$cleanQuery); ?>">
                                     <div class="btn btn-flat btn-default"><i class='fas fa-eye'></i><span
                                             class='ButtonLabel'></span></div>
                                 </a>
                                 <?php endif; ?>
                                 <?php if($perms['edit']): ?>
                                 <a
-                                    href="<?php echo base_url('tasks/edit?task_uuid=' . $task->uuid."&".$qs); ?>">
+                                    href="<?php echo base_url('tasks/edit?task_uuid=' . $task->uuid."&".$cleanQuery); ?>">
                                     <div class="btn btn-flat btn-primary"><i class='fas fa-edit'></i><span
                                             class='ButtonLabel'></span></div>
                                 </a>

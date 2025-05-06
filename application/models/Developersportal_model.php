@@ -307,7 +307,8 @@ class Developersportal_model extends CI_Model{
             $content = $this->load->view("_email/header",$emailData, true);
             $content .= $this->load->view("_email/taskStageChange",$emailData, true);
             $content .= $this->load->view("_email/footer",[], true);
-            $this->Email_model3->save($email,"A Task has changed stage",$content);
+            $subject = "Task/{$result->task_number}/{$result->sprint_name}/{$result->project_name} moved to " . strtoupper(str_replace("_"," ",$result->task_stage));
+            $this->Email_model3->save($email,$subject,$content);
         }
     }
 
@@ -352,7 +353,7 @@ class Developersportal_model extends CI_Model{
         }
 
         $this->db->set("uuid",gen_uuid());
-        $this->db->set("created_by_developer",$_SESSION['developer_id']);
+        $this->db->set("created_by",$_SESSION['developer_id']);
         $this->db->set("created_on",date("Y-m-d H:i:s"));
         $this->db->set("sprint_id",$sprint_id);
         $this->db->set("name",$name);
@@ -387,7 +388,7 @@ class Developersportal_model extends CI_Model{
                             JOIN sprints s ON s.id = st.sprint_id
                             JOIN projects p ON p.id = s.project_id
                             JOIN customers c ON c.customer_id = p.customer_id
-                            JOIN users u on u.id = st.created_by_developer
+                            JOIN users u on u.id = st.created_by
                             WHERE st.id = $task_id")->row();
         $emailData = [
             'title'     =>  'Task Submitted',
@@ -397,13 +398,14 @@ class Developersportal_model extends CI_Model{
         $content = $this->load->view("_email/header",$emailData, true);
         $content .= $this->load->view("_email/taskSubmittedDeveloper",$emailData, true);
         $content .= $this->load->view("_email/footer",[], true);
-        $this->Email_model3->save($_SESSION['developer_email'],"Task Submitted",$content);
+        $subject = "{$_SESSION['developer_name']} Submitted a Task";
+        $this->Email_model3->save($_SESSION['developer_email'],$subject,$content);
 
         // notify admins for task created
         $members = $this->System_model->getParam("notification_create_tasks",true);
         foreach($members as $m){
             $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
-            $this->Email_model3->save($user->email,"{$_SESSION['developer_name']} Submitted a Task",$content);
+            $this->Email_model3->save($user->email,$subject,$content);
         }
     }
 

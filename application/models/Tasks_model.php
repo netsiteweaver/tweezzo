@@ -155,6 +155,72 @@ class Tasks_model extends CI_Model{
         return $tasks;
     }
 
+    public function move_stage($data)
+    {
+        $this->load->model("System_model");
+        $this->load->model("email_model2");
+        
+        $this->db->query("SET @current_user_email = '{$_SESSION['authenticated_user']->email}'");
+        $this->db->query("SET @current_user_ip = '{$_SERVER['REMOTE_ADDR']}'");
+        $this->db->query("SET @current_user_agent = '{$_SERVER['HTTP_USER_AGENT']}'");
+        $this->db->query("SET @current_user_id = " . (int) $_SESSION['user_id']);
+        $this->db->query("SET @current_user_type = 'user'");
+        $this->db->query("SET @@session.time_zone = '+04:00'");
+
+        $this->db->set('stage',$data['stage']);
+        $this->db->set('progress',$data['progress']);
+        $this->db->where('uuid',$data['task_uuid']);
+        $this->db->update('tasks');
+
+        $rows = $this->db->affected_rows();
+
+        if($this->db->affected_rows() == 0)
+        {
+            return ['result'=>false,'reason'=>'Stage submitted was same as previous'];
+        }
+        $author = $this->db->select()->from("users")->where("id",$_SESSION['user_id'])->get()->row();
+        $task = $this->db->query("SELECT t.task_number, 
+                                        t.name task_name, 
+                                        t.description task_description, 
+                                        t.section task_section, 
+                                        t.stage task_stage, 
+                                        p.name project_name, 
+                                        s.name sprint_name, 
+                                        c.company_name customer_name 
+                                    FROM tasks t 
+                                    JOIN sprints s ON s.id = t.sprint_id
+                                    JOIN projects p ON p.id = s.project_id
+                                    JOIN customers c ON c.customer_id = p.customer_id
+                                    WHERE t.uuid = '{$data['task_uuid']}'")->row();
+        $members = $this->System_model->getParam("notification_update_tasks",true);
+        foreach($members as $m){
+            $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
+            
+            // $this->load->model("Sprints_model");
+            // $projectInfo = $this->Sprints_model->getProjectInfo($data['sprint_id']);
+
+            $this->load->model("Email_model3");
+            $this->load->model("system_model");
+            $emailData = [
+                // 'title'         =>  'Task Updated',
+                // 'projectInfo'   =>  $projectInfo,
+                'task'          =>  $task,
+                'logo'          =>  $this->system_model->getParam("logo"),
+                // 'link'          =>  base_url('tasks/view?task_uuid='.$data['task_uuid']),
+                // 'link_label'    =>  'View Task',
+            ];
+            $content = $this->load->view("_email/header",$emailData, true);
+            $content .= $this->load->view("_email/taskStageChange2",$emailData, true);
+            $content .= $this->load->view("_email/footer",[], true);
+
+            $subject = "{$author->name} Moved Task {$task->task_number}/{$task->project_name}/{$task->sprint_name} to ".strtoupper(str_replace("_"," ",$task->task_stage));
+
+            $this->Email_model3->save($user->email,$subject,$content);
+
+        }
+        return ['result'=>true];
+
+    }
 
     public function save($data,$uploadedFiles)
     {
@@ -172,11 +238,12 @@ class Tasks_model extends CI_Model{
         $this->db->set('description',$data['description']);
         $this->db->set('task_number',$data['task_number']);
         $this->db->set('sprint_id',$data['sprint_id']);
-        $this->db->set('stage',$data['stage']);
         $this->db->set('section',$data['section']);
         $this->db->set('due_date',!empty($data['due_date']) ? $data['due_date'] : null);
         $this->db->set('estimated_hours',!empty($data['estimated_hours']) ? $data['estimated_hours'] : null);
-        $this->db->set('progress',floatval($data['progress']));
+        $this->db->set('scope_client_expectation',$data['scope_client_expectation']);
+        $this->db->set('scope_not_included',$data['scope_not_included']);
+        $this->db->set('scope_when_done',$data['scope_when_done']);
 
         if(!empty($data['scope_client_expectation'])) $this->db->set('scope_client_expectation',$data['scope_client_expectation']);
         if(!empty($data['scope_not_included'])) $this->db->set('scope_not_included',$data['scope_not_included']);
@@ -187,6 +254,8 @@ class Tasks_model extends CI_Model{
             $this->db->set('uuid',$uuid);
             $this->db->set('created_by',$_SESSION['user_id']);
             $this->db->set('created_on',date('Y-m-d H:i:s'));
+            $this->db->set('stage',$data['stage']);
+            $this->db->set('progress',floatval($data['progress']));
             $this->db->insert('tasks');
 
             $taskId = $this->db->insert_id();
@@ -331,14 +400,15 @@ class Tasks_model extends CI_Model{
             'show_lifecycle'    =>  false
         ];
         
+        $subject = "{$taskDetails->full_name} added a note on {$taskDetails->task_number}/{$taskDetails->sprint_name}/{$taskDetails->project_name}";
+
         //first send to client if notes is public
         if($public == "public"){
             $emailData['addressee'] = 'Customer';
             $content = $this->load->view("_email/header",$emailData, true);
             $content .= $this->load->view("_email/noteHasBeenAdded",$emailData, true);
             $content .= $this->load->view("_email/footer",[], true);
-            $check = $this->Email_model3->save($result[0]->customer_email,"A note has been added",$content);
-
+            $check = $this->Email_model3->save($result[0]->customer_email,$subject,$content);
             if($check == '401'){
                 return array('result'=>false,'reason'=>'Mail Server: Not Authorised');
             }
@@ -351,7 +421,7 @@ class Tasks_model extends CI_Model{
         $content .= $this->load->view("_email/footer",[], true);
         foreach($result as $developer){
             if(empty($developer->developer_email)) continue;
-            $check = $this->Email_model3->save($developer->developer_email,"A note has been added",$content);
+            $check = $this->Email_model3->save($developer->developer_email,$subject,$content);
             if($check == '401'){
                 return array('result'=>false,'reason'=>'Mail Server: Not Authorised');
             }
@@ -365,7 +435,7 @@ class Tasks_model extends CI_Model{
         $admins = $this->system_model->getParam("notification_create_notes",true);
         foreach($admins as $admin){
             $user = $this->db->select("*")->from("users")->where("id",$admin)->get()->row();
-            $check = $this->Email_model3->save($user->email,"A note has been added",$content);
+            $check = $this->Email_model3->save($user->email,$subject,$content);
             if($check == '401'){
                 return array('result'=>false,'reason'=>'Mail Server: Not Authorised');
             }
