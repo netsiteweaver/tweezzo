@@ -28,6 +28,12 @@
                                     <?php endforeach;?>
                                 </select>
                             </div>
+                        <?php elseif(strtolower(trim($f['type'])) == 'checkbox'):?>
+                            <div class="form-group mt-5">
+                                <label class="<?php echo ($f['required']) ? 'asterisk' :'';?>"><?php echo $f['label'];?></label>
+                                <input type="checkbox" name="<?php echo $f['field_name'];?>" <?php echo $f['value']=='1'?'checked':'';?>>
+                                
+                            </div>
                         <?php elseif(strtolower(trim($f['type'])) == 'hidden'):?>
                             <input type="hidden" id="<?php echo $f['field_name'];?>" name="<?php echo $f['field_name'];?>" value="<?php echo $f['value'];?>">
                         <?php endif;?>
