@@ -22,6 +22,9 @@
         .note-editable {
             line-height: 1;
         }
+        .changeStage {
+            cursor: pointer;
+        }
         </style>
 
         <div class="row">
