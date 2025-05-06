@@ -25,7 +25,8 @@
     <link rel="stylesheet" href="./node_modules/lightbox2/dist/css/lightbox.min.css">
 
     <link rel="stylesheet" href="./node_modules/bootstrap-icons/font/bootstrap-icons.css">
-
+    <link rel="stylesheet" href="./assets/css/country-flags.css">
+    
     <!-- Favicon -->
     <!-- https://www.favicon-generator.org/ -->
     <link rel="apple-touch-icon" sizes="57x57" href="/assets/faviconDeveloper/apple-icon-57x57.png">
