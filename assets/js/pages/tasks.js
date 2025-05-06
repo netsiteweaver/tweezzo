@@ -1,7 +1,9 @@
 jQuery(function(){
 
     if($('select[name=sprint_id]').val() != null){
-        getMaxTaskNumberBySprintId($('select[name=sprint_id]').val());
+        if($("input[name='task_number']").val().length==0){
+            getMaxTaskNumberBySprintId($('select[name=sprint_id]').val());
+        }
     }
 
     $('#saveNote').on('click', function(e){
