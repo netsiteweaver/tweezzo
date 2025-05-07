@@ -146,7 +146,7 @@ class Users_model extends CI_Model{
     }
 
     public function authenticate($user_info) {
-        $this->db->select("users.id, username, users.name, photo, user_level, user_type, users.email, created, last_login, ip, job_title, users.status,department_id,dp.name AS department");
+        $this->db->select("users.id, username, users.name, photo, user_level, user_type, users.email, created, last_login, ip, job_title, users.status,users.landing_page, department_id,dp.name AS department");
         $this->db->join("departments as dp","dp.id=users.department_id","left");
         $this->db->where("password", md5($user_info['inputPassword']), true );
         $this->db->group_start();
@@ -222,7 +222,8 @@ class Users_model extends CI_Model{
         $this->db->set("username",$userDetails['username']);
         $this->db->set('user_type',$userDetails['user_type']);
         $this->db->set("email",$userDetails['email']);
-        $this->db->set('department_id',$userDetails['department_id']);
+        $this->db->set("email",$userDetails['email']);
+        $this->db->set('landing_page',$userDetails['landing_page']);
         if(isset($userDetails['image'])) $this->db->set('photo',$userDetails['image']);
 
         if(isset($userDetails['level']) && !empty($userDetails['level'])) $this->db->set("user_level",$userDetails['level']);

@@ -87,7 +87,7 @@ $(function() {
                         if(response.expired_url){
                             window.location = base_url + response.expired_url;
                         }else{
-                            window.location = base_url + "dashboard/index"
+                            window.location = base_url + response.landing_page;//"dashboard/index"
                         }
                     }
                 },

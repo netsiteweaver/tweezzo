@@ -15,7 +15,8 @@
                             <th>Username</th>
                             <th>Email</th>
                             <th>Level</th>
-                            <th>Type</th>
+                            <!-- <th>Type</th> -->
+                             <th>Landing Page</th>
                             <th>Status</th>
                             <th>Last Access</th>
                             <th>Actions</th>
@@ -35,7 +36,8 @@
                             <td class="<?php echo ($user->status!=1)?"inactive":"";?>"><?php echo $user->username; ?></td>
                             <td class="<?php echo ($user->status!=1)?"inactive":"";?>"><?php echo $user->email; ?></td>
                             <td class="<?php echo ($user->status!=1)?"inactive":"";?>"><?php echo $user->user_level; ?></td>
-                            <td class="<?php echo ($user->status!=1)?"inactive":"";?>"><?php echo ucwords($user->user_type); ?></td>
+                            <!-- <td class="<?php echo ($user->status!=1)?"inactive":"";?>"><?php echo ucwords($user->user_type); ?></td> -->
+                            <td class="<?php echo ($user->status!=1)?"inactive":"";?>"><?php echo $user->landing_page; ?></td>
                             <td class="<?php echo ($user->status!=1)?"inactive":"";?>"><?php echo $user_status[$user->status]; ?></td>
                             <td class="<?php echo ($user->status!=1)?"inactive":"";?>"><?php echo (!empty($user->last_login))?$user->last_login:"Never"; ?></td>
                             <td class="<?php echo ($user->status!=1)?"inactive":"";?>">
