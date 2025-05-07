@@ -91,7 +91,7 @@ $cleanQuery = http_build_query($queryArray);
         </select>
     </div>
     <div class="col-md-2 mt-4">
-        <input type="hidden" id="stage" name="stage" value='<?php echo $this->input->get("stage");?>'>
+        <input type="hidden" id="stage" name="stage" value='<?php echo (!empty($this->input->get("stage")))?$this->input->get("stage"):'[]';?>'>
         <div class="btn btn-block btn-default choose-stages">Select Stage(s)</div>
     </div>
     <!-- <div class="col-md-2">

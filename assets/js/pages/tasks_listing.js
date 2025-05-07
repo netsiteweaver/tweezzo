@@ -294,7 +294,7 @@ jQuery(function(){
 
     $('.choose-stages').on("click", function() {
         let stagesJSON = $('input[name=stage]').val();
-        let stages = JSON.parse(stagesJSON);
+        let stages = JSON.parse( (stagesJSON.length==0) ? "[]" : stagesJSON);
         console.log(stages);
         $('#stages-list li').each(function(i,j){
             let stage = $(this).data("stage");
