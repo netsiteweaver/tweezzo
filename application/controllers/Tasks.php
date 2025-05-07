@@ -184,7 +184,7 @@ class Tasks extends MY_Controller {
         $customer_id = $this->input->get('customer_id');
         $project_id = $this->input->get('project_id');
         $sprint_id = $this->input->get('sprint_id');
-        $stage = $this->input->get('stage');
+        $stage = json_decode($this->input->get('stage'));
         $assigned_to = $this->input->get('assigned_to');
         $order_by = $this->input->get('order_by');
         $order_dir = $this->input->get('order_dir');
@@ -223,6 +223,8 @@ class Tasks extends MY_Controller {
 
         $this->load->model('Sprints_model');
         $this->data['sprints'] = $this->Sprints_model->lookup2($project_id);
+
+        $this->data['stages'] = ['new','in_progress','testing','staging','validated','completed','on_hold','stopped'];
 
         $this->data["content"]=$this->load->view("/tasks/listing",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   

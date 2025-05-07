@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Tasks_model extends CI_Model{
 
-    public function fetchAll($customer_id="",$project_id="",$sprint_id="",$stage="",$assigned_to="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$output="",$notes_only="",$search_text="",$totalRows=false)
+    public function fetchAll($customer_id="",$project_id="",$sprint_id="",$stage=[],$assigned_to="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$output="",$notes_only="",$search_text="",$totalRows=false)
     {
         if(!$totalRows){
             if( (empty($page)) || ($page <= 0) ) $page =1;
@@ -36,7 +36,7 @@ class Tasks_model extends CI_Model{
         if(!empty($customer_id)) $this->db->where('c.customer_id',$customer_id);
         if(!empty($project_id)) $this->db->where('p.id',$project_id);
         if(!empty($sprint_id)) $this->db->where('s.id',$sprint_id);
-        if(!empty($stage)) $this->db->where('t.stage',$stage);
+        if(!empty($stage)) $this->db->where_in('t.stage',$stage);
         if(!empty($search_text)){
             $this->db->group_start();
             $this->db->like("t.name",$search_text);

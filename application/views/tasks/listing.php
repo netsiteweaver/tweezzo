@@ -90,26 +90,30 @@ $cleanQuery = http_build_query($queryArray);
             <?php endforeach; ?>
         </select>
     </div>
-    <div class="col-md-2">
+    <div class="col-md-2 mt-4">
+        <input type="hidden" id="stage" name="stage" value='<?php echo $this->input->get("stage");?>'>
+        <div class="btn btn-block btn-default choose-stages">Select Stage(s)</div>
+    </div>
+    <!-- <div class="col-md-2">
         <label for="">Stage</label>
         <select name="" id="stage" class="form-control monitor">
             <option value="">Select Stage</option>
-            <option value="new" <?php echo ($this->input->get("stage") == "new") ? "selected" : ""; ?>>New</option>
-            <option value="in_progress" <?php echo ($this->input->get("stage") == "in_progress") ? "selected" : ""; ?>>
+            <option value="new" <?php //echo ($this->input->get("stage") == "new") ? "selected" : ""; ?>>New</option>
+            <option value="in_progress" <?php //echo ($this->input->get("stage") == "in_progress") ? "selected" : ""; ?>>
                 In Progress</option>
-            <option value="testing" <?php echo ($this->input->get("stage") == "testing") ? "selected" : ""; ?>>Testing
+            <option value="testing" <?php //echo ($this->input->get("stage") == "testing") ? "selected" : ""; ?>>Testing
             </option>
-            <option value="staging" <?php echo ($this->input->get("stage") == "staging") ? "selected" : ""; ?>>Staging
+            <option value="staging" <?php //echo ($this->input->get("stage") == "staging") ? "selected" : ""; ?>>Staging
             </option>
-            <option value="validated" <?php echo ($this->input->get("stage") == "validated") ? "selected" : ""; ?>>
+            <option value="validated" <?php //echo ($this->input->get("stage") == "validated") ? "selected" : ""; ?>>
                 Validated</option>
-            <option value="completed" <?php echo ($this->input->get("stage") == "completed") ? "selected" : ""; ?>>
+            <option value="completed" <?php //echo ($this->input->get("stage") == "completed") ? "selected" : ""; ?>>
                 Completed</option>
-            <option value="on_hold" <?php echo ($this->input->get("stage") == "on_hold") ? "selected" : ""; ?>>On Hold
+            <option value="on_hold" <?php //echo ($this->input->get("stage") == "on_hold") ? "selected" : ""; ?>>On Hold
             </option>
-            <!-- <option value="stopped" <?php //echo ($this->input->get("stage") == "stopped") ? "selected" : ""; ?>>Stopped</option> -->
+            <option value="stopped" <?php //echo ($this->input->get("stage") == "stopped") ? "selected" : ""; ?>>Stopped</option>
         </select>
-    </div>
+    </div> -->
 
     <div class="col-md-2">
         <label for="only_with_notes">Notes</label>
@@ -576,6 +580,44 @@ $cleanQuery = http_build_query($queryArray);
                 <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i>
                     Close</button>
                 <!-- <button type="button" class="btn btn-primary setDueDate"><i class="fa fa-check"></i> Proceed</button> -->
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    #stages-list li span{
+        display: none;
+    }
+    #stages-list li.selected span{
+        display: block;
+    }
+</style>
+<!-- Modal -->
+<div class="modal fade" id="modalChooseStages" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Select Stages</h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul id="stages-list" class="list-group">
+                    <?php foreach($stages as $stage):?>
+                    <li data-stage="<?php echo $stage;?>" class="list-group-item cursor-pointer choose-stage <?php //echo in_array($user->id, $task->assigned_users) ? 'assigned':'';?>">
+                        <?php echo "{$stage}";?>
+                        <span class='float-right'><i class="fa fa-check-square green"></i></span>
+                    </li>
+                    <?php endforeach;?>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i>
+                    Cancel</button>
+                <button type="button" class="btn btn-success applyChosenStages"><i class="fa fa-check"></i> Proceed</button>
             </div>
         </div>
     </div>

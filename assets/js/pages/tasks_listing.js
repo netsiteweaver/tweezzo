@@ -1,5 +1,7 @@
 jQuery(function(){
 
+    // tableSort("#task-list","tasks");
+
     $('.view-notes').on("click", function() {
         let taskId = $(this).closest("tr").data("id");
         let taskNumber = $(this).closest("tr").find("td.task-number").html();
@@ -281,13 +283,52 @@ jQuery(function(){
         let notes_only = $('#notes_only').val();
         let search_text = $('#search_text').val();
 
-        Overlay("on");
+        // Overlay("on");
         window.location.href = '/tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+search_text;
     })
 
     $('.search').on("click", function(){
         Overlay("on");
         $('.monitor').trigger("change");
+    })
+
+    $('.choose-stages').on("click", function() {
+        let stagesJSON = $('input[name=stage]').val();
+        let stages = JSON.parse(stagesJSON);
+        console.log(stages);
+        $('#stages-list li').each(function(i,j){
+            let stage = $(this).data("stage");
+            if(stages.indexOf(stage) >= 0){
+                $(this).addClass("selected")
+            }
+        })
+        $('#modalChooseStages').modal("show");
+    })
+
+    $('.choose-stage').on("click", function(){
+        if($(this).hasClass("selected")){
+            $(this).removeClass("selected");
+        }else{
+            $(this).addClass("selected")
+        }
+    })
+
+    $('.applyChosenStages').on("click", function() {
+        let selectedStages = [];
+        $('#stages-list li.selected').each(function(i,j){
+            let stage = $(this).data("stage");
+            selectedStages.push(stage)
+        })
+        console.log(selectedStages)
+        $('input[name=stage]').val(JSON.stringify(selectedStages));
+        $('#modalChooseStages').modal("hide");
+        setTimeout(function(){
+            $('.monitor').trigger("change")
+        },500)
+    })
+
+    $('#modalChooseStages').on("hidden.bs.modal",function(){
+        $('#stages-list li.selected').removeClass("selected");
     })
 
 })
