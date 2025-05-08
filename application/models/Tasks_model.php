@@ -51,12 +51,12 @@ class Tasks_model extends CI_Model{
             $this->db->group_end();
         }
         // echo $this->db->get_compiled_select();die;
-        if(!empty($order_by)) {
-            $this->db->order_by($order_by,$order_dir);
-        }else{
-            $this->db->order_by('t.task_number');
-        }
         if(!$totalRows){
+            if(!empty($order_by)) {
+                $this->db->order_by($order_by,$order_dir);
+            }else{
+                $this->db->order_by('t.task_number');
+            }
             if(empty($output)) {
                 $this->db->order_by($order_by,$order_dir);
                 $this->db->limit($rows_per_page,$offset);
