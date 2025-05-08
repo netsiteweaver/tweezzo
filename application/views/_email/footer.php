@@ -10,7 +10,7 @@
                             style="vertical-align:top;" width="100%">
                             <tbody>
                                 
-                                <tr>
+                                <!-- <tr>
                                     <td align="left"
                                         style="font-size:0px;word-break:break-word;">
                                         <div
@@ -20,7 +20,7 @@
                                                 style="color:rgb(42, 87, 138); text-decoration: none;">info@netsiteweaver.com</a>!
                                         </div>
                                     </td>
-                                </tr>
+                                </tr> -->
                                 <!-- <tr>
                                     <td align="left"
                                         style="font-size:0px;word-break:break-word;">

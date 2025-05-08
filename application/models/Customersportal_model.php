@@ -171,9 +171,9 @@ class Customersportal_model extends CI_Model
         $taskDetails = $this->Tasks_model->fetchSingle($taskUuid);
 
         // get customer email
-        $userEmail = $this->db->select("email")->from('customer_access')->where('id',$_SESSION['customer_access_id'])->get()->row()->email;
+        $author = $this->db->select("email, name")->from('customer_access')->where('id',$_SESSION['customer_access_id'])->get()->row()->email;
 
-        $this->Tasks_model->notifyUsers($taskDetails, ['task_id'=>$task_id, 'notes'=>$note], $userEmail);
+        $this->Tasks_model->notifyUsers($taskDetails, ['task_id'=>$task_id, 'notes'=>$note], $author);
 
         return $this->db->affected_rows();
     }

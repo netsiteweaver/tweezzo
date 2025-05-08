@@ -66,7 +66,7 @@ jQuery(function(){
                 let order_dir = $('#order_dir').val();
                 let display = $('#display').val();
 
-                params = '?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&assigned_to="+assigned_to+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&customer_email="+email+"&output=email";
+                params = '?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&assigned_to="+assigned_to+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&customer_email="+email+"&type=customer&output=email";
                 // console.log(params, customerEmail, email)
                 $.ajax({
                     url: 'tasks/email'+params,

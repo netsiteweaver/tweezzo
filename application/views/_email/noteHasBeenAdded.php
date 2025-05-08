@@ -42,7 +42,7 @@
         </tbody>
     </table>
     <br>
-    <p>The following note has been added by <b><?php echo $userEmail;?></b></p>
+    <p>The following note has been added by <b><?php echo "{$author->name}";?></b></p>
     <table style='width:100%;margin-bottom:20px;'>
         <tbody>
             <tr>

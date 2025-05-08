@@ -236,7 +236,7 @@ class Tasks extends MY_Controller {
         $project_id = $this->input->get('project_id');
         $sprint_id = $this->input->get('sprint_id');
         $customer_email = $this->input->get('customer_email');
-        $stage = $this->input->get('stage');
+        $stage = json_decode($this->input->get('stage'));
         $assigned_to = $this->input->get('assigned_to');
         $order_by = $this->input->get('order_by');
         $order_dir = $this->input->get('order_dir');
@@ -256,18 +256,21 @@ class Tasks extends MY_Controller {
         if($type == 'developer'){
             $link = "portal/developers/signin";
             $linkLabel = "Developer's Portal";
-        }else{
-            if($isCustomer > 0){
-                $link = "portal/customers/signin";
-                $linkLabel = "Customer's Portal";
-            }elseif($isDeveloper > 0){
-                $link = "portal/developers/signin";
-                $linkLabel = "Developer's Portal";
-            }elseif($isUser > 0){
-                $link = "users/signin";
-                $linkLabel = "Task Manager";
-            }
+        }elseif($type == 'customer'){
+            $link = "portal/customers/signin";
+            $linkLabel = "Customer's Portal";
         }
+        //     if($isCustomer > 0){
+        //         $link = "portal/customers/signin";
+        //         $linkLabel = "Customer's Portal";
+        //     }elseif($isDeveloper > 0){
+        //         $link = "portal/developers/signin";
+        //         $linkLabel = "Developer's Portal";
+        //     }elseif($isUser > 0){
+        //         $link = "users/signin";
+        //         $linkLabel = "Task Manager";
+        //     }
+        // }
         
         // else{
         //     $link = "";

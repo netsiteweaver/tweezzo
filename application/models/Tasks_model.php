@@ -375,7 +375,7 @@ class Tasks_model extends CI_Model{
         return array('result'=>true,'data'=>$data);
     }
 
-    public function notifyUsers($taskDetails, $data, $userEmail, $public='public')
+    public function notifyUsers($taskDetails, $data, $author, $public='public')
     {
         $query = "SELECT t.*, s.name sprint_name, p.name project_name, c.email customer_email, c.company_name customer, u.email developer_email, u.name developer_name
                     FROM tasks t 
@@ -396,11 +396,11 @@ class Tasks_model extends CI_Model{
             'notes'             =>  $data['notes'],
             'logo'              =>  $this->system_model->getParam("logo"),
             'taskDetails'       =>  $taskDetails,
-            'userEmail'         =>  $userEmail,
+            'author'            =>  $author,
             'show_lifecycle'    =>  false
         ];
         
-        $subject = "{$taskDetails->full_name} added a note on {$taskDetails->task_number}/{$taskDetails->sprint_name}/{$taskDetails->project_name}";
+        $subject = "{$author->name} added a note for Task {$taskDetails->task_number}/{$taskDetails->sprint_name}/{$taskDetails->project_name}";
 
         //first send to client if notes is public
         if($public == "public"){

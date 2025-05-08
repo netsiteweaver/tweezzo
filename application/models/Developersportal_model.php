@@ -165,13 +165,13 @@ class Developersportal_model extends CI_Model{
         $taskDetails = $this->Tasks_model->fetchSingle($taskUuid);
 
         // get developer email
-        $userEmail = $this->db->select("email")->from('users')->where(array(
+        $author = $this->db->select("email, name")->from('users')->where(array(
             'id'    => $_SESSION['developer_id'],
             'user_type'  => 'developer'
         ))->get()->row()->email;
 
         
-        $this->Tasks_model->notifyUsers($taskDetails, ['task_id'=>$task_id, 'notes'=>$notes], $userEmail, $public);
+        $this->Tasks_model->notifyUsers($taskDetails, ['task_id'=>$task_id, 'notes'=>$notes], $author, $public);
     }
 
     public function authenticate($user_info) {
