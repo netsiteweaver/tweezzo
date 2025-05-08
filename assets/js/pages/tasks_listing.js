@@ -74,7 +74,7 @@ jQuery(function(){
                     // dataType:"JSON",
                     complete: function(response) {
                         $(btn).removeClass('running');
-                        alertify.alert("Email has been queued and will be sent shortly.")
+                        alertify.alert("Confirmation","Email has been queued and will be sent shortly.")
                     }
                 })
             },
@@ -120,7 +120,7 @@ jQuery(function(){
                     // dataType:"JSON",
                     complete: function(response) {
                         $(btn).removeClass('running');
-                        alertify.alert("Email has been queued and will be sent shortly.")
+                        alertify.alert("Confirmation","Email has been queued and will be sent shortly.")
                     }
                 })
             },

@@ -10,19 +10,21 @@
                 <th>#</th>
                 <th>SECTION</th>
                 <th>TASK NAME</th>
+                <th>SPRINT</th>
                 <th>PROJECT</th>
                 <th>CUSTOMER</th>
                 <th>STAGE</th>
-                <th>ASSIGNED TO</th>
+                <!-- <th>ASSIGNED TO</th> -->
             </tr>
             <tr>
                 
             </tr>
-<?php foreach($tasks as $task):?>
+            <?php foreach($tasks as $task):?>
             <tr>
                 <td><?php echo $task->task_number;?></td>
                 <td><?php echo $task->section;?></td>
                 <td><?php echo $task->name;?></td>
+                <td><?php echo $task->sprint_name;?></td>
                 <td><?php echo $task->project_name;?></td>
                 <td><?php echo $task->company_name;?></td>
                 <td>
@@ -30,19 +32,19 @@
                         <?php echo strtoupper(str_replace('_',' ',$task->stage));?>
                     </div>
                 </td>
-                <td>
-<?php foreach($task->users as $i => $u):?>
-                    <img style='width:30px;height:30px;padding:3px;border:1px solid #CCCCCC;' src="<?php echo base_url("uploads/users/".$u->photo);?>" alt="<?php echo $u->display_name;?>">
-<?php //echo $u->display_name. ( ( (count($task->users)-1) == $i) ? '' : ',') ;?>
-<?php endforeach;?>
-                </td>
+                <!-- <td>
+                    <?php //foreach($task->users as $i => $u):?>
+                    <img style='width:30px;height:30px;padding:3px;border:1px solid #CCCCCC;' src="<?php //echo base_url("uploads/users/".$u->photo);?>" alt="<?php //echo $u->display_name;?>">
+                    <?php //echo $u->display_name. ( ( (count($task->users)-1) == $i) ? '' : ',') ;?>
+                    <?php //endforeach;?>
+                </td> -->
             </tr>
-<?php endforeach;?>
+            <?php endforeach;?>
         </tbody>
     </table>
 </div>
 
-<div style='margin:30px auto; max-width:800px;'>
+<div style='margin-bottom:50px;margin:30px auto; max-width:800px;'>
     <a class='btn' href="<?php echo $link;?>">
         <div class="label"><?php echo $link_label;?></div>
     </a>
