@@ -92,7 +92,7 @@ $cleanQuery = http_build_query($queryArray);
     </div>
     <div class="col-md-2 mt-4">
         <input type="hidden" id="stage" name="stage" value='<?php echo (!empty($this->input->get("stage")))?$this->input->get("stage"):'[]';?>'>
-        <div class="btn btn-block btn-default choose-stages">Select Stage(s)</div>
+        <div class="btn btn-block btn-outline-info choose-stages">Select Stages <?php echo (!empty($this->input->get("stage")))? "[".count(json_decode($this->input->get("stage")))."]":'[0]';?></div>
     </div>
     <!-- <div class="col-md-2">
         <label for="">Stage</label>
