@@ -365,7 +365,7 @@ class Tasks_model extends CI_Model{
         $taskDetails = $this->fetchSingle($taskUuid);
 
         // get user email
-        $userEmail = $this->db->select("email")->from('users')->where('id',$_SESSION['user_id'])->get()->row()->email;
+        $userEmail = $this->db->select("email,name")->from('users')->where('id',$_SESSION['user_id'])->get()->row();
 
         $check = $this->notifyUsers($taskDetails,$data, $userEmail);
 

@@ -56,13 +56,14 @@ class Notes_model extends CI_Model{
         $content = $this->load->view("_email/header",$emailData, true);
         $content .= $this->load->view("_email/noteDeleted",$emailData, true);
         $content .= $this->load->view("_email/footer",[], true);
+        $subject = "{$note->author} deleted a note on {$note->task_number}/{$note->sprint_name}/{$note->project_name}";
 
-        $this->Email_model3->save($note->deleted_by->email,"Note Deleted",$content);
+        $this->Email_model3->save($note->deleted_by->email,$subject,$content);
 
         $notification_delete_notes = $this->system_model->getParam("notification_delete_notes",true);
         foreach($notification_delete_notes as $admin){
             $email = $this->db->select("email")->from("users")->where("id",$admin)->get()->row()->email;
-            $this->Email_model3->save($email,"Note Deleted",$content);
+            $this->Email_model3->save($email,$subject,$content);
         }
         
         $this->db->where("id",$note_id);
