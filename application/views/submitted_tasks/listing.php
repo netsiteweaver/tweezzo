@@ -57,33 +57,19 @@
             <?php endforeach; ?>
         </select>
     </div>
-    <div class="col-md-2 <?php echo (empty($this->input->get("customer_id"))) ? 'd-none' : '';?>">
-        <label for="">Project</label>
-        <select class="form-control monitor" id="project_id">
-            <option value="">Select Project</option>
-            <?php foreach($projects as $project): ?>
-            <option data-customer-id="<?php echo $project->customer_id; ?>" value="<?php echo $project->id; ?>"
-                <?php echo ($this->input->get("project_id") == $project->id) ? "selected" : ""; ?>
-                <?php //echo ($this->input->get('customer_id') == $project->customer_id) ? '' : 'disabled';?>>
-                <?php echo "{$project->name}"; ?>
-            </option>
-            <?php //endif;?>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    <div class="col-md-2 <?php echo (empty($this->input->get("project_id"))) ? 'd-none' : '';?>"">
-        <label for="">Sprint</label>
-        <select class="form-control monitor" id="sprint_id">
-            <option value="">Select Sprint</option>
-            <?php foreach($sprints as $sprint): ?>
-            <option data-project-id="<?php echo $sprint->project_id; ?>" value="<?php echo $sprint->id; ?>"
-                <?php echo ($this->input->get("sprint_id") == $sprint->id) ? "selected" : ""; ?>
-                <?php //echo ($this->input->get('project_id') == $sprint->project_id) ? '' : 'disabled';?>>
-                <?php echo "{$sprint->name}"; ?>
+    <div class="col-md-2">
+        <label for="">Developer</label>
+        <select class="form-control monitor" id="developer_id">
+            <option value="">Select Developer</option>
+            <?php foreach($developers as $row): ?>
+            <option value="<?php echo $row->id; ?>"
+                <?php echo ($this->input->get("developer_id") == $row->id) ? "selected" : ""; ?>>
+                <?php echo "{$row->name}"; ?>
             </option>
             <?php endforeach; ?>
         </select>
     </div>
+    
 
 
     <div class="col-md-2">
@@ -164,7 +150,7 @@
                         <tr class='text-center' style='text-transform:uppercase;'>
                             <th class='no-print'></th>
                             <th style='width:60px;'><i class='fa fa-building'></i> / <i class='fa fa-user'></i></th>
-                            <th style='width:150px;'>Submitted By</th>
+                            <th style='width:150px;'>Submitted</th>
                             <th>Task <?php echo ($this->input->get("order_by") == "name") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th class='no-print'>Actions</th>
                         </tr>
@@ -179,7 +165,7 @@
                             <td class='text-center'>
                                 <?php echo (!empty($submitted_task->created_by)) ? "<i class='fa fa-building'></i>" : "<i class='fa fa-user'></i>";?>
                             </td>
-                            <td><?php echo $submitted_task->submitted_by; ?></td>
+                            <td><?php echo " {$submitted_task->submitted_by}<br>{$submitted_task->created_on}" ; ?></td>
                             <td class='submitted_task-name'>
                                 <div style='border-bottom:1px dashed #ccc;padding-bottom:3px;margin-bottom:5px;'><b>Section:</b> <?php echo $submitted_task->name; ?></div>
                                 <div style='border-bottom:1px dashed #ccc;padding-bottom:3px;margin-bottom:5px;'><b>Task:</b> <?php echo $submitted_task->section; ?></div>

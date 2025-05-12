@@ -1054,15 +1054,19 @@ hr.h10 {
 }
 
 .main-footer {
-	background-color: #33393f;
-	/* border-top: 1px solid #787b7e; */
+	background-color: #343a40;
 	color: #8f959b;
 	padding: .3rem 1rem .3rem .3rem;
 	text-align: right;
 	position: fixed;
 	bottom: 0;
-	width: calc(100% - 250px);
-	font-size: 0.8rem;
+	/* width: calc(100% - 250px); */
+	font-size: .8rem;
+	width: 100vw;
+	z-index: 99999999;
+	margin-left: 0 !important;
+	border-top: unset;
+	/* left: 0; */
 }
 .main-footer a {
 	color: #fff;

@@ -4,49 +4,38 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Submitted_tasks_model extends CI_Model{
 
-    public function fetchAll($customer_id="",$project_id="",$sprint_id="",$stage="",$assigned_to="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$output="",$notes_only="",$search_text="",$totalRows=false)
+    public function fetchAll($customer_id="",$developer_id="",$page=1,$rows_per_page=10,$search_text="",$totalRows=false)
     {
         if(!$totalRows){
             if( (empty($page)) || ($page <= 0) ) $page =1;
             $offset = ( ($page-1)*$rows_per_page);  
 
-            $this->db->select('t.*,c.company_name,COALESCE(c2.name,u.name) as submitted_by, p.name project_name, s.name sprint_name');
+            $this->db->select('t.*,COALESCE(c.name,u.name) as submitted_by, c2.company_name');
         }else{
             $this->db->select('count(1) as ct');
         }
         
         $this->db->from('submitted_tasks t');
-        $this->db->join('sprints s','s.id=t.sprint_id','left');
-        $this->db->join('projects p','p.id=s.project_id','left');
-        $this->db->join('customers c','c.customer_id=p.customer_id','left');
         $this->db->join('users u','u.id=t.created_by','left');
-        $this->db->join('customer_access c2','c2.customer_id=t.created_by_customer','left');
+        $this->db->join('customer_access c','c.id=t.created_by_customer','left');
+        $this->db->join('customers c2','c2.customer_id=c.customer_id','left');
         
         $this->db->where('t.status',1);
-        if(!empty($customer_id)) $this->db->where('c.customer_id',$customer_id);
-        if(!empty($project_id)) $this->db->where('p.id',$project_id);
-        if(!empty($sprint_id)) $this->db->where('s.id',$sprint_id);
-        if(!empty($stage)) $this->db->where('t.stage',$stage);
+        if(!empty($customer_id)) $this->db->where('c2.customer_id',$customer_id);
+        if(!empty($developer_id)) $this->db->where('t.created_by',$developer_id);
         if(!empty($search_text)){
             $this->db->group_start();
             $this->db->like("t.name",$search_text);
-            $this->db->or_like("t.description",$search_text);
-            $this->db->or_like("t.stage",$search_text);
-            $this->db->or_like("t.task_number",$search_text);
-            $this->db->or_like("t.section",$search_text);
-            $this->db->or_like("s.name",$search_text);
-            $this->db->or_like("p.name",$search_text);
-            $this->db->or_like("c.company_name",$search_text);
-            $this->db->or_like("t.stage",$search_text);
             $this->db->group_end();
         }
         if(!$totalRows){
             if(empty($output)) {
-                $this->db->order_by($order_by,$order_dir);
+                // $this->db->order_by($order_by,$order_dir);
                 $this->db->limit($rows_per_page,$offset);
             }
             $this->db->group_by('t.id');
         }
+        // echo $this->db->get_compiled_select();die;
         if(!$totalRows){
             $submitted_tasks = $this->db->get()->result();
             return $submitted_tasks;
@@ -56,9 +45,9 @@ class Submitted_tasks_model extends CI_Model{
         
     }
 
-    public function totalRows($customer_id="",$project_id="",$sprint_id="",$stage="",$assigned_to="",$order_by="",$order_dir="asc",$notes_only="",$search_text="")
+    public function totalRows($customer_id="",$developer_id,$search_text="")
     {
-        $rows = $this->fetchAll($customer_id, $project_id, $sprint_id, $stage, $assigned_to, $order_by, $order_dir, 1, 10, '', $notes_only, $search_text, true);
+        $rows = $this->fetchAll($customer_id, $developer_id,"", "", $search_text, true);
         return $rows;
 
     }

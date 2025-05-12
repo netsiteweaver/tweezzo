@@ -1,6 +1,6 @@
 jQuery(function(){
 
-    // tableSort("#task-list","tasks");
+    // tableSort("#task-list","submitted_tasks");
 
     $('.view-notes').on("click", function() {
         let taskId = $(this).closest("tr").data("id");
@@ -10,7 +10,7 @@ jQuery(function(){
 
         Overlay("on");
         $.ajax({
-            url: base_url + "tasks/loadNotes",
+            url: base_url + "submitted_tasks/loadNotes",
             method: "POST",
             dataType: "JSON",
             data: {task_id:taskId},
@@ -66,7 +66,7 @@ jQuery(function(){
                 let order_dir = $('#order_dir').val();
                 let display = $('#display').val();
 
-                params = '?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&assigned_to="+assigned_to+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&customer_email="+email+"&type=customer&output=email";
+                params = '?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&assigned_to="+assigned_to+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&customer_email="+email+"&output=email";
                 // console.log(params, customerEmail, email)
                 $.ajax({
                     url: 'tasks/email'+params,
@@ -74,7 +74,7 @@ jQuery(function(){
                     // dataType:"JSON",
                     complete: function(response) {
                         $(btn).removeClass('running');
-                        alertify.alert("Confirmation","Email has been queued and will be sent shortly.")
+                        alertify.alert("Email has been queued and will be sent shortly.")
                     }
                 })
             },
@@ -120,7 +120,7 @@ jQuery(function(){
                     // dataType:"JSON",
                     complete: function(response) {
                         $(btn).removeClass('running');
-                        alertify.alert("Confirmation","Email has been queued and will be sent shortly.")
+                        alertify.alert("Email has been queued and will be sent shortly.")
                     }
                 })
             },
@@ -271,71 +271,37 @@ jQuery(function(){
         setDueDate(taskIds,dueDate);
     })
 
-    $('#customer_id').on("change",function(){
-        $('#project_id').val('');
-        $('#sprint_id').val('');
+    $('#customer_id').on("change", function(){
+        $('#developer_id').val("");
+    })
+
+    $('#developer_id').on("change", function(){
+        $('#customer_id').val("");
     })
     
     $(".monitor").on("change", function(){
         let customer_id = $('#customer_id').val();
-        let project_id = $('#project_id').val();
-        let sprint_id = $('#sprint_id').val();
-        let stage = $('#stage').val();
-        let order_by = $('#order_by').val();
-        let order_dir = $('#order_dir').val();
+        let developer_id = $('#developer_id').val();
+        
+        // let project_id = $('#project_id').val();
+        // let sprint_id = $('#sprint_id').val();
+        // let stage = $('#stage').val();
+        // let order_by = $('#order_by').val();
+        // let order_dir = $('#order_dir').val();
         let display = $('#display').val();
-        let assigned_to = $('#assigned_to').val();
-        let notes_only = $('#notes_only').val();
+        // let assigned_to = $('#assigned_to').val();
+        // let notes_only = $('#notes_only').val();
         let search_text = $('#search_text').val();
 
-        Overlay("on");
-        setTimeout(function(){
-            window.location.href = '/tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+search_text;
-        },100)
+        // Overlay("on");
+        let url = `/submitted_tasks/listing?customer_id=${customer_id}&developer_id=${developer_id}&search_text=${search_text}&display=${display}`;
+        console.log(url);
+        window.location.href = url;
     })
 
     $('.search').on("click", function(){
-        Overlay("on");
+        // Overlay("on");
         $('.monitor').trigger("change");
-    })
-
-    $('.choose-stages').on("click", function() {
-        let stagesJSON = $('input[name=stage]').val();
-        let stages = JSON.parse( (stagesJSON.length==0) ? "[]" : stagesJSON);
-        console.log(stages);
-        $('#stages-list li').each(function(i,j){
-            let stage = $(this).data("stage");
-            if(stages.indexOf(stage) >= 0){
-                $(this).addClass("selected")
-            }
-        })
-        $('#modalChooseStages').modal("show");
-    })
-
-    $('.choose-stage').on("click", function(){
-        if($(this).hasClass("selected")){
-            $(this).removeClass("selected");
-        }else{
-            $(this).addClass("selected")
-        }
-    })
-
-    $('.applyChosenStages').on("click", function() {
-        let selectedStages = [];
-        $('#stages-list li.selected').each(function(i,j){
-            let stage = $(this).data("stage");
-            selectedStages.push(stage)
-        })
-        console.log(selectedStages)
-        $('input[name=stage]').val(JSON.stringify(selectedStages));
-        $('#modalChooseStages').modal("hide");
-        setTimeout(function(){
-            $('.monitor').trigger("change")
-        },500)
-    })
-
-    $('#modalChooseStages').on("hidden.bs.modal",function(){
-        $('#stages-list li.selected').removeClass("selected");
     })
 
 })
@@ -344,7 +310,7 @@ function assignUsers(taskIds, userIds,customerId,projectId,sprintId)
 {
     Overlay("on")
     $.ajax({
-        url: base_url + "tasks/assignUsers",
+        url: base_url + "submitted_tasks/assignUsers",
         method: "POST",
         dataType: "JSON",
         data: {taskIds:taskIds, userIds:userIds,customerId:customerId,projectId:projectId,sprintId:sprintId},
@@ -364,7 +330,7 @@ function deleteTasks(taskIds)
 {
     Overlay("on")
     $.ajax({
-        url: base_url + "tasks/deleteMultiple",
+        url: base_url + "submitted_tasks/deleteMultiple",
         method: "POST",
         dataType: "JSON",
         data: {taskIds:taskIds},
@@ -384,7 +350,7 @@ function changeStage(taskIds, stage)
 {
     Overlay("on")
     $.ajax({
-        url: base_url + "tasks/bulkChangeStage",
+        url: base_url + "submitted_tasks/bulkChangeStage",
         method: "POST",
         dataType: "JSON",
         data: {taskIds:taskIds, stage:stage},
@@ -404,7 +370,7 @@ function changeSprint(taskIds, sprintId)
 {
     Overlay("on")
     $.ajax({
-        url: base_url + "tasks/bulkChangeSprint",
+        url: base_url + "submitted_tasks/bulkChangeSprint",
         method: "POST",
         dataType: "JSON",
         data: {taskIds:taskIds, sprintId:sprintId},
@@ -424,7 +390,7 @@ function setDueDate(taskIds, dueDate)
 {
     Overlay("on")
     $.ajax({
-        url: base_url + "tasks/bulkSetDueDate",
+        url: base_url + "submitted_tasks/bulkSetDueDate",
         method: "POST",
         dataType: "JSON",
         data: {taskIds:taskIds, dueDate:dueDate},

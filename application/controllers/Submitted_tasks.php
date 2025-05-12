@@ -133,20 +133,21 @@ class Submitted_tasks extends MY_Controller {
         $this->data['page_title'] = "Submitted Tasks List";
 
         $customer_id = $this->input->get('customer_id');
-        $project_id = $this->input->get('project_id');
-        $sprint_id = $this->input->get('sprint_id');
-        $stage = $this->input->get('stage');
-        $assigned_to = $this->input->get('assigned_to');
-        $order_by = $this->input->get('order_by');
-        $order_dir = $this->input->get('order_dir');
-        $notes_only = $this->input->get('notes_only');
+        $developer_id = $this->input->get('developer_id');
+        // $project_id = $this->input->get('project_id');
+        // $sprint_id = $this->input->get('sprint_id');
+        // $stage = $this->input->get('stage');
+        // $assigned_to = $this->input->get('assigned_to');
+        // $order_by = $this->input->get('order_by');
+        // $order_dir = $this->input->get('order_dir');
+        // $notes_only = $this->input->get('notes_only');
         $search_text = $this->input->get('search_text');
 
 
         $page = $this->uri->segment(3);
         $per_page = (!empty($this->input->get("display"))) ? $this->input->get("display") : $this->system_model->getParam("rows_per_page");
-        $this->data['submitted_tasks'] = $this->Submitted_tasks_model->fetchAll($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$page,$per_page,"",$notes_only,$search_text);
-        $total_rows = $this->Submitted_tasks_model->totalRows($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$notes_only,$search_text);
+        $this->data['submitted_tasks'] = $this->Submitted_tasks_model->fetchAll($customer_id,$developer_id,$page,$per_page,$search_text);
+        $total_rows = $this->Submitted_tasks_model->totalRows($customer_id,$developer_id,$page,$per_page,$search_text);
         $this->data['total_rows'] = $total_rows;
         $this->data['pagination'] = getPagination("submitted_tasks/listing",$total_rows,$per_page);
 
@@ -168,12 +169,6 @@ class Submitted_tasks extends MY_Controller {
 
         $this->load->model('Customers_model');
         $this->data['customers'] = $this->Customers_model->lookup();
-
-        $this->load->model('Projects_model');
-        $this->data['projects'] = $this->Projects_model->lookup($customer_id);
-
-        $this->load->model('Sprints_model');
-        $this->data['sprints'] = $this->Sprints_model->lookup2($project_id);
 
         $this->data["content"]=$this->load->view("/submitted_tasks/listing",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   
