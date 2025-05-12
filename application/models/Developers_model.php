@@ -72,6 +72,7 @@ class Developers_model extends CI_Model{
         $this->db->set('username',$data['email']);
         $this->db->set('user_level','Normal');
         $this->db->set('department_id',1);
+        $this->db->set("country_code",$data['country_code']);
         $this->db->set('password',md5($data['password']), true);
         $this->db->set('created_by',$data['created_by']);
         $this->db->set('created',$data['created']);
@@ -170,6 +171,7 @@ class Developers_model extends CI_Model{
         $this->db->set("name",$userDetails['name']);
         $this->db->set("job_title",$userDetails['job_title']);
         $this->db->set("email",$userDetails['email']);
+        $this->db->set("country_code",$userDetails['country_code']);
         if(isset($userDetails['image'])) $this->db->set('photo',$userDetails['image']);
 
         if(isset($userDetails['level']) && !empty($userDetails['level'])) $this->db->set("user_level",$userDetails['level']);

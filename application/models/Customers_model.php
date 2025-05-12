@@ -152,6 +152,8 @@ class Customers_model extends CI_Model
             $this->db->set("email",$this->input->post("email"));
             $this->db->set("customer_id",$customer_id);
             $this->db->set("country_code",'mu');
+            $this->db->set("created_by",$_SESSION['user_id']);
+            $this->db->set("created_on","NOW()",FALSE);
             $this->db->insert("customer_access");
 
             $check = $this->db->error();

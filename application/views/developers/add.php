@@ -17,6 +17,11 @@
 						<input type="email" class="form-control required" name="email" data-name="Email" placeholder="Enter email" data-min-length='4' value="">
                     </div>
 
+					<div class="form-group">
+                        <label for="">2 Letter Country Code</label>
+						<input type="text" class="form-control required" name="country_code" data-name="Country Code" minlength='2' maxlength='2' placeholder="Enter 2 letter country code for developer" data-min-length='4' value="">
+                    </div>
+
 					<input type="hidden" name="username" value="">
                     <input type="hidden" name="level" value="normal">
                     <input type="hidden" name="user_type" value="developer">

@@ -36,6 +36,11 @@
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <label for="">2 Letter Country Code</label>
+						<input type="text" class="form-control required" name="country_code" data-name="Country Code" minlength='2' maxlength='2' placeholder="Enter 2 letter country code for developer" data-min-length='4' value="<?php echo $user->country_code; ?>">
+                    </div>
+
                     <br>
 
 					<div class="row <?php echo (empty($user->photo))?'d-none':'';?>">
