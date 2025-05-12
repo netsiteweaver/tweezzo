@@ -301,23 +301,70 @@ jQuery(function(){
 
     $(".validate").on("click", function() {
         let taskId = $('input[name=id]').val();
-        Overlay("on");
-        $.ajax({
-            url: "portal/customers/validateTask",
-            data: {task_id:taskId},
-            method: "POST",
-            dataType: "JSON",
-            success: function(response) {
-                if(response.result) {
-                    $('select[name=stage]').val("validated");
-                    $(".validate").parent().remove();
-                }else{
-                    alert(response.reason)
-                }
-                Overlay("off");
-            }
-        })
+        alertify.confirm(
+            "Are you sure you want to validate this task?",
+            function(){
+                Overlay("on");
+                $.ajax({
+                    url: "portal/customers/validateTask",
+                    data: {task_id:taskId},
+                    method: "POST",
+                    dataType: "JSON",
+                    success: function(response) {
+                        if(response.result) {
+                            $('select[name=stage]').val("validated");
+                            $(".validate").parent().remove();
+                            $(".reject").closest('.row').remove();
+                        }else{
+                            alert(response.reason)
+                        }
+                        Overlay("off");
+                    }
+                })
+            },
+            function(){
+                
+            })
+
+        
     })
+
+    $(".reject").on("click", function() {
+        let taskId = $('input[name=id]').val();
+        let rejectReason = $('textarea[name=reject_reason]').val();
+
+        if(rejectReason.length<10){
+            alertify.alert("Error","Please explain why this task is being rejected to help us make necessary corrections");
+            return false;
+        }
+        alertify.confirm(
+            "Are you sure you want to reject this task?",
+            function(){
+                Overlay("on");
+                $.ajax({
+                    url: "portal/customers/rejectTask",
+                    data: {task_id:taskId, reject_reason:rejectReason},
+                    method: "POST",
+                    dataType: "JSON",
+                    success: function(response) {
+                        if(response.result) {
+                            $('select[name=stage]').val("on_hold");
+                            $(".validate").parent().remove();
+                            $(".reject").closest('.row').remove();
+                        }else{
+                            alert(response.reason)
+                        }
+                        Overlay("off");
+                    }
+                })
+            },
+            function(){
+                
+            })
+
+        
+    })
+
 
     $('.deleteNote').on("click", function(){
         let note_id = $(this).data("note-id");

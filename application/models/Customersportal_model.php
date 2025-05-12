@@ -192,6 +192,35 @@ class Customersportal_model extends CI_Model
             $this->db->query("SET @@session.time_zone = '+04:00'");
 
             $this->db->set("stage","validated");
+
+            $this->db->set("validated_on","NOW()",false);
+            $this->db->set("validated_by",$_SESSION['customer_access_id']);
+
+            $this->db->where("id",$task_id);
+            $this->db->update("tasks");
+            return true;
+        }
+    }
+
+    public function rejectTask($task_id,$reject_reason)
+    {
+        $stage = $this->db->select("stage")->from("tasks")->where("id",$task_id)->get()->row()->stage;
+        if( in_array($stage, ['completed','validated']) ){
+            return false;
+        }elseif($stage == 'staging'){
+            $this->db->query("SET @current_user_email = '{$_SESSION['customer_email']}'");
+            $this->db->query("SET @current_user_ip = '{$_SERVER['REMOTE_ADDR']}'");
+            $this->db->query("SET @current_user_agent = '{$_SERVER['HTTP_USER_AGENT']}'");
+            $this->db->query("SET @current_user_id = " . (int) $_SESSION['customer_access_id']);
+            $this->db->query("SET @current_user_type = 'customer'");
+            $this->db->query("SET @@session.time_zone = '+04:00'");
+
+            $this->db->set("stage","on_hold");
+
+            $this->db->set("rejected_on","NOW()",false);
+            $this->db->set("rejected_by",$_SESSION['customer_access_id']);
+            $this->db->set("rejected_reason",$reject_reason);
+
             $this->db->where("id",$task_id);
             $this->db->update("tasks");
             return true;

@@ -77,7 +77,14 @@
 						<p class='notes'>This task has successfully passed our internal testing and is now available on the <b>Staging Server</b> for your review.</p>
 						<p class='notes'>Please verify it against the requirements and click the <b>Validate</b> button below if everything meets your expectations.</p>
 						<p class='notes'>If you find any discrepancies, kindly send us a note <i>(in the space provided below or beside depending whether you are on mobile or desktop respectively)</i> detailing what does not match your expectations (as per the task description).</p>
-						<div class="btn btn-info mt-4 validate"><img class='ionicon' src="assets/ionicons/checkmark-done-outline.svg" alt="">Validate</div>
+						<div class="btn btn-info mt-4 validate"><i class="bi bi-check-circle"></i> Validate</div>
+						
+					</div>
+				</div>
+				<div class="row mt-2" style='border:1px solid #ccc; padding:5px;'>
+					<div class="col-md-12">
+						<textarea name="reject_reason" id="" rows="3" class="form-control" placeholder="Please explain why this task is being rejected to help us make necessary corrections"></textarea>
+						<div class="btn btn-danger mt-4 reject"><i class="bi bi-x-circle"></i> Reject</div>
 					</div>
 				</div>
 				<?php elseif($task->stage != 'validated'):?>
@@ -91,7 +98,7 @@
 				</div>
 				<?php endif;?>
 				<div class="row mt-2">
-					<div class="col-md-4">
+					<div class="col-md-12">
 						<a data-lightbox='lifecycle' href="assets/images/task-lifecycle-2.png">
 							<img class='img-thumbnail' src="assets/images/task-lifecycle-2.png" alt="">
 						</a>

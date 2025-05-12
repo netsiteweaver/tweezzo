@@ -202,6 +202,19 @@ class Customers extends CI_Controller
         exit;
     }
 
+    public function rejectTask()
+    {
+        $task_id = $this->input->post("task_id");
+        $reject_reason = $this->input->post("reject_reason");
+        $result = $this->Customersportal_model->rejectTask($task_id,$reject_reason);
+        if($result) {
+            echo json_encode(['result'=>true]);
+        }else{
+            echo json_encode(['result'=>false,'reason'=>"Failed! Possible reason is that the task has already been validated"]);
+        }
+        exit;
+    }
+
     public function forgotPassword()
     {
         $email = $this->input->post("email");
