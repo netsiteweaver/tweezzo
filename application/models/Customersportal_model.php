@@ -198,6 +198,9 @@ class Customersportal_model extends CI_Model
 
             $this->db->where("id",$task_id);
             $this->db->update("tasks");
+
+            $this->emailForTaskValidationOrRejection($task_id,"validated");
+
             return true;
         }
     }
@@ -223,6 +226,8 @@ class Customersportal_model extends CI_Model
 
             $this->db->where("id",$task_id);
             $this->db->update("tasks");
+
+            $this->emailForTaskValidationOrRejection($task_id,"rejected");
             return true;
         }
     }
@@ -433,6 +438,46 @@ class Customersportal_model extends CI_Model
 
         // notify admins for task created
         $members = $this->System_model->getParam("notification_create_users",true);
+        foreach($members as $m){
+            $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
+            $this->Email_model3->save($user->email,$subject,$content);
+        }
+    }
+
+    private function emailForTaskValidationOrRejection($task_id,$validationOrRejection="validated")
+    {
+        $this->load->model("Email_model3");
+        $this->load->model("System_model");
+        $task = $this->db->query("select 
+                                    t.id , t.name taskName , t.task_number taskNumber
+                                    , s.name sprintName
+                                    , p.name projectName
+                                    , c.company_name customerName
+                                    , t.validated_on validatedOn
+                                    , ca1.name as validatedBy
+                                    , t.rejected_on rejectedOn, t.rejected_reason rejectedReason
+                                    , ca2.name as rejectedBy
+                                from tasks t 
+                                join sprints s on s.id = t.sprint_id 
+                                join projects p on p.id = s.project_id 
+                                join customers c on c.customer_id = p.customer_id 
+                                left join customer_access ca1 on ca1.customer_id = t.validated_by 
+                                left join customer_access ca2  on ca2.customer_id  = t.rejected_by 
+                                where t.id = $task_id")->row();
+        $emailData = [
+            'title'     =>  'Task ' . (($validationOrRejection == 'validated') ? ' Validated ' : ' Rejected '),
+            'task'      =>  $task,
+            'type'      =>  $validationOrRejection,
+            'logo'      =>  $this->System_model->getParam("logo"),
+        ];
+        $content = $this->load->view("_email/header",$emailData, true);
+        $content .= $this->load->view("_email/taskRejectedOrValidated",$emailData, true);
+        $content .= $this->load->view("_email/footer",[], true);
+        $subject = "{$_SESSION['customer_name']} " . (($validationOrRejection == 'validated') ? ' Validated ' : ' Rejected ') . ' a Task ';
+        $this->Email_model3->save($_SESSION['customer_email'],$subject,$content);
+
+        // notify admins for task created
+        $members = $this->System_model->getParam("notification_create_tasks",true);
         foreach($members as $m){
             $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
             $this->Email_model3->save($user->email,$subject,$content);
