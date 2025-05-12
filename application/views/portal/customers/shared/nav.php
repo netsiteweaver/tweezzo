@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
         <a href="portal/customers/tasks">
-            <img src="assets/images/<?php echo $logo;?>" alt="" style='height:25px;'>
+            <img src="assets/images/<?php echo $logoDark;?>" alt="" style='height:25px;'>
         </a>
         <!-- <a class="navbar-brand" href="#">Task Manager <span class="notes">v1.0</span></a> -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"

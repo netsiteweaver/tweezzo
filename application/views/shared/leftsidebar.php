@@ -3,7 +3,9 @@
     <!-- Brand Logo -->
     <a href="<?php echo base_url();?>" class="brand-link elevation-4 text-center">
       <!-- <img src="<?php echo base_url("assets/favicon/android-icon-36x36.png");?>" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8"> -->
-      <span class="brand-text font-weight-light">Tweezzo <div style="font-weight:normal; font-size:12px;color:#ccc;">v<?php echo $version;?></div></span>
+       <img src="assets/images/<?php echo $logoLight;?>" style='height:40px;margin-bottom:10px;' alt="">
+       <div style="font-weight:normal; font-size:12px;color:#ccc;">v<?php echo $version;?></div>
+      <!-- <span class="brand-text font-weight-light">Tweezzo </span> -->
     </a>
 
     <!-- Sidebar -->

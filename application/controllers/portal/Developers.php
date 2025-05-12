@@ -10,6 +10,7 @@ class Developers extends CI_Controller
         $this->load->model("system_model");
         $this->load->model("Developersportal_model");
         $this->data['logo'] = $this->system_model->getParam("logo");
+        $this->data['logoDark'] = $this->system_model->getParam("logo-dark");
         $this->data['page_title'] = "";
 
         $this->load->model("Quotes_model");
