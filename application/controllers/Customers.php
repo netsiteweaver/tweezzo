@@ -56,13 +56,13 @@ class Customers extends MY_Controller
             ['field_name'=>'address','type'=>'text','label'=>'Address','value'=>isset($values['address'])?$values['address']:'','autofocus'=>false,'required'=>false,'placeholder'=>'Enter Address'],
             ['field_name'=>'phone_number1','type'=>'text','label'=>'Phone 1','value'=>isset($values['phone_number1'])?$values['phone_number1']:'','autofocus'=>false,'required'=>false,'placeholder'=>'Enter Phone NUmber'],
             ['field_name'=>'phone_number2','type'=>'text','label'=>'Phone 2','value'=>isset($values['phone_number2'])?$values['phone_number2']:'','autofocus'=>false,'required'=>false,'placeholder'=>'Enter Phone NUmber'],
-            ['field_name'=>'remarks','type'=>'textarea','label'=>'Remarks','value'=>isset($values['remarks'])?$values['remarks']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
-            // ['field_name'=>'full_name','type'=>'text','label'=>'Name','value'=>isset($values['full_name'])?$values['full_name']:'','autofocus'=>true,'required'=>false,'placeholder'=>'Enter Name of Customer'],
+            ['field_name'=>'full_name','type'=>'text','label'=>'Name','value'=>isset($values['full_name'])?$values['full_name']:'','autofocus'=>true,'required'=>false,'placeholder'=>'Enter Name of Customer'],
             // ['field_name'=>'job_description','type'=>'text','label'=>'Job Description','value'=>isset($values['job_description'])?$values['job_description']:'','autofocus'=>true,'required'=>false,'placeholder'=>'Enter Job Description'],
-            // ['field_name'=>'email','type'=>'email','label'=>'Email','value'=>isset($values['email'])?$values['email']:'','autofocus'=>false,'required'=>true,'placeholder'=>'Enter Email'],
+            ['field_name'=>'email','type'=>'email','label'=>'Email','value'=>isset($values['email'])?$values['email']:'','autofocus'=>false,'required'=>true,'placeholder'=>'Enter Email'],
+            // ['field_name'=>'password','type'=>'text','label'=>'Password','value'=>isset($values['password'])?$values['password']:$pswd,'autofocus'=>false,'required'=>true,'placeholder'=>'Enter Password For Portal Access'],
+            ['field_name'=>'remarks','type'=>'textarea','label'=>'Remarks','value'=>isset($values['remarks'])?$values['remarks']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
             // ['field_name'=>'brn','type'=>'text','label'=>'BRN','value'=>isset($values['brn'])?$values['brn']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
             // ['field_name'=>'vat','type'=>'text','label'=>'VAT','value'=>isset($values['vat'])?$values['vat']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
-            // ['field_name'=>'password','type'=>'text','label'=>'Password','value'=>isset($values['password'])?$values['password']:$pswd,'autofocus'=>false,'required'=>true,'placeholder'=>'Enter Password For Portal Access']
         );
     }
 
@@ -130,8 +130,8 @@ class Customers extends MY_Controller
             "phone_number1"         =>  $this->data['customer']->phone_number1,
             "phone_number2"         =>  $this->data['customer']->phone_number2,
             "remarks"               =>  $this->data['customer']->remarks,
-            // "full_name"             =>  $this->data['customer']->full_name,
-            // "email"                 =>  $this->data['customer']->email,
+            "full_name"             =>  $this->data['customer']->full_name,
+            "email"                 =>  $this->data['customer']->email,
             // "brn"                   =>  $this->data['customer']->brn,
             // "vat"                   =>  $this->data['customer']->vat,
             // "password"               =>  $this->data['customer']->password

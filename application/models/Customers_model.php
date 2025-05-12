@@ -108,25 +108,25 @@ class Customers_model extends CI_Model
             $error_message .= "Company Name is Mandatory<br>";
             $valid = false;
         }
-        // if(empty($this->input->post("full_name"))) {
-        //     $error_message .= "Customer Name is Mandatory<br>";
-        //     $valid = false;
-        // }
+        if(empty($this->input->post("full_name"))) {
+            $error_message .= "Customer Name is Mandatory<br>";
+            $valid = false;
+        }
         // if(empty($this->input->post("phone_number1"))) {
         //     $error_message .= "Phone Number is Mandatory<br>";
         //     $valid = false;
         // }
-        // if(empty($this->input->post("email"))) {
-        //     $error_message .= "Email is Mandatory<br>";
-        //     $valid = false;
-        // }
+        if(empty($this->input->post("email"))) {
+            $error_message .= "Email is Mandatory<br>";
+            $valid = false;
+        }
         if( !$valid ) {
             return array("result"=>false,"reason"=>$error_message);
         }
         $this->db->set("company_name",$this->input->post("company_name"));
-        // $this->db->set("full_name",$this->input->post("full_name"));
+        $this->db->set("full_name",$this->input->post("full_name"));
         $this->db->set("address",$this->input->post("address"));
-        // $this->db->set("email",$this->input->post("email"));
+        $this->db->set("email",$this->input->post("email"));
         $this->db->set("phone_number1",$_POST['phone_number1']);
         $this->db->set("phone_number2",$_POST['phone_number2']);
         // $this->db->set("vat",$_POST['vat']);
@@ -146,12 +146,13 @@ class Customers_model extends CI_Model
             $this->db->insert("customers");
             $customer_id = $this->db->insert_id();
 
-            // $this->db->set("password",md5($_POST['password']));
-            // $this->db->set("name",$this->input->post("full_name"));
+            $this->db->set("password",md5($_POST['password']));
+            $this->db->set("name",$this->input->post("full_name"));
             // $this->db->set("job_description",$this->input->post("job_description"));
-            // $this->db->set("email",$this->input->post("email"));
-            // $this->db->set("customer_id",$customer_id);
-            // $this->db->insert("customer_access");
+            $this->db->set("email",$this->input->post("email"));
+            $this->db->set("customer_id",$customer_id);
+            $this->db->set("country_code",'mu');
+            $this->db->insert("customer_access");
 
             $check = $this->db->error();
             if($check['code']>0){

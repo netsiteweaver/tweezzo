@@ -42,9 +42,9 @@
                 <label for="send_introduction_email">
                 <input type="checkbox" id="send_introduction_email" name="send_introduction_email" checked> Send Introduction Email?</label>
             </div>
-            <div class="col-lg-3 col-md-4 col-sm-6">
+            <div class="col-lg-6 col-md-4 col-sm-6">
                 <label for="email_customer">
-                <input type="checkbox" id="email_customer" name="email_customer" checked> Email Customer for Account Creation?</label>
+                <input type="checkbox" id="email_customer" name="email_customer" checked> Email Customer for Account Creation, together with the generated password?</label>
             </div>
         </div>
         
