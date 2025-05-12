@@ -11,6 +11,12 @@
 	--dark-gray: #4c4c4c;
 	--red: #ff0000;
 }
+.delius-regular {
+	font-family: "Delius", cursive;
+	font-weight: 400;
+	font-style: normal;
+  }
+  
 body{
 	font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
 	font-size: 16px;
@@ -1048,15 +1054,19 @@ hr.h10 {
 }
 
 .main-footer {
-	background-color: #33393f;
-	/* border-top: 1px solid #787b7e; */
+	background-color: #343a40;
 	color: #8f959b;
 	padding: .3rem 1rem .3rem .3rem;
 	text-align: right;
 	position: fixed;
 	bottom: 0;
-	width: calc(100% - 250px);
-	font-size: 0.8rem;
+	/* width: calc(100% - 250px); */
+	font-size: .8rem;
+	width: 100vw;
+	z-index: 99999999;
+	margin-left: 0 !important;
+	border-top: unset;
+	/* left: 0; */
 }
 .main-footer a {
 	color: #fff;
@@ -1101,4 +1111,77 @@ img.img-24 {
 	margin: 4px;
 	border-radius: 2px;
 	border: 1px solid #CCC;
+}
+
+.out-of-scope, .out-of-scope:hover, .table-hover tbody tr.out-of-scope:hover{
+    background-color: rgb(255, 190, 203);
+    /* color: #ffffff; */
+}
+
+.textarea{
+	overflow-y: auto;
+}
+.textarea-100{
+	min-height:100px
+}
+.textarea-200{
+	min-height:200px
+}
+.tweezzo-footer-container {
+	display: none;
+}
+
+@media print {
+	body {
+		color: #4c4c4c !important;
+	}
+	body#listing::after, body#report::after {
+		content: '';
+		position: fixed;
+		top: 0px;
+		right: 0px;
+		bottom: 0px;
+		left: 0px;
+		background: url('../images/LOGO-TWEEZZO-HORIZONTAL-padded\ for\ watermark.png');
+		opacity: 0.1;
+		pointer-events: none;
+	  }
+
+	table tr th,
+	table tr td {
+		border: 1px solid #000 !important;
+		font-size: 16px;
+		line-height: 20px;
+	}
+	.tweezzo-footer-container {
+		display: block;
+		position: fixed;
+		bottom: 50px;
+		border-top: 1px solid #ccc;
+		width:100%;
+	}
+	.tweezzo-footer {
+		text-align: center;
+		font-size: .9em;
+		position: fixed;
+		bottom: 30px;
+		right: 25px;
+		color:#ccc;
+	}
+}
+
+.random_quote {
+	color: #5fa6b1;
+	text-align: center;
+	line-height: 0.8em;
+}
+
+.random_quote .quote-text {
+	font-size: 0.9em;
+}
+
+.random_quote .author-name {
+	font-style: italic;
+	font-size: 0.8em;
+	letter-spacing: 2px;
 }

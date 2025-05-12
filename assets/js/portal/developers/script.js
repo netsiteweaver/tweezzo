@@ -1,5 +1,258 @@
 jQuery(function(){
 
+    // init('developers');
+
+    zoomIconForSeconds(6);
+
+    $('#submitTask').hover(function(){
+        zoomIconForSeconds(3)
+    })
+
+    $('.resetFilter').on('click', function(){
+        window.location.href = base_url + "portal/developers/notes";
+    })
+
+    $('.download').on('click', function(){
+        downloadTableAsCSV('notes','notes',{ includeColumns: [1,2,3,4] });
+    })
+
+    $('.summernote').summernote({
+		callbacks: {
+			// callback for pasting text only (no formatting)
+			onPaste: function (e) {
+			  var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData('Text');
+			  console.log(bufferText)
+			  e.preventDefault();
+			  bufferText = bufferText.replace(/\r?\n/g, '<br>');
+			  document.execCommand('insertHtml', false, bufferText);
+			}
+		},
+		height: 150,
+		tabsize: 4,
+		placeholder: 'Enter text here ...',
+		toolbar: [
+		  // [groupName, [list of button]]
+		  ['style', ['bold', 'italic', 'underline', 'clear']],
+		  ['font', ['strikethrough']],
+		//   ['fontsize', ['fontsize']],
+		  ['color', ['color']],
+		  ['para', ['ul', 'ol', 'paragraph']],
+		//   ['height', ['height']],
+		  ['view', ['fullscreen', 'codeview']],
+		],
+        onInit: function() {
+            // Remove any bold styling from the default paragraph
+            $('#editor').summernote('formatBlock', 'p');
+        }
+	});
+
+    $('.select-customer').on('click', function() {
+        // reset();
+        let customer_id = $(this).data("customer-id");
+        let customer_name = $(this).data("customer-name");
+        $('#addTaskModal .select-customer').removeClass("selected");
+        $('#addTaskModal input[name=customer_id]').val(customer_id);
+        $('.list-group.projects').closest('.form-group').removeClass('d-none');
+        $('.list-group.projects .list-group-item').each(function(){
+            if($(this).data('customer-id') == customer_id){
+                $(this).removeClass('d-none');
+                $('#selection').closest('.row').removeClass('d-none');
+                $('.list-group.customers').closest('.form-group').addClass('d-none');
+                $('#selection #selected-customer').text(customer_name)
+            }else{
+                $(this).addClass('d-none');
+            }
+        })
+    })
+
+    $('.select-project').on('click', function() {
+        let project_id = $(this).data("project-id");
+        let project_name = $(this).data("project-name");
+        $('#addTaskModal .select-project').removeClass("selected");
+        $('#addTaskModal input[name=project_id]').val(project_id);
+        $('.list-group.sprints').closest('.form-group').removeClass('d-none');
+        $('.list-group.sprints .list-group-item').each(function(){
+            if($(this).data('project-id') == project_id){
+                $(this).removeClass('d-none')
+                $('#selection #selected-project').text(project_name)
+                $('.list-group.projects').closest('.form-group').addClass('d-none');
+            }else{
+                $(this).addClass('d-none');
+            }
+        })
+    })
+
+    $('.select-sprint').on('click', function() {
+        let sprint_id = $(this).data("sprint-id");
+        let sprint_name = $(this).data("sprint-name");
+        $('#addTaskModal .select-sprint').removeClass("selected");
+        $('#addTaskModal input[name=sprint_id]').val(sprint_id);
+        $('.data-input').removeClass('d-none');
+        // $('#addTaskModal .modal-dialog').removeClass('modal-lg').addClass('modal-xl');
+        // $('.data-input-right').removeClass('d-none');
+        $('#selection #selected-sprint').text(sprint_name)
+        $('.list-group.sprints').closest('.form-group').addClass('d-none');
+
+        $('#addTaskModal input[name=task_number]').trigger("focus");
+    })
+
+    $('#resetModalAddTask').on('click', function() {
+        resetModalAddTask();
+    })
+
+    function resetModalAddTask()
+    {
+        $('#addTaskModal input[name=customer_id]').val('');
+        $('#addTaskModal input[name=project_id]').val('');
+        $('#addTaskModal input[name=sprint_id]').val('');
+
+        $('.list-group.customers').closest('.form-group').removeClass('d-none');
+        $('.list-group.projects').closest('.form-group').addClass('d-none');
+        $('.list-group.sprints').closest('.form-group').addClass('d-none');
+
+        $('.list-group.projects .list-group-item').addClass('d-none');
+        $('.list-group.sprints .list-group-item').addClass('d-none');
+
+        $('.data-input').addClass('d-none');
+        // $('.data-input-left').addClass('d-none');
+        // selection bar with reset
+        $('#selection').closest('.row').addClass('d-none');
+
+        $('#selection #selected-customer').text('')
+        $('#selection #selected-project').text('')
+        $('#selection #selected-sprint').text('')
+
+        $("#addTaskModal .data-input input, #addTaskModal .data-input textarea").val("")
+
+        // $('#addTaskModal .modal-dialog').removeClass('modal-xl').addClass('modal-lg');
+    }
+
+    $('#addTaskModal .monitorx').on("keyup",function(){
+        let valid = true;
+        
+        $('#addTaskModal .monitorx').each(function(){
+            let elem = $(this).val();
+            if(elem == "") valid = false;
+        })
+        if(valid) {
+            $('#addTaskModal .submit-task').removeClass("d-none");
+        }else{
+            $('#addTaskModal .submit-task').addClass("d-none");
+        }
+    })
+
+    $('.submit-task').on('click',function(){
+        let btn = $(this);
+        if($(this).hasClass("running")) return;
+
+        // $(this).addClass("running");
+        let sprint_id = $('#addTaskModal input[name=sprint_id]').val();
+        let task_number = $('input[name=task_number]').val();
+        let name = $('input[name=name]').val();
+        let section = $('input[name=section]').val();
+        let description = $('textarea[name=description]').val();
+        let scope_when_done = $('textarea[name=scope_when_done]').val();   
+        let scope_not_included = $('textarea[name=scope_not_included]').val();
+        let scope_client_expectation = $('textarea[name=scope_client_expectation]').val();
+
+        Overlay("on");
+        $.ajax({
+            url: base_url + "portal/developers/submitTask",
+            method: "POST",
+            dataType: "JSON",
+            data: {sprint_id:sprint_id,task_number:task_number,name:name,section:section,description:description,scope_when_done:scope_when_done,scope_not_included:scope_not_included,scope_client_expectation:scope_client_expectation},
+            success: function(response)
+            {
+                if(response.result){
+                    alertify.success("Task submitted");
+                    $('#addTaskModal .submission').addClass("d-none");
+                    $('#addTaskModal .thankyou').removeClass("d-none");
+                    $('button.submit-task').addClass("d-none").removeClass("running");
+                    $('button.submit-another-task').removeClass("d-none");
+                    resetModalAddTask();
+                }else{
+                    alertify.error(response.reason);
+                    $('.submit-task').removeClass("d-none");   
+                }
+                $(btn).removeClass("running")
+            },
+            complete: function(response) {
+                Overlay("off");
+                $(btn).removeClass("running")
+            }
+        })
+    })
+
+    $('.submit-another-task').on('click',function(){
+        $(this).addClass("d-none");
+        $('button.submit-task').removeClass("d-none");
+        $('#addTaskModal .thankyou').addClass("d-none");
+        $('#addTaskModal .submission.selection').removeClass("d-none");
+    })
+
+    $("#addTaskModal").on('hidden.bs.modal',function(){
+        resetModalAddTask();
+    })
+
+    $('.add-task').on('click', function(){
+        $('#addTaskModal').modal("show")
+    })
+
+    $('.create-task').on('click', function(){
+        let customer_id = $('input[name=customer_id]').val();
+        let project_id = $('input[name=project_id]').val();
+        let sprint_id = $('input[name=sprint_id]').val();
+        
+        let section = $('input[name=section]').val();
+        let task_number = $('input[name=task_number]').val();
+        let name = $('input[name=name]').val();
+        let description = $('textarea[name=description]').val();
+        let due_date = $('input[name=due_date]').val();
+        console.log(customer_id, project_id, sprint_id,section,task_number,name,description,due_date)
+
+        alertify.alert("Not yet imeplemented")
+    })
+
+    $('.monitor').on('change',function(){
+        let startDate = $('input[name=start_date]').val();
+        let endDate = $('input[name=end_date]').val();
+        let projectId = $('input[name=project_id]').val();
+        let sprintId = $('input[name=sprint_id]').val();
+        let customerId = $('input[name=customer_id]').val();
+        let qs = "?start_date=" + startDate + "&end_date=" + endDate + "&project_id=" + projectId + "&sprint_id=" + sprintId + "&customer_id=" + customerId;
+        window.location.href = base_url + "portal/developers/notes" + qs;
+    })
+
+    $('#notes .filter-project').on('click', function() {
+        let projectId = $(this).data('project-id');
+        let sprintId = $('input[name=sprint_id]').val();
+        let customerId = $('input[name=customer_id]').val();
+        let startDate = $('input[name=start_date]').val();
+        let endDate = $('input[name=end_date]').val();
+        let qs = "?start_date=" + startDate + "&end_date=" + endDate + "&project_id=" + projectId + "&sprint_id=" + sprintId + "&customer_id=" + customerId;
+        window.location.href = base_url + "portal/developers/notes" + qs;
+    })
+
+    $('#notes .filter-sprint').on('click', function() {
+        let sprintId = $(this).data('sprint-id');
+        let projectId = $('input[name=project_id]').val();
+        let customerId = $('input[name=customer_id]').val();
+        let startDate = $('input[name=start_date]').val();
+        let endDate = $('input[name=end_date]').val();
+        let qs = "?start_date=" + startDate + "&end_date=" + endDate + "&project_id=" + projectId + "&sprint_id=" + sprintId + "&customer_id=" + customerId;
+        window.location.href = base_url + "portal/developers/notes" + qs;
+    })
+
+    $('#notes .filter-customer').on('click', function() {
+        let customerId = $(this).data('customer-id');
+        let projectId = $('input[name=project_id]').val();
+        let sprintId = $('input[name=sprint_id]').val();
+        let startDate = $('input[name=start_date]').val();
+        let endDate = $('input[name=end_date]').val();
+        let qs = "?start_date=" + startDate + "&end_date=" + endDate + "&project_id=" + projectId + "&sprint_id=" + sprintId + "&customer_id=" + customerId;
+        window.location.href = base_url + "portal/developers/notes" + qs;
+    })
+
     $('#mySprints td.select-sprint').on("click", function() {
         let sprintId = $(this).closest("tr").data("sprint-id");
         let projectId = $(this).closest("tr").data("project-id");
@@ -113,6 +366,41 @@ jQuery(function(){
         )
        
     })
+
+    $(document).ready(function () {
+        const $modal = $('#myModal');
+    
+        $modal.on('hide.bs.modal', function (e) {
+          // Prevent Bootstrap from immediately hiding the modal
+          e.preventDefault();
+    
+          const $dialog = $modal.find('.modal-dialog');
+          $dialog.css({
+            transform: 'scale(1.7)',
+            opacity: '0'
+          });
+    
+          // Wait for the animation to finish before closing
+          setTimeout(function () {
+            // Actually hide the modal
+            $modal.modal('hide');
+            // Reset dialog transform for next open
+            $dialog.css({
+              transform: '',
+              opacity: ''
+            });
+          }, 300); // Match CSS transition duration
+        });
+    
+        $modal.on('show.bs.modal', function () {
+          const $dialog = $modal.find('.modal-dialog');
+          $dialog.css({
+            transform: 'scale(1)',
+            opacity: '1'
+          });
+        });
+      });
+
 })
 
 function resetForm()
@@ -149,3 +437,13 @@ function Overlay(option)
 		$('#overlay').addClass('d-none');
 	}
 }
+
+function zoomIconForSeconds(seconds) {
+    const icon = document.getElementById('submitTask');
+    
+    icon.classList.add('zoom-animation'); // Start animation
+    
+    setTimeout(() => {
+      icon.classList.remove('zoom-animation'); // Stop animation after X seconds
+    }, seconds * 1000); // seconds → milliseconds
+  }

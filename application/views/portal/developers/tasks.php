@@ -207,14 +207,14 @@
                         <td><?php echo $task->due_date;?></td>
                         <td><?php echo $task->estimated_hours;?></td>
                         <td class="text-center">
-                            <div style='border-radius:5px; padding: 5px 10px; color:#fff;background-color:<?php echo $stageColors[$task->task_stage];?>'>
+                            <div class="stage-button stage-button-<?php echo $task->task_stage;?>">
                                 <?php echo strtoupper(str_replace("_"," ",$task->task_stage));?>
                             </div>
 
                         </td>
                         <td class=''><?php echo $task->notes_count;?><br><i class="bi bi-eye view-notes cursor-pointer"></i></td>
                         <td>
-                            <a href="portal/developers/view/<?php echo "{$task->uuid}?customer_id={$this->input->get('customer_id')}&project_id={$this->input->get('project_id')}&sprint_id={$this->input->get('sprint_id')}";?>">
+                            <a href="portal/developers/view?task_uuid=<?php echo "{$task->uuid}&customer_id={$this->input->get('customer_id')}&project_id={$this->input->get('project_id')}&sprint_id={$this->input->get('sprint_id')}";?>">
                                 <div class="btn" style="color:#fff; background-color: var(--developersPortalBackground)"><i class="bi bi-eye"></i> View</div>
                             </a>
                         </td>

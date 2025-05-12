@@ -1,5 +1,11 @@
 jQuery(function(){
 
+    if($('select[name=sprint_id]').val() != null){
+        if($("input[name='task_number']").val().length==0){
+            getMaxTaskNumberBySprintId($('select[name=sprint_id]').val());
+        }
+    }
+
     $('#saveNote').on('click', function(e){
         e.preventDefault();
         let task_id = $('#task_notes input[name=task_id]').val();
@@ -18,12 +24,14 @@ jQuery(function(){
             success: function(response)
             {
                 if(response.result){
+                    $('.summernote').summernote('code', '');
+                    $('#task_notes textarea[name=notes]').val('');
                     alertify.success('Note saved successfully');
                     loadNotes(task_id);
-                    $('#task_notes textarea[name=notes]').val('');
                 }else{
-                    alertify.error(response.reason);
+                    $('.summernote').summernote('code', '');
                     $('#task_notes textarea[name=notes]').val('');
+                    alertify.error(response.reason);
                     loadNotes(task_id);
                 }
             },
@@ -51,6 +59,36 @@ jQuery(function(){
                     if(response.result){
                         Overlay("off")
                         alertify.success('Note deleted successfully');
+                        loadNotes(task_id);
+                    }
+                },
+                complete: function(){
+                    Overlay("off")
+                }
+            })
+        }
+        , function(){
+            alertify.error('Cancel');
+        });
+    })
+
+    $('#previousNotes').on('click', '.outOfScope', function(e){
+        e.preventDefault();
+        let task_id = $('input[name=task_id]').val();
+        let note_id = $(this).data('note-id');
+
+        alertify.confirm('Out Of Scope', 'Are you sure this note is out of scope?', function(){
+            Overlay("on")
+            $.ajax({
+                url: base_url + "tasks/outOfScope",
+                method: "POST",
+                dataType: "JSON",
+                data: {note_id:note_id},
+                success: function(response)
+                {
+                    if(response.result){
+                        Overlay("off")
+                        alertify.success('Note marked out of scope');
                         loadNotes(task_id);
                     }
                 },
@@ -127,6 +165,11 @@ jQuery(function(){
         })
     })
 
+    $('select[name=sprint_id]').on('change', function(){
+        let sprint_id = $(this).val();
+        $('input[name=selected_sprint_id]').val(sprint_id);
+    })
+
     $('#sprint_id').on('change', function(){
         let sprint_id = $(this).val();
         if( sprint_id.length > 0){
@@ -146,6 +189,25 @@ jQuery(function(){
             $(this).addClass("assigned");
             assignUser( taskId, userId);
         }
+    })
+
+    $('.add-user').on('click', function(){
+        if($(this).hasClass("assigned")){
+            $(this).removeClass("assigned");
+        }else{
+            $(this).addClass("assigned");
+        }
+        let users = [];
+        $('ul#users-list li').each(function(i,j){
+            
+            if($(this).hasClass("assigned")){
+                let userId = $(this).data("id");
+                users.push(userId);
+            }
+            
+        })
+        console.log(users)
+        $('input[name=userIds]').val(JSON.stringify(users));
     })
 
     $('#project_id').on('change', function(){
@@ -172,6 +234,47 @@ jQuery(function(){
         }
         getByCustomerId(customer_id);
     })
+
+    $('#uploadForm').on('submit', function(e) {
+        e.preventDefault();
+    
+        var formData = new FormData(this);
+        formData.append('file', $('#fileInput')[0].files[0]);
+        formData.append('selected_sprint_id', $('input[name=selected_sprint_id]').val());
+
+    // console.log(formData);return;
+        var totalRows = 0;
+        $.ajax({
+            url: base_url + 'tasks/upload_file', // your server-side script
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                // console.log(response.data)
+                let received = JSON.parse(response);
+                console.log(received)
+                $('#modalPreview table#preview_import tbody').empty();
+                $(received.data).each(function(i,j){
+                    totalRows++
+                    let tr = "<tr>";
+                    tr += `<td>${i+1}</td>`;
+                    for(x = 1; x<7; x++)
+                    {
+                        tr += `<td>${j[x]}</td>`;
+                    }
+                    //<td>${j[0]}</td><td>${j[0]}</td><td>${j[0]}</td><td>${j[0]}</td><td>${j[0]}</td>`
+                    tr += "</tr>";
+                    $('#modalPreview table#preview_import tbody').append(tr);
+                })
+                $('#modalPreview tfoot tr th').text("Total rows = " + totalRows)
+                $('#modalPreview').modal("show");
+            },
+            error: function() {
+                $('#result').html("An error occurred.");
+            }
+        });
+    });
     
 })
 
@@ -189,10 +292,11 @@ function loadNotes(task_id)
                 Overlay("off")
                 $('#previousNotes').empty();
                 $(response.notes).each(function(i,j){
-                    console.log(j)
-                    let row = `<tr>`
+                    let row = `<tr class='`
+                    if(j.out_of_scope == '1') row += 'alert alert-danger'
+                    row += `'>`
                     row += `<td>${i+1}</td>`
-                    row += `<td>${j.notes}<br><span class='float-right' style='color:#4c4c4c; padding:3px 8px; font-size:0.8em; font-style:italic;'>`;
+                    row += `<td>${j.notes}<span class='float-right' style='color:#4c4c4c; padding:3px 8px; font-size:0.8em; font-style:italic;'>`;
                     if(j.name !== null) row += j.name;
                     if(j.customer !== null) row += j.customer;
                     row += ` - ${j.created_on}</span></td>`
@@ -306,7 +410,10 @@ function getMaxTaskNumberBySprintId(sprint_id)
                 //         $('input[name=section]').trigger('focus');
                 //     }
                 //     , 100);
-                $("input[name='task_number']").attr('placeholder','Max Used: '+response.maxTaskNumber);
+                $("input[name='task_number']").attr('placeholder', response.maxTaskNumber);
+                window.setTimeout(function(){
+                    $("input[name='task_number']").attr('value', response.maxTaskNumber);
+                },500)
                 // }
                 Overlay("off")
             }else{

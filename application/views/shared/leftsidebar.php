@@ -1,9 +1,9 @@
   <!-- Main Sidebar Container -->
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <a href="<?php echo base_url();?>" class="brand-link elevation-4">
-      <img src="<?php echo base_url("assets/AdminLTE-3.2.0/");?>/dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-      <span class="brand-text font-weight-light">Control Panel</span>
+    <a href="<?php echo base_url();?>" class="brand-link elevation-4 text-center">
+      <!-- <img src="<?php echo base_url("assets/favicon/android-icon-36x36.png");?>" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8"> -->
+      <span class="brand-text font-weight-light">Tweezzo <div style="font-weight:normal; font-size:12px;color:#ccc;">v<?php echo $version;?></div></span>
     </a>
 
     <!-- Sidebar -->
@@ -22,16 +22,16 @@
             <img src="<?php echo base_url("assets/images/photo-placeholder.webp");?>" class="img-circle elevation-2">
           <?php endif;?>
         </div>
-        <div class="info">
+        <div class="info mt-2">
           <a href="<?php echo base_url("users/myprofile?referer=".$this->uri->segment(1).DIRECTORY_SEPARATOR.$this->uri->segment(2).DIRECTORY_SEPARATOR.$this->uri->segment(3)); ?>" class="d-block">
           <div class="user"><?php echo $authenticated_user->name;?></div>
-          <div class="department"><?php echo $authenticated_user->department;?></div>
+          <!-- <div class="department"><?php //echo $authenticated_user->department;?></div> -->
           </a>
         </div>
       </div>
 
       <!-- Sidebar Menu -->
-      <nav class="mt-2">
+      <nav class="mt-2 mb-5">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
@@ -72,6 +72,22 @@
             <a href="<?php echo base_url('users/signout'); ?>" class="nav-link">
               <i class='fas fa-sign-out-alt'></i>
               <p>Sign Out</p>
+            </a>
+          </li>
+
+          <li class="nav-header"><hr></li>
+          <li class="nav-item"><a href="" class='nav-link ml-4 text-bold'><p>Portal Access</p></a></li>
+          
+          <li class="nav-item">
+            <a target="_blank" href="<?php echo base_url('portal/developers'); ?>" class="nav-link">
+              <i style="color:#2cbfc6" class='fas fa-users'></i>
+              <p>Developers</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a target="_blank" href="<?php echo base_url('portal/customers'); ?>" class="nav-link">
+              <i style="color:#a152d6" class='fas fa-users'></i>
+              <p>Customers</p>
             </a>
           </li>
         </ul>

@@ -161,6 +161,11 @@ class Dashboard extends MY_Controller {
                 $this->data['latest_customer_access'] = $this->customersportal_model->get_login_history(10);
                 $this->data['latest_developer_access'] = $this->developersportal_model->get_login_history(10);
                 $this->data['customers'] = $this->db->select("count(1) as ct")->from("customers")->where("status","1")->get()->row("ct");
+
+                $this->load->model("Tasks_model");
+                $this->data['task_progress'] = $this->Tasks_model->getGeneralProgress();
+
+                $this->addContent($this->load->view("/dashboard/progress",$this->data,true));
                 $this->addContent($this->load->view("/dashboard/summary",$this->data,true));
                 $this->addContent($this->load->view("/dashboard/misc",$this->data,true));
             }

@@ -25,10 +25,6 @@
                 <td style='border:1px solid #CCC; padding: 5px 10px; font-size: 18px;'><?php echo "{$task->project_name}";?></td>
             </tr>
             <tr>
-                <th style='width: 150px; text-align: left; border:1px solid #CCC; padding: 5px 10px; font-size: 18px;'>Task</th>
-                <td style='border:1px solid #CCC; padding: 5px 10px; font-size: 18px;'><?php echo "{$task->task_number} - {$task->task_name}";?></td>
-            </tr>
-            <tr>
                 <th style='width: 150px; text-align: left; border:1px solid #CCC; padding: 5px 10px; font-size: 18px;'>Stage</th>
                 <td style='border:1px solid #CCC; padding: 5px 10px; font-size: 18px;'><?php echo strtoupper(str_replace("_"," ",$task->task_stage));?></td>
             </tr>

@@ -1,13 +1,13 @@
 <form id="save_customers" role="form" action="<?php echo base_url('customers/save/'); ?>" method="post" autocomplete="off">
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-12">
 
         <input type="hidden" name="referer" value="<?php echo $this->input->get("referer");?>">
         <div class="row">
             <!-- <div class="col-md-12"> -->
                 <!-- <div class="row"> -->
                     <?php foreach($fields as $f):?>
-                        <div class="<?php echo (strtolower(trim($f['type'])) == 'hidden') ? '' : 'col-md-12';?>">
+                        <div class="<?php echo (strtolower(trim($f['type'])) == 'hidden') ? '' : 'col-lg-3 col-md-4 col-sm-6';?>">
                         <?php if( in_array( (strtolower(trim($f['type']))),['text','number','email','date','password'] ) ):?>
                             <div class="form-group">
                                 <label><?php echo $f['label'];?></label>
@@ -38,13 +38,13 @@
         </div>
 
         <div class="row">
-            <div class="col-md-6">
-                <label for="send_introduction">
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <label for="send_introduction_email">
                 <input type="checkbox" id="send_introduction_email" name="send_introduction_email" checked> Send Introduction Email?</label>
             </div>
-            <div class="col-md-6">
-                <label for="send_introduction">
-                <input type="checkbox" id="email_customer" name="email_customer" checked> Email Customer for Account Creation?</label>
+            <div class="col-lg-6 col-md-4 col-sm-6">
+                <label for="email_customer">
+                <input type="checkbox" id="email_customer" name="email_customer" checked> Email Customer for Account Creation, together with the generated password?</label>
             </div>
         </div>
         

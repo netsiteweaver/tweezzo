@@ -125,8 +125,20 @@
                                 placeholder="" value="">
                         </div>
                     </div>
+                    <hr class='mt-5 mb-5'>
+                    <h3>Landing Page After Login</h3>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="">Landing Page</label>
+                            <select name="landing_page" id="" class="form-control">
+                                <option value="dashboard/index" <?php echo ($user->landing_page == 'dashboard/index')?'selected':'';?>>Dashboard</option>
+                                <option value="tasks/listing" <?php echo ($user->landing_page == 'tasks/listing')?'selected':'';?>>Tasks</option>
+                                <option value="notes/listing" <?php echo ($user->landing_page == 'notes/listing')?'selected':'';?>>Notes</option>
+                                <option value="submitted_tasks/listing" <?php echo ($user->landing_page == 'submitted_tasks/listing')?'selected':'';?>>Submitted Tasks</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-
             </div>
             <div class="row">
                 <div class="col-xs-2 col-xs-offset-1">

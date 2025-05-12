@@ -576,3 +576,21 @@ function validatePassword($password) {
 
     return $errors;
 }
+
+function incrementTaskNumber($taskNumber) {
+    // Match the prefix and the numeric part
+    if (preg_match('/^([A-Z]+)(\d+)$/', $taskNumber, $matches)) {
+        $prefix = $matches[1];
+        $number = $matches[2];
+
+        // Increment the numeric part and pad with leading zeros to match original length
+        $incremented = str_pad($number + 1, strlen($number), '0', STR_PAD_LEFT);
+
+        return $prefix . $incremented;
+    } else {
+        return str_pad(intval($taskNumber) + 1, 3, '0', STR_PAD_LEFT);
+    }
+
+    // Return original if it doesn't match the expected format
+    // return $taskNumber;
+}

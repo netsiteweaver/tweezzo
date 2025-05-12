@@ -30,11 +30,12 @@ ul.navbar-nav {
 }
 .logged-in-user {
     position:absolute;
-    top: -40px;
+    top: -60px;
     right: 30px;
     font-size: 0.9em;
-    font-weight: bold;
-    color:#a152d6
+    font-weight: normal;
+    /* color:#a152d6 */
+    color:#929293;
 }
 @media only screen and (max-width:990px){
     .logged-in-user {
@@ -97,3 +98,81 @@ a:hover {
 	animation:l4 2s infinite steps(24);
   }
   @keyframes l4 {to{transform: rotate(1turn)}}
+
+
+/* SPRITES */
+.bg-icon {
+    float:left;
+    margin-right:10px;
+}
+.bg-project_management_24px {
+    width: 24px; height: 24px;
+    background: url('../../../images/css_sprites.png') -10px -10px;
+}
+.bg-checklist_24px {
+    width: 24px; height: 24px;
+    background: url('../../../images/css_sprites.png') -54px -10px;
+}
+.bg-speed_24px {
+    width: 24px; height: 24px;
+    background: url('../../../images/css_sprites.png') -10px -54px;
+}
+.bg-chat_24px {
+    width: 24px; height: 24px;
+    background: url('../../../images/css_sprites.png') -54px -54px;
+}
+.bg-logout_24px {
+    width: 24px; height: 24px;
+    background: url('../../../images/css_sprites.png') -98px -10px;
+}
+.bg-add_user_24px {
+    width: 24px; height: 24px;
+    background: url('../../../images/css_sprites.png') -98px -54px;
+}
+.bg-add_task_24px {
+    width: 24px; height: 24px;
+    background: url('../../../images/css_sprites.png') -10px -98px;
+}
+.bg-users_24px {
+    width: 24px; height: 24px;
+    background: url('../../../images/css_sprites.png') -54px -98px;
+}
+
+.out-of-scope, .out-of-scope:hover, .table-hover tbody tr.out-of-scope:hover{
+    background-color: rgb(255, 190, 203);
+    /* color: #ffffff; */
+}
+
+@keyframes zoomInOut {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(2);
+    }
+  }
+  
+  .zoom-animation {
+    animation: zoomInOut 1.5s ease-in-out infinite;
+  }
+  
+.notes-black {
+    color: #4c4c4c;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+.random-quote-container {
+    text-align: right;
+    /* padding: 3px; */
+    /* border-bottom: 1px solid #eee; */
+    color: #ccc;
+}
+.random-quote-container .quote-text {
+    font-size: 0.9em;
+}
+
+.random-quote-container .author-name {
+    font-size: 0.8em;
+    font-style: italic;
+}

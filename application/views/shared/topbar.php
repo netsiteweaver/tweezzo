@@ -6,6 +6,11 @@
       </li>
     </ul>
 
+    <div class="col-md-12 random_quote">
+      <span class='quote-text'><?php echo $random_quote->quote_text;?></span><br>
+      <span class='author-name'><?php echo $random_quote->author_name;?></span>
+    </div>
+
     <!-- <form action=""> -->
     <div class="col-md-4">
       <!-- <div class="input-group"> -->
@@ -24,7 +29,7 @@
     <!-- </form> -->
 
     <!-- Right navbar links -->
-    <ul class="navbar-nav ml-auto">
+    <ul class="navbar-nav ml-auto d-none">
       <!-- Messages Dropdown Menu -->
       <li id="search-sn-result" class="nav-item dropdown d-none">
         <a class="nav-link" data-toggle="dropdown" href="#">

@@ -21,6 +21,7 @@ class MY_Controller extends CI_Controller{
         $this->data['theme'] = $this->system_model->getParam("theme");
         $this->data['logo'] = $this->system_model->getParam("logo");
         $this->data['theme_color'] = $this->system_model->getParam('theme_color');
+        $this->data['version'] = $this->system_model->getParam('current_version');
         $this->data['sidebar_collapse'] = $this->system_model->getParam("sidebar_collapse");
         $this->data['controller'] = str_replace("-", "", $this->uri->segment(1, "dashboard"));
         $this->data['method'] = $this->uri->segment(2, "index");
@@ -33,6 +34,12 @@ class MY_Controller extends CI_Controller{
         $this->data['flashDanger']      = getFlashMessage("danger");
         $this->data['flashInfo']        = getFlashMessage("info"); 
         $this->data['upload_folder'] = $this->config->item("upload_folder");
+        $this->data['pageType'] = "listing";
+
+        $this->data['qs'] = $_SERVER["QUERY_STRING"];
+
+        $this->load->model("Quotes_model");
+        $this->data['random_quote'] = $this->Quotes_model->getRandomQuote();
 
         // $this->load->library('migration');
 

@@ -5,12 +5,12 @@
 !system/cache/*
 !*/cache/index.html
 !*/cache/.htaccess
-
+.vscode
 user_guide_src/build/*
 user_guide_src/cilexer/build/*
 user_guide_src/cilexer/dist/*
 user_guide_src/cilexer/pycilexer.egg-info/*
-
+.~*
 #codeigniter 3
 application/logs/*
 !application/logs/index.html
@@ -20,6 +20,12 @@ application/logs/*
 application/config/development/config.php
 application/config/development/database.php
 
+application/config/staging/config.php
+application/config/staging/database.php
+
+application/config/production/config.php
+application/config/production/database.php
+
 application/logs/*.*
 *.zip
 
@@ -27,3 +33,4 @@ uploads/users/*.*
 uploads/users/96px/*.*
 
 uploads/tasks/*.*
+uploads/*.*

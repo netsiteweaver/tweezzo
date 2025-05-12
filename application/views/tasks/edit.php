@@ -13,13 +13,16 @@
 	.myCursor {
 		cursor: url('../../assets/images/delete-16px.png'), auto;
 	}
+	tr.private td{
+		background-color:#eee;
+	}
 </style>
 
 <div class="row">
     <div class="col-md-6">
         <div class="card ">
 			<div class="card-header bg-teal">
-				<h3>Task Information</h3>
+				<h3 class='card-title'>Task Information</h3>
 			</div>
 			<div class="card-body">
 				<div class="row">
@@ -30,6 +33,7 @@
 				<form id="add_user" action="tasks/save" method="post" enctype="multipart/form-data">
 					<input type="hidden" name="uuid" value="<?php echo $task->uuid;?>">
 					<input type="hidden" name="id" value="<?php echo $task->id;?>">
+					<input type="hidden" name="qs" value="<?php echo $qs;?>">
 					<!-- <input type="hidden" name="stage" value="<?php echo $this->input->get("stage");?>"> -->
 					<input type="hidden" name="_customer_id" value="<?php echo $this->input->get("customer_id");?>">
 					
@@ -82,7 +86,6 @@
 								<textarea name="description" id="" rows="5" class="form-control"><?php echo $task->description;?></textarea>
 							</div>
 							<div class="row">
-								
 								<div class="col-md-6">
 									<div class="form-group">
 										<label>Due Date</label>
@@ -97,25 +100,21 @@
 								</div>
 								
 							</div>
+							<div class="alert alert-danger">Scope Definition</div>
 							<div class="form-group">
-								<label>Stage</label>
-								<select class="form-control required" name="stage" required>
-									<option value="" disabled>Select</option>
-									<option value="new" <?php echo ($task->stage == 'new') ? 'selected' : '';?>>New</option>
-									<option value="in_progress" <?php echo ($task->stage == 'in_progress') ? 'selected' : '';?>>In Progress</option>
-									<option value="testing" <?php echo ($task->stage == 'testing') ? 'selected' : '';?>>Testing</option>
-									<option value="staging" <?php echo ($task->stage == 'staging') ? 'selected' : '';?>>Staging</option>
-									<option value="validated" <?php echo ($task->stage == 'validated') ? 'selected' : '';?>>Validated</option>
-									<option value="completed" <?php echo ($task->stage == 'completed') ? 'selected' : '';?>>Completed</option>
-									<option value="on_hold" <?php echo ($task->stage == 'on_hold') ? 'selected' : '';?>>On Hold</option>
-									<option value="stopped" <?php echo ($task->stage == 'stopped') ? 'selected' : '';?>>Stopped</option>
+								<label for="">What's expected from this task</label>
+								<textarea name="scope_client_expectation" id="" rows='5' class="form-control" placeholder="Tell us what you expect from this task. This can be in terms of display, print, performance or any other"><?php echo $task->scope_client_expectation;?></textarea>
+							</div>
+							<div class="form-group">
+								<label for="">What's not included</label>
+								<textarea name="scope_not_included" id="" rows='5' class="form-control" placeholder="To avoid confusion and delay, let us know what is not included in this task. If nothing is specified here, the scope of this task will be limited strictly to the task description."><?php echo $task->scope_not_included;?></textarea>
+							</div>
+							<div class="form-group">
+								<label for="">When it's considered done</label>
+								<textarea name="scope_when_done" id="" rows='5' class="form-control" placeholder="Tell us what you expect from this task for it to be completed."><?php echo $task->scope_when_done;?></textarea>
+							</div>
 
-								</select>
-							</div>
-							<div class="form-group col-md-2">
-								<label>Progress</label>
-								<input type="text" class="form-control text-right" name="progress" value="<?php echo $task->progress;?> %" readonly>
-							</div>
+							
 							<input type="hidden" name="deleted_images" value="[]">
 							<div class="row">
 								<?php foreach($task->files as $file):?>	
@@ -141,7 +140,7 @@
 					<!-- /.card-body -->
 
 					<div class="card-footer ready">
-						<button type="submit" class="btn btn-success" id="save"><i class='fa fa-save'></i> Save</button>
+						<button type="submit" class="btn btn-success" id="save"><i class='fa fa-save'></i> Update Task</button>
 					</div>
 				</form>
 
@@ -149,21 +148,23 @@
 					<input type="hidden" name="task_id" value="<?php echo $task->id;?>">
 					<div class="form-group">
 						<label for="">Notes</label>
-						<textarea name="notes" id="" rows="5" class="form-control" placeholder="Enter your notes. Other users will be able to view your notes." ></textarea>
+						<textarea name="notes" id="" rows="5" class="summernote form-control" placeholder="Enter your notes. Other users will be able to view your notes." ></textarea>
 					</div>
 					<div class="form-group">
-						<button type="submit" class="btn btn-flat btn-info" id="saveNote"><i class='fa fa-save'></i> Save</button>
+						<button type="submit" class="btn btn-flat btn-info" id="saveNote"><i class='fa fa-edit'></i> Save Note</button>
 					</div>
 				</form>
 
+
 				<!-- Display Previous Notes Here -->
-				<?php if(!empty($task->notes)):?>
-					<table id='previousNotes' class="table table-bordered table-hover">
+				
+					<table id='previousNotes' class="table table-bordered">
 						<tbody>
+						<?php if(!empty($task->notes)):?>
 						<?php foreach($task->notes as $i => $note):?>
-							<tr>
+							<tr class='<?php echo ($note->display_type == 'private') ? 'private' : '';?> <?php echo ($note->out_of_scope == '1') ? 'alert alert-danger' : '';?>'>
 								<td><?php echo $i+1;?></td>
-								<td><?php echo nl2br($note->notes);?><br>
+								<td><?php echo nl2br($note->notes);?>
 									<span class="float-right" style='color:#4c4c4c; padding:3px 8px; font-size:0.8em; font-style:italic;'>
 										<?php echo $note->name.$note->customer;?> - <?php echo date('d-M-Y h:i A',strtotime($note->created_on));?>
 									</span>
@@ -173,18 +174,39 @@
 										<div class="btn btn-xs btn-danger deleteNote" data-note-id='<?php echo $note->id;?>'><i class="fa fa-trash"></i></div>
 									<?php endif;?>	
 								</td>
+								<td>
+									<?php if($note->out_of_scope == '0'):?>
+									<div class="cursor-pointer outOfScope" data-note-id='<?php echo $note->id;?>'>
+										<img style='width:24px; height:24px;' src="<?php echo base_url('assets/images/OUT-OF-SCOPE-36PX.png');?>" alt="">
+									</div>
+									<?php endif;?>
+								</td>
 							</tr>
 						<?php endforeach;?>
+						<?php endif;?>
 						</tbody>
 					</table>
-				<?php endif;?>
+				
 			</div>
         </div>
     </div>
+	<!-- <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-danger">
+                    <h3 class="card-title">Scope Definition</h3>
+                </div>
+                <div class="card-body">
+                    
+                </div>
+                <div class="card-footer">
+
+                </div>
+            </div>
+        </div> -->
 	<div class="col-md-6">
 		<div class="card card-secondary">
-			<div class="card-header bg-teal">
-				<h3>Stage History</h3>
+			<div class="card-header bg-warning">
+				<h3 class='card-title'>Stage History</h3>
 			</div>
 			<div class="card-body">
 				<table class="table table-bordered table-striped">
@@ -209,11 +231,11 @@
 		</div>
 		<div class="card card-secondary">
 			<div class="card-header bg-teal">
-				<h3>Assigned Users</h3>
+				<h3 class='card-title'>Assigned Users</h3>
 			</div>
 			<div class="card-body">
 				<ul id="users-list" class="list-group">
-					<?php foreach($users as $user):?>
+					<?php foreach($developers as $user):?>
 					<?php if($user->user_type != 'developer') continue;?>
 					<li data-id="<?php echo $user->id;?>" class="list-group-item select-user <?php echo in_array($user->id, $task->assigned_users) ? 'assigned':'';?>">
 						<img style='width:50px;padding:2px;background-color:#eee;border:1px solid #ccc;border-radius: 50%;' src="uploads/users/<?php echo $user->photo;?>" alt="">
@@ -221,6 +243,38 @@
 					</li>
 					<?php endforeach;?>
 				</ul>
+			</div>
+		</div>
+		<div class="card card-secondary">
+			<div class="card-header bg-orange">
+				<h3 class="card-title">Move Stage</h3>
+			</div>
+			<div class="card-body">
+				<form action="tasks/move_stage" method="post">
+					<input type="hidden" name="task_uuid" value="<?php echo $task->uuid;?>">
+					<input type="hidden" name="qs" value="<?php echo $qs;?>">
+					<div class="form-group">
+						<label>Stage</label>
+						<select class="form-control required" name="stage" required>
+							<option value="" disabled>Select</option>
+							<option value="new" <?php echo ($task->stage == 'new') ? 'selected' : '';?>>New</option>
+							<option value="in_progress" <?php echo ($task->stage == 'in_progress') ? 'selected' : '';?>>In Progress</option>
+							<option value="testing" <?php echo ($task->stage == 'testing') ? 'selected' : '';?>>Testing</option>
+							<option value="staging" <?php echo ($task->stage == 'staging') ? 'selected' : '';?>>Staging</option>
+							<option value="validated" <?php echo ($task->stage == 'validated') ? 'selected' : '';?>>Validated</option>
+							<option value="completed" <?php echo ($task->stage == 'completed') ? 'selected' : '';?>>Completed</option>
+							<option value="on_hold" <?php echo ($task->stage == 'on_hold') ? 'selected' : '';?>>On Hold</option>
+							<!-- <option value="stopped" <?php echo ($task->stage == 'stopped') ? 'selected' : '';?>>Stopped</option> -->
+						</select>
+					</div>
+					<div class="form-group col-md-2">
+						<label>Progress</label>
+						<input type="text" class="form-control text-right" name="progress" value="<?php echo $task->progress;?> %" readonly>
+					</div>
+					<div class="form-group col-md-2">
+						<button class="btn btn-info">Move Task</button>
+					</div>
+				</form>
 			</div>
 		</div>
 

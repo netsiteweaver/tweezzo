@@ -346,7 +346,7 @@ class Users extends MY_Controller {
                 $_SESSION['department_name'] 	= $user->department;
                 $_SESSION['photo'] 	= $user->photo;
 
-                echo json_encode(array("result"=>true,"greeting"=>$greeting,"expired_url"=>(isset($_SESSION['expired_url'])?$_SESSION['expired_url']:false)));
+                echo json_encode(array("result"=>true,"greeting"=>$greeting,"expired_url"=>(isset($_SESSION['expired_url'])?$_SESSION['expired_url']:false),"landing_page"=>$user->landing_page));
             }elseif($user->status==2){
                 echo json_encode(array("result"=>false,"reason"=>"We are sorry, but your account is currently inactive."));
             }elseif($user->status==99){

@@ -170,4 +170,26 @@ class Projects extends MY_Controller {
         exit;
     }
 
+
+    public function team()
+    {
+        //Access Control        
+        if (!isAuthorised(get_class(), "edit")) return false;
+
+        //Breadcrumbs
+        $this->mybreadcrumb->add('Add', base_url('projects/add'));
+        $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
+        $this->data['page_title'] = "Developers";
+
+        $uuid = $this->uri->segment(3);
+        $this->data['project'] = $this->Projects_model->fetchSIngle($uuid);
+
+        $this->load->model("Developers_model");
+        $this->data['developers'] = $this->Developers_model->lookup();
+
+        $this->data["content"] = $this->load->view("/projects/team", $this->data, true);
+        $this->load->view("/layouts/default",$this->data);
+
+    }
+
 }

@@ -33,9 +33,24 @@
                 <td><?php echo nl2br($data['description']);?></td>
             </tr>
             <tr>
+                <th colspan='2'>SCOPE</th>
+            </tr>
+            <tr>
+                <th class="text-left">EXPECTED</th>
+                <td><?php echo nl2br($data['scope_client_expectation']);?></td>
+            </tr>
+            <tr>
+                <th class="text-left">NOT IN SCOPE</th>
+                <td><?php echo nl2br($data['scope_not_included']);?></td>
+            </tr>
+            <tr>
+                <th class="text-left">WHEN IS DONE</th>
+                <td><?php echo nl2br($data['scope_when_done']);?></td>
+            </tr>
+            <tr>
                 <th class='text-left'>STAGE</th>
                 <td>
-                    <span class="btn" style="background-color:<?php echo $stageColors[$data['stage']];?>; color:#ffffff; padding:5px 10px; text-align:center;"><?php echo strtoupper(str_replace("_"," ",$data['stage']));?></span>
+                    <span class="stage-button stage-button-<?php echo $data['stage'];?>" ><?php echo strtoupper(str_replace("_"," ",$data['stage']));?></span>
                 </td>
             </tr>
         </tbody>

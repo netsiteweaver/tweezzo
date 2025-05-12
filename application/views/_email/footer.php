@@ -10,7 +10,7 @@
                             style="vertical-align:top;" width="100%">
                             <tbody>
                                 
-                                <tr>
+                                <!-- <tr>
                                     <td align="left"
                                         style="font-size:0px;word-break:break-word;">
                                         <div
@@ -20,7 +20,7 @@
                                                 style="color:rgb(42, 87, 138); text-decoration: none;">info@netsiteweaver.com</a>!
                                         </div>
                                     </td>
-                                </tr>
+                                </tr> -->
                                 <!-- <tr>
                                     <td align="left"
                                         style="font-size:0px;word-break:break-word;">
@@ -32,7 +32,9 @@
 
                                 <tr>
                                     <td align='center'>
-                                        <img src="<?php echo base_url('assets/images/tweezzoisopensource4.jpg');?>" style='margin-top:30px;max-width:800px;border:1px solid #ccc;' alt="">
+                                        <a href="https://github.com/netsiteweaver/tweezzo?tab=GPL-3.0-1-ov-file">
+                                            <img src="<?php echo base_url('assets/images/tweezzo_is_opensource_white_bg_6.jpg');?>" style='margin-top:30px;max-width:800px;' alt="">
+                                        </a>
                                     </td>
                                 </tr>
                                 

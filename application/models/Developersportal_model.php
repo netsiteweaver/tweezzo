@@ -52,12 +52,15 @@ class Developersportal_model extends CI_Model{
                     LEFT JOIN customers c ON c.customer_id = p.customer_id
                     WHERE t.uuid = '$uuid'";
         $task = $this->db->query($query)->row();
+        if(empty($task)) {
+            return false;
+        }
         $task->assigned_to = $this->db->select("u.name,u.email,u.user_type, u.photo")
                                     ->from("task_user tu")
                                     ->join("users u","u.id=tu.user_id","left")
                                     ->where("tu.task_id",$task->id)
                                     ->get()->result();
-        $task->notes = $this->db->select("n.id, n.notes,n.created_on,n.created_by,u.name developer, c.company_name customer")
+        $task->notes = $this->db->select("n.id, n.notes,n.created_on,n.created_by,n.out_of_scope,u.name developer, c.company_name customer")
                                 ->from("task_notes n")
                                 ->join("users u","u.id=n.created_by","left")
                                 ->join("customers c","c.customer_id=n.created_by_customer","left")
@@ -117,6 +120,8 @@ class Developersportal_model extends CI_Model{
                         c.customer_id = p.customer_id
                     WHERE
                         tu.user_id ={$developer_id}
+                    AND 
+                        c.status = 1
                     ORDER BY c.company_name";
         return $this->db->query($query)->result();
 
@@ -160,13 +165,13 @@ class Developersportal_model extends CI_Model{
         $taskDetails = $this->Tasks_model->fetchSingle($taskUuid);
 
         // get developer email
-        $userEmail = $this->db->select("email")->from('users')->where(array(
+        $author = $this->db->select("email, name")->from('users')->where(array(
             'id'    => $_SESSION['developer_id'],
             'user_type'  => 'developer'
         ))->get()->row()->email;
 
         
-        $this->Tasks_model->notifyUsers($taskDetails, ['task_id'=>$task_id, 'notes'=>$notes], $userEmail, $public);
+        $this->Tasks_model->notifyUsers($taskDetails, ['task_id'=>$task_id, 'notes'=>$notes], $author, $public);
     }
 
     public function authenticate($user_info) {
@@ -297,12 +302,13 @@ class Developersportal_model extends CI_Model{
             $emailData = [
                 'task'      =>  $result,
                 'logo'      =>  $this->system_model->getParam("logo"),
-                'url'       =>  'portal/customers/view?uuid='.$result->task_uuid
+                'url'       =>  'portal/customers/view?task_uuid='.$result->task_uuid
             ];
             $content = $this->load->view("_email/header",$emailData, true);
             $content .= $this->load->view("_email/taskStageChange",$emailData, true);
             $content .= $this->load->view("_email/footer",[], true);
-            $this->Email_model3->save($email,"A Task has changed stage",$content);
+            $subject = "Task/{$result->task_number}/{$result->sprint_name}/{$result->project_name} moved to " . strtoupper(str_replace("_"," ",$result->task_stage));
+            $this->Email_model3->save($email,$subject,$content);
         }
     }
 
@@ -315,4 +321,92 @@ class Developersportal_model extends CI_Model{
         $this->db->where("type","developer");
 		return $this->db->get()->result();
 	}
+
+    public function submitTask()
+    {
+        $valid = true;
+        $errorMessage = "";
+        // $customer_id = $this->input->post("customer_id");
+        // $project_id = $this->input->post("project_id");
+        // Mandatory fields
+        $sprint_id = $this->input->post("sprint_id");
+        $section = $this->input->post("section");
+        $name = $this->input->post("name");
+        $description = $this->input->post("description");
+        // Non Mandatory fields
+        $task_number = $this->input->post("task_number");
+        $due_date = $this->input->post("due_date");
+        $scope_when_done = $this->input->post("scope_when_done");
+        $scope_not_included = $this->input->post("scope_not_included"); 
+        $scope_client_expectation = $this->input->post("scope_client_expectation");
+
+        if(empty($sprint_id) || empty($name) || empty($section) || empty($description) ) {
+            $errorMessage .= "Please fill all the required fields (name, section, description).<br>";
+            $valid = false;
+        }
+
+        if(!$valid) {
+            return [
+                "result"    =>  false,
+                "reason"   =>  $errorMessage
+            ];
+        }
+
+        $this->db->set("uuid",gen_uuid());
+        $this->db->set("created_by",$_SESSION['developer_id']);
+        $this->db->set("created_on",date("Y-m-d H:i:s"));
+        $this->db->set("sprint_id",$sprint_id);
+        $this->db->set("name",$name);
+        $this->db->set("section",$section);
+        $this->db->set("description",$description);
+        $this->db->set("scope_client_expectation",$scope_client_expectation);
+        $this->db->set("scope_not_included",$scope_not_included);
+        $this->db->set("scope_when_done",$scope_when_done);
+        $this->db->set("stage","new");
+        $this->db->set("status","1");
+        $this->db->insert("submitted_tasks");
+        $insert_id = $this->db->insert_id();
+        if($insert_id) {
+            $this->emailForTaskCreated($insert_id);
+            return [
+                "result"    =>  true
+            ];
+        }else{
+            return [
+                "result"    =>  false,
+                "reason"   =>  "Unable to create task. Please try again."
+            ];
+        }
+    }
+
+    private function emailForTaskCreated($task_id)
+    {
+        $this->load->model("Email_model3");
+        $this->load->model("System_model");
+        $submitted_task = $this->db->query("SELECT st.*, s.name sprintName, p.name projectName, c.company_name customerName, u.name developerName, u.email developerEmail
+                            FROM submitted_tasks st
+                            JOIN sprints s ON s.id = st.sprint_id
+                            JOIN projects p ON p.id = s.project_id
+                            JOIN customers c ON c.customer_id = p.customer_id
+                            JOIN users u on u.id = st.created_by
+                            WHERE st.id = $task_id")->row();
+        $emailData = [
+            'title'     =>  'Task Submitted',
+            'task'      =>  $submitted_task,
+            'logo'      =>  $this->System_model->getParam("logo"),
+        ];
+        $content = $this->load->view("_email/header",$emailData, true);
+        $content .= $this->load->view("_email/taskSubmittedDeveloper",$emailData, true);
+        $content .= $this->load->view("_email/footer",[], true);
+        $subject = "{$_SESSION['developer_name']} Submitted a Task";
+        $this->Email_model3->save($_SESSION['developer_email'],$subject,$content);
+
+        // notify admins for task created
+        $members = $this->System_model->getParam("notification_create_tasks",true);
+        foreach($members as $m){
+            $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
+            $this->Email_model3->save($user->email,$subject,$content);
+        }
+    }
+
 }

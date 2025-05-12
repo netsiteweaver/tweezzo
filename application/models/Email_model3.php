@@ -14,11 +14,19 @@ class Email_model3 extends CI_Model{
         $this->smtp_settings = $this->system_model->getParam("smtp_settings",true);
         $this->load->config("mailer");
         $this->mailer_endpoint = $this->config->item("mailer_endpoint");
+        $this->mailer_type = $this->config->item("mailer_type");
         $this->token = $this->config->item("token");
     }
 
-    public function save($recipient,$subject,$content,$localOrRemote = "remote")
+    public function save($recipient,$subject,$content)
     {
+        if(ENVIRONMENT == "development")
+        {
+            $subject = "**" . $subject;
+        }elseif(ENVIRONMENT == "staging")
+        {
+            $subject = "##" . $subject;
+        }
         $httpcode = 0;
         $var = array(
             'uuid'          =>  gen_uuid(),
@@ -29,7 +37,7 @@ class Email_model3 extends CI_Model{
             'date_sent'     =>  NULL,
         );
 
-        if($localOrRemote == "local")
+        if($this->mailer_type == "local")
         {
             $this->db->insert("email_queue",$var);
         }
@@ -42,6 +50,7 @@ class Email_model3 extends CI_Model{
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($var));
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 "Authorization: Bearer {$this->token}",
+                "Origin: https://tweezzo.com"
             ]);
             $response = curl_exec($ch);
             $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE); // Get HTTP status code

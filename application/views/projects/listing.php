@@ -57,6 +57,7 @@
                             <?php endif; ?>
                             <?php if($perms['edit']): ?>
                                 <a href="<?php echo base_url('projects/edit/' . $project->uuid); ?>"><div class="btn btn-flat btn-primary"><i class='fas fa-edit'></i><span class='ButtonLabel'> Edit</span></div></a>
+                                <a href="<?php echo base_url("projects/team/" . $project->uuid); ?>"><div class="btn bg-orange"><i class="fa fa-users"></i> Team</div></a>
                             <?php endif; ?>
                             <?php if($perms['delete']): ?>
                                 <button data-url="<?php echo base_url("projects/delete"); ?>" data-uuid="<?php echo $project->uuid;?>" class="deleteAjax btn btn-flat btn-danger"><i class='fa fa-trash'></i><span class='ButtonLabel'></span></button>

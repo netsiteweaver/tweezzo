@@ -1,8 +1,217 @@
 jQuery(function(){
 
+    // init('customers');
+
+    $('.resetFilter').on('click', function(){
+        window.location.href = base_url + "portal/customers/notes";
+    })
+
+    $('.download').on('click', function(){
+        downloadTableAsCSV('notes','notes',{ includeColumns: [1,2,3,4] });
+    })
+    
+    zoomIconForSeconds('submitTask',6);
+    setTimeout(function(){
+        zoomIconForSeconds('addUser',9);
+    },1000)
+    
+
+    // $('#submitTask').hover(function(){
+    //     zoomIconForSeconds('submitTask',3)
+    // })
+
+
+    $('.summernote').summernote({
+		callbacks: {
+			// callback for pasting text only (no formatting)
+			onPaste: function (e) {
+			  var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData('Text');
+			  console.log(bufferText)
+			  e.preventDefault();
+			  bufferText = bufferText.replace(/\r?\n/g, '<br>');
+			  document.execCommand('insertHtml', false, bufferText);
+			}
+		},
+		height: 150,
+		tabsize: 4,
+		placeholder: 'Enter text here ...',
+		toolbar: [
+		  // [groupName, [list of button]]
+		  ['style', ['bold', 'italic', 'underline', 'clear']],
+		  ['font', ['strikethrough']],
+		//   ['fontsize', ['fontsize']],
+		  ['color', ['color']],
+		  ['para', ['ul', 'ol', 'paragraph']],
+		//   ['height', ['height']],
+		  ['view', ['fullscreen', 'codeview']],
+		],
+        onInit: function() {
+            // Remove any bold styling from the default paragraph
+            $('#editor').summernote('formatBlock', 'p');
+        }
+	});
+
+    $('#notes .filter-project').on('click', function() {
+        let projectId = $(this).data('project-id');
+        let sprintId = $('input[name=sprint_id]').val();
+        let startDate = $('input[name=start_date]').val();
+        let endDate = $('input[name=end_date]').val();
+        let qs = "?start_date=" + startDate + "&end_date=" + endDate + "&project_id=" + projectId + "&sprint_id=" + sprintId;
+        window.location.href = base_url + "portal/customers/notes" + qs;
+    })
+
+    $('#notes .filter-sprint').on('click', function() {
+        let sprintId = $(this).data('sprint-id');
+        let projectId = $('input[name=project_id]').val();
+        let startDate = $('input[name=start_date]').val();
+        let endDate = $('input[name=end_date]').val();
+        let qs = "?start_date=" + startDate + "&end_date=" + endDate + "&project_id=" + projectId + "&sprint_id=" + sprintId;
+        window.location.href = base_url + "portal/customers/notes" + qs;
+    })
+
+    $('.select-customer').on('click', function() {
+        reset();
+        let customer_id = $(this).data("customer-id");
+        $('#addTaskModal .select-customer').removeClass("selected");
+        $(this).addClass("selected")
+        $('#addTaskModal input[name=customer_id]').val(customer_id);
+        $('.list-group.projects').closest('.form-group').removeClass('d-none');
+        $('.list-group.projects .list-group-item').each(function(){
+            if($(this).data('customer-id') == customer_id){
+                $(this).removeClass('d-none')
+            }else{
+                $(this).addClass('d-none');
+            }
+        })
+    })
+
+    $('.select-project').on('click', function() {
+        let project_id = $(this).data("project-id");console.log(project_id)
+        $('#addTaskModal .select-project').removeClass("selected");
+        $(this).addClass("selected")
+        $('#addTaskModal input[name=project_id]').val(project_id);
+        $('.list-group.sprints').closest('.form-group').removeClass('d-none');
+        $('.list-group.sprints .list-group-item').each(function(){
+            if($(this).data('project-id') == project_id){
+                $(this).removeClass('d-none')
+            }else{
+                $(this).addClass('d-none');
+            }
+        })
+    })
+
+    $('.select-sprint').on('click', function() {
+        let sprint_id = $(this).data("sprint-id");console.log(sprint_id)
+        $('#addTaskModal .select-sprint').removeClass("selected");
+        $(this).addClass("selected")
+        $('#addTaskModal input[name=sprint_id]').val(sprint_id);
+
+        $('.data-input').removeClass('d-none');
+
+    })
+
+    function reset()
+    {
+        $('.list-group.projects .list-group-item').removeClass('d-none');
+        $('.list-group.projects').closest('.form-group').addClass('d-none');
+        $('.list-group.sprints .list-group-item').removeClass('d-none');
+        $('.list-group.sprints').closest('.form-group').addClass('d-none');
+        $('#addTaskModal input[name=customer_id]').val('');
+        $('#addTaskModal input[name=project_id]').val('');
+        $('#addTaskModal input[name=sprint_id]').val('');
+    }
+
+    $('.create-task').on('click', function(){
+        let project_id = $('input[name=project_id]').val();
+        let sprint_id = $('input[name=sprint_id]').val();
+        let section = $('input[name=section]').val();
+        let task_number = $('input[name=task_number]').val();
+        let name = $('input[name=name]').val();
+        let description = $('textarea[name=description]').val();
+        let due_date = $('input[name=due_date]').val();
+        console.log(project_id, sprint_id,section,task_number,name,description,due_date)
+
+        alertify.alert("Not yet imeplemented")
+    })
+
+    $('.create-user-access').on('click', function(){
+        let name = $("#addUserAccessModal input[name=name]").val();
+        let email = $("#addUserAccessModal input[name=email]").val();
+        let pswd = $("#addUserAccessModal input[name=password]").val();
+        let pswd2 = $("#addUserAccessModal input[name=confirm_password]").val();
+        let valid = true;
+        let errorMessage = "";
+        console.log(name,email,pswd,pswd2)
+
+        if(name.length < 4){
+            valid = false;
+            errorMessage += "Please enter a name (4 chars min)<br>";
+        }
+
+        if(!validEmail(email)){
+            valid = false;
+            errorMessage += "Please enter a valid email<br>";
+        }
+
+        if(pswd.length < 4){
+            valid = false;
+            errorMessage += "Please enter a password (4 chars min)<br>";
+        }
+
+        if(pswd != pswd2){
+            valid = false;
+            errorMessage += "Confirmation password does not match<br>";
+        }
+        
+        if(!valid){
+            alertify.error(errorMessage);
+            return false;
+        }
+
+        $.ajax({
+            url: base_url + "portal/customers/createUserAccess",
+            method: "POST",
+            dataType: "json",
+            data:{name:name,email:email,password:pswd},
+            success:function(response)
+            {
+                if(!response.result){
+                    alertify.alert(response.reason)
+                }else{
+                    $("#addUserAccessModal #existing_users tbody").empty();
+                    $("#addUserAccessModal .label-existing-users").html(response.users.length + " Existing User" + (( response.users.count >1 ) ? 's' : '') + " <i>(Max 5 Users)</i>")
+                    if(response.users.length >= 5){
+                        $("#addUserAccessModal .create-user-access").remove();
+                    }
+                    $(response.users).each(function(i,j){
+                        let row = "<tr>";
+                        row += `<td>${j.name}</td>`;
+                        row += `<td>${j.email}</td>`;
+                        row += "<td></td>";
+                        $("#addUserAccessModal #existing_users tbody").append(row);
+                    })
+                    alertify.alert("User has been added");
+                    $("#addUserAccessModal input[name=name]").val("");
+                    $("#addUserAccessModal input[name=email]").val("");
+                    $("#addUserAccessModal input[name=password]").val("");
+                    $("#addUserAccessModal input[name=confirm_password]").val("");
+                }
+            }
+        })
+    })
+
     $('.autosubmit').on("change", function(){
         $('.apply').trigger("click");
     })
+
+    $('.add-task').on('click', function(){
+        $('#addTaskModal').modal("show")
+    })
+
+    $('.add-user-access').on('click', function(){
+        $('#addUserAccessModal').modal("show")
+    })
+
 
     $('.view-notes').on("click", function() {
         let taskId = $(this).closest("tr").data("id");
@@ -63,7 +272,7 @@ jQuery(function(){
             success: function(response) {
                 if(response.result) {
                     // window.location.href = "portal/customers/tasks?sprint_id="+sprintId;
-                    window.location.href = "portal/customers/view?uuid="+taskUuid;
+                    window.location.href = "portal/customers/view?task_uuid="+taskUuid;
                 }else{
                     alert(response.reason)
                 }
@@ -142,6 +351,50 @@ jQuery(function(){
        
     })
 
+    $('.submit-task').on('click',function(){
+        $(this).addClass("d-none");
+        let name = $('input[name=name]').val();
+        let section = $('input[name=section]').val();
+        let description = $('textarea[name=description]').val();
+        let scope_when_done = $('textarea[name=scope_when_done]').val();   
+        let scope_not_included = $('textarea[name=scope_not_included]').val();
+        let scope_client_expectation = $('textarea[name=scope_client_expectation]').val();
+
+        Overlay("on");
+        $.ajax({
+            url: base_url + "portal/customers/submitTask",
+            method: "POST",
+            dataType: "JSON",
+            data: {name:name,section:section,description:description,scope_when_done:scope_when_done,scope_not_included:scope_not_included,scope_client_expectation:scope_client_expectation},
+            success: function(response)
+            {
+                if(response.result){
+                    alertify.success("Task submitted");
+                    $('#addTaskModal .submission').addClass("d-none");
+                    $('#addTaskModal .thankyou').removeClass("d-none");
+                }else{
+                    alertify.error(response.reason);
+                    $('.submit-task').removeClass("d-none");   
+                }
+            },
+            complete: function(response) {
+                Overlay("off");
+            }
+        })
+    })
+
+    $('#addTaskModal').on('hidden.bs.modal', function (e) {
+        $('#addTaskModal .submission').removeClass("d-none");
+        $('#addTaskModal .thankyou').addClass("d-none");
+        $('#addTaskModal input[name=name]').val('');
+        $('#addTaskModal input[name=section]').val('');
+        $('#addTaskModal textarea[name=description]').val('');        
+        $('#addTaskModal textarea[name=scope_when_done]').val('');        
+        $('#addTaskModal textarea[name=scope_not_included]').val('');        
+        $('#addTaskModal textarea[name=scope_client_expectation]').val('');     
+        $('.submit-task').removeClass("d-none");   
+    })
+
 })
 
 function nl2br (str, is_xhtml) {
@@ -165,3 +418,18 @@ function Overlay(option)
 		$('#overlay').addClass('d-none');
 	}
 }
+
+function zoomIconForSeconds(elementID, seconds) {
+    const icon = document.getElementById(elementID);
+    
+    icon.classList.add('zoom-animation'); // Start animation
+    
+    setTimeout(() => {
+      icon.classList.remove('zoom-animation'); // Stop animation after X seconds
+    }, seconds * 1000); // seconds → milliseconds
+  }
+
+function validEmail(email) {
+    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return pattern.test(email);
+}  

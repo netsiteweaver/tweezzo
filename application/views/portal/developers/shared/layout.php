@@ -3,7 +3,7 @@
 
 <head>
 
-    <title>Task Manager</title>
+    <title><?php echo $page_title;?> | Tweezzo</title>
     <base href="<?php echo base_url();?>">
 
     <!-- Required meta tags -->
@@ -14,48 +14,38 @@
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" href="./assets/css/portal/developers/tasks.css?t=<?php echo date("YmdHis");?>">
     <link rel="stylesheet" href="./assets/css/portal/developers/styles.css?t=<?php echo date("YmdHis");?>">
+    <link rel="stylesheet" href="<?php echo base_url('assets/css/stages.min.css?').date('YmdHis');?>">
 
     <!-- AlertifyJS -->
     <link rel="stylesheet" href="<?php echo base_url();?>node_modules/alertifyjs/build/css/alertify.min.css">
     <link rel="stylesheet" href="<?php echo base_url();?>node_modules/alertifyjs/build/css/themes/bootstrap.min.css">
+    <!-- Summernote CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="./node_modules/lightbox2/dist/css/lightbox.min.css">
 
     <link rel="stylesheet" href="./node_modules/bootstrap-icons/font/bootstrap-icons.css">
-
+    <link rel="stylesheet" href="./assets/css/country-flags.css">
+    
     <!-- Favicon -->
     <!-- https://www.favicon-generator.org/ -->
-    <link rel="apple-touch-icon" sizes="57x57" href="/assets/favicon/portal/apple-icon-57x57.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="/assets/favicon/portal/apple-icon-60x60.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="/assets/favicon/portal/apple-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="/assets/favicon/portal/apple-icon-76x76.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="/assets/favicon/portal/apple-icon-114x114.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/assets/favicon/portal/apple-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/assets/favicon/portal/apple-icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/assets/favicon/portal/apple-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/portal/apple-icon-180x180.png">
-    <link rel="icon" type="image/png" sizes="192x192"  href="/assets/favicon/portal/android-icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/portal/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/assets/favicon/portal/favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/portal/favicon-16x16.png">
-    <link rel="manifest" href="/assets/favicon/portal/manifest.json">
+    <link rel="apple-touch-icon" sizes="57x57" href="/assets/faviconDeveloper/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/assets/faviconDeveloper/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/assets/faviconDeveloper/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/assets/faviconDeveloper/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/assets/faviconDeveloper/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/assets/faviconDeveloper/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/assets/faviconDeveloper/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/assets/faviconDeveloper/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/faviconDeveloper/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/assets/faviconDeveloper/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/faviconDeveloper/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/assets/faviconDeveloper/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/faviconDeveloper/favicon-16x16.png">
+    <link rel="manifest" href="/assets/faviconDeveloper/manifest.json">
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
     <meta name="theme-color" content="#ffffff">
-
-    <!--Start of Tawk.to Script-->
-    <script type="text/javascript">
-    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-    (function(){
-    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-    s1.async=true;
-    s1.src='https://embed.tawk.to/67f7aae1d640c5190a38dcdc/1iofn70q8';
-    s1.charset='UTF-8';
-    s1.setAttribute('crossorigin','*');
-    s0.parentNode.insertBefore(s1,s0);
-    })();
-    </script>
-    <!--End of Tawk.to Script-->
 
     <!-- Option 1: Include in HTML -->
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css"> -->
@@ -69,17 +59,19 @@
 
         <?php 
 
-        foreach($content as $block){
+        if(isset($content)) foreach($content as $block){
             echo $block;
         }
             
         ?>
 
+        <?php $this->load->view("shared/_modalSelectUser",$this->data);?>
+
         <div class="fixed-bottom">
             <footer>Netsiteweaver Ltd</footer>
         </div>
 
-
+        <?php $this->load->view("portal/developers/shared/add_task_modal");?>
         <!-- Optional JavaScript; choose one of the two! -->
 
         <!-- Option 1: Bootstrap Bundle with Popper -->
@@ -93,8 +85,11 @@
     <script src="<?php echo base_url("node_modules/lightbox2/dist/js/lightbox.min.js");?>"></script>
     <!-- Alertify -->
     <script src="<?php echo base_url('node_modules/alertifyjs/build/alertify.min.js'); ?>"></script>
-
-        <script src="<?php echo base_url("assets/js/portal/developers/script.js?t=".date("YmdHis"));?>"></script>
+    <!-- Summernote JS -->
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.js"></script>
+    <script src="<?php echo base_url('assets/js/userSelectModal.js')."?".date("YmdHis"); ?>"></script>
+    <script src="<?php echo base_url("assets/js/portal/developers/script.js?t=".date("YmdHis"));?>"></script>
+    <script src="<?php echo base_url("assets/js/downloadTableAsCSV.js?t=".date("YmdHis"));?>"></script>
 
         <!-- Option 2: Separate Popper and Bootstrap JS -->
         <!--

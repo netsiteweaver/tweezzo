@@ -34,15 +34,35 @@ class Customers extends MY_Controller
         $this->data['fields'] = array(
             ['field_name'=>'uuid','type'=>'hidden','label'=>'','value'=>isset($values['uuid'])?$values['uuid']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
             ['field_name'=>'company_name','type'=>'text','label'=>'Company Name','value'=>isset($values['company_name'])?$values['company_name']:'','autofocus'=>true,'required'=>true,'placeholder'=>'Enter Company Name'],
-            ['field_name'=>'full_name','type'=>'text','label'=>'Name','value'=>isset($values['full_name'])?$values['full_name']:'','autofocus'=>true,'required'=>false,'placeholder'=>'Enter Name of Customer'],
             ['field_name'=>'address','type'=>'text','label'=>'Address','value'=>isset($values['address'])?$values['address']:'','autofocus'=>false,'required'=>false,'placeholder'=>'Enter Address'],
             ['field_name'=>'phone_number1','type'=>'text','label'=>'Phone 1','value'=>isset($values['phone_number1'])?$values['phone_number1']:'','autofocus'=>false,'required'=>false,'placeholder'=>'Enter Phone NUmber'],
             ['field_name'=>'phone_number2','type'=>'text','label'=>'Phone 2','value'=>isset($values['phone_number2'])?$values['phone_number2']:'','autofocus'=>false,'required'=>false,'placeholder'=>'Enter Phone NUmber'],
-            ['field_name'=>'email','type'=>'email','label'=>'Email','value'=>isset($values['email'])?$values['email']:'','autofocus'=>false,'required'=>true,'placeholder'=>'Enter Email'],
-            ['field_name'=>'brn','type'=>'text','label'=>'BRN','value'=>isset($values['brn'])?$values['brn']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
-            ['field_name'=>'vat','type'=>'text','label'=>'VAT','value'=>isset($values['vat'])?$values['vat']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
             ['field_name'=>'remarks','type'=>'textarea','label'=>'Remarks','value'=>isset($values['remarks'])?$values['remarks']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
+            ['field_name'=>'full_name','type'=>'text','label'=>'Name','value'=>isset($values['full_name'])?$values['full_name']:'','autofocus'=>true,'required'=>false,'placeholder'=>'Enter Name of Customer'],
+            ['field_name'=>'job_description','type'=>'text','label'=>'Job Description','value'=>isset($values['job_description'])?$values['job_description']:'','autofocus'=>true,'required'=>false,'placeholder'=>'Enter Job Description'],
+            ['field_name'=>'email','type'=>'email','label'=>'Email','value'=>isset($values['email'])?$values['email']:'','autofocus'=>false,'required'=>true,'placeholder'=>'Enter Email'],
+            // ['field_name'=>'brn','type'=>'text','label'=>'BRN','value'=>isset($values['brn'])?$values['brn']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
+            // ['field_name'=>'vat','type'=>'text','label'=>'VAT','value'=>isset($values['vat'])?$values['vat']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
             // ['field_name'=>'password','type'=>'text','label'=>'Password','value'=>isset($values['password'])?$values['password']:$pswd,'autofocus'=>false,'required'=>true,'placeholder'=>'Enter Password For Portal Access']
+        );
+    }
+
+    private function setFieldsEdit($values=[])
+    {
+        $pswd = randomName(12);
+        $this->data['fields'] = array(
+            ['field_name'=>'uuid','type'=>'hidden','label'=>'','value'=>isset($values['uuid'])?$values['uuid']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
+            ['field_name'=>'company_name','type'=>'text','label'=>'Company Name','value'=>isset($values['company_name'])?$values['company_name']:'','autofocus'=>true,'required'=>true,'placeholder'=>'Enter Company Name'],
+            ['field_name'=>'address','type'=>'text','label'=>'Address','value'=>isset($values['address'])?$values['address']:'','autofocus'=>false,'required'=>false,'placeholder'=>'Enter Address'],
+            ['field_name'=>'phone_number1','type'=>'text','label'=>'Phone 1','value'=>isset($values['phone_number1'])?$values['phone_number1']:'','autofocus'=>false,'required'=>false,'placeholder'=>'Enter Phone NUmber'],
+            ['field_name'=>'phone_number2','type'=>'text','label'=>'Phone 2','value'=>isset($values['phone_number2'])?$values['phone_number2']:'','autofocus'=>false,'required'=>false,'placeholder'=>'Enter Phone NUmber'],
+            ['field_name'=>'full_name','type'=>'text','label'=>'Name','value'=>isset($values['full_name'])?$values['full_name']:'','autofocus'=>true,'required'=>false,'placeholder'=>'Enter Name of Customer'],
+            // ['field_name'=>'job_description','type'=>'text','label'=>'Job Description','value'=>isset($values['job_description'])?$values['job_description']:'','autofocus'=>true,'required'=>false,'placeholder'=>'Enter Job Description'],
+            ['field_name'=>'email','type'=>'email','label'=>'Email','value'=>isset($values['email'])?$values['email']:'','autofocus'=>false,'required'=>true,'placeholder'=>'Enter Email'],
+            // ['field_name'=>'password','type'=>'text','label'=>'Password','value'=>isset($values['password'])?$values['password']:$pswd,'autofocus'=>false,'required'=>true,'placeholder'=>'Enter Password For Portal Access'],
+            ['field_name'=>'remarks','type'=>'textarea','label'=>'Remarks','value'=>isset($values['remarks'])?$values['remarks']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
+            // ['field_name'=>'brn','type'=>'text','label'=>'BRN','value'=>isset($values['brn'])?$values['brn']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
+            // ['field_name'=>'vat','type'=>'text','label'=>'VAT','value'=>isset($values['vat'])?$values['vat']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
         );
     }
 
@@ -56,7 +76,7 @@ class Customers extends MY_Controller
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
         $this->data['page_title'] = "Add Customer";
 
-        $this->setFields();
+        $this->setFieldsEdit();
 
         $this->data["content"] = $this->load->view("/customers/add", $this->data, true);
         $this->load->view("/layouts/default",$this->data);
@@ -103,17 +123,17 @@ class Customers extends MY_Controller
         //     redirect(base_url("customers/listing"));
         // }
 
-        $this->setFields($values=array(
+        $this->setFieldsEdit($values=array(
             "uuid"                  =>  $this->data['customer']->uuid,
-            "full_name"             =>  $this->data['customer']->full_name,
             "company_name"          =>  $this->data['customer']->company_name,
             "address"               =>  $this->data['customer']->address,
             "phone_number1"         =>  $this->data['customer']->phone_number1,
             "phone_number2"         =>  $this->data['customer']->phone_number2,
-            "email"                 =>  $this->data['customer']->email,
-            "brn"                   =>  $this->data['customer']->brn,
-            "vat"                   =>  $this->data['customer']->vat,
             "remarks"               =>  $this->data['customer']->remarks,
+            "full_name"             =>  $this->data['customer']->full_name,
+            "email"                 =>  $this->data['customer']->email,
+            // "brn"                   =>  $this->data['customer']->brn,
+            // "vat"                   =>  $this->data['customer']->vat,
             // "password"               =>  $this->data['customer']->password
         ));
 

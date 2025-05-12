@@ -108,10 +108,10 @@ class Customers_model extends CI_Model
             $error_message .= "Company Name is Mandatory<br>";
             $valid = false;
         }
-        // if(empty($this->input->post("full_name"))) {
-        //     $error_message .= "Customer Name is Mandatory<br>";
-        //     $valid = false;
-        // }
+        if(empty($this->input->post("full_name"))) {
+            $error_message .= "Customer Name is Mandatory<br>";
+            $valid = false;
+        }
         // if(empty($this->input->post("phone_number1"))) {
         //     $error_message .= "Phone Number is Mandatory<br>";
         //     $valid = false;
@@ -129,8 +129,8 @@ class Customers_model extends CI_Model
         $this->db->set("email",$this->input->post("email"));
         $this->db->set("phone_number1",$_POST['phone_number1']);
         $this->db->set("phone_number2",$_POST['phone_number2']);
-        $this->db->set("vat",$_POST['vat']);
-        $this->db->set("brn",$_POST['brn']);
+        // $this->db->set("vat",$_POST['vat']);
+        // $this->db->set("brn",$_POST['brn']);
         $this->db->set("remarks",$this->input->post("remarks"));
         $this->db->set("status","1");
 
@@ -141,10 +141,18 @@ class Customers_model extends CI_Model
             $_POST['uuid'] = gen_uuid();
             $_POST['password'] = genPassword(12);
             $this->db->set("uuid",$_POST['uuid']);
-            $this->db->set("password",md5($_POST['password']));
             $this->db->set("created_by",$_SESSION['user_id']);
             $this->db->set("created_date","NOW()",FALSE);
             $this->db->insert("customers");
+            $customer_id = $this->db->insert_id();
+
+            $this->db->set("password",md5($_POST['password']));
+            $this->db->set("name",$this->input->post("full_name"));
+            // $this->db->set("job_description",$this->input->post("job_description"));
+            $this->db->set("email",$this->input->post("email"));
+            $this->db->set("customer_id",$customer_id);
+            $this->db->set("country_code",'mu');
+            $this->db->insert("customer_access");
 
             $check = $this->db->error();
             if($check['code']>0){
@@ -174,8 +182,8 @@ class Customers_model extends CI_Model
             //send customer introduction email
             $emailData = [
                 'email'        =>  $data['email'],
-                'password'     =>  $data['password'],
-                'title'         =>  'New Task Created',
+                // 'password'     =>  $data['password'],
+                'title'         =>  'New Customer Created',
                 'logo'          =>  $this->system_model->getParam("logo"),
                 'link'          =>  base_url('customers/view/'.$data['uuid']),
                 'link_label'    =>  'View Customer'
@@ -194,7 +202,6 @@ class Customers_model extends CI_Model
                 'logo'          =>  $this->system_model->getParam("logo"),
                 'link'          =>  base_url('portal/customers/signin/'),
                 'link_label'    =>  "Access Portal",
-                // 'stageColors'   =>  $stageColors
             ];
             $content = $this->load->view("_email/header",$emailData, true);
             $content .= $this->load->view("_email/customerAdded",$emailData, true);
@@ -203,8 +210,8 @@ class Customers_model extends CI_Model
         }
 
         //send admins email for account creation
-        $notification_add_customers = $this->system_model->getParam("notification_add_customers",true);
-        foreach($notification_add_customers as $admin){
+        $notification_create_customers = $this->system_model->getParam("notification_create_customers",true);
+        foreach($notification_create_customers as $admin){
             $email = $this->db->select("email")->from("users")->where("id",$admin)->get()->row()->email;
 
             $this->load->model("Email_model3");
@@ -215,7 +222,6 @@ class Customers_model extends CI_Model
                 'logo'          =>  $this->system_model->getParam("logo"),
                 'link'          =>  base_url('portal/customers/signin/'),
                 'link_label'    =>  "Access Portal",
-                // 'stageColors'   =>  $stageColors
             ];
             $content = $this->load->view("_email/header",$emailData, true);
             $content .= $this->load->view("_email/customerAdded",$emailData, true);

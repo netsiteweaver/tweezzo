@@ -8,25 +8,34 @@ class Customers extends CI_Controller
     {
         parent::__construct();
 
-        if( ( !in_array( $this->uri->segment(3) , ['signin', 'authenticate', 'forgotPassword','processForgotPassword']) ) && (!isset($_SESSION['customer_id'])) ){
+        if( ( !in_array( $this->uri->segment(3) , ['signin', 'authenticate', 'forgotPassword','processForgotPassword']) ) && (!isset($_SESSION['customer_access_id'])) ){
             redirect('portal/customers/signin');
         }
 
-        $this->data['stageColors'] = array(
-            'new'		    =>	'#1c8be6',
-            'in_progress'	=>	'#44ab8e',
-            'testing'	    =>	'#98c363',
-            'staging'	    =>	'#f36930',
-            'validated'	    =>	'#c44866',
-            'completed'	    =>	'#4e67c7',
-            'on_hold'	    =>	'#ff0000'
-        );
-        
         $this->load->library("migration");
         $this->load->model("system_model");
         $this->load->model("Customersportal_model");
         $this->data['logo'] = $this->system_model->getParam("logo");
+        $this->data['page_title'] = "";
 
+        $this->load->model("Quotes_model");
+        $this->data['random_quote'] = $this->Quotes_model->getRandomQuote();
+
+        if(isset($_SESSION['customer_access_id'])){
+            $this->data['user_access'] = $this->db->query("
+                SELECT c.company_name, ca.name userName, ca.email userEmail, COALESCE(ca.admin, null) isAdmin
+                FROM customers c
+                LEFT JOIN customer_access ca ON ca.customer_id = c.customer_id
+                WHERE c.status = 1 AND c.customer_id = (SELECT customer_id FROM customer_access WHERE id = {$_SESSION['customer_access_id']})
+                ORDER BY ca.name
+            ")->result();
+        }
+
+
+        if(isset($_SESSION['customer_access_id'])){
+            $this->data['projects'] = $this->Customersportal_model->getProjects($_SESSION['customer_access_id']);
+            $this->data['sprints'] = $this->Customersportal_model->getSprints();
+        }
     }
 
     public function index()
@@ -36,11 +45,11 @@ class Customers extends CI_Controller
 
     public function signin()
     {
-        if(isset($_SESSION['customer_id'])){
+        if(isset($_SESSION['customer_access_id'])){
             redirect('portal/customers/projects');
         }
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
-        $this->data['page_title'] = "Departments";
+        $this->data['page_title'] = "Signin";
         $this->load->view("/portal/customers/signin_18",$this->data);
     }
 
@@ -54,9 +63,10 @@ class Customers extends CI_Controller
         $result = $this->Customersportal_model->authenticate($_POST);
 
         if($result) {
-            $_SESSION['customer_id'] = $result->customer_id;
+            $_SESSION['customer_access_id'] = $result->customer_access_id;
             $_SESSION['customer_email'] = $result->email;
-            $_SESSION['customer_name'] = $result->company_name;
+            $_SESSION['customer_company_name'] = $result->company_name;
+            $_SESSION['customer_name'] = $result->name;
         }
 
         echo json_encode(array(
@@ -67,7 +77,9 @@ class Customers extends CI_Controller
 
     public function projects()
     {
-        $this->data['projects'] = $this->Customersportal_model->getProjects($_SESSION['customer_id']);
+        $this->data['page_title'] = "Projects";
+
+        $this->data['projects'] = $this->Customersportal_model->getProjects($_SESSION['customer_access_id']);
         $this->data['content'][] = $this->load->view("/portal/customers/projects",$this->data,true);
         // debug($this->data['projects']);
         $this->load->view("/portal/customers/shared/layout",$this->data);
@@ -75,6 +87,8 @@ class Customers extends CI_Controller
 
     public function sprints()
     {
+        $this->data['page_title'] = "Sprints";
+
         $project_id = $this->input->get("project_id");
         $this->data['sprints'] = $this->Customersportal_model->getSprints($project_id);
         $this->data['content'][] = $this->load->view("/portal/customers/sprints",$this->data,true);
@@ -84,6 +98,8 @@ class Customers extends CI_Controller
 
     public function tasks()
     {
+        $this->data['page_title'] = "Tasks";
+
         $sprint_id = $this->input->get("sprint_id");
         $sort_by = $this->input->get("sort_by");
         $sort_dir = $this->input->get("sort_dir");
@@ -98,10 +114,31 @@ class Customers extends CI_Controller
         $this->load->view("/portal/customers/shared/layout",$this->data);
     }
 
+    public function notes()
+    {
+        $this->data['page_title'] = "Notes";
+        
+        // $past_days = $this->input->get("past_days");
+        $start_date = (!empty($this->input->get("start_date"))) ? $this->input->get("start_date") : date("Y-m-01");
+        $end_date = (!empty($this->input->get("end_date"))) ? $this->input->get("end_date") : date("Y-m-t");
+        $project_id = $this->input->get("project_id");
+        $sprint_id = $this->input->get("sprint_id");
+        $this->load->model("Notes_model");
+        $this->data['notes'] = $this->Notes_model->getNotesByCustomerId($_SESSION['customer_access_id'], $start_date,$end_date,$project_id,$sprint_id);
+        // $this->load->view("/portal/developers/mySprints",$this->data);
+        $this->data['content'][] = $this->load->view("/portal/customers/notes",$this->data,true);
+        $this->load->view("/portal/customers/shared/layout",$this->data);
+    }
+
     public function view()
     {
-        $uuid = $this->input->get("uuid");
-        $this->data['task'] = $this->Customersportal_model->getTask($uuid);
+        $this->data['page_title'] = "View";
+
+        $task_uuid = $this->input->get("task_uuid");
+        $this->data['task'] = $this->Customersportal_model->getTask($task_uuid);
+        if(empty($this->data['task'])){
+            redirect(base_url("portal/customers/tasks?error=Task not found"));
+        }
         // debug($this->data['task']);
         $this->data['content'][] = $this->load->view("/portal/customers/view",$this->data,true);
         $this->load->view("/portal/customers/shared/layout",$this->data);
@@ -124,22 +161,19 @@ class Customers extends CI_Controller
 
     public function deleteNote()
     {
+        $this->load->model("Notes_model");
         $note_id = $this->input->post("note_id");
-        $this->db->where(array(
-            "id"                    =>  $note_id,
-            "created_by_customer"   =>  $_SESSION['customer_id']
-        ))->delete("task_notes");
-
+        $affected_rows = $this->Notes_model->deleteNote($note_id,'customer');
         echo json_encode(array(
             "result"    =>  true,
-            "affected_rows" =>  $this->db->affected_rows()
+            "affected_rows" =>  $affected_rows
         ));
         exit;
     }
 
     public function signout()
     {
-        unset($_SESSION['customer_id']);
+        unset($_SESSION['customer_access_id']);
         redirect(base_url("portal/customers/signin"));
     }
 
@@ -190,9 +224,67 @@ class Customers extends CI_Controller
         $this->data['notes'] = $this->Tasks_model->loadNotes($task_id);
         echo json_encode(array(
             "result"    =>  true,
-            "user_id"   =>  $_SESSION['customer_id'],
+            "user_id"   =>  $_SESSION['customer_access_id'],
             "notes"     =>  $this->data['notes']
         ));
+        exit;
+    }
+
+    public function submitTask()
+    {
+        $this->load->model("Customersportal_model");
+        $status = $this->Customersportal_model->submitTask($_POST);
+        if($status['result'] == false){
+            echo json_encode(array(
+                "result"    =>  false,
+                "reason"    =>  $status['reason']
+            ));
+        }else{
+            echo json_encode(array(
+                "result"    =>  true
+            ));
+        }
+        exit;
+    }
+
+    public function createUserAccess()
+    {
+        $name = trim($this->input->post("name"));
+        $email = trim($this->input->post("email"));
+        $password = trim($this->input->post("password"));
+        // $confirm_password = trim($this->input->post("confirm_password"));
+        $valid = true;
+        $php_errormsg = "";
+
+        if(strlen($name)<4){;
+            $php_errormsg .= "Please enter a name (4 chars min)<br>";
+            $valid = false;
+        }
+        if(!filter_var($email,FILTER_VALIDATE_EMAIL)){
+            $php_errormsg .= "Please enter a valid email<br>";
+            $valid = false;
+        }
+        if(strlen($password)<4){
+            $php_errormsg .= "Please enter a password (4 chars min)<br>";
+            $valid = false;
+        }
+
+        if(!$valid){
+            echo json_encode(['result'=>false,'reason'=>$php_errormsg]);
+            exit;
+        }
+
+        $ct = $this->db->select("count(id) as ct")->from("customer_access")->where("email",$email)->get()->row()->ct;
+        
+        if($ct>0){
+            echo json_encode(['result'=>false,'reason'=>"Email already used"]);
+            exit;
+        }
+
+        $result = $this->Customersportal_model->createUserAccess($name, $email, $password);
+
+        echo json_encode($result);
+
         exit;
     }
     

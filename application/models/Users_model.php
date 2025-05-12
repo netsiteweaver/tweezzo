@@ -146,7 +146,7 @@ class Users_model extends CI_Model{
     }
 
     public function authenticate($user_info) {
-        $this->db->select("users.id, username, users.name, photo, user_level, user_type, users.email, created, last_login, ip, job_title, users.status,department_id,dp.name AS department");
+        $this->db->select("users.id, username, users.name, photo, user_level, user_type, users.email, created, last_login, ip, job_title, users.status,users.landing_page, department_id,dp.name AS department");
         $this->db->join("departments as dp","dp.id=users.department_id","left");
         $this->db->where("password", md5($user_info['inputPassword']), true );
         $this->db->group_start();
@@ -170,6 +170,29 @@ class Users_model extends CI_Model{
         return $result;
     }
     
+    public function keep_session() {
+        $inputEmail = $this->input->post('inputEmail');
+        $inputPassword = $this->input->post('inputPassword');
+        $this->db->select("users.id, username, users.name, photo, user_level, user_type, users.email, created, last_login, ip, job_title, users.status,department_id");
+        $this->db->where("password", md5($inputPassword), true );
+        $this->db->where("users.email", $inputEmail);
+        $this->db->where("status", '1');
+        $result = $this->db->get("users")->row();
+        // if(empty($result->email)){
+        //     $result->status=99;
+        // }
+        if($result) {
+            $this->recordSignIn($result->id);
+            $this->recordLogin($result);
+        }else{
+            $user = new stdClass;
+            $user->id = null;
+            $user->username = $user_info['inputEmail'];
+            $this->recordLogin($user);
+        }
+        return $result;
+    }
+
     public function recordSignIn($id)
     {
         $ip = $this->input->ip_address();
@@ -199,7 +222,8 @@ class Users_model extends CI_Model{
         $this->db->set("username",$userDetails['username']);
         $this->db->set('user_type',$userDetails['user_type']);
         $this->db->set("email",$userDetails['email']);
-        $this->db->set('department_id',$userDetails['department_id']);
+        $this->db->set("email",$userDetails['email']);
+        $this->db->set('landing_page',$userDetails['landing_page']);
         if(isset($userDetails['image'])) $this->db->set('photo',$userDetails['image']);
 
         if(isset($userDetails['level']) && !empty($userDetails['level'])) $this->db->set("user_level",$userDetails['level']);
@@ -496,6 +520,56 @@ class Users_model extends CI_Model{
                         ->order_by('name')
                         ->where($where)
                         ->get()->result();
+    }
+
+    public function getUsersByTaskUUID()
+    {
+        $uuid = $this->input->get("taskUuid");
+        if(empty($uuid)) return;
+
+        //get client related to task
+        $queryCustomer = "select ca.name AS personName, ca.email, 'customer' as type
+                    from tasks t 
+                    join sprints s on s.id = t.sprint_id 
+                    JOIN projects p on p.id  = s.project_id 
+                    JOIN customers c on c.customer_id = p.customer_id 
+                    JOIN customer_access ca on ca.customer_id = c.customer_id 
+                    where t.uuid = '$uuid'";
+        // echo $query;die;
+        $customer = $this->db->query($queryCustomer)->result();
+        // get developers attached to task                    
+        $queryDevelopers = "select u.name AS personName, u.email, 'developer' as type
+                    from task_user tu 
+                    join tasks t on t.id = tu.task_id 
+                    join users u on u.id = tu.user_id 
+                    where t.uuid = '$uuid' 
+                    AND u.user_type = 'developer'
+                    AND u.status = '1'";
+        $developers = $this->db->query($queryDevelopers)->result();
+        // echo $query2;die;
+        // debug($developers,false);
+        // get admins
+        $queryAdmins = "SELECT u.name personName, u.email, 'admin' as type FROM users u WHERE u.user_type != 'developer' AND u.status = '1'";
+        $admins = $this->db->query($queryAdmins)->result();
+        // echo $query3;die;
+        // debug($admins,false);
+
+        $result = array_merge((array)$customer,(array)$developers,(array)$admins);
+        // debug($result,false);
+        $output = array();
+        foreach($result as $key => $value){
+            if(!empty($value->email)){
+                $output[$value->email] = $value;
+            }
+        }
+        $result = array_values($output);
+        // remove duplicates
+        $result = array_unique($result, SORT_REGULAR);
+        return array(
+            'customer'      =>  $customer,
+            'developers'    =>  $developers,
+            'admins'        =>  $admins
+        );
     }
 
 }

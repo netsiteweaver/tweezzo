@@ -16,17 +16,10 @@ class Tasks extends MY_Controller {
         $this->data['perms']['edit'] = $this->accesscontrol_model->authorised("tasks","edit");
         $this->data['perms']['view'] = $this->accesscontrol_model->authorised("tasks","view");
         $this->data['perms']['delete'] = $this->accesscontrol_model->authorised("tasks","delete");
+        $this->data['perms']['import'] = $this->accesscontrol_model->authorised("tasks","import");
 
-        $this->data['stageColors'] = array(
-            'new'		    =>	'#1c8be6',
-            'in_progress'	=>	'#44ab8e',
-            'testing'	    =>	'#98c363',
-            'staging'	    =>	'#f36930',
-            'validated'	    =>	'#c44866',
-            'completed'	    =>	'#4e67c7',
-            'on_hold'	    =>	'#ff0000'
-        );
-        
+        $this->data['qs'] = $_SERVER["QUERY_STRING"];
+
         // $this->data['companyInfo'] = $this->system_model->getCompanyInfo();
     }
 
@@ -55,6 +48,9 @@ class Tasks extends MY_Controller {
             $this->data['sprints'] = $this->Sprints_model->fetchSingleById($this->input->get('sprint_id'));
         }
 
+        $this->load->model("Developers_model");
+        $this->data['developers'] = $this->Developers_model->lookup();
+
         $this->data["content"]=$this->load->view("/tasks/add",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   
     }
@@ -62,7 +58,7 @@ class Tasks extends MY_Controller {
     public function import()
     {
         //Access Control
-        if(!isAuthorised(get_class(),"add")) return false;
+        if(!isAuthorised(get_class(),"import")) return false;
 
         //Breadcrumbs
         $this->mybreadcrumb->add('Tasks', base_url('tasks/listing'));
@@ -82,6 +78,21 @@ class Tasks extends MY_Controller {
         $this->load->view("/layouts/default",$this->data);   
     }
 
+    public function upload_file()
+    {
+        //Access Control
+        if(!isAuthorised(get_class(),"add")) return false;
+
+        $selected_sprint_id = $this->input->post('selected_sprint_id');
+        $result = $this->Tasks_model->upload_file($selected_sprint_id);
+        echo json_encode(array(
+            'result'    =>  true,
+            'data'      =>  $result
+        ));
+        // $this->Tasks_model-parseUploadedFile($result->full_path);
+        // redirect(base_url("tasks/listing?customer_id=".$this->input->post("customer_id")."&project_id=".$this->input->post("project_id")."&sprint_id=".$this->input->post("sprint_id")));
+    }
+
     public function process_import()
     {
         //Access Control
@@ -90,7 +101,7 @@ class Tasks extends MY_Controller {
         $sprint_id = $this->input->post('sprint_id');
         $this->data['headers'] = $this->Tasks_model->process_import($sprint_id);
 
-        redirect(base_url("tasks/listing"));
+        redirect(base_url("tasks/listing?customer_id=".$this->input->post("customer_id")."&project_id=".$this->input->post("project_id")."&sprint_id=".$this->input->post("sprint_id")));
     }
 
     public function edit()
@@ -98,11 +109,10 @@ class Tasks extends MY_Controller {
         //Access Control 
         if(!isAuthorised(get_class(),"edit")) return false;
 
-        $uuid = $this->uri->segment(3);
-        $this->data['task'] = $this->Tasks_model->fetchSIngle($uuid);
+        $task_uuid = $this->input->get("task_uuid");
+        $this->data['task'] = $this->Tasks_model->fetchSIngle($task_uuid);
 
         $this->data['progress'] = ($this->data['task']->progress == 0) ? "bg-danger" : (($this->data['task']->progress == 100) ? "bg-success" : "bg-warning");
-
 
         //Breadcrumbs
         $this->mybreadcrumb->add('Tasks', base_url('tasks/listing'));
@@ -118,8 +128,11 @@ class Tasks extends MY_Controller {
         $this->load->model('Sprints_model');
         $this->data['sprints'] = $this->Sprints_model->lookup();
 
-        $this->load->model('Users_model');
-        $this->data['users'] = $this->Users_model->lookup();
+        // $this->load->model('Users_model');
+        // $this->data['users'] = $this->Users_model->lookup();
+
+        $this->load->model("Developers_model");
+        $this->data['developers'] = $this->Developers_model->lookup();
 
         // $this->loadStyleSheet("node_modules/lightbox2/dist/css/lightbox.min.css");
         // $this->loadScript("node_modules/lightbox2/dist/js/lightbox.min.js");
@@ -133,8 +146,8 @@ class Tasks extends MY_Controller {
         //Access Control 
         if(!isAuthorised(get_class(),"view")) return false;
 
-        $uuid = $this->uri->segment(3);
-        $this->data['task'] = $this->Tasks_model->fetchSIngle($uuid);
+        $task_uuid = $this->input->get("task_uuid");
+        $this->data['task'] = $this->Tasks_model->fetchSIngle($task_uuid);
 
         //Breadcrumbs
         $this->mybreadcrumb->add('Tasks', base_url('tasks/listing'));
@@ -152,6 +165,7 @@ class Tasks extends MY_Controller {
 
         // $this->loadStyleSheet("node_modules/lightbox2/dist/css/lightbox.min.css");
         // $this->loadScript("node_modules/lightbox2/dist/js/lightbox.min.js");
+        $this->data['page_title'] = "View Task";
 
         $this->data["content"]=$this->load->view("/tasks/view",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   
@@ -165,17 +179,18 @@ class Tasks extends MY_Controller {
         //Breadcrumbs
         $this->mybreadcrumb->add('Tasks', base_url('tasks/listing'));
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
-        $this->data['page_title'] = "Tasks";
+        $this->data['page_title'] = "Tasks List";
 
         $customer_id = $this->input->get('customer_id');
         $project_id = $this->input->get('project_id');
         $sprint_id = $this->input->get('sprint_id');
-        $stage = $this->input->get('stage');
+        $stage = json_decode($this->input->get('stage'));
         $assigned_to = $this->input->get('assigned_to');
         $order_by = $this->input->get('order_by');
         $order_dir = $this->input->get('order_dir');
         $notes_only = $this->input->get('notes_only');
         $search_text = $this->input->get('search_text');
+
 
         $page = $this->uri->segment(3);
         $per_page = (!empty($this->input->get("display"))) ? $this->input->get("display") : $this->system_model->getParam("rows_per_page");
@@ -183,6 +198,16 @@ class Tasks extends MY_Controller {
         $total_rows = $this->Tasks_model->totalRows($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$notes_only,$search_text);
         $this->data['total_rows'] = $total_rows;
         $this->data['pagination'] = getPagination("tasks/listing",$total_rows,$per_page);
+
+        if(!empty($customer_id)){
+            if(isset($this->data['tasks'][0]->company_name)) $this->data['page_title'] .= " - " . $this->data['tasks'][0]->company_name;
+        }
+        if(!empty($project_id)){
+            if(isset($this->data['tasks'][0]->project_name)) $this->data['page_title'] .= " - " . $this->data['tasks'][0]->project_name;
+        }
+        if(!empty($sprint_id)){
+            if(isset($this->data['tasks'][0]->sprint_name)) $this->data['page_title'] .= " - " . $this->data['tasks'][0]->sprint_name;
+        }
 
         $this->load->model('Users_model');
         $this->data['users'] = $this->Users_model->lookup();
@@ -199,6 +224,8 @@ class Tasks extends MY_Controller {
         $this->load->model('Sprints_model');
         $this->data['sprints'] = $this->Sprints_model->lookup2($project_id);
 
+        $this->data['stages'] = ['new','in_progress','testing','staging','validated','completed','on_hold','stopped'];
+
         $this->data["content"]=$this->load->view("/tasks/listing",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   
     }
@@ -209,7 +236,7 @@ class Tasks extends MY_Controller {
         $project_id = $this->input->get('project_id');
         $sprint_id = $this->input->get('sprint_id');
         $customer_email = $this->input->get('customer_email');
-        $stage = $this->input->get('stage');
+        $stage = json_decode($this->input->get('stage'));
         $assigned_to = $this->input->get('assigned_to');
         $order_by = $this->input->get('order_by');
         $order_dir = $this->input->get('order_dir');
@@ -229,18 +256,21 @@ class Tasks extends MY_Controller {
         if($type == 'developer'){
             $link = "portal/developers/signin";
             $linkLabel = "Developer's Portal";
-        }else{
-            if($isCustomer > 0){
-                $link = "portal/customers/signin";
-                $linkLabel = "Customer's Portal";
-            }elseif($isDeveloper > 0){
-                $link = "portal/developers/signin";
-                $linkLabel = "Developer's Portal";
-            }elseif($isUser > 0){
-                $link = "users/signin";
-                $linkLabel = "Task Manager";
-            }
+        }elseif($type == 'customer'){
+            $link = "portal/customers/signin";
+            $linkLabel = "Customer's Portal";
         }
+        //     if($isCustomer > 0){
+        //         $link = "portal/customers/signin";
+        //         $linkLabel = "Customer's Portal";
+        //     }elseif($isDeveloper > 0){
+        //         $link = "portal/developers/signin";
+        //         $linkLabel = "Developer's Portal";
+        //     }elseif($isUser > 0){
+        //         $link = "users/signin";
+        //         $linkLabel = "Task Manager";
+        //     }
+        // }
         
         // else{
         //     $link = "";
@@ -261,7 +291,6 @@ class Tasks extends MY_Controller {
             $this->load->model("Email_model3");
             $this->load->model("system_model");
             $emailData = [
-                'stageColors'   =>  $this->data['stageColors'],
                 'tasks'     =>  $tasks,
                 'logo'      =>  $this->system_model->getParam("logo"),
                 'link'      =>  base_url($link)."?email=".$email,
@@ -300,25 +329,43 @@ class Tasks extends MY_Controller {
         }
 
         $uploadedFiles = [];
-        if($_FILES['file1']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file1","uploads/tasks/",['width'=>100,'height'=>100,'thumb_name'=>'thumb']);
-        if($_FILES['file2']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file2","uploads/tasks/",['width'=>100,'height'=>100,'thumb_name'=>'thumb']);
-        if($_FILES['file3']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file3","uploads/tasks/",['width'=>100,'height'=>100,'thumb_name'=>'thumb']);
-        if($_FILES['file4']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file4","uploads/tasks/",['width'=>100,'height'=>100,'thumb_name'=>'thumb']);
-        if($_FILES['file5']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file5","uploads/tasks/",['width'=>100,'height'=>100,'thumb_name'=>'thumb']);
+        if($_FILES['file1']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file1","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
+        if($_FILES['file2']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file2","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
+        if($_FILES['file3']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file3","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
+        if($_FILES['file4']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file4","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
+        if($_FILES['file5']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file5","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
 
         $data = $this->input->post();
         $response = $this->Tasks_model->save($data,$uploadedFiles);
         if($response['result']== false){
             flashDanger($response['reason']);
-            redirect(base_url("tasks"));
+            redirect(base_url("tasks/listing?".$this->input->post('qs')));
             return;
         }
         if(!empty($this->input->post('add_more'))){
-            flashSuccess("Task has been added successfully");
-            redirect(base_url("tasks/add?customer_id=".$data['customer_id']."&project_id=".$data['project_id']."&sprint_id=".$data['sprint_id'].'&add_more=1'));
+            flashSuccess("Task ".$data['task_number']." has been added successfully");
+            redirect(base_url("tasks/add?".$this->input->post("qs").'&add_more=1'));
         }else{
-            redirect(base_url("tasks/listing?customer_id=".$data['customer_id']."&stage=".$data['stage']));
+            flashSuccess("Task ".$data['task_number']." has been added successfully");
+            redirect(base_url("tasks/listing?".$this->input->post('qs')));
         }
+        
+    }
+
+    public function move_stage()
+    {
+        //Access Control
+        if(!isAuthorised(get_class(),"add")) return false;
+
+        $data = $this->input->post();
+        $response = $this->Tasks_model->move_stage($data);
+        if($response['result']== false){
+            flashDanger($response['reason']);
+            redirect(base_url("tasks/listing?".$this->input->post('qs')));
+            return;
+        }
+        flashSuccess("Task ".$data['task_number']." stage has been updated successfully");
+        redirect(base_url("tasks/listing?".$this->input->post('qs')));
         
     }
 
@@ -345,13 +392,24 @@ class Tasks extends MY_Controller {
 
     public function deleteNote()
     {
+        $this->load->model("Notes_model");
         $note_id = $this->input->post('note_id');
-        $this->db->where(array(
-            "id"    =>  $note_id,
-            "created_by"   =>  $_SESSION['user_id']
-        ))->delete("task_notes");
+        $affected_rows = $this->Notes_model->deleteNote($note_id,'user');
         echo json_encode(array(
-            "result"    =>  true
+            "result"    =>  true,
+            "affected_rows" =>  $affected_rows
+        ));
+        exit;
+    }
+
+    public function outOfScope()
+    {
+        $this->load->model("Notes_model");
+        $note_id = $this->input->post('note_id');
+        $affected_rows = $this->Notes_model->outOfScope($note_id);
+        echo json_encode(array(
+            "result"    =>  true,
+            "affected_rows" =>  $affected_rows
         ));
         exit;
     }
@@ -400,82 +458,29 @@ class Tasks extends MY_Controller {
     {
         $userId = $this->input->post("userId");
         $taskId = $this->input->post("taskId");
-        $check = $this->db->select("count(1) as ct")->from("task_user")->where(array('task_id'=>$taskId,'user_id'=>$userId))->get()->row()->ct;
-
-        if($check > 0){
+        $result = $this->Tasks_model->assignUser($userId,$taskId);
+        if($result) {
+            echo json_encode(array(
+                "result"    =>  true
+            ));
+        }else{
             echo json_encode(array(
                 "result"    =>  false,
                 "reason"    =>  'User is already assigned to this task'
             ));
-
-        }else{
-            $this->db->set("task_id",$taskId);
-            $this->db->set("user_id",$userId);
-            $this->db->insert("task_user");
-
-            $this->load->model("Email_model3");
-            $this->load->model("Tasks_model");
-            $this->load->model("system_model");
-
-            $user = $this->db->select("email, name")->from("users")->where("id",$userId)->get()->row();
-            $task = $this->Tasks_model->getSingleById($taskId);
-
-            $emailData = [
-                'user'      =>  $user,
-                'task'      =>  $task,
-                'logo'      =>  $this->system_model->getParam("logo"),
-                'link'      =>  "",
-                'link_label'=>  ""
-            ];
-
-            $content = $this->load->view("_email/header",$emailData, true);
-            $content .= $this->load->view("_email/userHasBeenAssignedTask",$emailData, true);
-            $content .= $this->load->view("_email/footer",[], true);
-            $this->Email_model3->save($user->email,"You have been assigned a task",$content);
-
-            echo json_encode(array(
-                "result"    =>  true
-            ));
         }
+        
     }
 
     public function assignUsers()
     {
         $userIds = $this->input->post("userIds");
         $taskIds = $this->input->post("taskIds");
+        $customerId = $this->input->post("customerId");
+        $projectId = $this->input->post("projectId");
+        $sprintId = $this->input->post("sprintId");
 
-        $this->load->model("Email_model3");
-        $this->load->model("Tasks_model");
-        $this->load->model("system_model");
-
-        //first remove all users to task then assign the users
-        foreach($taskIds as $taskId){
-            $this->db->where("task_id",$taskId)->delete("task_user");
-        }
-        foreach($userIds as $userId){
-            foreach($taskIds as $taskId){
-                $this->db->set("task_id",$taskId);
-                $this->db->set("user_id",$userId);
-                $this->db->insert("task_user");
-
-                $user = $this->db->select("email, name")->from("users")->where("id",$userId)->get()->row();
-                $task = $this->Tasks_model->getSingleById($taskId);
-
-                $emailData = [
-                    'user'      =>  $user,
-                    'task'      =>  $task,
-                    'logo'      =>  $this->system_model->getParam("logo"),
-                    'link'      =>  "",
-                    'link_label'=>  ""
-                ];
-
-                $content = $this->load->view("_email/header",$emailData, true);
-                $content .= $this->load->view("_email/userHasBeenAssignedTask",$emailData, true);
-                $content .= $this->load->view("_email/footer",[], true);
-                $this->Email_model3->save($user->email,"You have been assigned a task [BULK]",$content);
-
-            }
-        }
+        $this->Tasks_model->assignUsers($userIds,$taskIds,$customerId,$projectId,$sprintId);
 
         echo json_encode(array(
             "result"    =>  true
@@ -631,7 +636,7 @@ class Tasks extends MY_Controller {
         $tn = $this->db->query("SELECT MAX(task_number) as tn FROM tasks WHERE sprint_id = '$sprint_id' AND status = 1")->row()->tn;
         echo json_encode(array(
             'result'    =>  true,
-            'maxTaskNumber' =>  $tn
+            'maxTaskNumber' =>  incrementTaskNumber($tn)
         ));
         exit;
     }

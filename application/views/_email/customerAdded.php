@@ -29,14 +29,14 @@
                 <th style='text-align:left; width: 150px;'>EMAIL *</th>
                 <td><?php echo $customer['email'];?></td>
             </tr>
-            <tr>
+            <!-- <tr>
                 <th style='text-align:left; width: 150px;'>BRN</th>
-                <td><?php echo $customer['brn'];?></td>
+                <td><?php //echo $customer['brn'];?></td>
             </tr>
             <tr>
                 <th style='text-align:left; width: 150px;'>VAT</th>
-                <td><?php echo $customer['vat'];?></td>
-            </tr>
+                <td><?php //echo $customer['vat'];?></td>
+            </tr> -->
             <tr>
                 <th style='text-align:left; width: 150px;'>REMARKS</th>
                 <td><?php echo nl2br($customer['remarks']);?></td>
@@ -46,12 +46,12 @@
     <p>And below is your login credentials:</p>
     <table align="center" border="1" cellpadding="10" cellspacing="0" role="presentation" style="width:100%;">
         <tbody>
-            <tr>
+            <!-- <tr>
             <th style='text-align:left; width: 150px;'>Customer's Portal</th>
                 <td>
                     <a href="<?php echo base_url("portal/customers/signin");?>">Access Portal</a>
                 </td>
-            </tr>
+            </tr> -->
             <tr>
                 <th style='text-align:left; width: 150px;'>Email</th>
                 <td><?php echo $customer['email'];?></td>

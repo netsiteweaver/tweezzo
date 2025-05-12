@@ -3,18 +3,24 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?php echo isset($page_title)?strip_tags($page_title) . " | ":"";?><?php echo $company->name; ?></title>
+  <title>
+    <?php echo isset($page_title) ? strip_tags($page_title) : "";?>
+  </title>
 
   <base href="<?php echo base_url();?>">
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="<?php echo base_url("assets/AdminLTE-3.2.0/");?>/plugins/fontawesome-free/css/all.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="<?php echo base_url("assets/AdminLTE-3.2.0/");?>/dist/css/adminlte.min.css">
   <!-- My Custom CSS based on AdminLTE -->
   <link rel="stylesheet" href="<?php echo base_url('assets/css/adminlte_custom.min.css?').date('YmdHis');?>">
+  <link rel="stylesheet" href="<?php echo base_url('assets/css/stages.min.css?').date('YmdHis');?>">
   <!-- Toastr -->
   <link rel="stylesheet" href="<?php echo base_url();?>assets/vendors/toastr/build/toastr.min.css">
   <!-- AlertifyJS -->
@@ -39,10 +45,24 @@
   <?php endforeach;?>
 
   <!-- Favicon -->
-  <link rel="apple-touch-icon" sizes="180x180" href="<?php echo base_url('assets/favicon/'.ENVIRONMENT.'/apple-touch-icon.png');?>">
-  <link rel="icon" type="image/png" sizes="32x32" href="<?php echo base_url('assets/favicon/'.ENVIRONMENT.'/favicon-32x32.png');?>">
-  <link rel="icon" type="image/png" sizes="16x16" href="<?php echo base_url('assets/favicon/'.ENVIRONMENT.'/favicon-16x16.png');?>">
-  <link rel="manifest" href="<?php echo base_url('assets/favicon/'.ENVIRONMENT.'/site.webmanifest');?>">
+  <!-- https://www.favicon-generator.org/ -->
+  <link rel="apple-touch-icon" sizes="57x57" href="assets/favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="assets/favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="assets/favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="assets/favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="assets/favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="assets/favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="assets/favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="assets/favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="assets/favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="assets/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
+  <link rel="manifest" href="assets/favicon/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
 
   <script>
     var base_url = "<?php echo base_url();?>";
@@ -54,9 +74,9 @@
   </script>
 </head>
 <?php if($_SESSION['user_level'] == 'Normal'):?>
-<body class="hold-transition sidebar-mini layout-fixed sidebar-collapse">
+<body id="<?php echo ((isset($pageType)) && (!empty($pageType)) ) ? $pageType : '';?>" class="hold-transition sidebar-mini layout-fixed sidebar-collapse'">
 <?php else:?>
-<body class="hold-transition sidebar-mini layout-fixed <?php echo ((isset($sidebar_collapse))&&($sidebar_collapse==1))?"sidebar-collapse":"";?>">
+<body id="<?php echo ((isset($pageType)) && (!empty($pageType)) ) ? $pageType : '';?>" class="hold-transition sidebar-mini layout-fixed <?php echo ((isset($sidebar_collapse))&&($sidebar_collapse==1))?"sidebar-collapse":"";?>">
 <?php endif;?>
 <div id="overlay" class='hidden'><div class="loader"></div></div>
 <!-- Site wrapper -->
@@ -112,8 +132,11 @@
     <!-- /.content -->
   </div>
   <!-- /.content-wrapper -->
+  <?php $this->load->view("shared/tweezzo_footer",$this->data);?>
 
   <?php $this->load->view("shared/footer",$this->data);?>
+
+  <?php $this->load->view("shared/_modalSelectUser",$this->data);?>
 
 </div>
 <!-- ./wrapper -->
@@ -151,6 +174,8 @@
 
 <script src="<?php echo base_url('assets/js/createModal.js')."?".date("YmdHis"); ?>"></script>
 <script src="<?php echo base_url('assets/js/main.js')."?".date("YmdHis"); ?>"></script>
+<script src="<?php echo base_url("assets/js/downloadTableAsCSV.js?t=".date("YmdHis"));?>"></script>
+<script src="<?php echo base_url('assets/js/userSelectModal.js')."?".date("YmdHis"); ?>"></script>
 <!-- <script src="<?php echo base_url('assets/js/messages.min.js')."?".date("YmdHis"); ?>"></script> -->
 
 <!-- AUTO LOADER FOR JS -->
@@ -221,7 +246,7 @@
     <!-- <div id="modal-overlay" class="hidden"><div class="lds-dual-ring"></div></div> -->
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title text-center" id="exampleModalLongTitle">Login</h3>
+        <h3 class="modal-title text-center" id="exampleModalLongTitle">Session Expired</h3>
         <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button> -->
@@ -239,7 +264,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-        <div class="btn btn-info" id="modal-signin"><i class="fa fa-sign-in"></i> Sign In</div>
+        <div class="btn btn-info" id="keep-session"><i class="fa fa-sign-in"></i> Sign In</div>
       </div>
     </div>
   </div>

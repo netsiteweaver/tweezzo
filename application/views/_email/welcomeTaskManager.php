@@ -31,14 +31,14 @@
                 <td valign="top"><b>Task Manager</b></td>
             </tr>
             <tr>
-                <td valign="top"><a style='text-decoration: none; color:#000000;' href="https://tasks.netsiteweaver.com/portal/customers/"
-                        class="moz-txt-link-freetext">https://tweezzo.online/portal/customers/</a></td>
+                <td valign="top"><a style='text-decoration: none; color:#000000;' href="https://app.tweezzo.online/portal/customers/signin"
+                        class="moz-txt-link-freetext">https://app.tweezzo.online/portal/customers/signin</a></td>
             </tr>
             <tr>
                 <td>You will receive another email for your account details, including your login credentials</td>
             </tr>
             <tr>
-                <td>The portal easily allow your initiate the Forgot Password process, whenever you may need to reset your password (lost, forgot or for security reason). </td>
+                <td>The portal easily allow your initiate the Forgot Password process, in case you need to reset your password (lost, forgot or for security reason). </td>
             </tr>
             <!-- <tr>
                 <td valign="top">Email: <a class="" href="mailto:homeclassicsltd@gmail.com"><?php //echo $email;?></a>

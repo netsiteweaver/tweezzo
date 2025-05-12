@@ -1,58 +1,53 @@
 <style>
-img.user {
-    width: 25px;
-    border-radius: 50%;
-    border: 1px solid #4c4c4c;
-    /* padding:1px; */
-    background-color: #fff;
-    cursor: crosshair;
-    margin-bottom: 3px;
-}
-
-img.user:hover {
-    transform: scale(4);
-    -webkit-transition: all 0.5s ease;
-    -moz-transition: all 0.5s ease;
-    -ms-transition: all 0.5s ease;
-    transition: all 0.5s ease;
-}
-
-#users-list li {
-    margin-bottom: 5px;
-    border: 1px solid #ccc;
-}
-
-#users-list li.assigned {
-    background-color: rgb(183, 221, 210);
-    /* border:1px solid #ccc !important; */
-}
-
-#users-list li.assigned img {
-    border: 4px solid #20c997 !important;
-}
-
-@media print {
-    body {
-        color: #4c4c4c !important;
+    img.user {
+        width: 25px;
+        border-radius: 50%;
+        border: 1px solid #4c4c4c;
+        /* padding:1px; */
+        background-color: #fff;
+        cursor: crosshair;
+        margin-bottom: 3px;
     }
 
-    table tr th,
-    table tr td {
-        border-bottom: 2px solid #000 !important;
-        font-size: 16px;
-        line-height: 20px;
+    img.user:hover {
+        transform: scale(4);
+        -webkit-transition: all 0.5s ease;
+        -moz-transition: all 0.5s ease;
+        -ms-transition: all 0.5s ease;
+        transition: all 0.5s ease;
     }
-}
+
+    #users-list li {
+        margin-bottom: 5px;
+        border: 1px solid #ccc;
+    }
+
+    #users-list li.assigned {
+        background-color: rgb(183, 221, 210);
+        /* border:1px solid #ccc !important; */
+    }
+
+    #users-list li.assigned img {
+        border: 4px solid #20c997 !important;
+    }
+
 </style>
-
+<?php 
+// Parse the query string into an array
+parse_str($qs, $queryArray);
+if(isset($queryArray['task_uuid'])) unset($queryArray['task_uuid']);
+$cleanQuery = http_build_query($queryArray);
+?>
 <div class="row no-print">
     <div class="col-xs-2 mt-4">
         <?php if($perms['add']): ?>
-        <a href="<?php echo base_url("tasks/add"); ?>"><button
+        <a href="<?php echo base_url("tasks/add?customer_id=".$this->input->get('customer_id')."&sprint_id=".$this->input->get("sprint_id")."&project_id=".$this->input->get("project_id")); ?>"><button
                 class="btn btn-flat btn-success"><i class="fa fa-plus"></i> Add</button></a>
         <?php endif; ?>
-        <a href="<?php echo base_url("tasks/import/"); ?>"><button class="btn btn-flat btn-info"><i
+        <?php if($perms['import']): ?>
+            <a href="<?php echo base_url("tasks/import/"); ?>"><button class="btn btn-flat btn-info"><i
                     class="fa fa-upload"></i> Import</button></a>
+        <?php endif; ?>
     </div>
 </div>
 <div class="row no-print">
@@ -95,26 +90,30 @@ img.user:hover {
             <?php endforeach; ?>
         </select>
     </div>
-    <div class="col-md-2">
+    <div class="col-md-2 mt-4">
+        <input type="hidden" id="stage" name="stage" value='<?php echo (!empty($this->input->get("stage")))?$this->input->get("stage"):'[]';?>'>
+        <div class="btn btn-block btn-outline-info choose-stages">Select Stages <?php echo (!empty($this->input->get("stage")))? "[".count(json_decode($this->input->get("stage")))."]":'[0]';?></div>
+    </div>
+    <!-- <div class="col-md-2">
         <label for="">Stage</label>
         <select name="" id="stage" class="form-control monitor">
             <option value="">Select Stage</option>
-            <option value="new" <?php echo ($this->input->get("stage") == "new") ? "selected" : ""; ?>>New</option>
-            <option value="in_progress" <?php echo ($this->input->get("stage") == "in_progress") ? "selected" : ""; ?>>
+            <option value="new" <?php //echo ($this->input->get("stage") == "new") ? "selected" : ""; ?>>New</option>
+            <option value="in_progress" <?php //echo ($this->input->get("stage") == "in_progress") ? "selected" : ""; ?>>
                 In Progress</option>
-            <option value="testing" <?php echo ($this->input->get("stage") == "testing") ? "selected" : ""; ?>>Testing
+            <option value="testing" <?php //echo ($this->input->get("stage") == "testing") ? "selected" : ""; ?>>Testing
             </option>
-            <option value="staging" <?php echo ($this->input->get("stage") == "staging") ? "selected" : ""; ?>>Staging
+            <option value="staging" <?php //echo ($this->input->get("stage") == "staging") ? "selected" : ""; ?>>Staging
             </option>
-            <option value="validated" <?php echo ($this->input->get("stage") == "validated") ? "selected" : ""; ?>>
+            <option value="validated" <?php //echo ($this->input->get("stage") == "validated") ? "selected" : ""; ?>>
                 Validated</option>
-            <option value="completed" <?php echo ($this->input->get("stage") == "completed") ? "selected" : ""; ?>>
+            <option value="completed" <?php //echo ($this->input->get("stage") == "completed") ? "selected" : ""; ?>>
                 Completed</option>
-            <option value="on_hold" <?php echo ($this->input->get("stage") == "on_hold") ? "selected" : ""; ?>>On Hold
+            <option value="on_hold" <?php //echo ($this->input->get("stage") == "on_hold") ? "selected" : ""; ?>>On Hold
             </option>
-            <!-- <option value="stopped" <?php //echo ($this->input->get("stage") == "stopped") ? "selected" : ""; ?>>Stopped</option> -->
+            <option value="stopped" <?php //echo ($this->input->get("stage") == "stopped") ? "selected" : ""; ?>>Stopped</option>
         </select>
-    </div>
+    </div> -->
 
     <div class="col-md-2">
         <label for="only_with_notes">Notes</label>
@@ -200,6 +199,9 @@ img.user:hover {
             </div>
         </div>
     </div>
+    <div class="col-md-1 mt-4">
+        <div data-target="task-list" data-skip-columns="[0,-1,-2,-3,-4]" data-include-columns="" id="downloadTableAsCSV" data-filename="tasks" class="btn btn-success export"><i class="fa fa-download"></i></div>
+    </div>
     <!-- <div class="col-md-2 mt-4">
         <div class="btn btn-block btn-default email-developer">
             <i class="fa fa-at"></i> Email Developer
@@ -242,13 +244,13 @@ img.user:hover {
 </div>
 
 <?php if( (!empty($tasks)) && (!empty($this->input->get("customer_id"))) ):?>
-<div class="row print-only">
-    <h3>
-        Task List for <?php echo "{$tasks[0]->company_name} - {$tasks[0]->project_name}";?>
-        <?php if(!empty($this->input->get("stage"))):?>
-        - Stage: <?php echo ucwords($tasks[0]->stage);?>
-        <?php endif;?>
-    </h3>
+<div class="row print-only listing">
+    <p class='page-title'>
+        <?php echo (!empty($this->input->get("customer_id"))) ? "<b>Customer</b>: {$tasks[0]->company_name}" : '';?>
+        <?php echo (!empty($this->input->get("project_id"))) ? " <b>Project</b>: {$tasks[0]->project_name}" : '';?>
+        <?php echo (!empty($this->input->get("sprint_id"))) ? " <b>Sprint</b>: {$tasks[0]->sprint_name}" : '';?>
+        <?php echo (!empty($this->input->get("stage"))) ? " <b>Stage</b>: " . strtoupper(str_replace("_"," ",$tasks[0]->stage)) : '';?>
+    </p>
 </div>
 <?php endif;?>
 
@@ -264,14 +266,20 @@ img.user:hover {
                             <th># <?php echo ( (empty($this->input->get("order_by"))) || ($this->input->get("order_by") == "task_number") ) ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>Section <?php echo ($this->input->get("order_by") == "section") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>Task <?php echo ($this->input->get("order_by") == "name") ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <?php if(empty($this->input->get("sprint_id"))):?>
                             <th>Sprint <?php echo ($this->input->get("order_by") == "sprint_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <?php endif;?>
+                            <?php if(empty($this->input->get("project_id"))):?>
                             <th>Project <?php echo ($this->input->get("order_by") == "project_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <?php endif;?>
+                            <?php if(empty($this->input->get("customer_id"))):?>
                             <th>Customer <?php echo ($this->input->get("order_by") == "company_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <?php endif;?>
                             <th>Stage <?php echo ($this->input->get("order_by") == "stage") ? "<i class='fa fa-sort'></i>" : '';?></th>
-                            <th>Due Date <?php echo ($this->input->get("order_by") == "due_date") ? "<i class='fa fa-sort'></i>" : '';?></th>
-                            <th>Hours</th>
-                            <th>Developers</th>
-                            <th><i class="fa fa-comments"></i></th>
+                            <th class='no-print'>Due Date <?php echo ($this->input->get("order_by") == "due_date") ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <th class='no-print'>Hours</th>
+                            <th class='no-print'>Developers</th>
+                            <th class='no-print'><i class="fa fa-comments"></i></th>
                             <th class='no-print'>Actions</th>
                             <?php if( ($perms['edit']) || ($perms['delete'])):?>
                             <th class='no-print'>
@@ -299,43 +307,49 @@ img.user:hover {
                             <td class='task-number'><?php echo $task->task_number;?></td>
                             <td class='task-section'><?php echo $task->section; ?></td>
                             <td class='task-name'>
-                                <?php echo $task->name; ?>
-                                <?php echo ( (!empty($task->description)) && ($task->description != $task->name) )? "<br>" . nl2br($task->description) : '';?>
+                                <div style='border-bottom:1px dashed #ccc;padding-bottom:3px;margin-bottom:-5px;'><?php echo $task->name; ?></div>
+                                <?php echo ( (!empty($task->description)) && ($task->description != $task->name) )? "<br><i class='delius-regular'>" . nl2br($task->description) . "</i>": '';?>
                             </td>
+                            <?php if(empty($this->input->get("sprint_id"))):?>
                             <td><?php echo $task->sprint_name; ?></td>
+                            <?php endif;?>
+                            <?php if(empty($this->input->get("project_id"))):?>
                             <td><?php echo $task->project_name; ?></td>
+                            <?php endif;?>
+                            <?php if(empty($this->input->get("customer_id"))):?>
                             <td><a style='color:#4c4c4c; text-decoration:none;'
                                     href='tasks/listing?customer_id=<?php echo $task->customer_id;?>'><?php echo "{$task->company_name}"; ?></a>
                             </td>
+                            <?php endif;?>
                             <td class='text-center'>
-                                <div style='color:#fff;background-color:<?php echo $stageColors[$task->stage];?>;padding:5px 10px;border-radius:2px;text-align:center;'>
+                                <div class="stage-button stage-button-<?php echo $task->stage;?>">
                                     <?php echo ucwords(str_replace("_"," ",$task->stage)); ?>
                                 </div>
                             </td>
-                            <td class='text-center <?php echo ( (!empty($task->due_date)) && ( strtotime($task->due_date) <= time()) ) ? 'red text-bold' : ''?>'>
+                            <td class='no-print text-center <?php echo ( (!empty($task->due_date)) && ( strtotime($task->due_date) <= time()) ) ? 'red text-bold' : ''?>'>
                                 <?php echo (!empty($task->due_date)) ? date_format(date_create($task->due_date),'Y-m-d') : '';?>
                             </td>
-                            <td class='text-center'><?php echo $task->estimated_hours;?></td>
-                            <td>
+                            <td class='text-center no-print'><?php echo $task->estimated_hours;?></td>
+                            <td class='no-print'>
                                 <?php foreach($task->users as $user):?>
                                 <img title="<?php echo $user->name;?>" class='user'
                                     src="uploads/users/<?php echo $user->photo;?>" alt="">
                                 <?php endforeach;?>
                             </td>
 
-                            <td class=''><?php echo $task->notes;?><br><i class="fa fa-eye view-notes cursor-pointer"></i></td>
+                            <td class='no-print'><?php echo $task->notes;?><br><i class="fa fa-eye view-notes cursor-pointer"></i></td>
 
                             <td class='no-print' style='width:150px;'>
                                 <?php if($perms['view']): ?>
                                 <a
-                                    href="<?php echo base_url('tasks/view/' . $task->uuid."?customer_id=".$this->input->get("customer_id")."&stage=".$this->input->get("stage")); ?>">
+                                    href="<?php echo base_url('tasks/view?task_uuid=' . $task->uuid."&".$cleanQuery); ?>">
                                     <div class="btn btn-flat btn-default"><i class='fas fa-eye'></i><span
                                             class='ButtonLabel'></span></div>
                                 </a>
                                 <?php endif; ?>
                                 <?php if($perms['edit']): ?>
                                 <a
-                                    href="<?php echo base_url('tasks/edit/' . $task->uuid."?customer_id=".$this->input->get("customer_id")."&stage=".$this->input->get("stage")); ?>">
+                                    href="<?php echo base_url('tasks/edit?task_uuid=' . $task->uuid."&".$cleanQuery); ?>">
                                     <div class="btn btn-flat btn-primary"><i class='fas fa-edit'></i><span
                                             class='ButtonLabel'></span></div>
                                 </a>
@@ -355,7 +369,11 @@ img.user:hover {
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
-                    <tfoot>
+                   
+
+                </table>
+                <table class="table table-bordered">
+                <tfoot>
                         <tr>
                             <th colspan='14'>
                                 <?php echo "NEW: {$totals['new']}, IN PROGRESS: {$totals['in_progress']}, TESTING: {$totals['testing']}, STAGING: {$totals['staging']}, VALIDATED: {$totals['validated']}, COMPLETED: {$totals['completed']}, ON HOLD: {$totals['on_hold']}. TOTAL DISPLAYED: " . count($tasks);?>
@@ -365,7 +383,6 @@ img.user:hover {
                             <th colspan='14'>TOTAL ROWS: <?php echo $total_rows;?></th>
                         </tr>
                     </tfoot>
-
                 </table>
             </div>
             <?php else: ?>
@@ -375,7 +392,7 @@ img.user:hover {
     </div>
 </div>
 
-<div class="row mb-5">
+<div class="row mb-5 no-print">
     <div class="col-md-4"></div>
     <div class="col-md-4 text-center">
         <img class='img-thumbnail' src="assets/images/stageColors.png" alt="">
@@ -563,6 +580,44 @@ img.user:hover {
                 <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i>
                     Close</button>
                 <!-- <button type="button" class="btn btn-primary setDueDate"><i class="fa fa-check"></i> Proceed</button> -->
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    #stages-list li span{
+        display: none;
+    }
+    #stages-list li.selected span{
+        display: block;
+    }
+</style>
+<!-- Modal -->
+<div class="modal fade" id="modalChooseStages" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Select Stages</h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul id="stages-list" class="list-group">
+                    <?php foreach($stages as $stage):?>
+                    <li data-stage="<?php echo $stage;?>" class="list-group-item cursor-pointer choose-stage <?php //echo in_array($user->id, $task->assigned_users) ? 'assigned':'';?>">
+                        <?php echo "{$stage}";?>
+                        <span class='float-right'><i class="fa fa-check-square green"></i></span>
+                    </li>
+                    <?php endforeach;?>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i>
+                    Cancel</button>
+                <button type="button" class="btn btn-success applyChosenStages"><i class="fa fa-check"></i> Proceed</button>
             </div>
         </div>
     </div>

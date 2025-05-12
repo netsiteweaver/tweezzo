@@ -238,4 +238,46 @@ class Misc extends CI_Controller
         echo json_encode(array("result"=>true,"rate"=>$result->rate));
         exit;
     }
+
+    public function getUsersByTaskUuid()
+    {
+        $uuid = $this->input->get("taskUuid");
+        if(empty($uuid)) {
+            echo json_encode(array(
+                "result"        =>  false,
+                "reason"        =>  'No UUID received'
+            ));
+            exit;
+        }
+        $this->load->model("Users_model");
+        $result = $this->Users_model->getUsersByTaskUUID($uuid);
+
+        echo json_encode(array(
+            "result"        =>  true,
+            "customer"      =>  $result['customer'],
+            "developers"    =>  $result['developers'],
+            "admins"        =>  $result['admins'],
+        ));
+        exit;
+
+    }
+
+    public function keep_session()
+    {
+        $this->load->model("Users_model");
+        $user = $this->Users_model->keep_session();
+        if(!$user){
+            echo json_encode(["result"=>false,"reason"=>"Invalid credentials"]);
+            exit;
+        }else{
+            $_SESSION['authenticated_user']=$user;
+            $_SESSION['user_id'] 	= $user->id;
+            $_SESSION['user_name']  = $user->username;
+            $_SESSION['user_level'] 	= $user->user_level;
+            $_SESSION['photo'] 	= $user->photo;
+            echo json_encode(["result"=>true]);
+            exit;
+        }
+        
+    }
 }

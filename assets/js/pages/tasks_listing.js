@@ -1,5 +1,7 @@
 jQuery(function(){
 
+    // tableSort("#task-list","tasks");
+
     $('.view-notes').on("click", function() {
         let taskId = $(this).closest("tr").data("id");
         let taskNumber = $(this).closest("tr").find("td.task-number").html();
@@ -64,7 +66,7 @@ jQuery(function(){
                 let order_dir = $('#order_dir').val();
                 let display = $('#display').val();
 
-                params = '?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&assigned_to="+assigned_to+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&customer_email="+email+"&output=email";
+                params = '?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&assigned_to="+assigned_to+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&customer_email="+email+"&type=customer&output=email";
                 // console.log(params, customerEmail, email)
                 $.ajax({
                     url: 'tasks/email'+params,
@@ -72,7 +74,7 @@ jQuery(function(){
                     // dataType:"JSON",
                     complete: function(response) {
                         $(btn).removeClass('running');
-                        alertify.alert("Email has been queued and will be sent shortly.")
+                        alertify.alert("Confirmation","Email has been queued and will be sent shortly.")
                     }
                 })
             },
@@ -118,7 +120,7 @@ jQuery(function(){
                     // dataType:"JSON",
                     complete: function(response) {
                         $(btn).removeClass('running');
-                        alertify.alert("Email has been queued and will be sent shortly.")
+                        alertify.alert("Confirmation","Email has been queued and will be sent shortly.")
                     }
                 })
             },
@@ -243,6 +245,11 @@ jQuery(function(){
     $('.proceed').on("click", function(){
         let taskIds = [];
         let userIds = [];
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const customerId = urlParams.get('customer_id');
+        const projectId = urlParams.get('project_id');
+        const sprintId = urlParams.get('sprint_id');
 
         $(":checkbox.select_task:checked").each(function(i,j){
             taskIds.push($(this).closest("tr").data("id"));
@@ -250,7 +257,7 @@ jQuery(function(){
         $('ul#users-list li.select-user.assigned').each(function(i,j){
             userIds.push($(this).data("id"));
         })
-        assignUsers(taskIds,userIds);
+        assignUsers(taskIds,userIds,customerId,projectId,sprintId);
     })
 
     $('.setDueDate').on("click", function(){
@@ -262,6 +269,11 @@ jQuery(function(){
         })
 
         setDueDate(taskIds,dueDate);
+    })
+
+    $('#customer_id').on("change",function(){
+        $('#project_id').val('');
+        $('#sprint_id').val('');
     })
     
     $(".monitor").on("change", function(){
@@ -277,7 +289,9 @@ jQuery(function(){
         let search_text = $('#search_text').val();
 
         Overlay("on");
-        window.location.href = '/tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+search_text;
+        setTimeout(function(){
+            window.location.href = '/tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+search_text;
+        },100)
     })
 
     $('.search').on("click", function(){
@@ -285,16 +299,55 @@ jQuery(function(){
         $('.monitor').trigger("change");
     })
 
+    $('.choose-stages').on("click", function() {
+        let stagesJSON = $('input[name=stage]').val();
+        let stages = JSON.parse( (stagesJSON.length==0) ? "[]" : stagesJSON);
+        console.log(stages);
+        $('#stages-list li').each(function(i,j){
+            let stage = $(this).data("stage");
+            if(stages.indexOf(stage) >= 0){
+                $(this).addClass("selected")
+            }
+        })
+        $('#modalChooseStages').modal("show");
+    })
+
+    $('.choose-stage').on("click", function(){
+        if($(this).hasClass("selected")){
+            $(this).removeClass("selected");
+        }else{
+            $(this).addClass("selected")
+        }
+    })
+
+    $('.applyChosenStages').on("click", function() {
+        let selectedStages = [];
+        $('#stages-list li.selected').each(function(i,j){
+            let stage = $(this).data("stage");
+            selectedStages.push(stage)
+        })
+        console.log(selectedStages)
+        $('input[name=stage]').val(JSON.stringify(selectedStages));
+        $('#modalChooseStages').modal("hide");
+        setTimeout(function(){
+            $('.monitor').trigger("change")
+        },500)
+    })
+
+    $('#modalChooseStages').on("hidden.bs.modal",function(){
+        $('#stages-list li.selected').removeClass("selected");
+    })
+
 })
 
-function assignUsers(taskIds, userIds)
+function assignUsers(taskIds, userIds,customerId,projectId,sprintId)
 {
     Overlay("on")
     $.ajax({
         url: base_url + "tasks/assignUsers",
         method: "POST",
         dataType: "JSON",
-        data: {taskIds:taskIds, userIds:userIds},
+        data: {taskIds:taskIds, userIds:userIds,customerId:customerId,projectId:projectId,sprintId:sprintId},
         success: function(response)
         {
             if(response.result){
