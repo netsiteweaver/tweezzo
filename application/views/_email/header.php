@@ -86,7 +86,7 @@
     </style>
 </head>
 
-<body style="background-color:#ffffff;font-family:'Source Sans 3', Arial, sans-serif;font-size:16px;line-height:1.5;">
+<body style="background-color:#ffffff;font-family:'Source Sans 3', Arial, sans-serif;font-size:18px;line-height:1.5;">
     <div style="background-color:#FFFFFF;">
         <div style="margin:0px auto;max-width:800px;">
             <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
