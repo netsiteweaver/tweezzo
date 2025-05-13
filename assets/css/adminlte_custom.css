@@ -206,7 +206,7 @@ tr.active {
 		width: 250px;
 	}
 	.sidebar-lg .content-wrapper, .sidebar-lg .main-footer, .sidebar-lg .main-header .navbar {
-		margin-left:250px;
+		margin-left:0;
 	}
 	.sidebar-menu .treeview-menu > li.active > a{
 		color: #4c4c4c !important;
