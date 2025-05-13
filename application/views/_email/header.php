@@ -1,14 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
-    xmlns:o="urn:schemas-microsoft-com:office:office">
+<html lang="en">
 
 <head>
-    <script src="moz-extension://82c0c0c8-f801-4ea8-adcc-a8407a207e98/content/fido2-page-script.js"></script>
-    <title> Task Manager </title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title> Tweezzo </title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
     <style type="text/css">
         #outlook a {
@@ -91,12 +86,8 @@
     </style>
 </head>
 
-<body style="background-color:#ffffff;">
-    <div
-        style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">
-        Task Manager </div>
+<body style="background-color:#ffffff;font-family:'Source Sans 3', Arial, sans-serif;font-size:16px;line-height:1.5;">
     <div style="background-color:#FFFFFF;">
-
         <div style="margin:0px auto;max-width:800px;">
             <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
                 <tbody>

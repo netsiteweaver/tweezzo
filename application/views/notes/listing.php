@@ -90,7 +90,7 @@ $to = date_format(date_add($dt, date_interval_create_from_date_string($for . ' '
         <div class="box">
             <?php if( (isset($notes)) && (!empty($notes)) ): ?>
             <div class="box-body table-responsive no-padding">
-                <table id="notes_list" uuid="tbl1" class="table table-border table-hover extended-bottom-margin">
+                <table id="notes_list" uuid="tbl1" class="table table-border extended-bottom-margin">
                     <thead>
                         <tr class='text-center' style='text-transform:uppercase;'>
                             <th class="no-print" style='font-size:12px;color:#ccc;'>#</th>
@@ -109,7 +109,11 @@ $to = date_format(date_add($dt, date_interval_create_from_date_string($for . ' '
                         <tr class="<?php echo ($note->out_of_scope == '1') ? "out-of-scope" : ""; ?>">
                             <td class="no-print" style='font-size:12px;color:#ccc;'><?php echo $note->id;?></td>
                             <td><?php echo $note->created_on;?></td>
-                            <td><?php echo nl2br($note->notes);?></td>
+                            <td>
+                                <div style='max-height: 150px;overflow-y: auto;'>
+                                <?php echo nl2br($note->notes);?>
+                                </div>
+                            </td>
                             <td><?php echo $note->author;?></td>
                             <td class='cursor-pointer active-filter' data-type='customer' style='text-decoration:underline' data-customer-id="<?php echo $note->customerId;?>"><?php echo $note->company_name;?></td>
                             <td class='cursor-pointer active-filter' data-type='project' style='text-decoration:underline' data-project-id="<?php echo $note->projectId;?>"><?php echo $note->projectName;?></td>
