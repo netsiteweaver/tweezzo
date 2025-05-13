@@ -130,7 +130,7 @@ class Customersportal_model extends CI_Model
         if(empty($task)) {
             return false;
         }
-        $task->notes = $this->db->select("t.*, u.name developer, ca.name as customer, COALESCE(u.name, ca.name) as author")
+        $task->notes = $this->db->select("t.*, u.name developer, ca.name as customer, COALESCE(u.name, ca.name) as author, u.country_code developer_country_code, 'mu' as customer_country_code")
                                 ->from("task_notes t")
                                 ->join("users u","u.id=t.created_by","left")
                                 ->join("customer_access ca","ca.id=t.created_by_customer","left")

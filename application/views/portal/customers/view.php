@@ -140,8 +140,8 @@
 								<td><?php echo $i+1;?></td>
 								<td>
 								<?php echo nl2br($notes->notes);?>
-								<div class="float-end developer" style=''>
-								<?php echo "by {$notes->developer}{$notes->customer} <i class='flag flag-mu'></i> on " . date_format(date_create($notes->created_on),'Y m d @ H:i');?>
+								<div class="float-end developer" style='' title="<?php echo $notes->developer_country_code;?>">
+								<?php echo "by {$notes->developer}{$notes->customer} <i class='flag flag-".((!empty($notes->developer_country_code)) ? $notes->developer_country_code : 'mu')."'></i> on " . date_format(date_create($notes->created_on),'Y m d @ H:i');?>
 								</div>
 								</td>
 								<td >
