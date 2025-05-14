@@ -168,7 +168,7 @@ class Developersportal_model extends CI_Model{
         $author = $this->db->select("email, name")->from('users')->where(array(
             'id'    => $_SESSION['developer_id'],
             'user_type'  => 'developer'
-        ))->get()->row()->email;
+        ))->get()->row();
 
         
         $this->Tasks_model->notifyUsers($taskDetails, ['task_id'=>$task_id, 'notes'=>$notes], $author, $public);
