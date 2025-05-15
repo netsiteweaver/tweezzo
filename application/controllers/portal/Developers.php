@@ -103,7 +103,7 @@ class Developers extends CI_Controller
             redirect(base_url("portal/developers/tasks?error=Task not found"));
         }
 
-        $this->data['content'][] = $this->load->view("/portal/developers/view",$this->data,true);
+        $this->data['content'][] = $this->load->view("/portal/developers/view1",$this->data,true);
         $this->load->view("/portal/developers/shared/layout",$this->data);
         
     }
@@ -241,5 +241,38 @@ class Developers extends CI_Controller
             ));
         }
         exit;
+    }
+
+    public function uploadFiles()
+    {
+        $uuid = $this->input->post("uuid");
+        $task_id = $this->db->select("id")->from("tasks")->where("uuid",$uuid)->get()->row()->id;
+        $this->load->model("files_model");
+        $uploadedFiles = [];
+        if($_FILES['file1']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file1","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
+        if($_FILES['file2']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file2","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
+        if($_FILES['file3']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file3","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
+        if($_FILES['file4']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file4","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
+        if($_FILES['file5']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file5","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
+
+        foreach($uploadedFiles as $file){
+            $this->db->insert("task_images",array(
+                'uuid'          =>  gen_uuid(),
+                'task_id'       =>  $task_id,
+                'created_by'    =>  $_SESSION['developer_id'],
+                'created_on'    =>  date('Y-m-d H:i:s'),
+                'file_name'     =>  $file['file_name'],
+                'thumb_name'    =>  $file['image_thumb'],
+                'file_size'     =>  $file['file_size'],
+                'image_width'   =>  $file['image_width'],
+                'image_height'  =>  $file['image_height'],
+                'image_type'    =>  $file['image_type'],
+                'status'        =>  '1',
+                'created_by_customer'   => null,
+                'uploaded_by_user_type' =>  'developer'
+            ));
+        }
+        redirect(base_url("portal/developers/view?task_uuid=".$uuid));
+
     }
 }

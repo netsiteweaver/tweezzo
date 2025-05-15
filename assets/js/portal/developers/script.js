@@ -308,8 +308,9 @@ jQuery(function(){
     $('.changeStage').on('click', function() {
         let stage = $(this).data("stage");
         let taskId = $('input[name=task_id]').val();
+        let stageLabel = $(this).text();
 
-        alertify.confirm('Stage Change', `Are you sure you want to move this task's stage ?`
+        alertify.confirm('Stage Change', `Are you sure you want to move this task to ${stageLabel}?`
             , function(){ 
                 Overlay("on");
                 $.ajax({

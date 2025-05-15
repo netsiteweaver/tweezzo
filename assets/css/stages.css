@@ -1,10 +1,14 @@
 /* STAGE BUTTONS */
 .stage-button {
 	text-align: center;
-	border-radius: 3px;
-	padding: 3px 6px;
+	border-radius: 3px !important;
+	padding: 8px 16px;
     border:0;
 }
+.stage-button:hover {
+	color:#ccc;
+}
+
 .stage-button.sm {
 	padding: 2px 4px;
 }
@@ -14,31 +18,79 @@
 .stage-button-flat {
 	border-radius: 0px;
 }
+
 .stage-button-new {
 	color: #fff;
 	background-color: #1c8be6;
 }
+.stage-button-new.transparent {
+    cursor: default;
+	border: 1px solid #1c8be6;
+	color:#1c8be6;
+	background-color: transparent;
+}
+
 .stage-button-in_progress {
 	color: #fff;
 	background-color: #44ab8e;
 }
+.stage-button-in_progress.transparent {
+    cursor:default;
+	border: 1px solid #44ab8e;
+	color:#44ab8e;
+	background-color: transparent;
+}
+
 .stage-button-testing {
 	color: #fff;
 	background-color: #98c363;
 }
+.stage-button-testing.transparent {
+    cursor:default;
+	border: 1px solid #98c363;
+	color:#98c363;
+	background-color: transparent;
+}
+
 .stage-button-staging {
 	color: #fff;
 	background-color: #f36930;
 }
+.stage-button-staging.transparent {
+    cursor:default;
+	border: 1px solid #f36930;
+	color:#f36930;
+	background-color: transparent;
+}
+
 .stage-button-validated {
 	color: #fff;
 	background-color: #c44866;
 }
+.stage-button-validated.transparent {
+    cursor:default;
+	border: 1px solid #f36930;
+	color:#f36930;
+	background-color: transparent;
+}
+
 .stage-button-completed {
 	color: #fff;
 	background-color: #4e67c7;
 }
+.stage-button-completed.transparent {
+    cursor:default;
+	border: 1px solid #4e67c7;
+	color:#4e67c7;
+	background-color: transparent;
+}
 .stage-button-on_hold {
 	color: #fff;
 	background-color: #ff0000;
+}
+.stage-button-on_hold.transparent {
+    cursor:default;
+	border: 1px solid #ff0000;
+	color:#ff0000;
+	background-color: transparent;
 }
