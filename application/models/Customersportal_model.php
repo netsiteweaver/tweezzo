@@ -56,6 +56,29 @@ class Customersportal_model extends CI_Model
     {
         //get master customer id
         $customer_id = $this->db->select()->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row()->customer_id;
+
+        $query = "SELECT
+                    s.*,u.name createdBy, p.name project_name, count(t.id) AS tasks_count,
+                    SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) AS completed_tasks
+                FROM sprints s
+                JOIN projects p ON p.id = s.project_id
+                JOIN customers c ON c.customer_id = p.customer_id
+                JOIN tasks t ON t.sprint_id = s.id
+                JOIN users u ON u.id = s.created_by 
+                WHERE t.status = 1
+                AND s.status = 1 ";
+        if(empty($project_id)){
+            $query .= "AND c.customer_id = $customer_id ";
+            // $this->db->where(["c.customer_id"=>$customer_id]);
+        }else{
+            $query .= "AND s.project_id = $project_id ";
+            // $this->db->where(["s.project_id"=>$project_id]);
+        }
+        $query .= "AND c.status = 1
+                AND s.name != 'Roadmap'
+                GROUP BY s.id;";
+        return $this->db->query($query)->result();
+
         $this->db->select("s.*,u.name createdBy, p.name project_name, count(t.id) tasks_count")
                         ->from("sprints s")
                         ->join("projects p","p.id=s.project_id")
@@ -171,7 +194,7 @@ class Customersportal_model extends CI_Model
         $taskDetails = $this->Tasks_model->fetchSingle($taskUuid);
 
         // get customer email
-        $author = $this->db->select("email, name")->from('customer_access')->where('id',$_SESSION['customer_access_id'])->get()->row()->email;
+        $author = $this->db->select("email, name")->from('customer_access')->where('id',$_SESSION['customer_access_id'])->get()->row();
 
         $this->Tasks_model->notifyUsers($taskDetails, ['task_id'=>$task_id, 'notes'=>$note], $author);
 
@@ -383,6 +406,9 @@ class Customersportal_model extends CI_Model
         }
     }
 
+    /**
+     * createUSerAccess is called from customer portal
+     */
     public function createUserAccess($name,$email,$password)
     {
         $customer = $this->db->select("customer_id, email, name")->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row();
@@ -405,7 +431,44 @@ class Customersportal_model extends CI_Model
         $this->db->set("admin","0");
         $this->db->insert("customer_access");
 
-        $this->emailForUserCreated($name,$email,$customer);
+        // $this->emailForUserCreated($name,$email,$customer);
+
+        //return existing customer access for customer
+        $users = $this->db->query("SELECT *
+                        FROM customer_access
+                        WHERE customer_id = $customer->customer_id")->result();
+        return [
+            'result'    =>  true,
+            'users'     =>  $users
+        ];
+    }
+
+    /**
+     * addUserAccess is called from the back office
+     */
+    public function addUserAccess($uuid, $name,$email,$password)
+    {
+        $customer = $this->db->select("customer_id, email, full_name")->from("customers")->where("uuid",$uuid)->get()->row();
+
+        $existing_users = $this->db->select("count(id) as ct")->from("customer_access")->where("customer_id",$customer->customer_id)->get()->row()->ct;
+
+        if($existing_users >= 5){
+            return [
+                "result"    =>  false,
+                "reason"    =>  'Exceeded quota. Maximum 5 users allowed'
+            ];
+        }
+        $this->db->set("name",$name);
+        $this->db->set("email",$email);
+        $this->db->set("password",md5($password),true);
+        $this->db->set("created_by",$_SESSION['user_id']);
+        $this->db->set("customer_id",$customer->customer_id);
+        $this->db->set("created_on",'NOW()',true);
+        $this->db->set("created_by_type","customer");
+        $this->db->set("admin","0");
+        $this->db->insert("customer_access");
+
+        // $this->emailForUserCreated($name,$email,$customer);
 
         //return existing customer access for customer
         $users = $this->db->query("SELECT *
