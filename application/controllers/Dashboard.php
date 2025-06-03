@@ -165,7 +165,6 @@ class Dashboard extends MY_Controller {
                 $this->load->model("Tasks_model");
                 $this->data['task_progress'] = $this->Tasks_model->getGeneralProgress();
 
-                $this->addContent($this->load->view("/dashboard/progress",$this->data,true));
                 $this->addContent($this->load->view("/dashboard/summary",$this->data,true));
                 $this->addContent($this->load->view("/dashboard/misc",$this->data,true));
             }
