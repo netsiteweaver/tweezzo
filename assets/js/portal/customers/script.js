@@ -480,3 +480,22 @@ function validEmail(email) {
     const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return pattern.test(email);
 }  
+
+
+const progressiveImages = document.querySelectorAll(".progressive-image");
+
+progressiveImages.forEach(container => {
+  const placeholder = container.querySelector(".placeholder");
+  const fullRes = container.querySelector(".full-res");
+
+  fullRes.addEventListener("load", function() {
+    // Hide the placeholder
+    placeholder.classList.add("d-none");
+
+    // Show the full-res image
+    fullRes.classList.remove("d-none");
+  });
+
+  // Start loading the full-res image
+  fullRes.src = fullRes.src; // re-trigger loading in some browsers
+});
