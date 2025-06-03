@@ -21,6 +21,15 @@
 	border-right:5px solid #f5c2c7 !important;
 }
 </style>
+<?php if($sprints[0]->progress_pct == 100):?>
+<div class="row mb-3">
+    <div class="col-md-6" style='position:relative;'>
+        <img style='height:200px;; width:100%; padding:5px; border:1px solid #ccc; border-radius:5px;' src="./assets/images/tasks complete - 600x188px.png" alt="">
+        <span style='-webkit-text-stroke-width: 1px;-webkit-text-stroke-color: #ccc; position:absolute; top:80px; left:28%; font-weight:bold; font-size:36px; text-shadow: 1px 1px 2px black;color:#fff;z-index:999;'>Wow! All Tasks Completed! </span>
+    </div>
+</div>
+    
+<?php endif;?>
 <div class="row table-responsive">
     <div class="col-md-6">
         <table class="table table-bordered">

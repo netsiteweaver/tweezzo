@@ -58,25 +58,34 @@ class Customersportal_model extends CI_Model
         $customer_id = $this->db->select()->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row()->customer_id;
 
         $query = "SELECT
-                    s.*,u.name createdBy, p.name project_name, count(t.id) AS tasks_count,
-                    SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) AS completed_tasks
-                FROM sprints s
-                JOIN projects p ON p.id = s.project_id
-                JOIN customers c ON c.customer_id = p.customer_id
-                JOIN tasks t ON t.sprint_id = s.id
-                JOIN users u ON u.id = s.created_by 
-                WHERE t.status = 1
-                AND s.status = 1 ";
+                        s.id,
+                        s.name,
+                        u.name AS createdBy,
+                        p.name AS project_name,
+                        COUNT(t.id) AS tasks_count,
+                        SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) AS completed_tasks,
+                        ROUND(
+                            SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) / COUNT(t.id) * 100,
+                            0
+                        ) AS progress_pct
+                    FROM
+                        sprints s
+                        JOIN projects p ON p.id = s.project_id
+                        JOIN customers c ON c.customer_id = p.customer_id
+                        JOIN tasks t ON t.sprint_id = s.id
+                        JOIN users u ON u.id = s.created_by 
+                    WHERE
+                        t.status = 1
+                        AND s.status = 1 ";
         if(empty($project_id)){
             $query .= "AND c.customer_id = $customer_id ";
-            // $this->db->where(["c.customer_id"=>$customer_id]);
         }else{
             $query .= "AND s.project_id = $project_id ";
-            // $this->db->where(["s.project_id"=>$project_id]);
         }
-        $query .= "AND c.status = 1
-                AND s.name != 'Roadmap'
-                GROUP BY s.id;";
+        $query .= "     AND c.status = 1
+                        AND s.name != 'Roadmap'
+                    GROUP BY
+                        s.id";
         return $this->db->query($query)->result();
 
         $this->db->select("s.*,u.name createdBy, p.name project_name, count(t.id) tasks_count")
