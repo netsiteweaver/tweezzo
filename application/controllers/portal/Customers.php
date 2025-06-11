@@ -8,7 +8,7 @@ class Customers extends CI_Controller
     {
         parent::__construct();
 
-        if( ( !in_array( $this->uri->segment(3) , ['signin', 'authenticate', 'forgotPassword','processForgotPassword']) ) && (!isset($_SESSION['customer_access_id'])) ){
+        if( ( !in_array( $this->uri->segment(3) , ['signin', 'authenticate', 'forgotPassword','processForgotPassword','addUserAccess']) ) && (!isset($_SESSION['customer_access_id'])) ){
             redirect('portal/customers/signin');
         }
 
@@ -164,7 +164,7 @@ class Customers extends CI_Controller
     {
         $this->load->model("Notes_model");
         $note_id = $this->input->post("note_id");
-        $affected_rows = $this->Notes_model->deleteNote($note_id,'customer');
+        $affected_rows = $this->Notes_model->deleteNote($note_id,( ($this->uri->segment(1) == 'portal') ? 'customer' : 'user') );
         echo json_encode(array(
             "result"    =>  true,
             "affected_rows" =>  $affected_rows
@@ -296,6 +296,53 @@ class Customers extends CI_Controller
         }
 
         $result = $this->Customersportal_model->createUserAccess($name, $email, $password);
+
+        echo json_encode($result);
+
+        exit;
+    }
+
+    public function addUserAccess()
+    {
+        $uuid = trim($this->input->post("uuid"));
+        $name = trim($this->input->post("name"));
+        $email = trim($this->input->post("email"));
+        $password = trim($this->input->post("password"));
+        $country_code = trim($this->input->post("country_code"));
+        // $confirm_password = trim($this->input->post("confirm_password"));
+        $valid = true;
+        $php_errormsg = "";
+
+        if(strlen($name)<4){;
+            $php_errormsg .= "Please enter a name (4 chars min)<br>";
+            $valid = false;
+        }
+        if(!filter_var($email,FILTER_VALIDATE_EMAIL)){
+            $php_errormsg .= "Please enter a valid email<br>";
+            $valid = false;
+        }
+        if(strlen($password)<4){
+            $php_errormsg .= "Please enter a password (4 chars min)<br>";
+            $valid = false;
+        }
+        if(strlen($password)<2){
+            $php_errormsg .= "Please enter a valid country code<br>";
+            $valid = false;
+        }
+
+        if(!$valid){
+            echo json_encode(['result'=>false,'reason'=>$php_errormsg]);
+            exit;
+        }
+
+        $ct = $this->db->select("count(id) as ct")->from("customer_access")->where("email",$email)->get()->row()->ct;
+        
+        if($ct>0){
+            echo json_encode(['result'=>false,'reason'=>"Email already used"]);
+            exit;
+        }
+
+        $result = $this->Customersportal_model->addUserAccess($uuid, $name, $email, $password, $country_code);
 
         echo json_encode($result);
 

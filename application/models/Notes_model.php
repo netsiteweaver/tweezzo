@@ -30,9 +30,12 @@ class Notes_model extends CI_Model{
                     'id'        =>  $_SESSION['developer_id']
                 ))->get()->row();
             }elseif($type == 'customer'){
-                $note->deleted_by = $this->db->select("customer_id as id, company_name as name, email")->from("customers")->where(array(
-                    'customer_id'        =>  $_SESSION['customer_access_id']
+                $note->deleted_by = $this->db->select("c.customer_id as id, c.company_name, ca.name, ca.email")
+                ->join("customers c","c.customer_id=ca.customer_id","left")
+                ->from("customer_access ca")->where(array(
+                    'ca.id'        =>  $_SESSION['customer_access_id']
                 ))->get()->row();
+                $note->query = $this->db->last_query();
             }
         }
 
