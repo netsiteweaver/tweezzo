@@ -32,7 +32,7 @@ jQuery(function(){
 			  document.execCommand('insertHtml', false, bufferText);
 			}
 		},
-		height: 150,
+		height: 100,
 		tabsize: 4,
 		placeholder: 'Enter text here ...',
 		toolbar: [
@@ -261,8 +261,8 @@ jQuery(function(){
         let taskUuid = $('input[name=uuid]').val();
         let taskId = $('input[name=id]').val();
         let sprintId = $('input[name=sprint_id]').val();
-        let notes = $('textarea[name=notes]').val();
-        // alert(taskId);
+        // let notes = $('textarea[name=notes]').val();
+        let notes = $('.summernote').summernote('code').replace(/^\s*<p>(.*?)<\/p>/i, '$1');
         Overlay("on");
         $.ajax({
             url: "portal/customers/saveNote",
