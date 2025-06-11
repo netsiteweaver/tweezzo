@@ -6,13 +6,13 @@ class Notes_model extends CI_Model{
 
     public function getById($note_id, $type="")
     {
-        $this->db->select('tn.notes, t.name task_name, t.description task_description, t.task_number, c.company_name, p.id project_id, p.name project_name, s.name sprint_name, COALESCE(c2.company_name, u.name) as author, COALESCE(c2.email, u.email) as author_email');
+        $this->db->select('tn.notes, t.name task_name, t.description task_description, t.task_number, c.company_name, p.id project_id, p.name project_name, s.name sprint_name, COALESCE(c2.name, u.name) as author, COALESCE(c2.email, u.email) as author_email');
         $this->db->from('tasks t');
         $this->db->join('sprints s','s.id=t.sprint_id','left');
         $this->db->join('projects p','p.id=s.project_id','left');
         $this->db->join('customers c','c.customer_id=p.customer_id','left');
         $this->db->join("task_notes tn","tn.task_id = t.id");
-        $this->db->join('customers c2','c.customer_id=tn.created_by_customer','left');
+        $this->db->join('customer_access c2','c2.id=tn.created_by_customer','left');
         $this->db->join('users u','u.id=tn.created_by','left');
         $this->db->where('tn.id',$note_id);
         $note = $this->db->get()->row();
