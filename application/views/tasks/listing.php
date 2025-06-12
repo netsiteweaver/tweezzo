@@ -255,6 +255,12 @@ $cleanQuery = http_build_query($queryArray);
 <?php endif;?>
 
 <div class="row">
+    <div class="col-md-12 text-right font-italic text-italic" style='font-size:0.8em;color:#999'>
+        <?php echo "Displaying " . count($tasks) . " of " . $total_rows . " tasks";?>
+    </div>
+</div>
+
+<div class="row">
     <div class="col-xs-12 col-sm-12">
         <div class="box">
             <?php if( (isset($tasks)) && (!empty($tasks)) ): ?>
