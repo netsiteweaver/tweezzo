@@ -1,11 +1,4 @@
 jQuery(function(){
-    var quotes = [
-        'Patience is bitter, but its fruit is sweet.',
-        'The two most powerful warriors are patience and time.',
-        'With time and patience, the mulberry leaf becomes silk.',
-        'Be patient. Good things take time.',
-        'Patience is the companion of wisdom.'
-    ];
 
     let email = localStorage.getItem('email');
     if($('input[name=email]').val()== "") { 
@@ -20,8 +13,6 @@ jQuery(function(){
     })
     $('.login__submit').on("click", function() {
         if($(this).hasClass("running")) {
-            let quote = Math.floor(Math.random() * quotes.length )
-            alertify.warning(quotes[quote])
             return;
         }
 

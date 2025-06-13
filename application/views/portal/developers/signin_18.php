@@ -17,6 +17,22 @@
     <link rel="stylesheet" href="<?php echo base_url();?>node_modules/alertifyjs/build/css/alertify.min.css">
     <link rel="stylesheet" href="<?php echo base_url();?>node_modules/alertifyjs/build/css/themes/bootstrap.min.css">
 
+	<style>
+		/* Hide the spinner by default */
+		.spinner-icon {
+			display: none;
+		}
+
+		/* When .running is added to the button */
+		button.running .btn-text {
+			display: none;
+		}
+
+		button.running .spinner-icon {
+			display: inline-block;
+		}
+	</style>
+
 	<!-- Favicon -->
 	<!-- https://www.favicon-generator.org/ -->
 	<link rel="apple-touch-icon" sizes="57x57" href="/assets/faviconDeveloper/apple-icon-57x57.png">
@@ -76,7 +92,10 @@
 								</div>
 	            </div>
 	            <div class="form-group">
-	            	<button type="submit" class="login__submit btn btn-primary rounded submit p-3 px-5">Access Developer's Portal</button>
+	            	<button type="submit" class="login__submit btn btn-primary rounded submit p-3 px-5">
+						<i class="fa fa-spinner fa-spin spinner-icon" ></i>
+						Access Developer's Portal
+					</button>
 	            </div>
 	          </form>
 	        </div>
