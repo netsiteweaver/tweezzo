@@ -422,20 +422,31 @@ jQuery(function(){
                 }else{
                     $('#modalTaskTimer .modal-body .task-name').text(task_name)
                     $('#modalTaskTimer').modal("show")
-                    // if(actionType == 'stop'){
-                    //     if(response.affected_rows == 1){
-                    //         $("#task_list tr.selected").find('.bi-stop-circle-fill').addClass("d-none");
-                    //         $("#task_list tr.selected").find('.bi-play-circle-fill').removeClass("d-none");
-                    //     }
-                    // }else{
-                        
-                    // }
-                   
                 }
-                // $('#task_list tr.selected').removeClass("selected");
             }
         })
-        // 
+    })
+
+    $('.insert-timer').on("click", function(){
+        let task_id = $('#task_list tr.selected').closest("tr").data("id");
+        let notes = $('#modalTaskTimer textarea[name=notes]').val();
+        console.log(task_id,notes)
+
+        $.ajax({
+            url: base_url + "portal/developers/timer_insert",
+            data: {task_id:task_id, notes:notes},
+            method:"POST",
+            dataType:"JSON",
+            success:function(response){
+                if(!response.result){
+                    alertify.alert("Error",response.reason);
+                }else{
+                    $('#modalTaskTimer').modal("hide");
+                    $("#task_list tr.selected").find('.bi-stop-circle-fill').removeClass("d-none");
+                    $("#task_list tr.selected").find('.bi-play-circle-fill').addClass("d-none");
+                }
+            }
+        })
     })
 
     $('#modalTaskTimer').on("hidden.bs.modal", function(){

@@ -188,7 +188,7 @@
                         <th>ESTIMATED HOURS <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'estimated_hours') ? '' :'d-none';?>'></th>
                         <th>STAGE <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'stage') ? '' :'d-none';?>'></th>
                         <th><i class="bi bi-chat-dots"></i></th>
-                        <th></th>
+                        <th><i class="bi bi-stopwatch"></i></th>
                         <th></th>
                     </tr>
                 </thead>
@@ -297,11 +297,11 @@
       </div>
       <div class="modal-body">
         <p class='task-name'></p>
-        <textarea name="" id="" class="form-control" placeholder="Please enter a description of what you are doing specifically. This will be useful in reports since, for the task, you have multiple entries in the timesheet."></textarea>
+        <textarea name="notes" id="" class="form-control" placeholder="Please enter a description of what you are doing specifically. This will be useful in reports since, for the task, you have multiple entries in the timesheet."></textarea>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary save-timer">Save</button>
+        <button type="button" class="btn btn-primary insert-timer">Save</button>
       </div>
     </div>
   </div>
