@@ -368,6 +368,80 @@ jQuery(function(){
        
     })
 
+    $('.timer_stop').on("click",function(){
+        if($(this).hasClass("running")) return false;
+
+        // $(this).addClass("running");
+        //remove previously selected row
+        $('#task_list tr.selected').removeClass("selected");
+        //mark current as selected
+        $(this).closest("tr").addClass("selected");
+
+        let task_id = $(this).closest("tr").data("id");
+
+        $.ajax({
+            url: base_url + "portal/developers/timer_stop",
+            data: {task_id:task_id},
+            method:"POST",
+            dataType:"JSON",
+            success:function(response){
+                if(!response.result){
+                    alertify.alert("Error",response.reason);
+                }else{
+                    if(response.affected_rows == 1){
+                        $("#task_list tr.selected").find('.bi-stop-circle-fill').addClass("d-none");
+                        $("#task_list tr.selected").find('.bi-play-circle-fill').removeClass("d-none");
+                    }
+                }
+                $('#task_list tr.selected').removeClass("selected");
+            }
+        })
+        
+    })
+
+    $('.timer_start').on("click",function(){
+        if($(this).hasClass("running")) return false;
+
+        // $(this).addClass("running");
+        //remove previously selected row
+        $('#task_list tr.selected').removeClass("selected");
+        //mark current as selected
+        $(this).closest("tr").addClass("selected");
+
+        let task_id = $(this).closest("tr").data("id");
+        let task_name = $(this).closest("tr").find(".task-name").text();
+
+        $.ajax({
+            url: base_url + "portal/developers/timer_start",
+            data: {task_id:task_id},
+            method:"POST",
+            dataType:"JSON",
+            success:function(response){
+                if(!response.result){
+                    alertify.alert("Error",response.reason);
+                }else{
+                    $('#modalTaskTimer .modal-body .task-name').text(task_name)
+                    $('#modalTaskTimer').modal("show")
+                    // if(actionType == 'stop'){
+                    //     if(response.affected_rows == 1){
+                    //         $("#task_list tr.selected").find('.bi-stop-circle-fill').addClass("d-none");
+                    //         $("#task_list tr.selected").find('.bi-play-circle-fill').removeClass("d-none");
+                    //     }
+                    // }else{
+                        
+                    // }
+                   
+                }
+                // $('#task_list tr.selected').removeClass("selected");
+            }
+        })
+        // 
+    })
+
+    $('#modalTaskTimer').on("hidden.bs.modal", function(){
+        $('#task_list tr.selected').removeClass("selected");
+    })
+
     $(document).ready(function () {
         const $modal = $('#myModal');
     

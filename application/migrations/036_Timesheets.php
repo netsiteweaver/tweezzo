@@ -9,7 +9,7 @@ class Migration_Timesheets extends CI_Migration
                             `task_id` int NOT NULL,
                             `developer_id` int NOT NULL,
                             `start_time` datetime NOT NULL,
-                            `finish_time` int NOT NULL,
+                            `finish_time` datetime NULL,
                             `notes` text NOT NULL,
                             `status` int NOT NULL DEFAULT '1',
                             PRIMARY KEY (`id`),

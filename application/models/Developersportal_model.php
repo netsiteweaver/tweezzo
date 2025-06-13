@@ -8,14 +8,34 @@ class Developersportal_model extends CI_Model{
     {
         if( (empty($page)) || ($page <= 0) ) $page =1;
         $offset = ( ($page-1)*$rows_per_page);  
-
-        $query = "SELECT t.id, t.uuid, t.name task_name, t.stage task_stage, t.task_number, t.section, t.description task_description, t.due_date, t.estimated_hours, s.name sprint_name, p.name project_name, c.company_name, count(tn.id) notes_count 
+        $query = "WITH latest_timesheets AS (
+                    SELECT
+                        *,
+                        ROW_NUMBER() OVER (PARTITION BY task_id ORDER BY start_time DESC) AS rn
+                    FROM timesheet
+                ) ";
+        $query .= "SELECT t.id
+                    , t.uuid
+                    , t.name task_name
+                    , t.stage task_stage
+                    , t.task_number
+                    , t.section
+                    , t.description task_description
+                    , t.due_date, t.estimated_hours
+                    , s.name sprint_name
+                    , p.name project_name
+                    , c.company_name
+                    , count(tn.id) notes_count 
+                    , ts.id timesheet_id
+                    , ts.start_time
+                    , ts.finish_time
                     FROM task_user tu
                     LEFT JOIN tasks t ON t.id = tu.task_id
                     LEFT JOIN sprints s ON s.id = t.sprint_id
                     LEFT JOIN projects p ON p.id = s.project_id
                     LEFT JOIN customers c ON c.customer_id = p.customer_id
                     LEFT JOIN task_notes tn ON tn.task_id = t.id
+                    LEFT JOIN latest_timesheets ts ON ts.task_id = t.id AND ts.rn = 1
                     WHERE tu.user_id = {$developer_id} 
                     AND t.status = '1'";
         if(!empty($customer_id)) $query .= " AND c.customer_id = '{$customer_id}'";

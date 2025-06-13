@@ -81,12 +81,80 @@ class Developers extends CI_Controller
 
         $this->load->model("Developersportal_model");
         $this->data['tasks'] = $this->Developersportal_model->getMyTasks($_SESSION['developer_id'],$this->input->get("customer_id"),$this->input->get("project_id"),$this->input->get("sprint_id"),$this->input->get("stage"),$this->input->get("order_by"),$this->input->get("order_dir"),1,999,$this->input->get('notes_only'));
+        // debug($this->data['tasks']);
         $this->data['myProjects'] = $this->Developersportal_model->getMyProjects($_SESSION['developer_id']);
         $this->data['myCustomers'] = $this->Developersportal_model->getMyCustomers($_SESSION['developer_id']);
         $this->data['mySprints'] = $this->Developersportal_model->getMySprints($_SESSION['developer_id']);
 
         $this->data['content'][] = $this->load->view("/portal/developers/tasks",$this->data,true);
         $this->load->view("/portal/developers/shared/layout",$this->data);
+
+    }
+
+    public function timer_stop()
+    {
+        $task_id = $this->input->post("task_id");
+        // $actionType = $this->input->post("actionType");
+        //first check if there is any task's timer running
+        // $check = $this->db->query("SELECT 
+        //                         ts.start_time
+        //                         , ts.finish_time
+        //                         , ts.notes
+        //                         , t.name task_name
+        //                     FROM timesheet ts
+        //                     JOIN tasks t ON t.id = ts.task_id
+        //                     WHERE ts.developer_id = {$_SESSION['developer_id']}
+        //                     AND ts.task_id <> $task_id
+        //                     AND ts.finish_time IS NULL
+        //                     ")->result();
+        // if(!empty($check)) {
+        //     echo json_encode(array(
+        //         "result"    =>  false,
+        //         "reason"    =>  "Another task's timer is running for you: <br><strong>{$check[0]->task_name}</strong><br>Please stop the timer and retry."
+        //     ));
+        //     exit;
+        // }
+
+        $this->db->query("UPDATE timesheet
+                            SET finish_time = NOW()
+                            WHERE task_id = '{$task_id}' AND finish_time IS NULL");  
+        echo json_encode(array(
+                "result"    =>  true,
+                "affected_rows"    =>  $this->db->affected_rows()
+        ));
+        exit;
+
+    }
+
+    public function timer_start()
+    {
+        $task_id = $this->input->post("task_id");
+        //first check if there is any task's timer running
+        $check = $this->db->query("SELECT 
+                                ts.start_time
+                                , ts.finish_time
+                                , ts.notes
+                                , t.name task_name
+                            FROM timesheet ts
+                            JOIN tasks t ON t.id = ts.task_id
+                            WHERE ts.developer_id = {$_SESSION['developer_id']}
+                            AND ts.task_id <> $task_id
+                            AND ts.finish_time IS NULL
+                            ")->result();
+        if(!empty($check)) {
+            echo json_encode(array(
+                "result"    =>  false,
+                "reason"    =>  "Another task's timer is running for you: <br><strong>{$check[0]->task_name}</strong><br>Please stop the timer and retry."
+            ));
+            exit;
+        }else{
+            echo json_encode(array(
+                "result"    =>  true
+            ));
+        }
+
+        // $this->db->query("INSERT INTO timesheet (task_id, developer_id, start_time, finish_time, notes, status) VALUES (
+                            // $task_id, {$_SESSION['developer_id']}, NOW(), NULL, 'xxx', '1')");
 
     }
 
@@ -103,6 +171,7 @@ class Developers extends CI_Controller
             redirect(base_url("portal/developers/tasks?error=Task not found"));
         }
 
+        $this->data['content'][] = $this->load->view("/portal/developers/view_partials/timer",$this->data,true);
         $this->data['content'][] = $this->load->view("/portal/developers/view1",$this->data,true);
         $this->load->view("/portal/developers/shared/layout",$this->data);
         

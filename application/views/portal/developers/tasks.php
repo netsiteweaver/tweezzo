@@ -1,4 +1,10 @@
-        <form id="tasks" method="get" action="./portal/developers/tasks">
+<style>
+    tr.selected td {
+        background-color:#eee !important;
+    }
+</style>
+
+<form id="tasks" method="get" action="./portal/developers/tasks">
             <div class="row">
                 <div class="col-md-2">
                     <label for="">Customer <span style='color:#36b936;' class='<?php echo (empty(($this->input->get("customer_id")))) ? 'd-none' :'';?>'><bi class="bi-check-circle-fill"></bi></span></label>
@@ -169,7 +175,7 @@
 
     <div class="row table-responsive">
         <div class="col-md-12">
-            <table class="table table-bordered">
+            <table id="task_list" class="table table-bordered">
                 <thead>
                     <tr>
                         <th># <img src="assets/images/sort.png" alt="" class='<?php echo ( (empty($this->input->get('order_by'))) || ($this->input->get('order_by') == 'task_number') ) ? '' :'d-none';?>'></th>
@@ -182,6 +188,7 @@
                         <th>ESTIMATED HOURS <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'estimated_hours') ? '' :'d-none';?>'></th>
                         <th>STAGE <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'stage') ? '' :'d-none';?>'></th>
                         <th><i class="bi bi-chat-dots"></i></th>
+                        <th></th>
                         <th></th>
                     </tr>
                 </thead>
@@ -213,6 +220,10 @@
 
                         </td>
                         <td class=''><?php echo $task->notes_count;?><br><i class="bi bi-eye view-notes cursor-pointer"></i></td>
+                        <td class='cursor-pointer '>
+                            <i class="bi bi-stop-circle-fill timer_stop <?php echo ( ($task->start_time != "") && ($task->finish_time == "")) ? '' : 'd-none';?>" style="font-size:1.2em;color:#f00;"></i>
+                            <i class="bi bi-play-circle-fill timer_start <?php echo ( ($task->start_time != "") && ($task->finish_time == "")) ? 'd-none' : '';?>" style="font-size:1.2em;color:#999;"></i>
+                        </td>
                         <td>
                             <a href="portal/developers/view?task_uuid=<?php echo "{$task->uuid}&customer_id={$this->input->get('customer_id')}&project_id={$this->input->get('project_id')}&sprint_id={$this->input->get('sprint_id')}";?>">
                                 <div class="btn" style="color:#fff; background-color: var(--developersPortalBackground)"><i class="bi bi-eye"></i> View</div>
@@ -271,6 +282,26 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x"></i> Close</button>
         <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalTaskTimer" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Start Timer <i class="bi bi-stopwatch"></i></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class='task-name'></p>
+        <textarea name="" id="" class="form-control" placeholder="Please enter a description of what you are doing specifically. This will be useful in reports since, for the task, you have multiple entries in the timesheet."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary save-timer">Save</button>
       </div>
     </div>
   </div>

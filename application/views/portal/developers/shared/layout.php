@@ -15,7 +15,8 @@
     <link rel="stylesheet" href="./assets/css/portal/developers/tasks.css?t=<?php echo date("YmdHis");?>">
     <link rel="stylesheet" href="./assets/css/portal/developers/styles.css?t=<?php echo date("YmdHis");?>">
     <link rel="stylesheet" href="<?php echo base_url('assets/css/stages.min.css?').date('YmdHis');?>">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
     <!-- AlertifyJS -->
     <link rel="stylesheet" href="<?php echo base_url();?>node_modules/alertifyjs/build/css/alertify.min.css">
     <link rel="stylesheet" href="<?php echo base_url();?>node_modules/alertifyjs/build/css/themes/bootstrap.min.css">
