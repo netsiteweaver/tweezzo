@@ -31,6 +31,10 @@
         border: 4px solid #20c997 !important;
     }
 
+    table.small-text tr th, table.small-text tr td {
+        font-size:0.9em;
+    }
+
 </style>
 <?php 
 // Parse the query string into an array
@@ -249,7 +253,16 @@ $cleanQuery = http_build_query($queryArray);
         <?php echo (!empty($this->input->get("customer_id"))) ? "<b>Customer</b>: {$tasks[0]->company_name}" : '';?>
         <?php echo (!empty($this->input->get("project_id"))) ? " <b>Project</b>: {$tasks[0]->project_name}" : '';?>
         <?php echo (!empty($this->input->get("sprint_id"))) ? " <b>Sprint</b>: {$tasks[0]->sprint_name}" : '';?>
-        <?php echo (!empty($this->input->get("stage"))) ? " <b>Stage</b>: " . strtoupper(str_replace("_"," ",$tasks[0]->stage)) : '';?>
+        <?php if (($this->input->get("stage")!=='[]')) {
+            echo " <b>Stages</b>: ";
+            $st = json_decode($this->input->get("stage"));
+            $stStr = "";
+            foreach($st as $stage){
+                $stStr .= strtoupper(str_replace("_"," ",$stage)) . ', ';
+            }
+            echo substr($stStr,0,strlen($stStr)-2);
+        }
+        ?>
     </p>
 </div>
 <?php endif;?>
@@ -378,16 +391,29 @@ $cleanQuery = http_build_query($queryArray);
                    
 
                 </table>
-                <table class="table table-bordered">
-                <tfoot>
-                        <tr>
-                            <th colspan='14'>
-                                <?php echo "NEW: {$totals['new']}, IN PROGRESS: {$totals['in_progress']}, TESTING: {$totals['testing']}, STAGING: {$totals['staging']}, VALIDATED: {$totals['validated']}, COMPLETED: {$totals['completed']}, ON HOLD: {$totals['on_hold']}. TOTAL DISPLAYED: " . count($tasks);?>
-                            </th>
+                <table class="table table-bordered small-text">
+                    <tfoot>
+                        <tr class='text-center'>
+                            <th>NEW</th>
+                            <th>IN PROGRESS</th>
+                            <th>TESTING</th>
+                            <th>STAGING</th>
+                            <th>VALIDATED</th>
+                            <th>COMPLETED</th>
+                            <th>ON HOLD</th>
+                            <th>TOTAL</th>
                         </tr>
-                        <tr>
-                            <th colspan='14'>TOTAL ROWS: <?php echo $total_rows;?></th>
+                        <tr class='text-center'>
+                            <td><?php echo $totals['new'];?></td>
+                            <td><?php echo $totals['in_progress'];?></td>
+                            <td><?php echo $totals['testing'];?></td>
+                            <td><?php echo $totals['staging'];?></td>
+                            <td><?php echo $totals['validated'];?></td>
+                            <td><?php echo $totals['completed'];?></td>
+                            <td><?php echo $totals['on_hold'];?></td>
+                            <td><?php echo count($tasks);?></td>
                         </tr>
+
                     </tfoot>
                 </table>
             </div>
@@ -601,20 +627,22 @@ $cleanQuery = http_build_query($queryArray);
 <!-- Modal -->
 <div class="modal fade" id="modalChooseStages" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
     aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLongTitle">Select Stages</h5>
-
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <ul id="stages-list" class="list-group">
+                    <li data-stage='' class='list-group-item text-center'>
+                        <div class="btn btn-default select-all">Select / Deselect All</div>
+                    </li>
                     <?php foreach($stages as $stage):?>
                     <li data-stage="<?php echo $stage;?>" class="list-group-item cursor-pointer choose-stage <?php //echo in_array($user->id, $task->assigned_users) ? 'assigned':'';?>">
-                        <?php echo "{$stage}";?>
+                        <?php echo str_replace("_"," ",strtoupper($stage));?>
                         <span class='float-right'><i class="fa fa-check-square green"></i></span>
                     </li>
                     <?php endforeach;?>

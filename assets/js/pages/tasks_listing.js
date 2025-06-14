@@ -302,7 +302,7 @@ jQuery(function(){
     $('.choose-stages').on("click", function() {
         let stagesJSON = $('input[name=stage]').val();
         let stages = JSON.parse( (stagesJSON.length==0) ? "[]" : stagesJSON);
-        console.log(stages);
+        // console.log(stages);
         $('#stages-list li').each(function(i,j){
             let stage = $(this).data("stage");
             if(stages.indexOf(stage) >= 0){
@@ -320,18 +320,44 @@ jQuery(function(){
         }
     })
 
+    $('.select-all').on("click", function(){
+        if($(this).hasClass("all-selected")){
+            $(this).removeClass("all-selected")
+            $('ul#stages-list li.list-group-item').removeClass("selected")
+        }else{
+            $(this).addClass("all-selected")
+            $('ul#stages-list li.list-group-item').addClass("selected")
+        }
+        
+    })
+
     $('.applyChosenStages').on("click", function() {
+        let customer_id = $('#customer_id').val();
+        let project_id = $('#project_id').val();
+        let sprint_id = $('#sprint_id').val();
+        // let stage = $('#stage').val();
+        let order_by = $('#order_by').val();
+        let order_dir = $('#order_dir').val();
+        let display = $('#display').val();
+        let assigned_to = $('#assigned_to').val();
+        let notes_only = $('#notes_only').val();
+        let search_text = $('#search_text').val();
+
         let selectedStages = [];
         $('#stages-list li.selected').each(function(i,j){
             let stage = $(this).data("stage");
             selectedStages.push(stage)
         })
-        console.log(selectedStages)
-        $('input[name=stage]').val(JSON.stringify(selectedStages));
+        // console.log(selectedStages)
+        // $('input[name=stage]').val(JSON.stringify(selectedStages));
         $('#modalChooseStages').modal("hide");
+
+        Overlay("on");
         setTimeout(function(){
-            $('.monitor').trigger("change")
-        },500)
+            window.location.href = '/tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+JSON.stringify(selectedStages)+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+search_text;
+
+            // $('.monitor').trigger("change")
+        },100)
     })
 
     $('#modalChooseStages').on("hidden.bs.modal",function(){
