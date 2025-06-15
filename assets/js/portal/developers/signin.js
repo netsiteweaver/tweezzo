@@ -45,7 +45,7 @@ jQuery(function(){
                     }else{
                         localStorage.removeItem('email');
                     }
-                   window.location.href = base_url + "portal/developers/notes";
+                   window.location.href = base_url + "portal/developers/tasks";
                 }else{
                     $('.login__submit').removeClass("running");
                     alertify.alert('Authentication failed')

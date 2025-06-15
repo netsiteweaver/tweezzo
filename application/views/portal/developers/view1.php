@@ -190,8 +190,12 @@
                                         Visible to All</label>
                                 </div>
                                 <div class="col-md-6">
-                                    <button class="btn btn-primary"><i class="bi bi-save"></i> Save
-                                        Notes</button>
+                                    <div class="btn btn-primary">
+                                        <div class="bg-icon bg-diskette"></div> Save Notes
+                                    </div>
+                                    
+                                    <!-- <button class="btn btn-primary"><i class="bi bi-save"></i> Save
+                                        Notes</button> -->
                                 </div>
                             </div>
                         </form>
@@ -283,7 +287,8 @@
             <div class="col-md-6">
                 <a href="portal/developers/tasks<?php echo "?customer_id={$this->input->get('customer_id')}&project_id={$this->input->get('project_id')}&sprint_id={$this->input->get('sprint_id')}";?>">
                     <div class="btn btn-warning">
-                        <img src="assets/ionicons/chevron-back-sharp.svg" alt="" class="ionicon">Back
+                        <!-- <img src="assets/ionicons/chevron-back-sharp.svg" alt="" class="ionicon">Back -->
+                        <div class="bg-icon bg-back"></div> Back
                     </div>
                 </a>
             </div>

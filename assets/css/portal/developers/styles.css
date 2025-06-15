@@ -110,38 +110,145 @@ input[type=checkbox] {
     float:left;
     margin-right:10px;
 }
-.bg-project_management_24px {
+
+.bg-add_user {
+    width: 24px; height: 24px;
+    background: url('../../../images/sprites/css_sprites.png') -4px -4px;
+}
+
+
+
+.bg-chat {
+    width: 24px; height: 24px;
+    background: url('../../../images/sprites/css_sprites.png') -36px -4px;
+}
+
+
+
+.bg-clipboard {
+    width: 24px; height: 24px;
+    background: url('../../../images/sprites/css_sprites.png') -68px -4px;
+}
+
+
+
+.bg-group {
+    width: 24px; height: 24px;
+    background: url('../../../images/sprites/css_sprites.png') -100px -4px;
+}
+
+
+
+.bg-logout {
+    width: 24px; height: 24px;
+    background: url('../../../images/sprites/css_sprites.png') -132px -4px;
+}
+
+
+
+.bg-project_management {
+    width: 24px; height: 24px;
+    background: url('../../../images/sprites/css_sprites.png') -164px -4px;
+}
+
+
+
+.bg-race {
+    width: 24px; height: 24px;
+    background: url('../../../images/sprites/css_sprites.png') -196px -4px;
+}
+
+
+
+.bg-stopwatch {
+    width: 24px; height: 24px;
+    background: url('../../../images/sprites/css_sprites.png') -228px -4px;
+}
+
+
+
+.bg-transfer {
+    width: 24px; height: 24px;
+    background: url('../../../images/sprites/css_sprites.png') -260px -4px;
+}
+
+
+
+.bg-add_task {
+    width: 24px; height: 24px;
+    background: url('../../../images/sprites/css_sprites.png') -292px -4px;
+}
+
+
+
+.bg-back {
+    width: 24px; height: 24px;
+    background: url('../../../images/sprites/css_sprites.png') -324px -4px;
+}
+
+
+
+.bg-diskette {
+    width: 24px; height: 24px;
+    background: url('../../../images/sprites/css_sprites.png') -356px -4px;
+}
+
+
+
+.bg-send {
+    width: 24px; height: 24px;
+    background: url('../../../images/sprites/css_sprites.png') -388px -4px;
+}
+
+
+
+.bg-refresh {
+    width: 24px; height: 24px;
+    background: url('../../../images/sprites/css_sprites.png') -420px -4px;
+}
+
+
+
+.bg-view {
+    width: 24px; height: 24px;
+    background: url('../../../images/sprites/css_sprites.png') -452px -4px;
+}
+
+
+/*========================================*/
+
+/* .bg-project_management {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -10px -10px;
-}
-.bg-checklist_24px {
+} */
+/* .bg-clipboard {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -54px -10px;
-}
-.bg-speed_24px {
+} */
+/* .bg-race {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -10px -54px;
-}
-.bg-chat_24px {
+} */
+/* .bg-chat {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -54px -54px;
-}
-.bg-logout_24px {
+} */
+/* .bg-logout {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -98px -10px;
-}
-.bg-add_user_24px {
+} */
+/* .bg-add_user {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -98px -54px;
-}
-.bg-add_task_24px {
+} */
+/* .bg-add_task {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -10px -98px;
-}
-.bg-users_24px {
+} */
+/* .bg-group {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -54px -98px;
-}
+} */
 
 .out-of-scope, .out-of-scope:hover, .table-hover tbody tr.out-of-scope:hover{
     background-color: rgb(255, 190, 203);

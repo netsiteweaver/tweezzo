@@ -23,6 +23,7 @@
                     <select class="form-control autosubmit" name="project_id" id="project_id">
                         <option value="">Select Project</option>
                         <?php foreach($myProjects as $project): ?>
+                        <?php if($this->input->get('customer_id') != $project->customer_id) continue;?>
                         <option data-customer-id="<?php echo $project->customer_id; ?>"
                             value="<?php echo $project->id; ?>"
                             <?php echo ($this->input->get("project_id") == $project->id) ? "selected" : ""; ?>
@@ -37,6 +38,7 @@
                     <select class="form-control autosubmit" name="sprint_id" id="sprint_id">
                         <option value="">Select Sprint</option>
                         <?php foreach($mySprints as $sprint): ?>
+                        <?php if ($this->input->get('project_id') !== $sprint->project_id) continue;?>
                         <option data-project-id="<?php echo $sprint->project_id; ?>"
                             value="<?php echo $sprint->id; ?>"
                             <?php echo ($this->input->get("sprint_id") == $sprint->id) ? "selected" : ""; ?>
@@ -158,15 +160,17 @@
                 </div>
 
                 <div class="col-md-2 mt-4 mb-5">
-                    <button class='btn btn-block btn-outline-primary' style='width:100%' type='submit'><i
-                            class="bi bi-send"></i> Submit</button>
+                    <button class='btn btn-block btn-outline-primary' style='width:100%' type='submit'>
+                        <div class="bg-icon bg-send"></div> Submit
+                    </button>
                 </div>
 
                 <div class="col-md-8 mb-5"></div>
 
                 <div class="col-md-2 mt-3 mb-5">
-                    <div class="btn btn-block btn-outline-warning" style='width:100%' id="reset"><i
-                            class="bi bi-arrow-counterclockwise"></i> Clear</div>
+                    <div class="btn btn-block btn-outline-warning" style='width:100%' id="reset">
+                        <div class="bg-icon bg-refresh"></div>Clear
+                    </div>
                 </div>
             </div>
         </form>
@@ -226,7 +230,7 @@
                         </td>
                         <td>
                             <a href="portal/developers/view?task_uuid=<?php echo "{$task->uuid}&customer_id={$this->input->get('customer_id')}&project_id={$this->input->get('project_id')}&sprint_id={$this->input->get('sprint_id')}";?>">
-                                <div class="btn" style="color:#fff; background-color: var(--developersPortalBackground)"><i class="bi bi-eye"></i> View</div>
+                                <div class="btn" style="color:#fff; background-color: var(--developersPortalBackground)"><div class="bg-icon bg-view"></div> View</div>
                             </a>
                         </td>
                     </tr>

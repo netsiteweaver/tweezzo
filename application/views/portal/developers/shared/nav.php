@@ -11,26 +11,31 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link <?php echo (!in_array($this->uri->segment(3),['myCustomers','myProjects','mySprints','notes']))?'active':'';?>" href="portal/developers/tasks"><div class="bg-icon bg-checklist_24px"></div>Tasks</a>
+                    <a class="nav-link <?php echo (!in_array($this->uri->segment(3),['myCustomers','myProjects','mySprints','notes']))?'active':'';?>" href="portal/developers/tasks"><div class="bg-icon bg-clipboard"></div>Tasks</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link <?php echo ($this->uri->segment(3)=='myCustomers')?'active':'';?>" href="portal/developers/myCustomers">
-                        <div class="bg-icon bg-users_24px"></div>Customers
+                        <div class="bg-icon bg-group"></div>Customers
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link <?php echo ($this->uri->segment(3)=='myProjects')?'active':'';?>" href="portal/developers/myProjects">
-                        <div class="bg-icon bg-project_management_24px"></div>Projects
+                        <div class="bg-icon bg-project_management"></div>Projects
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link <?php echo ($this->uri->segment(3)=='mySprints')?'active':'';?>" href="portal/developers/mySprints">
-                        <div class="bg-icon bg-speed_24px"></div>Sprints
+                        <div class="bg-icon bg-race"></div>Sprints
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link <?php echo ($this->uri->segment(3)=='notes')?'active':'';?>" href="portal/developers/notes">
-                        <div class="bg-icon bg-chat_24px"></div>Notes
+                        <div class="bg-icon bg-chat"></div>Notes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php echo ($this->uri->segment(3)=='notes')?'active':'';?>" href="portal/developers/timesheets">
+                        <div class="bg-icon bg-chat"></div>Timesheets
                     </a>
                 </li>
                 
@@ -52,7 +57,7 @@
                     <a class="nav-link" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
                 </li> -->
                 <div class="nav-item">
-                    <a href="portal/developers/signout" class="nav-link"><div class="bg-icon bg-checklist_24px"></div>Signout</a>
+                    <a href="portal/developers/signout" class="nav-link"><div class="bg-icon bg-clipboard"></div>Signout</a>
                 </div>
             </ul>
             <!-- <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -66,7 +71,7 @@
             <ul class="navbar-nav mb-2 mb-lg-0">
                 <li class="nav-item cursor-pointer add-task" style='margin-right:25px;'>
                     <img id="submitTask" style="width:24px;" src="assets/images/add_task_48px.png" alt="">
-                    <!-- <div id="submitTask" class="bg-icon bg-add_task_24px"></div> -->
+                    <!-- <div id="submitTask" class="bg-icon bg-add_task"></div> -->
                 </li>
             </ul>
             <ul class="navbar-nav mb-2 mb-lg-0">

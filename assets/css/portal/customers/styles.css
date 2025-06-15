@@ -105,35 +105,35 @@ a:hover {
     float:left;
     margin-right:10px;
 }
-.bg-project_management_24px {
+.bg-project_management {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -10px -10px;
 }
-.bg-checklist_24px {
+.bg-clipboard {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -54px -10px;
 }
-.bg-speed_24px {
+.bg-race {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -10px -54px;
 }
-.bg-chat_24px {
+.bg-chat {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -54px -54px;
 }
-.bg-logout_24px {
+.bg-logout {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -98px -10px;
 }
-.bg-add_user_24px {
+.bg-add_user {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -98px -54px;
 }
-.bg-add_task_24px {
+.bg-add_task {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -10px -98px;
 }
-.bg-users_24px {
+.bg-group {
     width: 24px; height: 24px;
     background: url('../../../images/css_sprites.png') -54px -98px;
 }

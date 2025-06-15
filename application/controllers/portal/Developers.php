@@ -153,9 +153,6 @@ class Developers extends CI_Controller
             ));
         }
 
-        // $this->db->query("INSERT INTO timesheet (task_id, developer_id, start_time, finish_time, notes, status) VALUES (
-                            // $task_id, {$_SESSION['developer_id']}, NOW(), NULL, 'xxx', '1')");
-
     }
 
     public function timer_insert()
