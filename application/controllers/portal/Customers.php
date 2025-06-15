@@ -12,6 +12,11 @@ class Customers extends CI_Controller
             redirect('portal/customers/signin');
         }
 
+        $this->data['flash_danger'] = getFlashMessage("danger");
+        $this->data['flash_success'] = getFlashMessage("success");
+        $this->data['flash_warning'] = getFlashMessage("warning");
+        $this->data['flash_info'] = getFlashMessage("info");
+
         $this->load->library("migration");
         $this->load->model("system_model");
         $this->load->model("Customersportal_model");
@@ -92,6 +97,10 @@ class Customers extends CI_Controller
 
         $project_id = $this->input->get("project_id");
         $this->data['sprints'] = $this->Customersportal_model->getSprints($project_id);
+        if(empty($this->data['sprints'])){
+            setFlashMessage("danger","Selected project has no sprint yet");
+            redirect(base_url("portal/customers/projects"));
+        }
         $this->data['content'][] = $this->load->view("/portal/customers/sprints",$this->data,true);
         // debug($this->data['sprints']);
         $this->load->view("/portal/customers/shared/layout",$this->data);

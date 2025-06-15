@@ -38,7 +38,10 @@ class Customers_model extends CI_Model
             $this->db->join("users u","u.id=c.created_by","left");
             $this->db->where(array("c.uuid"=>$uuid,"c.status"=>'1'));
             $query = $this->db->get();
-            return $query->row();
+            $customer = $query->row();
+            if(empty($customer)) return false;
+            $customer->access = $this->db->select("*")->from("customer_access")->where("customer_id",$customer->customer_id)->get()->result();
+            return $customer;
         }
 
     }

@@ -19,7 +19,8 @@
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="./node_modules/lightbox2/dist/css/lightbox.min.css">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
     <link rel="stylesheet" href="./node_modules/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="./assets/css/country-flags.css">
 
@@ -53,6 +54,10 @@
 </head>
 
 <body>
+<?php echo (!empty($flash_danger)) ? '<div class="alert alert-danger">'.$flash_danger.'</div>' : '';?>
+<?php echo (!empty($flash_warning)) ? '<div class="alert alert-warning">'.$flash_warning.'</div>' : '';?>
+<?php echo (!empty($flash_success)) ? '<div class="alert alert-success">'.$flash_success.'</div>' : '';?>
+<?php echo (!empty($flash_info)) ? '<div class="alert alert-info">'.$flash_info.'</div>' : '';?>
 <div id="overlay" class='d-none'><div class="loader"></div></div>
     <div class="container-fluid">
         <?php $this->load->view("portal/customers/shared/nav");?>

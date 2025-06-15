@@ -1,3 +1,8 @@
+function isValidEmail(email) {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+}
+
 jQuery(function(){
 
     $('.input-group-text.clear-search').on("click",function(){
@@ -35,7 +40,7 @@ jQuery(function(){
     $('.select-district').on("click",function(e){
         e.preventDefault();
         let district = $(this).attr("title");
-        alert(district);
+        // alert(district);
     })
 
     // $('.resetPassword').on("click", function(){
@@ -96,5 +101,56 @@ jQuery(function(){
 
     $('#modalCustomerInfo').on('hidden.bs.modal', function () {
         $('#customers_listing tbody tr.active').removeClass("active");
+    })
+
+    $('#add-user-access').on("click", function(){
+        $('#addUserAccessModal').modal("show");
+    })
+
+    $('#addUserAccessModal').on("hidden.bs.modal",function(){
+        // alert();
+    })
+
+    $('#addUserAccessModal .save').on("click", function(){
+        let uuid = $("input[name=uuid]").val();
+        // console.log(uuid)
+        let name = $('#addUserAccessModal .name').val().trim();
+        let email = $('#addUserAccessModal .email').val();
+        let password = $('#addUserAccessModal .password').val();
+        let country_code = $('#addUserAccessModal .country_code').val();
+        let errorMessage = "";
+
+        if(name.length < 4){
+            errorMessage += "- a name of at least 4 chars\r\n";
+        }
+
+        if(!isValidEmail(email)){
+            errorMessage += "- a valid email\r\n";
+        }
+
+        if(password.length < 4){
+            errorMessage += "- a valid password of at least 4 chars\r\n";
+        }
+
+        if(errorMessage.length > 0){
+            errorMessage = "Please correct the following error(s):\r\n" + errorMessage;
+            alert(errorMessage)
+            return false;
+        }
+
+        $.ajax({
+            url: base_url + "portal/customers/addUserAccess",
+            method: "POST",
+            dataType: "JSON",
+            data:{uuid:uuid,name:name,email:email,password:password,country_code:country_code},
+            success:function(response){
+                if(response.result == false){
+                    alertify.alert(response.reason);
+                }else{
+                    $('#addUserAccessModal').modal("hide");
+                }
+            }
+        })
+
     })
 })

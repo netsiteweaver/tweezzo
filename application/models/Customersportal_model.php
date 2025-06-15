@@ -162,7 +162,7 @@ class Customersportal_model extends CI_Model
         if(empty($task)) {
             return false;
         }
-        $task->notes = $this->db->select("t.*, u.name developer, ca.name as customer, COALESCE(u.name, ca.name) as author, u.country_code developer_country_code, 'mu' as customer_country_code")
+        $task->notes = $this->db->select("t.*, u.name developer, ca.name as customer, COALESCE(u.name, ca.name) as author, u.country_code developer_country_code, 'mu' as customer_country_code, COALESCE(u.country_code, ca.country_code) as country_code")
                                 ->from("task_notes t")
                                 ->join("users u","u.id=t.created_by","left")
                                 ->join("customer_access ca","ca.id=t.created_by_customer","left")
@@ -455,7 +455,7 @@ class Customersportal_model extends CI_Model
     /**
      * addUserAccess is called from the back office
      */
-    public function addUserAccess($uuid, $name,$email,$password)
+    public function addUserAccess($uuid, $name,$email,$password, $country_code)
     {
         $customer = $this->db->select("customer_id, email, full_name")->from("customers")->where("uuid",$uuid)->get()->row();
 
@@ -469,6 +469,7 @@ class Customersportal_model extends CI_Model
         }
         $this->db->set("name",$name);
         $this->db->set("email",$email);
+        $this->db->set("country_code",$country_code);
         $this->db->set("password",md5($password),true);
         $this->db->set("created_by",$_SESSION['user_id']);
         $this->db->set("customer_id",$customer->customer_id);
