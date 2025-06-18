@@ -80,9 +80,12 @@
     </div>
 
     <?php $this->load->view("portal/customers/shared/add_task_modal");?>
+    <?php if($isAdmin == "1"):?>
     <?php $this->load->view("portal/customers/shared/add_user_access_modal");?>
-    <!-- Optional JavaScript; choose one of the two! -->
-
+    <?php else:?>
+    <?php $this->load->view("portal/customers/shared/user_access_modal");?>
+    <?php endif;?>
+ 
     <!-- Option 1: Bootstrap Bundle with Popper -->
     <script src="<?php echo base_url("assets/cdn.jsdelivr.net/bootstrap@5.0.2/bootstrap.bundle.min.js");?>"></script>
     <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" -->

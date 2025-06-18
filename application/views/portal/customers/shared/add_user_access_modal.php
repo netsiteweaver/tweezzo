@@ -38,10 +38,10 @@
                         </thead>
                         <tbody>
                           <?php foreach($user_access as $user):?>
-                          <tr class='<?php echo ($user->isAdmin) ? 'text-bold' : '';?>'>
+                          <tr data-id='<?php echo $user->id;?>' class='<?php echo ($user->isAdmin) ? 'text-bold' : '';?>'>
                             <td><?php echo $user->userName;?></td>
                             <td><?php echo $user->userEmail;?></td>
-                            <td>
+                            <td class='remove-user'>
                               <?php if(!$user->isAdmin):?>
                               <i class="bi-trash"></i>
                               <?php else:?>

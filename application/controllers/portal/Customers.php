@@ -28,11 +28,15 @@ class Customers extends CI_Controller
         $this->data['random_quote'] = $this->Quotes_model->getRandomQuote();
 
         if(isset($_SESSION['customer_access_id'])){
+            $this->data['isAdmin'] = $this->db->select("admin")->from("customer_access")->where(array(
+                "status"        =>  "1",
+                "id"            =>  $_SESSION['customer_access_id']
+            ))->get()->row()->admin;
             $this->data['user_access'] = $this->db->query("
-                SELECT c.company_name, ca.name userName, ca.email userEmail, COALESCE(ca.admin, null) isAdmin
+                SELECT ca.id, c.company_name, ca.name userName, ca.email userEmail, COALESCE(ca.admin, null) isAdmin
                 FROM customers c
                 LEFT JOIN customer_access ca ON ca.customer_id = c.customer_id
-                WHERE c.status = 1 AND c.customer_id = (SELECT customer_id FROM customer_access WHERE id = {$_SESSION['customer_access_id']})
+                WHERE c.status = 1 AND ca.status = 1 AND c.customer_id = (SELECT customer_id FROM customer_access WHERE id = {$_SESSION['customer_access_id']})
                 ORDER BY ca.name
             ")->result();
         }
@@ -41,6 +45,23 @@ class Customers extends CI_Controller
         if(isset($_SESSION['customer_access_id'])){
             $this->data['projects'] = $this->Customersportal_model->getProjects($_SESSION['customer_access_id']);
             $this->data['sprints'] = $this->Customersportal_model->getSprints();
+        }
+    }
+
+    public function removeUser()
+    {
+        $userId = $this->input->post("userId");
+        $isAdmin = $this->db->select('admin')->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row()->admin;
+        if($isAdmin == 0){
+            echo json_encode(array(
+                "result"    =>  false,
+                "reason"    =>  "You do not have permission to remove a user"
+            ));
+        }else{
+            $this->db->set("status","0")->where("id",$userId)->update("customer_access");
+            echo json_encode(array(
+                "result"    =>  true
+            ));
         }
     }
 
@@ -297,7 +318,7 @@ class Customers extends CI_Controller
             exit;
         }
 
-        $ct = $this->db->select("count(id) as ct")->from("customer_access")->where("email",$email)->get()->row()->ct;
+        $ct = $this->db->select("count(id) as ct")->from("customer_access")->where(array("email"=>$email,"status"=>"1"))->get()->row()->ct;
         
         if($ct>0){
             echo json_encode(['result'=>false,'reason'=>"Email already used"]);

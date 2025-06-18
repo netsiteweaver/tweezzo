@@ -184,10 +184,15 @@ jQuery(function(){
                         $("#addUserAccessModal .create-user-access").remove();
                     }
                     $(response.users).each(function(i,j){
-                        let row = "<tr>";
+                        let row = "<tr data-id='"+j.id+"'>";
                         row += `<td>${j.name}</td>`;
                         row += `<td>${j.email}</td>`;
-                        row += "<td></td>";
+                        if(j.admin==0){
+                            row += "<td class='remove-user'><i class='bi bi-trash'></i></td>";
+                        }else{
+                            row += '<td><img src="assets/images/crown.png" style="width:16px;" alt=""></td>';
+                        }
+                        
                         $("#addUserAccessModal #existing_users tbody").append(row);
                     })
                     alertify.alert("User has been added");
@@ -255,6 +260,38 @@ jQuery(function(){
                 Overlay("off");
             }
         })
+    })
+
+    $('#addUserAccessModal').on('click','.remove-user', function(){
+        let userId = $(this).closest("tr").data("id");
+        $(this).closest("tr").addClass("selected active");
+        alertify.confirm(
+            "Are you sure you want remove this user?",
+            function(){
+                Overlay("on");
+                $.ajax({
+                    url: "portal/customers/removeUser",
+                    data: {userId:userId},
+                    method: "POST",
+                    dataType: "JSON",
+                    success: function(response) {
+                        if(response.result) {
+                            $('#existing_users tbody tr.active').remove();
+                        }else{
+                            alertify.alert(response.reason);
+                        }
+                        Overlay("off");
+                        $('#existing_users tbody tr.active').removeClass("active")
+                    }
+                });
+            },
+            function(){
+                $('#existing_users tbody tr.active').removeClass("active")
+            })
+    })
+
+    $('#addUserAccessModal').on('hidden.bs.modal', function (e) {
+        $('#existing_users tbody tr.active').removeClass("active")
     })
 
     $("#saveNote").on("click", function() {

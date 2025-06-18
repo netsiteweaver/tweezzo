@@ -422,7 +422,7 @@ class Customersportal_model extends CI_Model
     {
         $customer = $this->db->select("customer_id, email, name")->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row();
 
-        $existing_users = $this->db->select("count(id) as ct")->from("customer_access")->where("customer_id",$customer->customer_id)->get()->row()->ct;
+        $existing_users = $this->db->select("count(id) as ct")->from("customer_access")->where(array("customer_id"=>$customer->customer_id,"status"=>"1"))->get()->row()->ct;
 
         if($existing_users >= 5){
             return [
@@ -435,7 +435,7 @@ class Customersportal_model extends CI_Model
         $this->db->set("password",md5($password),true);
         $this->db->set("created_by_customer",$_SESSION['customer_access_id']);
         $this->db->set("customer_id",$customer->customer_id);
-        $this->db->set("created_on",'NOW()',true);
+        $this->db->set("created_on",date("Y-m-d H:i:s"));
         $this->db->set("created_by_type","customer");
         $this->db->set("admin","0");
         $this->db->insert("customer_access");
@@ -445,7 +445,8 @@ class Customersportal_model extends CI_Model
         //return existing customer access for customer
         $users = $this->db->query("SELECT *
                         FROM customer_access
-                        WHERE customer_id = $customer->customer_id")->result();
+                        WHERE customer_id = $customer->customer_id
+                        AND status = '1'")->result();
         return [
             'result'    =>  true,
             'users'     =>  $users
