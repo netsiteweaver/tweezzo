@@ -153,7 +153,7 @@
                             <tr class='<?php echo ($notes->out_of_scope == '1') ? 'out-of-scope' : '';?>'>
                                 <td><?php echo $i+1;?></td>
                                 <td>
-                                    <?php echo nl2br(strip_tags($notes->notes));?>
+                                    <?php echo nl2br($notes->notes);?>
                                     <span class="float-end developer" title="<?php echo $notes->country_code;?>">
                                         <?php echo "by {$notes->developer}{$notes->customer} <i class='flag flag-{$notes->country_code}'></i> on " . date_format(date_create($notes->created_on),'Y m d @ H:i');?>
                                     </span>
@@ -190,9 +190,9 @@
                                         Visible to All</label>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="btn btn-primary">
+                                    <button class="btn btn-primary">
                                         <div class="bg-icon bg-diskette"></div> Save Notes
-                                    </div>
+                                    </button>
                                     
                                     <!-- <button class="btn btn-primary"><i class="bi bi-save"></i> Save
                                         Notes</button> -->
