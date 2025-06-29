@@ -131,7 +131,7 @@ $cleanQuery = http_build_query($queryArray);
     <div class="col-md-2">
         <label for="search">Search</label>
         <div class="input-group mb-3">
-            <input type="text" class="form-control task-listing-search" name="task_search_query" id="task_search_query" placeholder="Search in tasks..." aria-label="Search in tasks...e" aria-describedby="basic-addon2" value="<?php echo $this->input->get("search_text");?>">
+            <input type="text" class="form-control task-listing-search" name="task_search_query" id="task_search_query" placeholder="Search in tasks..." aria-label="Search in tasks...e" aria-describedby="basic-addon2" value="<?php echo $this->input->get("search_text");?>" autocomplete="off" data-lpignore="true">
             <div class="input-group-append search cursor-pointer">
                 <span class="input-group-text" id="basic-addon2"><i class="fa fa-binoculars"></i></span>
             </div>
