@@ -316,7 +316,7 @@ class Developersportal_model extends CI_Model{
                         ->row();
 
         if(!empty($result->customer_email)) {
-            $email = "reeaz@ramoly.info";//$result->customer_email;
+            $email = $result->customer_email;
             $this->load->model("Email_model3");
             $this->load->model("system_model");
             $emailData = [
@@ -327,9 +327,31 @@ class Developersportal_model extends CI_Model{
             $content = $this->load->view("_email/header",$emailData, true);
             $content .= $this->load->view("_email/taskStageChange",$emailData, true);
             $content .= $this->load->view("_email/footer",[], true);
-            $subject = "Task/{$result->task_number}/{$result->sprint_name}/{$result->project_name} moved to " . strtoupper(str_replace("_"," ",$result->task_stage));
+            $subject = "* Task/{$result->task_number}/{$result->sprint_name}/{$result->project_name} moved to " . strtoupper(str_replace("_"," ",$result->task_stage));
             $this->Email_model3->save($email,$subject,$content);
         }
+
+        //notification_update_tasks
+        $notification_update_tasks = $this->system_model->getParam("notification_update_tasks",true);
+        foreach($notification_update_tasks as $id){
+            $email = $this->db->select("email")->from("users")->where(array("status"=>"1","id"=>$id))->get()->row()->email;
+            if(!empty($email)){
+                $this->load->model("Email_model3");
+                $this->load->model("system_model");
+                $emailData = [
+                    'task'      =>  $result,
+                    'logo'      =>  $this->system_model->getParam("logo"),
+                    'url'       =>  'portal/customers/view?task_uuid='.$result->task_uuid
+                ];
+                $content = $this->load->view("_email/header",$emailData, true);
+                $content .= $this->load->view("_email/taskStageChange",$emailData, true);
+                $content .= $this->load->view("_email/footer",[], true);
+                $subject = "Task/{$result->task_number}/{$result->sprint_name}/{$result->project_name} moved to " . strtoupper(str_replace("_"," ",$result->task_stage));
+                $this->Email_model3->save($email,$subject,$content);
+            }
+            
+        }
+
     }
 
     public function get_login_history($records=10)
