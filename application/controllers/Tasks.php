@@ -454,6 +454,20 @@ class Tasks extends MY_Controller {
         ));
     }
 
+    public function closeMultiple()
+    {
+        //Access Control
+        if(!isAuthorised(get_class(),"delete")) return false;
+
+        $taskIds = $this->input->post('taskIds');
+        $affected_rows = $this->Tasks_model->closeMultiple($taskIds);
+
+        echo json_encode(array(
+            "result"    =>  true,
+            "affected_rows" =>  $affected_rows
+        ));
+    }
+
     public function assignUser()
     {
         $userId = $this->input->post("userId");

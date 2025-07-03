@@ -467,6 +467,35 @@ class Tasks_model extends CI_Model{
         $this->db->set("mark_closed_on","NOW()",false);
         $this->db->where_in("id",$taskIds);
         $this->db->update("tasks");
+
+        $this->db->select('t.id, t.uuid, t.name, t.section, t.task_number, s.name as sprint_name, p.name as project_name, c.company_name');
+        $this->db->from('tasks t');
+        $this->db->join('sprints s', 's.id = t.sprint_id');
+        $this->db->join('projects p', 'p.id = s.project_id');
+        $this->db->join('customers c', 'c.customer_id = p.customer_id');
+        $this->db->where_in('t.id', $taskIds);
+        $query = $this->db->get();
+        $result = $query->result();
+
+        // send email to users 
+        $this->load->model("Email_model3");
+        $this->load->model("system_model");
+        $emailData = [
+            'tasks'     =>  $result,
+            'logo'      =>  $this->system_model->getParam("logo")
+        ];
+        $content = $this->load->view("_email/header",$emailData, true);
+        $content .= $this->load->view("_email/tasksClosed",$emailData, true);
+        $content .= $this->load->view("_email/footer",[], true);
+
+        $notification_delete_tasks = $this->system_model->getParam("notification_delete_tasks",true);
+        foreach($notification_delete_tasks as $user_id){
+            $user = $this->db->select("email")->from("users")->where(["status"=>"1","id"=>$user_id])->get()->row();
+            if(!empty($user)){
+                $this->Email_model3->save($user->email,"Tasks Closed",$content);
+            }
+        }
+        
     }
 
     public function bulkChangeStage($taskIds, $stage)
