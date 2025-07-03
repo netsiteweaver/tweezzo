@@ -46,7 +46,7 @@
                                     valign="middle">
                                     <a href="<?php echo base_url($url);?>"
                                         style="display: inline-block; background:rgb(27, 86, 153); color: #ffffff; font-family: Helvetica, Arial, sans-serif; font-size: 14px; font-weight: bold; line-height: 30px; margin: 0; text-decoration: none; text-transform: uppercase; padding: 10px 25px; mso-padding-alt: 0px;;"
-                                        target="_blank"> Open Task </a>
+                                        target="_blank"> <?php echo $label;?> </a>
                                 </td>
                             </tr>
                         </tbody>
