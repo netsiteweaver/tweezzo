@@ -37,7 +37,7 @@ class Developersportal_model extends CI_Model{
                     LEFT JOIN task_notes tn ON tn.task_id = t.id
                     LEFT JOIN latest_timesheets ts ON ts.task_id = t.id AND ts.rn = 1
                     WHERE tu.user_id = {$developer_id} 
-                    AND t.status = '1'";
+                    AND t.status = '1' AND t.closed = '0'";
         if(!empty($customer_id)) $query .= " AND c.customer_id = '{$customer_id}'";
         if(!empty($project_id)) $query .= " AND p.id = '{$project_id}'";
         if(!empty($sprint_id)) $query .= " AND s.id = '{$sprint_id}'";

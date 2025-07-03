@@ -75,7 +75,7 @@ class Customersportal_model extends CI_Model
                         JOIN tasks t ON t.sprint_id = s.id
                         JOIN users u ON u.id = s.created_by 
                     WHERE
-                        t.status = 1
+                        t.status = 1 AND t.closed = 0 
                         AND s.status = 1 ";
         if(empty($project_id)){
             $query .= "AND c.customer_id = $customer_id ";
@@ -125,7 +125,7 @@ class Customersportal_model extends CI_Model
         }elseif($notes_only=="with") {
             $this->db->having("notes_count > 0");
         }
-        $this->db->where(["t.status"=>'1']);
+        $this->db->where(["t.status"=>'1', "t.closed" => "0"]);
 
         $stagesArr = (empty($this->input->get('stages'))) ? [] : explode(',',$stages);
 
@@ -155,7 +155,7 @@ class Customersportal_model extends CI_Model
         $task = $this->db->select("t.*,u.name createdBy")
                             ->from("tasks t")
                             ->join("users u","u.id=t.created_by","")
-                            ->where(["t.status"=>'1',"t.uuid"=>$uuid])
+                            ->where(["t.status"=>'1',"t.closed"=>"0", "t.uuid"=>$uuid])
                             ->order_by("t.task_number")
                             ->get()
                             ->row();

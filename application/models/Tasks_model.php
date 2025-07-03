@@ -32,7 +32,7 @@ class Tasks_model extends CI_Model{
             }
         }
         
-        $this->db->where('t.status',1);
+        $this->db->where(['t.status'=>'1','t.closed'=>'0']);
         if(!empty($customer_id)) $this->db->where('c.customer_id',$customer_id);
         if(!empty($project_id)) $this->db->where('p.id',$project_id);
         if(!empty($sprint_id)) $this->db->where('s.id',$sprint_id);
@@ -105,7 +105,7 @@ class Tasks_model extends CI_Model{
         $this->db->join('projects p','p.id=s.project_id','left');
         $this->db->join('customers c','c.customer_id=p.customer_id','left');
         $this->db->where('t.uuid',$uuid);
-        $this->db->where('t.status',1);
+        $this->db->where(['t.status'=>'1','t.closed'=>'0']);
         $task = $this->db->get()->row();
         if(empty($task)) return [];
         $task->notes = $this->db->select('tn.id, tn.notes,tn.created_by, tn.created_on,u.name, tn.out_of_scope, c.company_name customer')
@@ -149,7 +149,7 @@ class Tasks_model extends CI_Model{
         $this->db->join('projects p','p.id=s.project_id','left');
         $this->db->join('customers c','c.customer_id=p.customer_id','left');
         $this->db->where_in('t.id',$ids);
-        $this->db->where('t.status',1);
+        $this->db->where(['t.status'=>'1','t.closed'=>'0']);
         $this->db->order_by("task_number");
         $tasks = $this->db->get()->result();
         return $tasks;
@@ -385,6 +385,7 @@ class Tasks_model extends CI_Model{
                     left join task_user tu on tu.task_id = t.id
                     left join users u on u.id = tu.user_id 
                     where t.status = 1
+                    and t.closed = 0
                     and t.uuid = '{$taskDetails->uuid}'";
         $result = $this->db->query($query)->result();
 
@@ -455,6 +456,15 @@ class Tasks_model extends CI_Model{
     public function deleteMultiple($taskIds)
     {
         $this->db->set("status","0");
+        $this->db->where_in("id",$taskIds);
+        $this->db->update("tasks");
+    }
+
+    public function closeMultiple($taskIds)
+    {
+        $this->db->set("closed","1");
+        $this->db->set("mark_closed_by",$_SESSION['user_id']);
+        $this->db->set("mark_closed_on","NOW()",false);
         $this->db->where_in("id",$taskIds);
         $this->db->update("tasks");
     }
@@ -578,7 +588,7 @@ class Tasks_model extends CI_Model{
             }else{
                 $stage = 'new';
             }
-            $maxTN = $this->db->query("SELECT MAX(task_number) as tn FROM tasks WHERE sprint_id = '$sprint_id' AND status = 1")->row()->tn;
+            $maxTN = $this->db->query("SELECT MAX(task_number) as tn FROM tasks WHERE sprint_id = '$sprint_id' AND status = 1 AND closed = 0")->row()->tn;
             $taskNumber = incrementTaskNumber($maxTN);
             $data = array(
                 'uuid'          =>  gen_uuid(), 
@@ -616,7 +626,7 @@ class Tasks_model extends CI_Model{
                         JOIN projects p ON p.id = s.project_id 
                         JOIN customers c ON c.customer_id = p.customer_id 
                     WHERE 
-                        t.status = 1 
+                        t.status = 1 AND t.closed = 0 
                     AND c.status = 1 AND p.status = 1 AND s.name != 'Roadmap' 
                     GROUP BY 
                         c.company_name

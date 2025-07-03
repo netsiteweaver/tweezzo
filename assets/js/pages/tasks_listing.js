@@ -192,6 +192,29 @@ jQuery(function(){
         deleteTasks(taskIds);
     })
 
+    $('.close-multiple').on("click", function(){
+        $('#modalCloseConfirmation .modal-body').empty();
+        let html = "<ul class='list-group'>"
+        $(":checkbox.select_task:checked").each(function(i,j){
+            let taskNumber = $(this).closest("tr").find("td.task-number").html();
+            let taskSection = $(this).closest("tr").find("td.task-section").html();
+            let taskName = $(this).closest("tr").find("td.task-name span").html();
+            html += `<li class='list-group-item'>[${taskNumber}] <b>${taskSection}</b>: ${taskName}</li>`
+        })
+        html += "</ul>"
+        console.log(html);
+        $('#modalCloseConfirmation .modal-body').html(html);
+        $('#modalCloseConfirmation').modal("show")
+    })
+
+    $('.proceedWithClosing').on("click", function(){
+        let taskIds = [];
+        $(":checkbox.select_task:checked").each(function(i,j){
+            taskIds.push($(this).closest("tr").data("id"));
+        })
+        closeTasks(taskIds);
+    })
+
     $('.assign-multiple').on("click", function(){
         $('#modalAssignUsers').modal("show")
         
@@ -405,6 +428,27 @@ function deleteTasks(taskIds)
         }
     })
 }
+
+function closeTasks(taskIds)
+{
+    Overlay("on")
+    $.ajax({
+        url: base_url + "tasks/closeMultiple",
+        method: "POST",
+        dataType: "JSON",
+        data: {taskIds:taskIds},
+        success: function(response)
+        {
+            if(response.result){
+                window.location.reload();
+            }else{
+                Overlay("off")
+                alertify.alert('Error',response.reason)
+            }
+        }
+    })
+}
+
 
 function changeStage(taskIds, stage)
 {

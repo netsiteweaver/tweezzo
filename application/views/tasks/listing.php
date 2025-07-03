@@ -236,6 +236,7 @@ $cleanQuery = http_build_query($queryArray);
                     <a class="dropdown-item due-date-multiple"><i class="fa fa-user"></i> Set Due Date</a>
                     <a class="dropdown-item stage-multiple"><i class="fa fa-truck"></i> Change Stage</a>
                     <a class="dropdown-item move-sprint-multiple"><i class="fa fa-arrow-right"></i> Move Sprint</a>
+                    <a class="dropdown-item close-multiple"><i class="fa fa-window-close"></i> Close</a>
                     <?php endif;?>
                     <?php if($perms['delete']):?>
                     <a class="dropdown-item delete-multiple"><i class="fa fa-trash"></i> Delete</a>
@@ -327,7 +328,7 @@ $cleanQuery = http_build_query($queryArray);
                             <td class='task-section'><?php echo $task->section; ?></td>
                             <td class='task-name'>
                                 <div style='border-bottom:1px dashed #ccc;padding-bottom:3px;margin-bottom:-5px;'><?php echo $task->name; ?></div>
-                                <?php echo ( (!empty($task->description)) && ($task->description != $task->name) )? "<br><i class='delius-regular'>" . nl2br($task->description) . "</i>": '';?>
+                                <?php echo ( (!empty($task->description)) && ($task->description != $task->name) )? "<br><i class='delius-regular'><span>" . nl2br($task->description) . "</span></i>": '<span></span>';?>
                             </td>
                             <?php if(empty($this->input->get("sprint_id"))):?>
                             <td><?php echo $task->sprint_name; ?></td>
@@ -652,6 +653,30 @@ $cleanQuery = http_build_query($queryArray);
                 <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i>
                     Cancel</button>
                 <button type="button" class="btn btn-success applyChosenStages"><i class="fa fa-check"></i> Proceed</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalCloseConfirmation" tabindex="-1" role="dialog"
+    aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Please verify the tasks before
+                    proceeding</h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i>
+                    Cancel</button>
+                <button type="button" class="btn btn-info proceedWithClosing"><i class="fa fa-window-close"></i>
+                    Close Tasks</button>
             </div>
         </div>
     </div>
