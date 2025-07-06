@@ -105,6 +105,9 @@ jQuery(function(){
 
     $('#add-user-access').on("click", function(){
         $('#addUserAccessModal').modal("show");
+        $('#addUserAccessModal').on("shown.bs.modal",function(){
+            $("#addUserAccessModal .name").trigger("focus")
+        })
     })
 
     $('#addUserAccessModal').on("hidden.bs.modal",function(){
@@ -116,6 +119,7 @@ jQuery(function(){
         // console.log(uuid)
         let name = $('#addUserAccessModal .name').val().trim();
         let email = $('#addUserAccessModal .email').val();
+        let phone = $('#addUserAccessModal .phone').val();
         let password = $('#addUserAccessModal .password').val();
         let country_code = $('#addUserAccessModal .country_code').val();
         let errorMessage = "";
@@ -142,12 +146,26 @@ jQuery(function(){
             url: base_url + "portal/customers/addUserAccess",
             method: "POST",
             dataType: "JSON",
-            data:{uuid:uuid,name:name,email:email,password:password,country_code:country_code},
+            data:{uuid:uuid,name:name,email:email,phone:phone,password:password,country_code:country_code},
             success:function(response){
                 if(response.result == false){
                     alertify.alert(response.reason);
                 }else{
+                    $("#addUserAccessModal input, #addUserAccessModal select, #addUserAccessModal textarea").val("")
                     $('#addUserAccessModal').modal("hide");
+                    let row = `<tr>
+                            <td><input type="text" class="form-control" placeholder="Enter Name" value="${name}" readonly=""></td>
+                            <td><input type="text" class="form-control" placeholder="Enter Phone" value="${phone}" readonly=""></td>
+                            <td><input type="text" class="form-control" placeholder="Enter Email" value="${email}" readonly=""></td>
+                            <td>
+                                <i class="flag flag-${country_code}"></i>
+                                <input type="text" class="form-control d-none" placeholder="${country_code}?">
+                            </td>
+                            <td>
+                                <div class="btn btn-danger"><i class="fa fa-trash"></i></div>
+                            </td>
+                        </tr>`;
+                    $("#existing_users tbody").append(row);
                 }
             }
         })

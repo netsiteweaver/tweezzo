@@ -337,6 +337,7 @@ class Customers extends CI_Controller
         $uuid = trim($this->input->post("uuid"));
         $name = trim($this->input->post("name"));
         $email = trim($this->input->post("email"));
+        $phone = trim($this->input->post("phone"));
         $password = trim($this->input->post("password"));
         $country_code = trim($this->input->post("country_code"));
         // $confirm_password = trim($this->input->post("confirm_password"));
@@ -372,7 +373,7 @@ class Customers extends CI_Controller
             exit;
         }
 
-        $result = $this->Customersportal_model->addUserAccess($uuid, $name, $email, $password, $country_code);
+        $result = $this->Customersportal_model->addUserAccess($uuid, $name, $email, $phone, $password, $country_code);
 
         echo json_encode($result);
 

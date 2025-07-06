@@ -997,6 +997,8 @@ label:not(.form-check-label):not(.custom-file-label) {
 .asterisk::after {
 	content: ' *';
 	color: red;
+	font-size:1.5em;
+	font-weight:bold;
 }
 
 /* #gr-form label {

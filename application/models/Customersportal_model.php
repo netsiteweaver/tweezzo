@@ -456,9 +456,10 @@ class Customersportal_model extends CI_Model
     /**
      * addUserAccess is called from the back office
      */
-    public function addUserAccess($uuid, $name,$email,$password, $country_code)
+    public function addUserAccess($uuid, $name,$email,$phone,$password, $country_code)
     {
-        $customer = $this->db->select("customer_id, email, full_name")->from("customers")->where("uuid",$uuid)->get()->row();
+        $author = $this->db->select("name,email")->from("users")->where("id",$_SESSION['user_id'])->get()->row();
+        $customer = $this->db->select("customer_id, email, full_name, company_name")->from("customers")->where("uuid",$uuid)->get()->row();
 
         $existing_users = $this->db->select("count(id) as ct")->from("customer_access")->where("customer_id",$customer->customer_id)->get()->row()->ct;
 
@@ -470,6 +471,7 @@ class Customersportal_model extends CI_Model
         }
         $this->db->set("name",$name);
         $this->db->set("email",$email);
+        $this->db->set("phone_number1",$phone);
         $this->db->set("country_code",$country_code);
         $this->db->set("password",md5($password),true);
         $this->db->set("created_by",$_SESSION['user_id']);
@@ -479,7 +481,7 @@ class Customersportal_model extends CI_Model
         $this->db->set("admin","0");
         $this->db->insert("customer_access");
 
-        // $this->emailForUserCreated($name,$email,$customer);
+        $this->emailForUserCreated($author,$name,$email,$password,$customer);
 
         //return existing customer access for customer
         $users = $this->db->query("SELECT *
@@ -491,7 +493,7 @@ class Customersportal_model extends CI_Model
         ];
     }
 
-    private function emailForUserCreated($name,$email,$customer)
+    private function emailForUserCreated($author,$name,$email,$password,$customer)
     {
         $this->load->model("Email_model3");
         $this->load->model("System_model");
@@ -500,15 +502,18 @@ class Customersportal_model extends CI_Model
         //                     JOIN customer_access ca on ca.customer_id = st.created_by_customer
         //                     WHERE st.id = $task_id")->row();
         $emailData = [
-            'user_created'  =>  ["name"=>$name,"email"=>$email],
+            'author'        =>  $author,
+            'user_created'  =>  ["name"=>$name,"email"=>$email,"password"=>$password],
             'customer'      =>  $customer,
             'logo'          =>  $this->System_model->getParam("logo"),
+            'link'          =>  base_url('users/signin'),
+            'link_label'    =>  'Sign In'
         ];
         $content = $this->load->view("_email/header",$emailData, true);
         $content .= $this->load->view("_email/userAdded",$emailData, true);
         $content .= $this->load->view("_email/footer",[], true);
-        $subject = "{$customer->name} Added a User";
-        $this->Email_model3->save($customer->email,$subject,$content);
+        $subject = "User Has Been Granted Access";
+        $this->Email_model3->save($email,$subject,$content);
 
         // notify admins for task created
         $members = $this->System_model->getParam("notification_create_users",true);

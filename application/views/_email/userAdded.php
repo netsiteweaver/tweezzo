@@ -1,25 +1,34 @@
 <div style='width:100%; text-align: center;'>
-    <h3>USER HAS BEEN ADDED</h3>
+    <h3>USER HAS BEEN GRANTED ACCESS</h3>
 </div>
 <div style="margin:0px auto;max-width:800px;">
     <table align="center" border="1" cellpadding="10" cellspacing="0" role="presentation" style="width:100%;">
         <tbody>
             <tr>
                 <th class='text-left'>NAME</th>
-                <td><?php echo $task->section;?></td>
+                <td><?php echo $user_created['name'];?></td>
             </tr>
             <tr>
                 <th class='text-left'>EMAIL</th>
-                <td><?php echo $task->name;?></td>
+                <td><?php echo $user_created['email'];?></td>
+            </tr>
+            <tr>
+                <th class='text-left'>PASSWORD</th>
+                <td><?php echo $user_created['password'];?></td>
             </tr>
             <tr>
                 <th class='text-left'>CUSTOMER</th>
-                <td><?php echo nl2br($task->description);?></td>
+                <td><?php echo nl2br($customer->company_name);?></td>
             </tr>
             <tr>
-                <th class="text-left">SUBMITTED BY</th>
-                <td><?php echo "{$task->customerName} &lt;{$task->customerEmail}&gt;";?></td>
+                <th class="text-left">CREATED BY</th>
+                <td><?php echo "{$author->name} &lt;{$author->email}&gt;";?></td>
             </tr>
         </tbody>
     </table>
+</div>
+<div style='margin:30px auto; max-width:800px;'>
+    <a class='btn' href="<?php echo $link;?>">
+        <div class="label"><?php echo $link_label;?></div>
+    </a>
 </div>

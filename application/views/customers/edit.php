@@ -63,7 +63,7 @@
         </div>
         <div class="row">
             <div class="col-md-12">
-                <table class="table table-bordered">
+                <table id="existing_users" class="table table-bordered">
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -95,8 +95,6 @@
                                 <input type="text" class="form-control d-none" placeholder="mu?">
                             </td>
                             <td>
-                                <div class="btn btn-info"><i class="fa fa-edit"></i></div>
-                                <div class="btn btn-success"><i class="fa fa-save"></i></div>
                                 <div class="btn btn-danger"><i class="fa fa-trash"></i></div>
                             </td>
                         </tr>
@@ -113,7 +111,7 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+        <h5 class="modal-title" id="exampleModalLongTitle"><i class="fa fa-unlock"></i> Grant User Access</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -121,20 +119,24 @@
       <div class="modal-body">
         <div class="form-group">
             <label for="">Name</label>
-            <input type="text" class="name form-control">
+            <input type="text" class="name form-control required" placeholder="Enter user's name">
         </div>
         <div class="form-group">
             <label for="">Email</label>
-            <input type="text" class="email form-control">
+            <input type="email" class="email form-control required" placeholder="Enter user's email">
+        </div>
+        <div class="form-group">
+            <label for="">Phone</label>
+            <input type="text" class="phone form-control" placeholder="[OPTIONAL] Enter phone number">
         </div>
         <div class="form-group">
             <label for="">Password</label>
-            <input type="text" class="password form-control">
+            <input type="text" class="password form-control required" placeholder="Enter password">
         </div>
         <div class="form-group">
             <label for="">Country</label>
             <select name="country_code" id="" class="country_code form-control">
-                <option value="mu">Mauritius</option>
+                <option value="mu" selected>Mauritius</option>
                 <option value="in">India</option>
                 <option value="ua">Ukraine</option>
                 <option value="pl">Poland</option>
