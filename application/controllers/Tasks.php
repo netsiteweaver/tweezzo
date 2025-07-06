@@ -344,7 +344,7 @@ class Tasks extends MY_Controller {
         }
         if(!empty($this->input->post('add_more'))){
             flashSuccess("Task ".$data['task_number']." has been added successfully");
-            redirect(base_url("tasks/add?".$this->input->post("qs").'&add_more=1'));
+            redirect(base_url("tasks/add?customer_id=".$this->input->post("customer_id")."&sprint_id=".$this->input->post("sprint_id")."&project_id=".$this->input->post("project_id").'&add_more=1'));
         }else{
             flashSuccess("Task ".$data['task_number']." has been added successfully");
             redirect(base_url("tasks/listing?".$this->input->post('qs')));
