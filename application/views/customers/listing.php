@@ -42,6 +42,7 @@
                                 <th>Name</th>
                                 <th>Address</th>
                                 <th>Email</th>
+                                <th>&nbsp;</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -52,6 +53,7 @@
                                     <td><?php echo $customer->full_name; ?></td>
                                     <td><?php echo $customer->address; ?></td>
                                     <td><?php echo $customer->email; ?></td>
+                                    <td class='text-center activeOrNot'><div class="btn btn-block btn-<?php echo ($customer->active=='1')?'info':'danger';?>"><i class='fa fa-<?php echo ($customer->active=='1')?'check':'times';?>'></i></div></td>
                                     <td>
                                         <?php if ($perms['view']) : ?>
                                         <a href="<?php echo base_url("tasks/listing?customer_id=" . $customer->customer_id); ?>"><div class="btn btn-default"><i class="fa fa-bars"></i></div></a>

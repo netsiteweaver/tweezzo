@@ -1000,7 +1000,9 @@ label:not(.form-check-label):not(.custom-file-label) {
 	font-size:1.5em;
 	font-weight:bold;
 }
-
+.activeOrNot {
+	width:50px;
+}
 /* #gr-form label {
 	position: relative;
 	top:5px;

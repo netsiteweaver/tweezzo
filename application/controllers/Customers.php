@@ -41,6 +41,7 @@ class Customers extends MY_Controller
             ['field_name'=>'full_name','type'=>'text','label'=>'Name','value'=>isset($values['full_name'])?$values['full_name']:'','autofocus'=>true,'required'=>false,'placeholder'=>'Enter Name of Customer'],
             ['field_name'=>'job_description','type'=>'text','label'=>'Job Description','value'=>isset($values['job_description'])?$values['job_description']:'','autofocus'=>true,'required'=>false,'placeholder'=>'Enter Job Description'],
             ['field_name'=>'email','type'=>'email','label'=>'Email','value'=>isset($values['email'])?$values['email']:'','autofocus'=>false,'required'=>true,'placeholder'=>'Enter Email'],
+            ['field_name'=>'active','type'=>'checkbox','label'=>'Active','value'=>isset($values['active'])?$values['active']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
             // ['field_name'=>'brn','type'=>'text','label'=>'BRN','value'=>isset($values['brn'])?$values['brn']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
             // ['field_name'=>'vat','type'=>'text','label'=>'VAT','value'=>isset($values['vat'])?$values['vat']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
             // ['field_name'=>'password','type'=>'text','label'=>'Password','value'=>isset($values['password'])?$values['password']:$pswd,'autofocus'=>false,'required'=>true,'placeholder'=>'Enter Password For Portal Access']
@@ -61,6 +62,7 @@ class Customers extends MY_Controller
             ['field_name'=>'email','type'=>'email','label'=>'Email','value'=>isset($values['email'])?$values['email']:'','autofocus'=>false,'required'=>true,'placeholder'=>'Enter Email'],
             // ['field_name'=>'password','type'=>'text','label'=>'Password','value'=>isset($values['password'])?$values['password']:$pswd,'autofocus'=>false,'required'=>true,'placeholder'=>'Enter Password For Portal Access'],
             ['field_name'=>'remarks','type'=>'textarea','label'=>'Remarks','value'=>isset($values['remarks'])?$values['remarks']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
+            ['field_name'=>'active','type'=>'checkbox','label'=>'Active','value'=>isset($values['active'])?$values['active']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
             // ['field_name'=>'brn','type'=>'text','label'=>'BRN','value'=>isset($values['brn'])?$values['brn']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
             // ['field_name'=>'vat','type'=>'text','label'=>'VAT','value'=>isset($values['vat'])?$values['vat']:'','autofocus'=>false,'required'=>false,'placeholder'=>''],
         );
@@ -132,6 +134,7 @@ class Customers extends MY_Controller
             "remarks"               =>  $this->data['customer']->remarks,
             "full_name"             =>  $this->data['customer']->full_name,
             "email"                 =>  $this->data['customer']->email,
+            "active"                =>  $this->data['customer']->active,
             // "brn"                   =>  $this->data['customer']->brn,
             // "vat"                   =>  $this->data['customer']->vat,
             // "password"               =>  $this->data['customer']->password
@@ -243,7 +246,7 @@ class Customers extends MY_Controller
 
         $this->data['customers'] = $this->customers_model->get(null,$page,$this->data['rows_per_page'],$this->input->get('search_text'));
         $total_records = $this->customers_model->total_records($this->input->get('search_text'));
-
+// debug($this->data['customers']);
         //Breadcrumbs
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
         $this->data['page_title'] = "Customers";

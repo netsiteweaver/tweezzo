@@ -132,6 +132,7 @@ class Customers_model extends CI_Model
         $this->db->set("email",$this->input->post("email"));
         $this->db->set("phone_number1",$_POST['phone_number1']);
         $this->db->set("phone_number2",$_POST['phone_number2']);
+        $this->db->set("active",isset($_POST['active'])?'1':'0');
         // $this->db->set("vat",$_POST['vat']);
         // $this->db->set("brn",$_POST['brn']);
         $this->db->set("remarks",$this->input->post("remarks"));
@@ -175,7 +176,7 @@ class Customers_model extends CI_Model
         }
 
         $this->db->db_debug = $db_debug;
-        // return array("result"=>true,"uuid"=>$_POST['uuid']);
+        return array("result"=>true,"uuid"=>$_POST['uuid']);
     }
 
     private function email($data)
@@ -261,7 +262,7 @@ class Customers_model extends CI_Model
 
     public function lookup()
     {
-        return $this->db->select("customer_id,uuid,company_name,full_name")->from("customers")->order_by('company_name, full_name')->where("status","1")->get()->result();
+        return $this->db->select("customer_id,uuid,company_name,full_name")->from("customers")->order_by('company_name, full_name')->where(["status"=>"1","active"=>"1"])->get()->result();
     }
 
     public function info($uuid)

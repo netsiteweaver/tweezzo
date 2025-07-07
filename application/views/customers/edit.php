@@ -1,4 +1,4 @@
-<form id="save_customers" role="form" action="<?php echo base_url('customers/update/'); ?>" method="post" autocomplete="off">
+<form id="save_customers" class="ignoreValidation" role="form" action="<?php echo base_url('customers/update/'); ?>" method="post" autocomplete="off">
     <input type="hidden" name="uuid" value="<?php echo $this->uri->segment(3);?>">
     <div class="row">
         <div class="col-md-12">
@@ -28,6 +28,11 @@
                             <option value="<?php echo $o['id'];?>" <?php echo (isset($f['value'])) ? (($f['value']==$o['id']) ? 'selected' : '') : '';?>> <?php echo $o['name'];?></option>
                             <?php endforeach;?>
                         </select>
+                    </div>
+                    <?php elseif(strtolower(trim($f['type'])) == 'checkbox'):?>
+                    <div class="form-group">
+                        <label class="<?php echo ($f['required']) ? 'asterisk' :'';?>"><?php echo $f['label'];?></label>
+                        <input type="<?php echo $f['type'];?>" class="form-control <?php echo ($f['required']) ? 'required' :'';?>" name="<?php echo $f['field_name'];?>" id="<?php echo $f['field_name'];?>" value="<?php echo $f['value'];?>" <?php echo ($f['required']) ? 'required' :'';?> <?php echo ($f['value']=='1')?'checked':'';?>>
                     </div>
                     <?php elseif(strtolower(trim($f['type'])) == 'hidden'):?>
                     <input type="hidden" id="<?php echo $f['field_name'];?>" name="<?php echo $f['field_name'];?>" value="<?php echo $f['value'];?>">
