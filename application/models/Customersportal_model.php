@@ -510,7 +510,7 @@ class Customersportal_model extends CI_Model
             'logo'          =>  $this->System_model->getParam("logo"),
         ];
         $content = $this->load->view("_email/header",$emailData, true);
-        $content .= $this->load->view("_email/userAdded",$emailData, true);
+        $content .= $this->load->view("_email/userDeleted",$emailData, true);
         $content .= $this->load->view("_email/footer",[], true);
         $subject = "User Has Been Removed Access";
         $this->Email_model3->save($userToDelete->email,$subject,$content);
