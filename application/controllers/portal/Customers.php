@@ -89,17 +89,16 @@ class Customers extends CI_Controller
         $this->load->model("Customersportal_model");
         $result = $this->Customersportal_model->authenticate($_POST);
 
-        if($result) {
-            $_SESSION['customer_access_id'] = $result->customer_access_id;
-            $_SESSION['customer_email'] = $result->email;
-            $_SESSION['customer_company_name'] = $result->company_name;
-            $_SESSION['customer_name'] = $result->name;
+        if($result['result'] === true) {
+            $_SESSION['customer_access_id'] = $result['user'][0]->customer_access_id;
+            $_SESSION['customer_email'] = $result['user'][0]->email;
+            $_SESSION['customer_company_name'] = $result['user'][0]->company_name;
+            $_SESSION['customer_name'] = $result['user'][0]->name;
+            echo json_encode($result);
+        }else{
+            echo json_encode($result);
         }
 
-        echo json_encode(array(
-            "result"    =>  (!empty($result)) ? true : false,
-            "data"      =>  $result
-        ));
     }
 
     public function projects()

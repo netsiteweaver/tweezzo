@@ -61,6 +61,11 @@
 		      		<div class="form-group">
 		      			<input type="email" name="email" class="form-control rounded-left" placeholder="Email" value="<?php echo $this->input->get("email");?>" autofocus required>
 		      		</div>
+					<!-- <div class="form-group">
+						<select name="" id="" class="form-control">
+							<option value=""></option>
+						</select>
+					</div> -->
 	            <div class="form-group d-flex">
 	              <input type="password" name="password" class="form-control rounded-left" placeholder="Password" required>
 	            </div>
@@ -84,6 +89,31 @@
 			</div>
 		</div>
 	</section>
+
+
+
+	<!-- Modal -->
+	<div class="modal fade" id="customerSelectModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-body">
+					<p>Your email is associated with more than one customer. Please select which customer's account you wish to access:</p>
+					<div class="form-group">
+						<!-- <label for="">Select a Customer</label> -->
+						<select name="" id="selectCustomer" class="form-control"></select>
+							<div class="invalid-feedback">
+								Please select a customer
+							</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-light rounded" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
+					<button type="button" class="btn btn-primary rounded signinForCustomer">Proceed <i class="fa fa-chevron-right"></i></button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 
 	<script>
 		var base_url = "<?= base_url(); ?>";

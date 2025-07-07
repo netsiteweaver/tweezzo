@@ -29,6 +29,7 @@ jQuery(function(){
         $(this).addClass("running");
         let email = $('input[name=email]').val();
         let password = $('input[name=password]').val();
+        let customer_id = $("#customerSelectModal select#selectCustomer").val();
         let remember_me = $('input[name=remember_me]').is(":checked") ? 1 : 0;
 
         if(email == "" || password == "") {
@@ -45,7 +46,7 @@ jQuery(function(){
 
         $.ajax({
             url: base_url + "portal/customers/authenticate",
-            data: {email:email, password:password},
+            data: {email:email, password:password, customer_id:customer_id},
             method: "POST",
             dataType: "JSON",
             success: function(response) {
@@ -57,11 +58,36 @@ jQuery(function(){
                     }
                     window.location.href = base_url + "portal/customers/projects";
                 }else{
-                    $('.login__submit').removeClass("running");
-                    alertify.alert('Authentication failed')
+                    console.log(response.customers);
+                    if( (response.customers=="") && (response.users !== "") ){
+                        $('.login__submit').removeClass("running");
+                        alertify.alert('Authentication failed')
+                    }else{
+                        $('#customerSelectModal select#selectCustomer').empty();
+                        let option = `<option value=''>Select a Customer</option>`;
+                        $('#customerSelectModal select#selectCustomer').append(option)
+                        $(response.customers).each(function(i,j){
+                            let option = `<option value='${j.customer_id}'>${j.company_name}</option>`;
+                            $('#customerSelectModal select#selectCustomer').append(option)
+                        })
+                        $('#customerSelectModal').modal("show");
+                    }
                 }
             }
         })
+    })
+
+    $(".signinForCustomer").on("click", function(){
+        $("#customerSelectModal select#selectCustomer").removeClass("is-invalid")
+        let customer_id = $("#customerSelectModal select#selectCustomer").val();
+
+        if(customer_id=="") {
+            $("#customerSelectModal select#selectCustomer").addClass("is-invalid")
+            return;
+        }
+
+        $('.login__submit').removeClass("running");
+        $(".login__submit").trigger("click");
     })
 
     $('.forgot-password').on('click', function(){

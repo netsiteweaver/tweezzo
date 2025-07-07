@@ -12,9 +12,35 @@ class Customersportal_model extends CI_Model
         $this->db->where("ca.email", trim($user_info['email']));
         $this->db->where("c.status", '1');
         $this->db->where("ca.status", '1');
-        $result = $this->db->get()->row();
-        $this->recordSignIn($result, trim($user_info['email']));
-        return $result;
+        if(!empty($user_info['customer_id'])) {
+            $this->db->where("c.customer_id",$user_info['customer_id']);
+        }
+        $result = $this->db->get()->result();
+        if(count($result) > 1){
+            //authentication successful but email is associated with multiple customers
+            return array(
+                "result"    =>  false,
+                "user"      =>  '',
+                "customers" =>  $result
+            );
+        }elseif(count($result)==1){
+            //authentication successful
+            return array(
+                "result"    =>  true,
+                "user"      =>  $result,
+                "customers" =>  ''
+            );
+            // $this->recordSignIn($result, trim($user_info['email']));
+        }else{
+            //authentication failed
+            return array(
+                "result"    =>  false,
+                "user"      =>  '',
+                "customers" =>  ''
+            );
+        }
+        
+        
     }
 
     private function recordSignIn($customer,$email)
