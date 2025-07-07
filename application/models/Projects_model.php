@@ -63,6 +63,7 @@ class Projects_model extends CI_Model{
         $this->db->set('start_date',(!empty($data['start_date']))?$data['start_date']:null);
         $this->db->set('end_date',(!empty($data['end_date']))?$data['end_date']:null);
         $this->db->set('customer_id',$data['customer_id']);
+        $this->db->set("active",isset($_POST['active'])?'1':'0');
 
         if(empty($data['uuid'])){
             $uuid = gen_uuid();
@@ -171,6 +172,7 @@ class Projects_model extends CI_Model{
         $this->db->from('projects p');
         $this->db->join('customers c','c.customer_id=p.customer_id','left');
         $this->db->where('p.status',1);
+        $this->db->where('p.active',1);
         $this->db->order_by('p.name','asc');
         if(!empty($customer_id)) $this->db->where(array("p.customer_id"=>$customer_id));
         return $this->db->get()->result();

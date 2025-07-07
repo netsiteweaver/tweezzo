@@ -65,6 +65,7 @@ class Sprints_model extends CI_Model{
 
         $this->db->set('name',$data['name']);
         $this->db->set('project_id',$data['project_id']);
+        $this->db->set("active",isset($_POST['active'])?'1':'0');
 
         if(empty($data['uuid'])){
             $uuid = gen_uuid();
@@ -166,7 +167,7 @@ class Sprints_model extends CI_Model{
 
     public function lookup()
     {
-        return $this->db->select("id,name,project_id")->from("sprints")->order_by('name')->where("status","1")->get()->result();
+        return $this->db->select("id,name,project_id")->from("sprints")->order_by('name')->where(["status"=>"1","active"=>"1"])->get()->result();
     }
 
     public function lookup2($project_id)
@@ -176,6 +177,7 @@ class Sprints_model extends CI_Model{
                 ->join("projects p","p.id=s.project_id")
                 ->join("customers c","c.customer_id=p.customer_id")
                 ->where("s.status",1)
+                ->where("s.active",1)
                 ->order_by("c.company_name,p.name,s.name");
         if(!empty($project_id)) $this->db->where("s.project_id",$project_id);
         return $this->db->get()->result();

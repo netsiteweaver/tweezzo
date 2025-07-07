@@ -53,6 +53,7 @@
                             <th>Name <?php echo ( (empty($this->input->get("order_by"))) || ($this->input->get("order_by") == "name") ) ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>Project <?php echo ($this->input->get("order_by") == "project_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>Customer <?php echo ($this->input->get("order_by") == "company_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <th>&nbsp;</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -62,6 +63,7 @@
                             <td><?php echo $task->name;?></td>
                             <td><?php echo $task->project_name;?></td>
                             <td><?php echo "<b>{$task->company_name}</b><br>{$task->full_name}";?></td>
+                            <td class='text-center activeOrNot'><div class="btn btn-block btn-<?php echo ($task->active=='1')?'info':'danger';?>"><i class='fa fa-<?php echo ($task->active=='1')?'check':'times';?>'></i></div></td>
                             <td>
                             <?php if($perms['view']): ?>
                                 <a href="<?php echo base_url('sprints/view/' . $task->uuid."?customer_id=".$this->input->get("customer_id")."&stage=".$this->input->get("stage")); ?>"><div class="btn btn-flat btn-default"><i class='fas fa-eye'></i><span class='ButtonLabel'> View</span></div></a>

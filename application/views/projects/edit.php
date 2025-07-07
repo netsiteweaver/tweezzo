@@ -41,6 +41,10 @@
 							<?php endforeach;?>
 						</select>
 					</div>
+					<div class="form-group">
+						<label for="">Active</label>
+						<input type="checkbox" name="active" value="" <?php echo ($project->active=='1')?'checked':'';?>>
+					</div>
                 </div>
                 <!-- /.card-body -->
 
