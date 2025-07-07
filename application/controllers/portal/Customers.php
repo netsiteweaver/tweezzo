@@ -8,7 +8,7 @@ class Customers extends CI_Controller
     {
         parent::__construct();
 
-        if( ( !in_array( $this->uri->segment(3) , ['signin', 'authenticate', 'forgotPassword','processForgotPassword','addUserAccess']) ) && (!isset($_SESSION['customer_access_id'])) ){
+        if( ( !in_array( $this->uri->segment(3) , ['signin', 'authenticate', 'forgotPassword','processForgotPassword','addUserAccess','removeAccess']) ) && (!isset($_SESSION['customer_access_id'])) ){
             redirect('portal/customers/signin');
         }
 
@@ -366,7 +366,15 @@ class Customers extends CI_Controller
             exit;
         }
 
-        $ct = $this->db->select("count(id) as ct")->from("customer_access")->where("email",$email)->get()->row()->ct;
+        $ct = $this->db->select("count(id) as ct")
+                    ->from("customer_access ca")
+                    ->join("customers c","c.customer_id = ca.customer_id","left")
+                    ->where(array(
+                                "ca.email"      =>  $email,
+                                "c.uuid"        =>  $uuid,
+                                "ca.status"     =>  1
+                            ))
+                    ->get()->row()->ct;
         
         if($ct>0){
             echo json_encode(['result'=>false,'reason'=>"Email already used"]);
@@ -377,6 +385,17 @@ class Customers extends CI_Controller
 
         echo json_encode($result);
 
+        exit;
+    }
+
+    public function removeAccess()
+    {
+        $userId = $this->input->post("user_id");
+        $name = $this->input->post("name");
+        $result = $this->Customersportal_model->removeAccess($userId);
+        echo json_encode(array(
+            "result"    =>  $result
+        ));
         exit;
     }
     

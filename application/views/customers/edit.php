@@ -86,16 +86,16 @@
                             </td>
                         </tr>
                         <?php foreach($customer->access as $user):?>
-                        <tr>
-                            <td><input type="text" class="form-control" placeholder="Enter Name" value="<?php echo $user->name;?>" readonly></td>
-                            <td><input type="text" class="form-control" placeholder="Enter Phone" value="<?php echo $user->phone_number1;?>" readonly></td>
-                            <td><input type="text" class="form-control" placeholder="Enter Email" value="<?php echo $user->email;?>" readonly></td>
+                        <tr data-id="<?php echo $user->id;?>">
+                            <td><input type="text" class="form-control userName" placeholder="Enter Name" value="<?php echo $user->name;?>" readonly></td>
+                            <td><input type="text" class="form-control userPhone" placeholder="Enter Phone" value="<?php echo $user->phone_number1;?>" readonly></td>
+                            <td><input type="text" class="form-control userEmail" placeholder="Enter Email" value="<?php echo $user->email;?>" readonly></td>
                             <td>
                                 <i class="flag flag-<?php echo $user->country_code;?>"></i>
                                 <input type="text" class="form-control d-none" placeholder="mu?">
                             </td>
                             <td>
-                                <div class="btn btn-danger"><i class="fa fa-trash"></i></div>
+                                <div class="btn btn-danger deleteUser"><i class="fa fa-trash"></i></div>
                             </td>
                         </tr>
                         <?php endforeach;?>

@@ -11,6 +11,7 @@ class Customersportal_model extends CI_Model
         $this->db->where("ca.password", md5($user_info['password']), true );
         $this->db->where("ca.email", trim($user_info['email']));
         $this->db->where("c.status", '1');
+        $this->db->where("ca.status", '1');
         $result = $this->db->get()->row();
         $this->recordSignIn($result, trim($user_info['email']));
         return $result;
@@ -461,7 +462,7 @@ class Customersportal_model extends CI_Model
         $author = $this->db->select("name,email")->from("users")->where("id",$_SESSION['user_id'])->get()->row();
         $customer = $this->db->select("customer_id, email, full_name, company_name")->from("customers")->where("uuid",$uuid)->get()->row();
 
-        $existing_users = $this->db->select("count(id) as ct")->from("customer_access")->where("customer_id",$customer->customer_id)->get()->row()->ct;
+        $existing_users = $this->db->select("count(id) as ct")->from("customer_access")->where(array("customer_id"=>$customer->customer_id,"status"=>"1"))->get()->row()->ct;
 
         if($existing_users >= 5){
             return [
@@ -480,17 +481,48 @@ class Customersportal_model extends CI_Model
         $this->db->set("created_by_type","customer");
         $this->db->set("admin","0");
         $this->db->insert("customer_access");
+        $newUserId = $this->db->insert_id();
 
         $this->emailForUserCreated($author,$name,$email,$password,$customer);
 
-        //return existing customer access for customer
-        $users = $this->db->query("SELECT *
-                        FROM customer_access
-                        WHERE customer_id = $customer->customer_id")->result();
         return [
             'result'    =>  true,
-            'users'     =>  $users
+            "user_id"   =>  $newUserId
         ];
+    }
+
+    public function removeAccess($userId)
+    {
+        $userToDelete = $this->db->select("name,email")->from("customer_access")->where("id",$userId)->get()->row();
+        if(empty($userToDelete)){
+            return false;
+        }
+        // $this->db->where("id",$userId)->delete("customer_access");
+        $this->db->set("status","0")->where("id",$userId)->update("customer_access");
+
+        $this->load->model("Email_model3");
+        $this->load->model("System_model");
+
+        $emailData = [
+            'author'        =>  $this->db->select("name,email")->from("users")->where("id",$_SESSION['user_id'])->get()->row(),
+            'user_created'  =>  ["name"=>$userToDelete->name,"email"=>$userToDelete->email],
+            'user'          =>  $userToDelete,
+            'logo'          =>  $this->System_model->getParam("logo"),
+        ];
+        $content = $this->load->view("_email/header",$emailData, true);
+        $content .= $this->load->view("_email/userAdded",$emailData, true);
+        $content .= $this->load->view("_email/footer",[], true);
+        $subject = "User Has Been Removed Access";
+        $this->Email_model3->save($userToDelete->email,$subject,$content);
+
+        // notify admins for task created
+        $members = $this->System_model->getParam("notification_create_users",true);
+        foreach($members as $m){
+            $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
+            $this->Email_model3->save($user->email,$subject,$content);
+        }
+
+        return true;
     }
 
     private function emailForUserCreated($author,$name,$email,$password,$customer)

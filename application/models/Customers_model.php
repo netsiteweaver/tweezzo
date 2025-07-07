@@ -40,7 +40,7 @@ class Customers_model extends CI_Model
             $query = $this->db->get();
             $customer = $query->row();
             if(empty($customer)) return false;
-            $customer->access = $this->db->select("*")->from("customer_access")->where("customer_id",$customer->customer_id)->get()->result();
+            $customer->access = $this->db->select("*")->from("customer_access")->where(array("customer_id"=>$customer->customer_id,"status"=>"1"))->get()->result();
             return $customer;
         }
 

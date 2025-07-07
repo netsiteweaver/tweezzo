@@ -151,9 +151,10 @@ jQuery(function(){
                 if(response.result == false){
                     alertify.alert(response.reason);
                 }else{
-                    $("#addUserAccessModal input, #addUserAccessModal select, #addUserAccessModal textarea").val("")
+                    $("#addUserAccessModal input, #addUserAccessModal textarea").val("");
+                    $("#addUserAccessModal select").val("mu");
                     $('#addUserAccessModal').modal("hide");
-                    let row = `<tr>
+                    let row = `<tr data-id="${response.user_id}">
                             <td><input type="text" class="form-control" placeholder="Enter Name" value="${name}" readonly=""></td>
                             <td><input type="text" class="form-control" placeholder="Enter Phone" value="${phone}" readonly=""></td>
                             <td><input type="text" class="form-control" placeholder="Enter Email" value="${email}" readonly=""></td>
@@ -162,13 +163,54 @@ jQuery(function(){
                                 <input type="text" class="form-control d-none" placeholder="${country_code}?">
                             </td>
                             <td>
-                                <div class="btn btn-danger"><i class="fa fa-trash"></i></div>
+                                <div class="btn btn-danger deleteUser"><i class="fa fa-trash"></i></div>
                             </td>
                         </tr>`;
                     $("#existing_users tbody").append(row);
                 }
             }
         })
+
+    })
+
+    $('#existing_users').on("click",".deleteUser",function(){
+        let row = $(this);
+        let id = $(this).closest("tr").data("id");
+        let name = $(this).closest("tr").find(".userName").val();
+        bootbox.confirm({
+	        message: `Are you sure you want to remove access to user <b>${name}</b>?`,
+	        buttons: {
+	            confirm: {
+	                label: 'Remove Access',
+	                className: 'btn-danger'
+	            },
+	            cancel: {
+	                label: 'Cancel',
+	                className: 'btn-primary'
+	            }
+	        },
+	        callback: function (result) {
+	        	if(result==true){
+                    $.ajax({
+                        url: base_url + "portal/customers/removeAccess",
+                        data: {user_id:id,name:name},
+                        method:"POST",
+                        dataType:"JSON",
+                        success:function(response){
+                            if(response.result){
+                                $(row).closest("tr").remove();
+                            }else{
+                                bootbox.alert({
+                                    title: "Error",
+                                    message: "Failed to remove selected user"
+                                })
+                            }
+                        }
+                    })	        	
+                }
+	            
+	        }
+	    });	
 
     })
 })
