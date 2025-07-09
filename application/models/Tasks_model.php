@@ -377,7 +377,7 @@ class Tasks_model extends CI_Model{
 
     public function notifyUsers($taskDetails, $data, $author, $public='public')
     {
-        $query = "SELECT t.*, s.name sprint_name, p.name project_name, c.email customer_email, c.company_name customer, u.email developer_email, u.name developer_name
+        $query = "SELECT t.*, s.name sprint_name, p.name project_name, c.email customer_email, c.company_name customer, u.email developer_email, u.name developer_name, c.customer_id
                     FROM tasks t 
                     Left join sprints s on s.id = t.sprint_id 
                     left join projects p on p.id = s.project_id 
@@ -388,6 +388,10 @@ class Tasks_model extends CI_Model{
                     and t.closed = 0
                     and t.uuid = '{$taskDetails->uuid}'";
         $result = $this->db->query($query)->result();
+
+        if(!empty($result)){
+            $result[0]->customer_access = $this->db->select("id,name,email,admin, country_code")->from("customer_access")->where(array("status"=>"1","customer_id"=>$result[0]->customer_id))->get()->result();
+        }
 
         $this->load->model("Email_model3");
         $this->load->model("system_model");
@@ -409,9 +413,12 @@ class Tasks_model extends CI_Model{
             $content = $this->load->view("_email/header",$emailData, true);
             $content .= $this->load->view("_email/noteHasBeenAdded",$emailData, true);
             $content .= $this->load->view("_email/footer",[], true);
-            $check = $this->Email_model3->save($result[0]->customer_email,$subject,$content);
-            if($check == '401'){
-                return array('result'=>false,'reason'=>'Mail Server: Not Authorised');
+            foreach($result[0]->customer_access as $user){
+                $check = $this->Email_model3->save($user->email,$subject,$content);
+                if($check == '401'){
+                    return array('result'=>false,'reason'=>'Mail Server: Not Authorised');
+                    exit;
+                }
             }
         }
 
