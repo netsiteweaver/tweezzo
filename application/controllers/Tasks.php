@@ -97,11 +97,12 @@ class Tasks extends MY_Controller {
     {
         //Access Control
         if(!isAuthorised(get_class(),"add")) return false;
+        $rawData = file_get_contents('php://input');
+        $data = json_decode($rawData, true); // true = associative array
+        // debug($data);
+        $this->Tasks_model->process_import($data);
 
-        $sprint_id = $this->input->post('sprint_id');
-        $this->data['headers'] = $this->Tasks_model->process_import($sprint_id);
-
-        redirect(base_url("tasks/listing?customer_id=".$this->input->post("customer_id")."&project_id=".$this->input->post("project_id")."&sprint_id=".$this->input->post("sprint_id")));
+        // redirect(base_url("tasks/listing?customer_id=".$this->input->post("customer_id")."&project_id=".$this->input->post("project_id")."&sprint_id=".$this->input->post("sprint_id")));
     }
 
     public function edit()

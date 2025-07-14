@@ -562,12 +562,7 @@ class Tasks_model extends CI_Model{
     {
         $this->load->model("files_model");
         $data = $this->files_model->uploadCSV("file");
-        // return $data;
-    //     $this->parseUploadedFile($data);
-    // }
 
-    // public function parseUploadedFile()
-    // {
         $handle = fopen($data['full_path'], "r");
         $header = fgetcsv($handle);
         $output = [];
@@ -577,22 +572,16 @@ class Tasks_model extends CI_Model{
         return $output;
     }
 
-    public function process_import($sprint_id)
+    public function process_import($data)
     {
-        $this->load->model("files_model");
-        $data = $this->files_model->uploadCSV("file");
-        if(!is_array($data)){
-            return $data;
-        }
-        $handle = fopen($data['full_path'], "r");
-        //get header
-        $header = fgetcsv($handle);
-
+        $sprint = $data['sprintId'];
+        
         //get task number
         $task_count = $this->db->select("MAX(task_number) as n")
                 ->from("sprints s")
                 ->join("tasks t","t.sprint_id = s.id","left")
-                ->where("s.id",$sprint_id)
+                ->where("s.id",$data['sprintId'])
+                ->where("s.status","1")
                 ->get()
                 ->row()
                 ->n;
@@ -604,44 +593,27 @@ class Tasks_model extends CI_Model{
             $task_count = 0; 
         }
 
-        /**
-         * column 1 : task name
-         * column 2 : task description
-         * column 3 : stage
-         * column 4 : section
-         */
-        while (($row = fgetcsv($handle)) !== FALSE) {
-            if( ($row[2]=='DONE') || ($row[2]=='completed') ){
-                $stage = 'completed';
-            }elseif( ($row[2]=='IN PROGRESS') || ($row[2]=='in_progress') ){
-                $stage = 'in_progress';
-            }elseif($row[2]=='STAGING'){
-                $stage = 'staging';
-            }elseif($row[2]=='VALIDATED'){
-                $stage = 'validated';
-            }elseif( ($row[2]=='TO DO') || ($row[2]=='new') ){
-                $stage = 'new';
-            }else{
-                $stage = 'new';
-            }
-            $maxTN = $this->db->query("SELECT MAX(task_number) as tn FROM tasks WHERE sprint_id = '$sprint_id' AND status = 1 AND closed = 0")->row()->tn;
-            $taskNumber = incrementTaskNumber($maxTN);
+        foreach($data['tasks'] as $task){
+            $taskNumber = incrementTaskNumber($task_count);
             $data = array(
                 'uuid'          =>  gen_uuid(), 
-                'name'          =>  $row[0],
-                'description'   =>  $row[1],
-                // 'task_number'   =>  str_pad(++$task_count, 3, '0', STR_PAD_LEFT),
+                'name'          =>  $task['task_name'],
+                'description'   =>  $task['description'],
                 'task_number'   =>  $taskNumber,
-                'sprint_id'     =>  $sprint_id,
+                'sprint_id'     =>  $sprint,
                 'progress'      =>  0,
-                'section'       =>  $row[3],
-                'stage'         =>  $stage,
+                'section'       =>  $task['section'],
+                'scope_client_expectation'       =>  $task['expected'],
+                'scope_not_included'       =>  $task['excluded'],
+                'scope_when_done'       =>  $task['completed'],
+                'stage'         =>  'new',
                 'created_by'    =>  $_SESSION['user_id'],
                 'created_on'    =>  date('Y-m-d H:i:s')
             );
             $this->db->insert('tasks',$data);
+            $task_count++;
         }
-        fclose($handle);
+
     }
 
     public function getGeneralProgress()

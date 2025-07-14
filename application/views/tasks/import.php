@@ -9,7 +9,7 @@
             
                 <div class="card-body">
 					<div class="form-group">
-						<label for=""> Select Customer</label>
+						<label for=""> Select Customer (<?php echo count($customers);?>)</label>
 						<select class="form-control required" name="customer_id" required>
 							<option value="">Select</option>
 							<?php foreach($customers as $c):?>
@@ -17,24 +17,26 @@
 							<?php endforeach;?>
 						</select>
 					</div>
-					<div class="form-group">
-						<label for=""> Select Project</label>
+					<div class="form-group d-none">
+						<label for=""> Select Project (<span></span>)</label>
 						<select class="form-control required" name="project_id" required>
 							<option data-customer-id="" value="">Select</option>
 							<?php foreach($projects as $c):?>
-							<option data-customer-id="<?php echo $c->customer_id;?>" value="<?php echo $c->id;?>" disabled><?php echo $c->name;?></option>
+							<option data-customer-id="<?php echo $c->customer_id;?>" value="<?php echo $c->id;?>" hidden><?php echo $c->name;?></option>
 							<?php endforeach;?>
 						</select>
 					</div>
-					<div class="form-group">
-						<label for=""> Select Sprint</label>
+					<div class="form-group d-none">
+						<label for=""> Select Sprint (<span></span>)</label>
 						<select class="form-control required" name="sprint_id" required>
 							<option data-project-id="" value="">Select</option>
 							<?php foreach($sprints as $c):?>
-							<option data-project-id="<?php echo $c->project_id;?>" value="<?php echo $c->id;?>" disabled><?php echo $c->name;?></option>
+							<option data-project-id="<?php echo $c->project_id;?>" value="<?php echo $c->id;?>" hidden><?php echo $c->name;?></option>
 							<?php endforeach;?>
 						</select>
 					</div>
+
+					<hr>
 
 					<p>The format required is a simple and lightweight csv file (explanation below) with six columns as follows:</p>
 					<ul class="list-group mb-3">
@@ -55,7 +57,7 @@
 					<p class='text-center'><a target="_blank" href="https://en.wikipedia.org/wiki/Scrum_(software_development)#Sprint"><img src="assets/images/wikipedia.png" alt=""></a></p>
 					<hr>
 
-					<div class="form-group">
+					<div id="uploadBlock" class="form-group d-none">
 						<label for="">Select File</label>
 						<form id="uploadForm" action="tasks/upload_file" method="post" enctype="multipart/form-data">
 							<input type="file" class="form-control required" name="file" id="fileInput" accept=".csv" required>
@@ -138,6 +140,7 @@
 							<th>What is Expected</th>
 							<th>What is Excluded</th>
 							<th>When is Completed</th>
+							<th></th>
 						</tr>
 					</thead>
 					<tbody></tbody>
@@ -152,7 +155,7 @@
                 <button type="button" class="btn bg-navy" data-dismiss="modal">
                     <div class="fa fa-times"></div> Cancel
                 </button>
-				<div class="btn btn-info"><i class="fa fa-save"></i> Proceed</div>
+				<div class="btn btn-info" id="uploadAndImport"><i class="fa fa-save"></i> Proceed</div>
             </div>
         </div>
     </div>
