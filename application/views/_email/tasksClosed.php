@@ -1,5 +1,5 @@
 <div style='width:100%; text-align: center;'>
-    <h4>The following tasks hasve been closed:</h4>
+    <h4>The following tasks have been closed:</h4>
 </div>
 <div style="margin:0px auto;max-width:800px;">
     <table align="center" border="1" cellpadding="10" cellspacing="0" role="presentation" style="width:100%;">
