@@ -131,6 +131,61 @@ jQuery(function(){
         )
     })
 
+    $('.close-task').on("click", function() {
+        let row = $(this);
+        let stage = $(this).closest("tr").find(".stage").text().trim().toLocaleLowerCase();
+        let id = $(this).closest("tr").data("id");
+
+        let taskIds = [];
+        taskIds.push(id);
+
+        console.log(stage)
+        let check = ['staging','completed'].indexOf(stage);
+        if(check >= 0){
+            alertify.confirm(
+                "Confirmation",
+                "Are you sure you want to mark this task as closed?",
+                function(){
+                    Overlay("on")
+                    $.ajax({
+                        url: base_url + "tasks/closeMultiple",
+                        method: "POST",
+                        dataType: "JSON",
+                        data: {taskIds:taskIds},
+                        success: function(response)
+                        {
+                            if(response.result){
+                                 $(row).closest("tr").remove();
+                                  Overlay("off")
+                                // window.location.reload();
+                            }else{
+                                Overlay("off")
+                                alertify.alert('Error',response.reason)
+                            }
+                        }
+                    })
+                   
+                },
+                function(){
+                    
+                }
+            )
+        }else{
+            alertify.alert(
+                "Cannot Close",
+                `Task is currently at <b>${stage.toUpperCase()}</b> stage and cannot be close yet`
+            )
+        }
+        console.log(stage.indexOf(['staging','completed']))
+
+        // let selected = $('#task-list tbody tr td input.select_task:checked').length
+        // if(selected>0){
+        //     $('#withSelectedBtn').removeClass("disabled");
+        // }else{
+        //     $('#withSelectedBtn').addClass("disabled");
+        // }
+    })
+
     $('.select_task').on("click", function() {
         let selected = $('#task-list tbody tr td input.select_task:checked').length
         if(selected>0){

@@ -341,7 +341,7 @@ $cleanQuery = http_build_query($queryArray);
                                     href='tasks/listing?customer_id=<?php echo $task->customer_id;?>'><?php echo "{$task->company_name}"; ?></a>
                             </td>
                             <?php endif;?>
-                            <td class='text-center'>
+                            <td class='stage text-center'>
                                 <div class="stage-button stage-button-<?php echo $task->stage;?>">
                                     <?php echo ucwords(str_replace("_"," ",$task->stage)); ?>
                                 </div>
@@ -375,6 +375,7 @@ $cleanQuery = http_build_query($queryArray);
                                 </a>
                                 <?php endif; ?>
                                 <?php if($perms['delete']): ?>
+                                <button class="btn btn-danger close-task">&#10006</button>
                                 <button data-url="<?php echo base_url("tasks/delete"); ?>"
                                     data-uuid="<?php echo $task->uuid;?>" class="deleteAjax btn btn-flat btn-danger"><i
                                         class='fa fa-trash'></i><span class='ButtonLabel'></span></button>
