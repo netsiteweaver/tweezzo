@@ -94,27 +94,8 @@ class Developers extends CI_Controller
     public function timer_stop()
     {
         $task_id = $this->input->post("task_id");
-        // $actionType = $this->input->post("actionType");
-        //first check if there is any task's timer running
-        // $check = $this->db->query("SELECT 
-        //                         ts.start_time
-        //                         , ts.finish_time
-        //                         , ts.notes
-        //                         , t.name task_name
-        //                     FROM timesheet ts
-        //                     JOIN tasks t ON t.id = ts.task_id
-        //                     WHERE ts.developer_id = {$_SESSION['developer_id']}
-        //                     AND ts.task_id <> $task_id
-        //                     AND ts.finish_time IS NULL
-        //                     ")->result();
-        // if(!empty($check)) {
-        //     echo json_encode(array(
-        //         "result"    =>  false,
-        //         "reason"    =>  "Another task's timer is running for you: <br><strong>{$check[0]->task_name}</strong><br>Please stop the timer and retry."
-        //     ));
-        //     exit;
-        // }
 
+        $this->db->query("SET time_zone = '+04:00'");
         $this->db->query("UPDATE timesheet
                             SET finish_time = NOW()
                             WHERE task_id = '{$task_id}' AND finish_time IS NULL");  
@@ -159,30 +140,8 @@ class Developers extends CI_Controller
     {
         $task_id = $this->input->post("task_id");
         $notes = $this->input->post("notes");
-        //first check if there is any task's timer running
-        // $check = $this->db->query("SELECT 
-        //                         ts.start_time
-        //                         , ts.finish_time
-        //                         , ts.notes
-        //                         , t.name task_name
-        //                     FROM timesheet ts
-        //                     JOIN tasks t ON t.id = ts.task_id
-        //                     WHERE ts.developer_id = {$_SESSION['developer_id']}
-        //                     AND ts.task_id <> $task_id
-        //                     AND ts.finish_time IS NULL
-        //                     ")->result();
-        // if(!empty($check)) {
-        //     echo json_encode(array(
-        //         "result"    =>  false,
-        //         "reason"    =>  "Another task's timer is running for you: <br><strong>{$check[0]->task_name}</strong><br>Please stop the timer and retry."
-        //     ));
-        //     exit;
-        // }else{
-        //     echo json_encode(array(
-        //         "result"    =>  true
-        //     ));
-        // }
 
+        $this->db->query("SET time_zone = '+04:00'");
         $this->db->query("INSERT INTO timesheet (task_id, developer_id, start_time, finish_time, notes, status) VALUES (
                              $task_id, {$_SESSION['developer_id']}, NOW(), NULL, '$notes', '1')");
         echo json_encode(array(
