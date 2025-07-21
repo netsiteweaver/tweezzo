@@ -11,7 +11,7 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link <?php echo (!in_array($this->uri->segment(3),['myCustomers','myProjects','mySprints','notes']))?'active':'';?>" href="portal/developers/tasks"><div class="bg-icon bg-clipboard"></div>Tasks</a>
+                    <a class="nav-link <?php echo (!in_array($this->uri->segment(3),['myCustomers','myProjects','mySprints','notes','timesheets']))?'active':'';?>" href="portal/developers/tasks"><div class="bg-icon bg-clipboard"></div>Tasks</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link <?php echo ($this->uri->segment(3)=='myCustomers')?'active':'';?>" href="portal/developers/myCustomers">
@@ -34,7 +34,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?php echo ($this->uri->segment(3)=='notes')?'active':'';?>" href="portal/developers/timesheets">
+                    <a class="nav-link <?php echo ($this->uri->segment(3)=='timesheets')?'active':'';?>" href="portal/developers/timesheets">
                         <div class="bg-icon bg-chat"></div>Timesheets
                     </a>
                 </li>

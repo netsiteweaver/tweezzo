@@ -388,11 +388,11 @@ jQuery(function(){
                 if(!response.result){
                     alertify.alert("Error",response.reason);
                 }else{
-                    if(response.affected_rows == 1){
-                        $("#task_list tr.selected").find('.bi-stop-circle-fill').addClass("d-none");
-                        $("#task_list tr.selected").find('.bi-play-circle-fill').removeClass("d-none");
-                    }
+                    // $("#task_list tr.selected").find('.bi-stop-circle-fill').addClass("d-none");
+                    // $("#task_list tr.selected").find('.bi-play-circle-fill').removeClass("d-none");
                 }
+                $("#task_list tr.selected").find('.bi-stop-circle-fill').addClass("d-none");
+                $("#task_list tr.selected").find('.bi-play-circle-fill').removeClass("d-none");
                 $('#task_list tr.selected').removeClass("selected");
             }
         })

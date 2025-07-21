@@ -91,37 +91,11 @@ class Developers extends CI_Controller
 
     }
 
-    public function timer_stop()
-    {
-        $task_id = $this->input->post("task_id");
-
-        $this->db->query("SET time_zone = '+04:00'");
-        $this->db->query("UPDATE timesheet
-                            SET finish_time = NOW()
-                            WHERE task_id = '{$task_id}' AND finish_time IS NULL");  
-        echo json_encode(array(
-                "result"    =>  true,
-                "affected_rows"    =>  $this->db->affected_rows()
-        ));
-        exit;
-
-    }
-
     public function timer_start()
     {
-        $task_id = $this->input->post("task_id");
-        //first check if there is any task's timer running
-        $check = $this->db->query("SELECT 
-                                ts.start_time
-                                , ts.finish_time
-                                , ts.notes
-                                , t.name task_name
-                            FROM timesheet ts
-                            JOIN tasks t ON t.id = ts.task_id
-                            WHERE ts.developer_id = {$_SESSION['developer_id']}
-                            AND ts.task_id <> $task_id
-                            AND ts.finish_time IS NULL
-                            ")->result();
+        $this->load->model("timesheets_model");
+        $check = $this->timesheets_model->checkRunningTask();
+
         if(!empty($check)) {
             echo json_encode(array(
                 "result"    =>  false,
@@ -133,20 +107,28 @@ class Developers extends CI_Controller
                 "result"    =>  true
             ));
         }
-
     }
 
     public function timer_insert()
     {
-        $task_id = $this->input->post("task_id");
-        $notes = $this->input->post("notes");
+        $this->load->model("timesheets_model");
+        $this->timesheets_model->startTimer();
 
-        $this->db->query("SET time_zone = '+04:00'");
-        $this->db->query("INSERT INTO timesheet (task_id, developer_id, start_time, finish_time, notes, status) VALUES (
-                             $task_id, {$_SESSION['developer_id']}, NOW(), NULL, '$notes', '1')");
         echo json_encode(array(
             "result"    =>  true
         ));
+    }
+
+    public function timer_stop()
+    {
+        $this->load->model("timesheets_model");
+        $check = $this->timesheets_model->stopTimer();
+        echo json_encode($check);
+        exit;
+        // echo json_encode(array(
+        //         "result"            => true
+        // ));
+        // exit;
 
     }
 
@@ -335,5 +317,16 @@ class Developers extends CI_Controller
         }
         redirect(base_url("portal/developers/view?task_uuid=".$uuid));
 
+    }
+
+    public function timesheets()
+    {
+        $this->data['page_title'] = "Timesheets";
+
+        $this->load->model("Timesheets_model");
+        $this->data['rows'] = $this->Timesheets_model->getTaskByDeveloperId($_SESSION['developer_id']);
+
+        $this->data['content'][] = $this->load->view("/portal/developers/timesheets",$this->data,true);
+        $this->load->view("/portal/developers/shared/layout",$this->data);
     }
 }

@@ -13,6 +13,7 @@ class Developersportal_model extends CI_Model{
                         *,
                         ROW_NUMBER() OVER (PARTITION BY task_id ORDER BY start_time DESC) AS rn
                     FROM timesheet
+                    WHERE status = 1
                 ) ";
         $query .= "SELECT t.id
                     , t.uuid
