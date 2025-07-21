@@ -555,10 +555,6 @@ class Customersportal_model extends CI_Model
     {
         $this->load->model("Email_model3");
         $this->load->model("System_model");
-        // $submitted_task = $this->db->query("SELECT st.*, ca.name customerName, ca.email customerEmail
-        //                     FROM submitted_tasks st
-        //                     JOIN customer_access ca on ca.customer_id = st.created_by_customer
-        //                     WHERE st.id = $task_id")->row();
         $emailData = [
             'author'        =>  $author,
             'user_created'  =>  ["name"=>$name,"email"=>$email,"password"=>$password],
@@ -573,13 +569,6 @@ class Customersportal_model extends CI_Model
         $subject = "User Has Been Granted Access";
         $this->Email_model3->save($email,$subject,$content);
 
-        // notify admins for task created
-        $members = $this->System_model->getParam("notification_create_users",true);
-        foreach($members as $m){
-            $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
-            $this->Email_model3->save($user->email,$subject,$content);
-        }
-
         //send customer introduction email
         $emailData = [
             'email'        =>  $email,
@@ -592,7 +581,15 @@ class Customersportal_model extends CI_Model
         $content = $this->load->view("_email/header",$emailData, true);
         $content .= $this->load->view("_email/welcomeTaskManager",$emailData, true);
         $content .= $this->load->view("_email/footer",[], true);
-        $this->Email_model3->save($this->input->post('email'),"Experience our newly developed Task Manager",$content);
+        $this->Email_model3->save($email,"Experience our newly developed Task Manager",$content);
+
+        // notify admins for task created
+        $members = $this->System_model->getParam("notification_create_users",true);
+        foreach($members as $m){
+            $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
+            $this->Email_model3->save($user->email,$subject,$content);
+        }
+        
     }
 
     private function emailForTaskValidationOrRejection($task_id,$validationOrRejection="validated")
