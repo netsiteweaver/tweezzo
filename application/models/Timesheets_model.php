@@ -58,7 +58,7 @@ class Timesheets_model extends CI_Model
         );
     }
 
-    public function getTaskByDeveloperId($developerId)
+    public function getTaskByDeveloperId($developerId, $customerId="", $projectId="", $sprintId="")
     {
         $query = "SELECT
                         t2.uuid taskUuid, t2.name taskName, t2.task_number taskNumber, t2.section taskSection,
@@ -82,6 +82,9 @@ class Timesheets_model extends CI_Model
                     AND p.active = 1 
                     AND c.active = 1
                     AND t.developer_id  = $developerId";
+        if(!empty($customerId)) $query .= " AND c.customer_id = '{$customerId}'";
+        if(!empty($projectId)) $query .= " AND p.id = '{$projectId}'";
+        if(!empty($sprintId)) $query .= " AND s.id = '{$sprintId}'";
         $result = $this->db->query($query)->result();
         return $result;
     }

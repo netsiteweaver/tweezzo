@@ -1,9 +1,42 @@
+<form action="">
+    <div class="row">
+        <div class="col-md-2">
+            <select name="customer_id" id="" class="form-select">
+                <option value="">Select Customer</option>
+                <?php foreach($myCustomers as $c):?>
+                <option value="<?php echo $c->customer_id;?>" <?php echo $c->customer_id == $this->input->get("customer_id") ? "selected" : "";?>><?php echo $c->company_name;?></option>
+                <?php endforeach;?>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="project_id" id="" class="form-select">
+                <option value="">Select Project</option>
+                <?php foreach($myProjects as $c):?>
+                <option value="<?php echo $c->id;?>" <?php echo $c->id == $this->input->get("project_id") ? "selected" : "";?>><?php echo "{$c->name} [{$c->company_name}]";?></option>
+                <?php endforeach;?>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="sprint_id" id="" class="form-select">
+                <option value="">Select Sprint</option>
+                <?php foreach($mySprints as $c):?>
+                <option value="<?php echo $c->id;?>" <?php echo $c->id == $this->input->get("sprint_id") ? "selected" : "";?>><?php echo "{$c->name} [{$c->project_name} &#x2016 {$c->company_name}]";?></option>
+                <?php endforeach;?>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-success"><i class="fa fa-check"></i> Apply</button>
+        </div>
+    </div>
+</form>
         <div class="mt-4 row table-responsive">
             <div class="col-md-12">
                 <table id='my-timesheet' class="table table-bordered table-hover">
                     <thead>
                         <tr class='text-center'>
+                            <th>#</th>
                             <th>TASK</th>
+                            <th>SECTION</th>
                             <th>SPRINT</th>
                             <th>PROJECT</th>
                             <th>CUSTOMER</th>
@@ -11,12 +44,17 @@
                             <th>FINISH</th>
                             <th>DURATION</th>
                         </tr>
+                        <tr>
+                            
+                        </tr>
                     </thead>
                     <tbody>
                         <?php $totalSeconds = 0;?>
                         <?php foreach($rows as $row):?>
                         <tr class="text-center" data-id="<?php echo $row->id;?>" data-task-uuid = "<?php echo $row->taskUuid;?>">
-                            <td class='text-start'><?php echo "{$row->taskNumber} &#x2016; {$row->taskName} &#x2016; {$row->taskSection}";?></td>
+                            <td class='text-start'><?php echo "{$row->taskNumber}";?></td>
+                            <td class='text-start'><?php echo "{$row->taskName}";?></td>
+                            <td class='text-start'><?php echo "{$row->taskSection}";?></td>
                             <td class=''><?php echo "{$row->sprintName}";?></td>
                             <td class=''><?php echo "{$row->projectName}";?></td>
                             <td class=''><?php echo "{$row->customerName}";?></td>
@@ -56,7 +94,7 @@
                         $totalMinutes = floor( ($totalSeconds % 3600) / 60);
                         ?>
                         <tr>
-                            <th colspan='6'>TOTAL TIME IN HOURS</th>
+                            <th colspan='8'>TOTAL TIME IN HOURS</th>
                             <th class="text-center"><?php printf('%02d:%02d', $totalHours, $totalMinutes); ?></th>
                         </tr>
                     </tfoot>

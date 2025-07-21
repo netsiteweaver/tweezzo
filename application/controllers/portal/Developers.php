@@ -125,11 +125,6 @@ class Developers extends CI_Controller
         $check = $this->timesheets_model->stopTimer();
         echo json_encode($check);
         exit;
-        // echo json_encode(array(
-        //         "result"            => true
-        // ));
-        // exit;
-
     }
 
     public function view()
@@ -324,7 +319,12 @@ class Developers extends CI_Controller
         $this->data['page_title'] = "Timesheets";
 
         $this->load->model("Timesheets_model");
-        $this->data['rows'] = $this->Timesheets_model->getTaskByDeveloperId($_SESSION['developer_id']);
+
+        $this->data['myCustomers'] = $this->Developersportal_model->getMyCustomers($_SESSION['developer_id'],);
+        $this->data['myProjects'] = $this->Developersportal_model->getMyProjects($_SESSION['developer_id']);
+        $this->data['mySprints'] = $this->Developersportal_model->getMySprints($_SESSION['developer_id']);
+
+        $this->data['rows'] = $this->Timesheets_model->getTaskByDeveloperId($_SESSION['developer_id'], $this->input->get("customer_id"), $this->input->get("project_id"), $this->input->get("sprint_id"));
 
         $this->data['content'][] = $this->load->view("/portal/developers/timesheets",$this->data,true);
         $this->load->view("/portal/developers/shared/layout",$this->data);
