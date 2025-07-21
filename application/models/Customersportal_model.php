@@ -533,7 +533,7 @@ class Customersportal_model extends CI_Model
             'author'        =>  $this->db->select("name,email")->from("users")->where("id",$_SESSION['user_id'])->get()->row(),
             'user_created'  =>  ["name"=>$userToDelete->name,"email"=>$userToDelete->email],
             'user'          =>  $userToDelete,
-            'logo'          =>  $this->System_model->getParam("logo"),
+            'logo'          =>  $this->System_model->getParam("logo")
         ];
         $content = $this->load->view("_email/header",$emailData, true);
         $content .= $this->load->view("_email/userDeleted",$emailData, true);
@@ -564,7 +564,7 @@ class Customersportal_model extends CI_Model
             'user_created'  =>  ["name"=>$name,"email"=>$email,"password"=>$password],
             'customer'      =>  $customer,
             'logo'          =>  $this->System_model->getParam("logo"),
-            'link'          =>  base_url('users/signin'),
+            'link'          =>  base_url('portal/customers/'),
             'link_label'    =>  'Sign In'
         ];
         $content = $this->load->view("_email/header",$emailData, true);
@@ -579,6 +579,20 @@ class Customersportal_model extends CI_Model
             $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
             $this->Email_model3->save($user->email,$subject,$content);
         }
+
+        //send customer introduction email
+        $emailData = [
+            'email'        =>  $email,
+            // 'password'     =>  $data['password'],
+            'title'         =>  'New Customer Created',
+            'logo'          =>  $this->system_model->getParam("logo"),
+            'link'          =>  '',
+            'link_label'    =>  ''
+        ];
+        $content = $this->load->view("_email/header",$emailData, true);
+        $content .= $this->load->view("_email/welcomeTaskManager",$emailData, true);
+        $content .= $this->load->view("_email/footer",[], true);
+        $this->Email_model3->save($this->input->post('email'),"Experience our newly developed Task Manager",$content);
     }
 
     private function emailForTaskValidationOrRejection($task_id,$validationOrRejection="validated")

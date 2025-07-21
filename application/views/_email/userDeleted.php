@@ -6,11 +6,11 @@
         <tbody>
             <tr>
                 <th class='text-left'>NAME</th>
-                <td><?php echo $user['name'];?></td>
+                <td><?php echo $user->name;?></td>
             </tr>
             <tr>
                 <th class='text-left'>EMAIL</th>
-                <td><?php echo $user['email'];?></td>
+                <td><?php echo $user->email;?></td>
             </tr>
             <tr>
                 <th class="text-left">REMOVED BY</th>
@@ -18,9 +18,4 @@
             </tr>
         </tbody>
     </table>
-</div>
-<div style='margin:30px auto; max-width:800px;'>
-    <a class='btn' href="<?php echo $link;?>">
-        <div class="label"><?php echo $link_label;?></div>
-    </a>
 </div>
