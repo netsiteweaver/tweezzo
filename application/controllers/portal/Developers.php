@@ -329,4 +329,23 @@ class Developers extends CI_Controller
         $this->data['content'][] = $this->load->view("/portal/developers/timesheets",$this->data,true);
         $this->load->view("/portal/developers/shared/layout",$this->data);
     }
+
+    public function delete_timesheet()
+    {
+        if(($this->uri->segment(5) == 'confirm')){
+            $this->load->model("Timesheets_model");
+            $check = $this->Timesheets_model->deleteTimesheet($this->uri->segment(4));
+            redirect("portal/developers/timesheets");
+        }else{
+            $this->data['page_title'] = "Delete Timesheet";
+
+            $this->load->model("Timesheets_model");
+
+            $this->data['timesheet'] = $this->Timesheets_model->getSingle($this->uri->segment(4));
+
+            $this->data['content'][] = $this->load->view("/portal/developers/delete_timesheet",$this->data,true);
+            $this->load->view("/portal/developers/shared/layout",$this->data);
+        }
+        
+    }
 }

@@ -43,6 +43,7 @@
                             <th>START</th>
                             <th>FINISH</th>
                             <th>DURATION</th>
+                            <th></th>
                         </tr>
                         <tr>
                             
@@ -84,6 +85,11 @@
                                     echo '-';
                                 }
                                 ?>
+                            </td>
+                            <td>
+                                <a href="portal/developers/delete_timesheet/<?php echo $row->id;?>">
+                                    <div class="btn btn-danger"><i class="fa fa-trash"></i></div>
+                                </a>
                             </td>
                         </tr>
                         <?php endforeach;?>

@@ -88,4 +88,41 @@ class Timesheets_model extends CI_Model
         $result = $this->db->query($query)->result();
         return $result;
     }
+
+    public function getSingle($id)
+    {
+        $query = "SELECT
+                        t2.uuid taskUuid, t2.name taskName, t2.task_number taskNumber, t2.section taskSection,
+                        s.name sprintName,
+                        p.name projectName,
+                        c.company_name customerName,
+                        t.*
+                    FROM timesheet t 
+                    JOIN tasks t2 on t2.id = t.task_id
+                    JOIN sprints s on s.id = t2.sprint_id 
+                    JOIN projects p on p.id = s.project_id 
+                    JOIN customers c on c.customer_id = p.customer_id 
+                    WHERE t.status = 1 
+                    AND t.finish_time IS NOT NULL
+                    AND t2.status = 1
+                    AND s.status = 1
+                    AND p.status = 1
+                    AND c.status = 1
+                    AND t2.closed = 0 
+                    AND s.active = 1 
+                    AND p.active = 1 
+                    AND c.active = 1
+                    AND t.id  = $id";
+        $result = $this->db->query($query)->row();
+        return $result;
+    }
+
+    public function deleteTimesheet($id)
+    {
+        $this->db->where(array(
+            "id"    =>  $id,
+            "developer_id"  =>  $_SESSION['developer_id']
+        ))->set("status","0")->update("timesheet");
+        return $this->db->affected_rows();
+    }
 }
