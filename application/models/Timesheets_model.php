@@ -77,7 +77,6 @@ class Timesheets_model extends CI_Model
                     AND s.status = 1
                     AND p.status = 1
                     AND c.status = 1
-                    AND t2.closed = 0 
                     AND s.active = 1 
                     AND p.active = 1 
                     AND c.active = 1

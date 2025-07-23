@@ -34,6 +34,14 @@
                 <table id='my-timesheet' class="table table-bordered table-hover">
                     <thead>
                         <tr class='text-center'>
+                            
+                            <th colspan='3'>TASK</th>
+                            <th colspan='3'>OTHER DETAILS</th>
+                            <th rowspan='2'>NOTES</th>
+                            <th colspan='3'>TIME</th>
+                            <th rowspan='2'></th>
+                        </tr>
+                        <tr class='text-center'>
                             <th>#</th>
                             <th>TASK</th>
                             <th>SECTION</th>
@@ -42,11 +50,7 @@
                             <th>CUSTOMER</th>
                             <th>START</th>
                             <th>FINISH</th>
-                            <th>DURATION</th>
-                            <th></th>
-                        </tr>
-                        <tr>
-                            
+                            <th>DURATION (M)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -56,6 +60,7 @@
                             <td class='text-start'><?php echo "{$row->taskNumber}";?></td>
                             <td class='text-start'><?php echo "{$row->taskName}";?></td>
                             <td class='text-start'><?php echo "{$row->taskSection}";?></td>
+                            <td class=''><?php echo "{$row->notes}";?></td>
                             <td class=''><?php echo "{$row->sprintName}";?></td>
                             <td class=''><?php echo "{$row->projectName}";?></td>
                             <td class=''><?php echo "{$row->customerName}";?></td>
@@ -95,15 +100,25 @@
                         <?php endforeach;?>
                     </tbody>
                     <tfoot>
-                        <?php
-                        $totalHours = floor($totalSeconds / 3600);
-                        $totalMinutes = floor( ($totalSeconds % 3600) / 60);
+                    <?php
+                        $totalDays = floor($totalSeconds / 86400); // 1 day = 86400 seconds
+                        $remainingSeconds = $totalSeconds % 86400;
+
+                        $totalHours = floor($remainingSeconds / 3600);
+                        $remainingSeconds %= 3600;
+
+                        $totalMinutes = floor($remainingSeconds / 60);
                         ?>
                         <tr>
-                            <th colspan='8'>TOTAL TIME IN HOURS</th>
-                            <th class="text-center"><?php printf('%02d:%02d', $totalHours, $totalMinutes); ?></th>
+                            <th colspan='8'>TOTAL TIME</th>
+                            <th class="text-center">
+                                <?php
+                                    printf('%02d days %02d:%02d', $totalDays, $totalHours, $totalMinutes);
+                                ?>
+                            </th>
                         </tr>
                     </tfoot>
+
                 </table>
             </div>
         </div>
