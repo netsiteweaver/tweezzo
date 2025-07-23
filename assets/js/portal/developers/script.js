@@ -387,13 +387,19 @@ jQuery(function(){
             success:function(response){
                 if(!response.result){
                     alertify.alert("Error",response.reason);
+                    $('#running-task').addClass("d-none");
+                    $('#running-task a').prop("href",`portal/developers/view?task_uuid=`)
                 }else{
                     // $("#task_list tr.selected").find('.bi-stop-circle-fill').addClass("d-none");
                     // $("#task_list tr.selected").find('.bi-play-circle-fill').removeClass("d-none");
+                    $('#running-task').addClass("d-none");
+                    $('#running-task a').prop("href",`portal/developers/view?task_uuid=`)
                 }
                 $("#task_list tr.selected").find('.bi-stop-circle-fill').addClass("d-none");
                 $("#task_list tr.selected").find('.bi-play-circle-fill').removeClass("d-none");
                 $('#task_list tr.selected').removeClass("selected");
+
+                
             }
         })
         
@@ -438,12 +444,16 @@ jQuery(function(){
             method:"POST",
             dataType:"JSON",
             success:function(response){
+                console.log(response)
                 if(!response.result){
                     alertify.alert("Error",response.reason);
                 }else{
                     $('#modalTaskTimer').modal("hide");
                     $("#task_list tr.selected").find('.bi-stop-circle-fill').removeClass("d-none");
                     $("#task_list tr.selected").find('.bi-play-circle-fill').addClass("d-none");
+
+                    $('#running-task').removeClass("d-none");
+                    $('#running-task a').prop("href",`portal/developers/view?task_uuid=${response.task_uuid}`)
                 }
             }
         })

@@ -28,7 +28,9 @@ class Timesheets_model extends CI_Model
         $this->db->query("SET time_zone = '+04:00'");
         $this->db->query("INSERT INTO timesheet (task_id, developer_id, start_time, finish_time, notes, status) VALUES (
                              $task_id, {$_SESSION['developer_id']}, NOW(), NULL, '$notes', '1')");
-        return $this->db->affected_rows();
+        return array(
+            'task_uuid'     =>  $this->db->select("uuid")->from("tasks")->where("id",$task_id)->get()->row()->uuid
+        );
     }
 
     public function stopTimer()
@@ -38,7 +40,8 @@ class Timesheets_model extends CI_Model
         $check_duration = $this->db->query("SELECT TIMESTAMPDIFF(MINUTE, start_time, NOW()) as mins FROM timesheet WHERE task_id = '{$task_id}' AND finish_time IS NULL")->row()->mins;
 
         if($check_duration == 0){
-            $this->db->query("UPDATE timesheet SET `status` = '0' WHERE task_id = '{$task_id}' AND finish_time IS NULL");
+            // $this->db->query("UPDATE timesheet SET `status` = '0' WHERE task_id = '{$task_id}' AND finish_time IS NULL");
+            $this->db->query("DELETE FROM timesheet WHERE task_id = '{$task_id}' AND finish_time IS NULL");
             return array(
                 'result'    =>  false,
                 'reason'    =>  'Duration less than one minute will be discarded'
@@ -52,9 +55,10 @@ class Timesheets_model extends CI_Model
                                 duration_minutes = TIMESTAMPDIFF(MINUTE, start_time, NOW())
                             WHERE 
                                 task_id = '{$task_id}' AND finish_time IS NULL");  
-        // return $this->db->affected_rows();
+
         return array(
-            'result'    =>  true
+            "result"        =>  true,
+            'task_uuid'     =>  $this->db->select("uuid")->from("tasks")->where("id",$task_id)->get()->row()->uuid
         );
     }
 
@@ -108,7 +112,7 @@ class Timesheets_model extends CI_Model
                     AND s.status = 1
                     AND p.status = 1
                     AND c.status = 1
-                    AND t2.closed = 0 
+                    -- AND t2.closed = 0 
                     AND s.active = 1 
                     AND p.active = 1 
                     AND c.active = 1
@@ -124,5 +128,19 @@ class Timesheets_model extends CI_Model
             "developer_id"  =>  $_SESSION['developer_id']
         ))->set("status","0")->update("timesheet");
         return $this->db->affected_rows();
+    }
+
+    public function getRunningTasks()
+    {
+        $result = $this->db->select("ta.uuid taskUuid")
+                        ->from("timesheet t")
+                        ->join("tasks ta","ta.id=t.task_id")
+                        ->join("sprints s","s.id=ta.sprint_id")
+                        ->join("projects p","p.id=s.project_id")
+                        ->join("customers c","c.customer_id=p.customer_id")
+                        ->where("t.developer_id = {$_SESSION['developer_id']} AND t.finish_time IS NULL")
+                        ->get()
+                        ->row('taskUuid');
+        return $result;
     }
 }
