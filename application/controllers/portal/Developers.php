@@ -6,6 +6,11 @@ class Developers extends CI_Controller
     {
         parent::__construct();
 
+        $this->data['flash_danger'] = getFlashMessage("danger");
+        $this->data['flash_success'] = getFlashMessage("success");
+        $this->data['flash_warning'] = getFlashMessage("warning");
+        $this->data['flash_info'] = getFlashMessage("info");
+
         $this->load->library("migration");
         $this->load->model("system_model");
         $this->load->model("Developersportal_model");
@@ -21,6 +26,9 @@ class Developers extends CI_Controller
             $this->data['projects'] = $this->Developersportal_model->getMyProjects($_SESSION['developer_id']);
             $this->data['sprints'] = $this->Developersportal_model->getMySprints($_SESSION['developer_id']);
         }
+
+        $this->load->model("timesheets_model");
+        $this->data['running_task'] = $this->timesheets_model->getRunningTasks();
 
     }
 
@@ -112,18 +120,32 @@ class Developers extends CI_Controller
     public function timer_insert()
     {
         $this->load->model("timesheets_model");
-        $this->timesheets_model->startTimer();
+        $result = $this->timesheets_model->startTimer();
 
         echo json_encode(array(
-            "result"    =>  true
+            "result"    =>  true,
+            "task_uuid" =>  $result['task_uuid']
         ));
+        exit;
     }
 
     public function timer_stop()
     {
         $this->load->model("timesheets_model");
-        $check = $this->timesheets_model->stopTimer();
-        echo json_encode($check);
+        $result = $this->timesheets_model->stopTimer();
+        
+        if($result['result']){
+            echo json_encode(array(
+                "result"    =>  true,
+                "task_uuid" =>  $result['task_uuid']
+            ));
+        }else{
+            echo json_encode(array(
+                "result"    =>  false,
+                "reason"     =>  $result['reason']
+            ));
+        }
+
         exit;
     }
 
@@ -342,7 +364,13 @@ class Developers extends CI_Controller
             $this->load->model("Timesheets_model");
 
             $this->data['timesheet'] = $this->Timesheets_model->getSingle($this->uri->segment(4));
-
+            if(empty($this->data['timesheet'])){
+                flashDanger("Timesheet not found");
+                // flashSuccess("Timesheet not found");
+                // flashWarning("Timesheet not found");
+                // flashInfo("Timesheet not found");
+                redirect("portal/developers/timesheets");
+            }
             $this->data['content'][] = $this->load->view("/portal/developers/delete_timesheet",$this->data,true);
             $this->load->view("/portal/developers/shared/layout",$this->data);
         }

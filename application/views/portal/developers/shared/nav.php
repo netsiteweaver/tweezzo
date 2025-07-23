@@ -81,12 +81,46 @@
                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
                 <button class="btn btn-outline-success" type="submit">Search</button>
             </form> -->
+
+            <ul id="running-task" class="navbar-nav mb-2 mb-lg-0 <?php echo (empty($running_task)) ? 'd-none' : '';?>">
+                <a title='View running task' href="portal/developers/view?task_uuid=<?php echo $running_task;?>" style="color:red;">
+                <i class="fa fa-stop-circle"></i>
+                </a>
+            </ul>
         </div>
     </div>
 </nav>
-<div class="row">
+<div class="row mt-0">
     <div class="random-quote-container">
         <span class="quote-text"><?php echo $random_quote->quote_text;?></span>
         <span class="author-name"><?php echo $random_quote->author_name;?></span>
     </div>
 </div>
+<?php if(!empty($flash_danger)):?>
+<div class="row">
+    <div class="col-md-12 alert alert-danger text-center text-bold">
+        <i class="fa fa-exclamation-triangle"></i> <?php echo $flash_danger;?>
+    </div>
+</div>
+<?php endif;?>
+<?php if(!empty($flash_success)):?>
+<div class="row">
+    <div class="col-md-12 alert alert-success text-center text-bold">
+        <i class="fa fa-check-square"></i> <?php echo $flash_success;?>
+    </div>
+</div>
+<?php endif;?>
+<?php if(!empty($flash_warning)):?>
+<div class="row">
+    <div class="col-md-12 alert alert-warning text-center text-bold">
+        <i class="fa fa-exclamation-circle"></i> <?php echo $flash_warning;?>
+    </div>
+</div>
+<?php endif;?>
+<?php if(!empty($flash_info)):?>
+<div class="row">
+    <div class="col-md-12 alert alert-info text-center text-bold">
+        <i class="fa fa-info-circle"></i> <?php echo $flash_info;?>
+    </div>
+</div>
+<?php endif;?>

@@ -1,12 +1,14 @@
 <style>
-#my-timesheet a {
-    color: #4c4c4c !important;
-    font-style: italic;
+#my-timesheet a.underline {
+    border-bottom: 1px solid #00d5ff77 !important;
     cursor: pointer;
+}
+#my-timesheet a.underline:hover {
+    border-bottom: 3px solid #00d5ffee !important;
 }
 </style>
 <form action="">
-    <div class="d-flex flex-wrap align-items-end gap-1 mb-3">
+    <div class="d-flex flex-wrap align-items-end gap-1 mb-3 d-none">
         <div>
             <label for="">Sprint</label>
             <select name="sprint_id" id=""
@@ -60,7 +62,7 @@
         <table id='my-timesheet' class="table table-bordered table-hover">
             <thead>
                 <tr class='text-center'>
-                    <th colspan='3'>TASK</th>
+                    <th colspan='3'>TASK INFORMATION</th>
                     <th colspan='3'>OTHER DETAILS</th>
                     <th rowspan='2'>NOTES</th>
                     <th colspan='3'>TIME</th>
@@ -70,42 +72,26 @@
                     <th>#</th>
                     <th>TASK</th>
                     <th>SECTION</th>
-                    <th class="<?php echo (!empty($this->input->get("sprint_id")))?'bg-info text-white':'';?>">SPRINT
-                    </th>
-                    <th class="<?php echo (!empty($this->input->get("project_id")))?'bg-info text-white':'';?>">PROJECT
-                    </th>
-                    <th class="<?php echo (!empty($this->input->get("customer_id")))?'bg-info text-white':'';?>">
-                        CUSTOMER</th>
+                    <th class="<?php echo (!empty($this->input->get("sprint_id")))?'bg-info text-white':'';?>">SPRINT</th>
+                    <th class="<?php echo (!empty($this->input->get("project_id")))?'bg-info text-white':'';?>">PROJECT</th>
+                    <th class="<?php echo (!empty($this->input->get("customer_id")))?'bg-info text-white':'';?>">CUSTOMER</th>
                     <th>START</th>
                     <th>FINISH</th>
-                    <th>DURATION (M)</th>
+                    <th>DURATION (H)</th>
                 </tr>
             </thead>
             <tbody>
                 <?php $totalSeconds = 0;?>
                 <?php foreach($rows as $row):?>
                 <tr class="text-center" data-id="<?php echo $row->id;?>" data-task-uuid="<?php echo $row->taskUuid;?>">
-                    <td class='text-start'><?php echo "{$row->taskNumber}";?></td>
-                    <td class='text-start'><?php echo "{$row->taskName}";?></td>
-                    <td class='text-start'><?php echo "{$row->taskSection}";?></td>
-                    <td>
-                        <a href="portal/developers/timesheets?sprint_id=<?php echo $row->sprintId;?>">
-                            <?php echo "{$row->sprintName}";?>
-                        </a>
-                    </td>
-                    <td>
-                        <a href="portal/developers/timesheets?project_id=<?php echo $row->projectId;?>">
-                            <?php echo "{$row->projectName}";?>
-                        </a>
-
-                    </td>
-                    <td>
-                        <a href="portal/developers/timesheets?customer_id=<?php echo $row->customerId;?>">
-                            <?php echo "{$row->customerName}";?>
-                        </a>
-                    </td>
+                    <td class='text-start'><a class='underline' href="portal/developers/view?task_uuid=<?php echo $row->taskUuid;?>"><?php echo "{$row->taskNumber}";?></a></td>
+                    <td class='text-start'><a class='underline' href="portal/developers/view?task_uuid=<?php echo $row->taskUuid;?>"><?php echo "{$row->taskName}";?></a></td>
+                    <td class='text-start'><a class='underline' href="portal/developers/view?task_uuid=<?php echo $row->taskUuid;?>"><?php echo "{$row->taskSection}";?></a></td>
+                    <td><a class='underline' href="portal/developers/timesheets?sprint_id=<?php echo $row->sprintId;?>"><?php echo "{$row->sprintName}";?></a></td>
+                    <td><a class='underline' href="portal/developers/timesheets?project_id=<?php echo $row->projectId;?>"><?php echo "{$row->projectName}";?></a></td>
+                    <td><a class='underline' href="portal/developers/timesheets?customer_id=<?php echo $row->customerId;?>"><?php echo "{$row->customerName}";?>
+                    </a></td>
                     <td class=''><?php echo "{$row->notes}";?></td>
-
                     <td class=''><?php echo "{$row->start_time}";?></td>
                     <td class=''><?php echo "{$row->finish_time}";?></td>
                     <td class=''>
@@ -120,16 +106,8 @@
                                     $hours = floor($diff / 3600);
                                     $minutes = floor(($diff % 3600) / 60);
                                     printf('%02d:%02d', $hours, $minutes);
-
-                                    $start = new DateTime($row->start_time);
-                                    $finish = new DateTime($row->finish_time);
-                                    $interval = $start->diff($finish);
-
-                                    $hours = ($interval->days * 24) + $interval->h;
-                                    $minutes = $interval->i;
-                                    // printf('%02d:%02d', $hours, $minutes);
                                 } else {
-                                    echo '-';
+                                    //echo '-';
                                 }
                                 ?>
                     </td>
@@ -143,20 +121,22 @@
             </tbody>
             <tfoot>
                 <?php
-                        $totalDays = floor($totalSeconds / 86400); // 1 day = 86400 seconds
-                        $remainingSeconds = $totalSeconds % 86400;
+                    $totalDays = floor($totalSeconds / 86400); // 1 day = 86400 seconds
+                    $remainingSeconds = $totalSeconds % 86400;
 
-                        $totalHours = floor($remainingSeconds / 3600);
-                        $remainingSeconds %= 3600;
+                    $totalHours = floor($remainingSeconds / 3600);
+                    $remainingSeconds %= 3600;
 
-                        $totalMinutes = floor($remainingSeconds / 60);
-                        ?>
+                    $totalMinutes = floor($remainingSeconds / 60);
+                ?>
                 <tr>
-                    <th colspan='8'>TOTAL TIME</th>
+                    <th colspan='9'>TOTAL TIME</th>
                     <th class="text-center">
-                        <?php
-                                    printf('%02d days %02d:%02d', $totalDays, $totalHours, $totalMinutes);
-                                ?>
+                        <?php if(intval($totalDays)>0){
+                            printf('%02d days %02d:%02d', $totalDays, $totalHours, $totalMinutes);
+                        }else{
+                            printf('%02d:%02d', $totalHours, $totalMinutes);
+                        }?>
                     </th>
                 </tr>
             </tfoot>
