@@ -61,6 +61,7 @@ class Timesheets_model extends CI_Model
     public function getTaskByDeveloperId($developerId, $customerId="", $projectId="", $sprintId="")
     {
         $query = "SELECT
+                        c.customer_id customerId, s.id sprintId, p.id projectId,
                         t2.uuid taskUuid, t2.name taskName, t2.task_number taskNumber, t2.section taskSection,
                         s.name sprintName,
                         p.name projectName,
