@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-md-2">
             <label for="">Customer</label>
-            <select name="customer_id" id="" class="form-select" disabled>
+            <select name="customer_id" id="" class="form-control" disabled>
                 <option value="">Click on Customer</option>
                 <?php foreach($myCustomers as $c):?>
                 <option value="<?php echo $c->customer_id;?>" <?php echo $c->customer_id == $this->input->get("customer_id") ? "selected" : "";?>><?php echo $c->company_name;?></option>
@@ -18,7 +18,7 @@
         </div>
         <div class="col-md-2">
             <label for="">Project</label>
-            <select name="project_id" id="" class="form-select" disabled>
+            <select name="project_id" id="" class="form-control" disabled>
                 <option value="">Click on a Project</option>
                 <?php foreach($myProjects as $c):?>
                 <option value="<?php echo $c->id;?>" <?php echo $c->id == $this->input->get("project_id") ? "selected" : "";?>><?php echo "{$c->name} [{$c->company_name}]";?></option>
@@ -27,7 +27,7 @@
         </div>
         <div class="col-md-2">
             <label for="">Sprint</label>
-            <select name="sprint_id" id="" class="form-select" disabled>
+            <select name="sprint_id" id="" class="form-control" disabled>
                 <option value="">Clict on a Sprint</option>
                 <?php foreach($mySprints as $c):?>
                 <option value="<?php echo $c->id;?>" <?php echo $c->id == $this->input->get("sprint_id") ? "selected" : "";?>><?php echo "{$c->name} [{$c->project_name} &#x2016 {$c->company_name}]";?></option>
