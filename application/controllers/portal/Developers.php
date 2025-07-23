@@ -26,10 +26,10 @@ class Developers extends CI_Controller
             $this->data['projects'] = $this->Developersportal_model->getMyProjects($_SESSION['developer_id']);
             $this->data['sprints'] = $this->Developersportal_model->getMySprints($_SESSION['developer_id']);
         }
-
-        $this->load->model("timesheets_model");
-        $this->data['running_task'] = $this->timesheets_model->getRunningTasks();
-
+        if(isset($_SESSION['developer_id'])){
+            $this->load->model("timesheets_model");
+            $this->data['running_task'] = $this->timesheets_model->getRunningTasks();
+        }
     }
 
     public function index()
