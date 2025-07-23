@@ -370,14 +370,20 @@ jQuery(function(){
 
     $('.timer_stop').on("click",function(){
         if($(this).hasClass("running")) return false;
-
+        let item = $(this);
+        let actionType = $(this).hasClass("task-view") ? 'view' : 'listing';
+        let task_id = null;
         // $(this).addClass("running");
         //remove previously selected row
-        $('#task_list tr.selected').removeClass("selected");
-        //mark current as selected
-        $(this).closest("tr").addClass("selected");
+        if(actionType == 'listing'){
+            $('#task_list tr.selected').removeClass("selected");
+            //mark current as selected
+            $(this).closest("tr").addClass("selected");
 
-        let task_id = $(this).closest("tr").data("id");
+            task_id = $(this).closest("tr").data("id");
+        }else{
+            task_id = $(this).data("task-id");
+        }
 
         $.ajax({
             url: base_url + "portal/developers/timer_stop",
@@ -395,9 +401,14 @@ jQuery(function(){
                     $('#running-task').addClass("d-none");
                     $('#running-task a').prop("href",`portal/developers/view?task_uuid=`)
                 }
-                $("#task_list tr.selected").find('.bi-stop-circle-fill').addClass("d-none");
-                $("#task_list tr.selected").find('.bi-play-circle-fill').removeClass("d-none");
-                $('#task_list tr.selected').removeClass("selected");
+                if(actionType == 'listing'){
+                    $("#task_list tr.selected").find('.bi-stop-circle-fill').addClass("d-none");
+                    $("#task_list tr.selected").find('.bi-play-circle-fill').removeClass("d-none");
+                    $('#task_list tr.selected').removeClass("selected");
+                }else{
+                    $(item).closest(".card-footer").remove();
+                }
+
 
                 
             }

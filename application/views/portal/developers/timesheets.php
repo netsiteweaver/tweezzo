@@ -1,10 +1,10 @@
 <style>
 #my-timesheet a.underline {
-    border-bottom: 2px solid #0dcaf0 !important;
+    border-bottom: 1px solid #00d5ff77 !important;
     cursor: pointer;
 }
 #my-timesheet a.underline:hover {
-    border-bottom: 5px solid #0dcaf0 !important;
+    border-bottom: 3px solid #00d5ffee !important;
 }
 </style>
 <form action="">
@@ -84,9 +84,9 @@
                 <?php $totalSeconds = 0;?>
                 <?php foreach($rows as $row):?>
                 <tr class="text-center" data-id="<?php echo $row->id;?>" data-task-uuid="<?php echo $row->taskUuid;?>">
-                    <td class='text-start'><?php echo "{$row->taskNumber}";?></td>
-                    <td class='text-start'><?php echo "{$row->taskName}";?></td>
-                    <td class='text-start'><?php echo "{$row->taskSection}";?></td>
+                    <td class='text-start'><a class='underline' href="portal/developers/view?task_uuid=<?php echo $row->taskUuid;?>"><?php echo "{$row->taskNumber}";?></a></td>
+                    <td class='text-start'><a class='underline' href="portal/developers/view?task_uuid=<?php echo $row->taskUuid;?>"><?php echo "{$row->taskName}";?></a></td>
+                    <td class='text-start'><a class='underline' href="portal/developers/view?task_uuid=<?php echo $row->taskUuid;?>"><?php echo "{$row->taskSection}";?></a></td>
                     <td><a class='underline' href="portal/developers/timesheets?sprint_id=<?php echo $row->sprintId;?>"><?php echo "{$row->sprintName}";?></a></td>
                     <td><a class='underline' href="portal/developers/timesheets?project_id=<?php echo $row->projectId;?>"><?php echo "{$row->projectName}";?></a></td>
                     <td><a class='underline' href="portal/developers/timesheets?customer_id=<?php echo $row->customerId;?>"><?php echo "{$row->customerName}";?>
