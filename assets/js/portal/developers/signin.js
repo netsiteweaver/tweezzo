@@ -48,11 +48,17 @@ jQuery(function(){
 
                     let url = "";
                     let DevelopersPortalLastSelectedCustomer = localStorage.getItem('DevelopersPortalLastSelectedCustomer');
-                    if(DevelopersPortalLastSelectedCustomer !== null) url += "?customer_id=" + DevelopersPortalLastSelectedCustomer;
                     let DevelopersPortalLastSelectedProject = localStorage.getItem('DevelopersPortalLastSelectedProject');
-                    if(DevelopersPortalLastSelectedProject !== null) url += "&project_id=" + DevelopersPortalLastSelectedProject;
                     let DevelopersPortalLastSelectedSprint = localStorage.getItem('DevelopersPortalLastSelectedSprint');
-                    if(DevelopersPortalLastSelectedSprint !== null) url += "&sprint_id=" + DevelopersPortalLastSelectedSprint;
+                    if(DevelopersPortalLastSelectedCustomer !== null) {
+                        url += "?customer_id=" + DevelopersPortalLastSelectedCustomer;
+
+                        if(DevelopersPortalLastSelectedProject !== null) {
+                            url += "&project_id=" + DevelopersPortalLastSelectedProject;
+
+                            if(DevelopersPortalLastSelectedSprint !== null) url += "&sprint_id=" + DevelopersPortalLastSelectedSprint;
+                        }
+                    }
                     console.log(url);
                     if(url.length==0){
                         window.location.href = base_url + "portal/developers/tasks";

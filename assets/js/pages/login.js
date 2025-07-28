@@ -90,11 +90,19 @@ $(function() {
 
                             let url = "";
                             let LastSelectedCustomer = localStorage.getItem('LastSelectedCustomer');
-                            if(LastSelectedCustomer !== null) url += "?customer_id=" + LastSelectedCustomer;
                             let LastSelectedProject = localStorage.getItem('LastSelectedProject');
-                            if(LastSelectedProject !== null) url += "&project_id=" + LastSelectedProject;
                             let LastSelectedSprint = localStorage.getItem('LastSelectedSprint');
-                            if(LastSelectedSprint !== null) url += "&sprint_id=" + LastSelectedSprint;
+
+                            if(LastSelectedCustomer !== null) {
+                                url += "?customer_id=" + LastSelectedCustomer;
+
+                                if(LastSelectedProject !== null) {
+                                    url += "&project_id=" + LastSelectedProject;
+
+                                    if(LastSelectedSprint !== null) url += "&sprint_id=" + LastSelectedSprint;
+                                }
+                            }
+
                             console.log(url);
                             if(url.length==0){
                                 window.location.href = base_url + response.landing_page;

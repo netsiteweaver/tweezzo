@@ -336,6 +336,28 @@ jQuery(function(){
         let project_id = $('#project_id').val();
         let sprint_id = $('#sprint_id').val();
 
+        console.log(customer_id, localStorage.getItem('DevelopersPortalLastSelectedCustomer'));
+        if(customer_id!==localStorage.getItem('DevelopersPortalLastSelectedCustomer')){
+            project_id = "";
+            $('#project_id').val('');
+
+            sprint_id = "";
+            $('#sprint_id').val('')
+        }
+        
+        if(customer_id=="") {
+            project_id = "";
+            $('#project_id').val('');
+
+            sprint_id = "";
+            $('#sprint_id').val('')
+        }
+
+        if(project_id=="") {
+            sprint_id = "";
+            $('#sprint_id').val('')
+        }
+
         if(customer_id!=='') {
             localStorage.setItem('DevelopersPortalLastSelectedCustomer',customer_id);
         }else{ 
@@ -357,6 +379,7 @@ jQuery(function(){
             localStorage.removeItem('DevelopersPortalLastSelectedSprint')
         }
 
+        // console.log(customer_id,project_id,sprint_id)
         $('form#tasks').trigger("submit");
     })
 
