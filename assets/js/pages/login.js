@@ -90,16 +90,16 @@ $(function() {
 
                             let url = "";
                             let LastSelectedCustomer = localStorage.getItem('LastSelectedCustomer');
-                            if(LastSelectedCustomer !== '') url += "?customer_id=" + LastSelectedCustomer;
+                            if(LastSelectedCustomer !== null) url += "?customer_id=" + LastSelectedCustomer;
                             let LastSelectedProject = localStorage.getItem('LastSelectedProject');
-                            if(LastSelectedProject !== '') url += "&project_id=" + LastSelectedProject;
+                            if(LastSelectedProject !== null) url += "&project_id=" + LastSelectedProject;
                             let LastSelectedSprint = localStorage.getItem('LastSelectedSprint');
-                            if(LastSelectedSprint !== '') url += "&sprint_id=" + LastSelectedSprint;
+                            if(LastSelectedSprint !== null) url += "&sprint_id=" + LastSelectedSprint;
                             console.log(url);
                             if(url.length==0){
-                                window.location = base_url + response.landing_page;
+                                window.location.href = base_url + response.landing_page;
                             }else{
-                                window.location = base_url + 'tasks/listing' + url;
+                                window.location.href = base_url + 'tasks/listing' + url;
                             }
                         }
                     }

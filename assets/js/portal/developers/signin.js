@@ -48,16 +48,16 @@ jQuery(function(){
 
                     let url = "";
                     let DevelopersPortalLastSelectedCustomer = localStorage.getItem('DevelopersPortalLastSelectedCustomer');
-                    if(DevelopersPortalLastSelectedCustomer !== '') url += "?customer_id=" + DevelopersPortalLastSelectedCustomer;
+                    if(DevelopersPortalLastSelectedCustomer !== null) url += "?customer_id=" + DevelopersPortalLastSelectedCustomer;
                     let DevelopersPortalLastSelectedProject = localStorage.getItem('DevelopersPortalLastSelectedProject');
-                    if(DevelopersPortalLastSelectedProject !== '') url += "&project_id=" + DevelopersPortalLastSelectedProject;
+                    if(DevelopersPortalLastSelectedProject !== null) url += "&project_id=" + DevelopersPortalLastSelectedProject;
                     let DevelopersPortalLastSelectedSprint = localStorage.getItem('DevelopersPortalLastSelectedSprint');
-                    if(DevelopersPortalLastSelectedSprint !== '') url += "&sprint_id=" + DevelopersPortalLastSelectedSprint;
+                    if(DevelopersPortalLastSelectedSprint !== null) url += "&sprint_id=" + DevelopersPortalLastSelectedSprint;
                     console.log(url);
                     if(url.length==0){
                         window.location.href = base_url + "portal/developers/tasks";
                     }else{
-                        window.location = base_url + 'tasks/listing' + url;
+                        window.location.href = base_url + 'portal/developers/tasks/listing' + url;
                     }
                    
                 }else{
