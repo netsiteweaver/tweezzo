@@ -332,6 +332,31 @@ jQuery(function(){
     })
 
     $('.autosubmit').on("change", function(){
+        let customer_id = $('#customer_id').val();
+        let project_id = $('#project_id').val();
+        let sprint_id = $('#sprint_id').val();
+
+        if(customer_id!=='') {
+            localStorage.setItem('DevelopersPortalLastSelectedCustomer',customer_id);
+        }else{ 
+            localStorage.removeItem('DevelopersPortalLastSelectedCustomer')
+            localStorage.removeItem('DevelopersPortalLastSelectedProject')
+            localStorage.removeItem('DevelopersPortalLastSelectedSprint')
+        }
+
+        if(project_id!=='') {
+            localStorage.setItem('DevelopersPortalLastSelectedProject',project_id);
+        }else{ 
+            localStorage.removeItem('DevelopersPortalLastSelectedProject')
+            localStorage.removeItem('DevelopersPortalLastSelectedSprint')
+        }
+
+        if(sprint_id!=='') {
+            localStorage.setItem('DevelopersPortalLastSelectedSprint',sprint_id);
+        }else{ 
+            localStorage.removeItem('DevelopersPortalLastSelectedSprint')
+        }
+
         $('form#tasks').trigger("submit");
     })
 

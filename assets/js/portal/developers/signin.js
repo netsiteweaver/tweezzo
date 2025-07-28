@@ -45,7 +45,21 @@ jQuery(function(){
                     }else{
                         localStorage.removeItem('email');
                     }
-                   window.location.href = base_url + "portal/developers/tasks";
+
+                    let url = "";
+                    let DevelopersPortalLastSelectedCustomer = localStorage.getItem('DevelopersPortalLastSelectedCustomer');
+                    if(DevelopersPortalLastSelectedCustomer !== '') url += "?customer_id=" + DevelopersPortalLastSelectedCustomer;
+                    let DevelopersPortalLastSelectedProject = localStorage.getItem('DevelopersPortalLastSelectedProject');
+                    if(DevelopersPortalLastSelectedProject !== '') url += "&project_id=" + DevelopersPortalLastSelectedProject;
+                    let DevelopersPortalLastSelectedSprint = localStorage.getItem('DevelopersPortalLastSelectedSprint');
+                    if(DevelopersPortalLastSelectedSprint !== '') url += "&sprint_id=" + DevelopersPortalLastSelectedSprint;
+                    console.log(url);
+                    if(url.length==0){
+                        window.location.href = base_url + "portal/developers/tasks";
+                    }else{
+                        window.location = base_url + 'tasks/listing' + url;
+                    }
+                   
                 }else{
                     $('.login__submit').removeClass("running");
                     alertify.alert('Authentication failed')
