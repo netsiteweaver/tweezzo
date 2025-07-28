@@ -348,7 +348,7 @@ jQuery(function(){
 
         setDueDate(taskIds,dueDate);
     })
-
+    
     $('#customer_id').on("change",function(){
         $('#project_id').val('');
         $('#sprint_id').val('');
@@ -366,6 +366,27 @@ jQuery(function(){
         let notes_only = $('#notes_only').val();
         let search_text = $('#search_text').val();
 
+        if(customer_id!=='') {
+            localStorage.setItem('LastSelectedCustomer',customer_id);
+        }else{ 
+            localStorage.removeItem('LastSelectedCustomer')
+            localStorage.removeItem('LastSelectedProject')
+            localStorage.removeItem('LastSelectedSprint')
+        }
+
+        if(project_id!=='') {
+            localStorage.setItem('LastSelectedProject',project_id);
+        }else{ 
+            localStorage.removeItem('LastSelectedProject')
+            localStorage.removeItem('LastSelectedSprint')
+        }
+
+        if(sprint_id!=='') {
+            localStorage.setItem('LastSelectedSprint',sprint_id);
+        }else{ 
+            localStorage.removeItem('LastSelectedSprint')
+        }
+        
         Overlay("on");
         setTimeout(function(){
             window.location.href = '/tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+search_text;

@@ -72,8 +72,7 @@ $(function() {
                         },500);
                         playLoginSound("failed");
                     } else {
-                        let rememberMe = $('#remember-me').is(":checked");
-                        console.log(rememberMe)
+                        
                         if(rememberMe){
                             localStorage.setItem("username",$("input[name=inputEmail").val());
                             localStorage.setItem("password",$("input[name=inputPassword").val())
@@ -87,7 +86,21 @@ $(function() {
                         if(response.expired_url){
                             window.location = base_url + response.expired_url;
                         }else{
-                            window.location = base_url + response.landing_page;//"dashboard/index"
+                            let rememberMe = $('#remember-me').is(":checked");
+
+                            let url = "";
+                            let LastSelectedCustomer = localStorage.getItem('LastSelectedCustomer');
+                            if(LastSelectedCustomer !== '') url += "?customer_id=" + LastSelectedCustomer;
+                            let LastSelectedProject = localStorage.getItem('LastSelectedProject');
+                            if(LastSelectedProject !== '') url += "&project_id=" + LastSelectedProject;
+                            let LastSelectedSprint = localStorage.getItem('LastSelectedSprint');
+                            if(LastSelectedSprint !== '') url += "&sprint_id=" + LastSelectedSprint;
+                            console.log(url);
+                            if(url.length==0){
+                                window.location = base_url + response.landing_page;
+                            }else{
+                                window.location = base_url + 'tasks/listing' + url;
+                            }
                         }
                     }
                 },
