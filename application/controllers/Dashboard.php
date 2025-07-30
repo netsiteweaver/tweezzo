@@ -43,7 +43,7 @@ class Dashboard extends MY_Controller {
                     "label"     =>  "Customers",
                     "icon"      =>  "fa-users",
                     "class"     =>  "bg-yellow",
-                    "count"     =>  $this->db->select("count(1) as ct")->from("customers")->where("status","1")->get()->row()->ct,
+                    "count"     =>  $this->db->select("count(1) as ct")->from("customers")->where(["status"=>"1","active"=>"1"])->get()->row()->ct,
                     "link"      =>  "customers/listing"
                 ),
 
@@ -71,7 +71,7 @@ class Dashboard extends MY_Controller {
                     "label"     =>  "Projects",
                     "icon"      =>  "fa-list",
                     "class"     =>  "bg-teal",
-                    "count"     =>  $this->db->select("count(1) as ct")->from("projects")->where(["status"=>"1"])->get()->row()->ct,
+                    "count"     =>  $this->db->select("count(1) as ct")->from("projects")->where(["status"=>"1","active"=>"1"])->get()->row()->ct,
                     "link"      =>  "projects/listing"
                 ),
     
@@ -79,7 +79,7 @@ class Dashboard extends MY_Controller {
                     "label"     =>  "Sprints",
                     "icon"      =>  "fa-list",
                     "class"     =>  "bg-green",
-                    "count"     =>  $this->db->select("count(1) as ct")->from("sprints")->where(["status"=>"1"])->get()->row()->ct,
+                    "count"     =>  $this->db->select("count(1) as ct")->from("sprints")->where(["status"=>"1","active"=>"1"])->get()->row()->ct,
                     "link"      =>  "sprints/listing"
                 ),
 
@@ -87,7 +87,7 @@ class Dashboard extends MY_Controller {
                     "label"     =>  "Total Tasks",
                     "icon"      =>  "fa-list",
                     "class"     =>  "bg-purple",
-                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1"])->get()->row()->ct,
+                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1","closed"=>"0"])->get()->row()->ct,
                     "link"      =>  "tasks/listing"
                 )
             );
@@ -98,7 +98,7 @@ class Dashboard extends MY_Controller {
                     "label"     =>  "News Tasks",
                     "icon"      =>  "fa-list",
                     "class"     =>  "bg-blue",
-                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1","stage"=>"new"])->get()->row()->ct,
+                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1","stage"=>"new","closed"=>"0"])->get()->row()->ct,
                     "link"      =>  "tasks/listing?stage=new"
                 ),
 
@@ -106,7 +106,7 @@ class Dashboard extends MY_Controller {
                     "label"     =>  "Tasks In Progress",
                     "icon"      =>  "fa-truck",
                     "class"     =>  "bg-purple",
-                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1","stage"=>"in_progress"])->get()->row()->ct,
+                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1","stage"=>"in_progress","closed"=>"0"])->get()->row()->ct,
                     "link"      =>  "tasks/listing?stage=in_progress"
                 ),
 
@@ -114,7 +114,7 @@ class Dashboard extends MY_Controller {
                     "label"     =>  "Tasks being Testing",
                     "icon"      =>  "fa-exclamation-triangle",
                     "class"     =>  "bg-yellow",
-                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1","stage"=>"testing"])->get()->row()->ct,
+                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1","stage"=>"testing","closed"=>"0"])->get()->row()->ct,
                     "link"      =>  "tasks/listing?stage=testing"
                 ),
 
@@ -122,7 +122,7 @@ class Dashboard extends MY_Controller {
                     "label"     =>  "Tasks on Staging",
                     "icon"      =>  "fa-question",
                     "class"     =>  "bg-orange",
-                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1","stage"=>"staging"])->get()->row()->ct,
+                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1","stage"=>"staging","closed"=>"0"])->get()->row()->ct,
                     "link"      =>  "tasks/listing?stage=staging"
                 ),
 
@@ -130,7 +130,7 @@ class Dashboard extends MY_Controller {
                     "label"     =>  "Validated Tasks",
                     "icon"      =>  "fa-check-square",
                     "class"     =>  "bg-teal",
-                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1","stage"=>"validated"])->get()->row()->ct,
+                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1","stage"=>"validated","closed"=>"0"])->get()->row()->ct,
                     "link"      =>  "tasks/listing?stage=validated"
                 ),
 
@@ -138,7 +138,7 @@ class Dashboard extends MY_Controller {
                     "label"     =>  "Tasks Completed",
                     "icon"      =>  "fa-check",
                     "class"     =>  "bg-green",
-                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1","stage"=>"completed"])->get()->row()->ct,
+                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1","stage"=>"completed","closed"=>"0"])->get()->row()->ct,
                     "link"      =>  "tasks/listing?stage=completed"
                 ),
     
@@ -146,7 +146,7 @@ class Dashboard extends MY_Controller {
                     "label"     =>  "Tasks on Hold",
                     "icon"      =>  "fa-exclamation",
                     "class"     =>  "bg-red",
-                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1","stage"=>"on_hold"])->get()->row()->ct,
+                    "count"     =>  $this->db->select("count(1) as ct")->from("tasks")->where(["status"=>"1","stage"=>"on_hold","closed"=>"0"])->get()->row()->ct,
                     "link"      =>  "tasks/listing?stage=on_hold"
                 )    
             );
