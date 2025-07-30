@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar sticky-nav navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
         <a href="portal/developers/tasks">
             <img src="assets/images/<?php echo $logoDark;?>" alt="" style='height:25px;'>
@@ -90,12 +90,7 @@
         </div>
     </div>
 </nav>
-<div class="row mt-0">
-    <div class="random-quote-container">
-        <span class="quote-text"><?php echo $random_quote->quote_text;?></span>
-        <span class="author-name"><?php echo $random_quote->author_name;?></span>
-    </div>
-</div>
+
 <?php if(!empty($flash_danger)):?>
 <div class="row">
     <div class="col-md-12 alert alert-danger text-center text-bold">

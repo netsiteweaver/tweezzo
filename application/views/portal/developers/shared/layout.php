@@ -57,7 +57,7 @@
 <div id="overlay" class='d-none'><div class="loader"></div></div>
     <div class="container-fluid">
         <?php $this->load->view("portal/developers/shared/nav");?>
-
+        <div class='nav-sticky-container'>
         <?php 
 
         if(isset($content)) foreach($content as $block){
@@ -65,7 +65,7 @@
         }
             
         ?>
-
+        </div>
         <?php $this->load->view("shared/_modalSelectUser",$this->data);?>
 
         <div class="fixed-bottom">

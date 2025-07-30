@@ -129,8 +129,7 @@
 
             </div>
 
-            <div class="row">
-
+            <div class="row mb-4">
 
                 <div class="col-md-1 d-none">
                     <label for="">Display</label>
@@ -159,15 +158,15 @@
                     </select>
                 </div>
 
-                <div class="col-md-2 mt-4 mb-5">
+                <div class="col-md-2 mt-4">
                     <button class='btn btn-block btn-outline-primary' style='width:100%' type='submit'>
                         <div class="bg-icon bg-send"></div> Submit
                     </button>
                 </div>
 
-                <div class="col-md-8 mb-5"></div>
+                <!-- <div class="col-md-8 mb-5"></div> -->
 
-                <div class="col-md-2 mt-3 mb-5">
+                <div class="col-md-2 mt-4">
                     <div class="btn btn-block btn-outline-warning" style='width:100%' id="reset">
                         <div class="bg-icon bg-refresh"></div>Clear
                     </div>
