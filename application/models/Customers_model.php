@@ -136,6 +136,7 @@ class Customers_model extends CI_Model
         // $this->db->set("vat",$_POST['vat']);
         // $this->db->set("brn",$_POST['brn']);
         $this->db->set("remarks",$this->input->post("remarks"));
+        $this->db->set("active","1");
         $this->db->set("status","1");
 
         $db_debug = $this->db->db_debug;

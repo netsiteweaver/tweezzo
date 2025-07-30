@@ -256,6 +256,7 @@ class Tasks_model extends CI_Model{
             $this->db->set('created_on',date('Y-m-d H:i:s'));
             $this->db->set('stage',$data['stage']);
             $this->db->set('progress',floatval($data['progress']));
+            $this->db->set('status','1');
             $this->db->insert('tasks');
 
             $taskId = $this->db->insert_id();

@@ -65,13 +65,14 @@ class Sprints_model extends CI_Model{
 
         $this->db->set('name',$data['name']);
         $this->db->set('project_id',$data['project_id']);
-        $this->db->set("active",isset($_POST['active'])?'1':'0');
 
         if(empty($data['uuid'])){
             $uuid = gen_uuid();
             $this->db->set('uuid',$uuid);
             $this->db->set('created_by',$_SESSION['user_id']);
             $this->db->set('created_on',date('Y-m-d H:i:s'));
+            $this->db->set("status",'1');
+            $this->db->set("active",'1');
             $this->db->insert('sprints');
 
             $members = $this->System_model->getParam("notification_create_sprints",true);
@@ -105,6 +106,7 @@ class Sprints_model extends CI_Model{
                 
             }
         }else{
+            $this->db->set("active",isset($_POST['active'])?'1':'0');
             $this->db->where('uuid',$data['uuid']);
             $this->db->update('sprints');
         }

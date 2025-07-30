@@ -63,13 +63,14 @@ class Projects_model extends CI_Model{
         $this->db->set('start_date',(!empty($data['start_date']))?$data['start_date']:null);
         $this->db->set('end_date',(!empty($data['end_date']))?$data['end_date']:null);
         $this->db->set('customer_id',$data['customer_id']);
-        $this->db->set("active",isset($_POST['active'])?'1':'0');
 
         if(empty($data['uuid'])){
             $uuid = gen_uuid();
             $this->db->set('uuid',$uuid);
             $this->db->set('created_by',$_SESSION['user_id']);
             $this->db->set('created_on',date('Y-m-d H:i:s'));
+            $this->db->set("status",'1');
+            $this->db->set("active",'1');
             $this->db->insert('projects');
 
             $members = $this->System_model->getParam("notification_create_tasks",true);
@@ -102,6 +103,7 @@ class Projects_model extends CI_Model{
                 
             }
         }else{
+            $this->db->set("active",isset($_POST['active'])?'1':'0');
             $this->db->where('uuid',$data['uuid']);
             $this->db->update('projects');
         }
