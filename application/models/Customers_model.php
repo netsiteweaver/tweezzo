@@ -136,7 +136,6 @@ class Customers_model extends CI_Model
         // $this->db->set("vat",$_POST['vat']);
         // $this->db->set("brn",$_POST['brn']);
         $this->db->set("remarks",$this->input->post("remarks"));
-        $this->db->set("active","1");
         $this->db->set("status","1");
 
         $db_debug = $this->db->db_debug;
@@ -148,6 +147,7 @@ class Customers_model extends CI_Model
             $this->db->set("uuid",$_POST['uuid']);
             $this->db->set("created_by",$_SESSION['user_id']);
             $this->db->set("created_date","NOW()",FALSE);
+            $this->db->set("active","1");
             $this->db->insert("customers");
             $customer_id = $this->db->insert_id();
 
@@ -167,6 +167,7 @@ class Customers_model extends CI_Model
             }
             $this->email($_POST);
         }else{
+            $this->db->set("active",isset($_POST['active'])?'1':'0');
             $this->db->where("uuid",$this->input->post("uuid"));
             $this->db->update("customers");
             $check = $this->db->error();

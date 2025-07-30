@@ -636,7 +636,7 @@ class Tasks_model extends CI_Model{
                         JOIN customers c ON c.customer_id = p.customer_id 
                     WHERE 
                         t.status = 1 AND t.closed = 0 
-                    AND c.status = 1 AND p.status = 1 AND s.name != 'Roadmap' 
+                    AND c.status = 1 AND c.active = 1 AND p.status = 1 AND s.name != 'Roadmap' 
                     GROUP BY 
                         c.company_name
                     ORDER BY 

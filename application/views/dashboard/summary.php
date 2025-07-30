@@ -40,7 +40,6 @@
         </div>                
     <?php endforeach;?>
     </div>
-    <hr style='border:3px solid #4c4c4c;'>
 <?php endforeach;?>
 </div>
 <!-- /.row -->          

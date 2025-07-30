@@ -157,9 +157,9 @@ class Dashboard extends MY_Controller {
                 $this->load->model("users_model");
                 $this->load->model("customersportal_model");
                 $this->load->model("developersportal_model");
-                $this->data['latest_logins'] = $this->users_model->get_login_history(10);
-                $this->data['latest_customer_access'] = $this->customersportal_model->get_login_history(10);
-                $this->data['latest_developer_access'] = $this->developersportal_model->get_login_history(10);
+                $this->data['latest_logins'] = $this->users_model->get_login_history(20);
+                $this->data['latest_customer_access'] = $this->customersportal_model->get_login_history(20);
+                $this->data['latest_developer_access'] = $this->developersportal_model->get_login_history(20);
                 $this->data['customers'] = $this->db->select("count(1) as ct")->from("customers")->where("status","1")->get()->row("ct");
 
                 $this->load->model("Tasks_model");

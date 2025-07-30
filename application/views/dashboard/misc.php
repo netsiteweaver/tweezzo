@@ -1,8 +1,28 @@
-    <div class="row small-text">
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead, tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed; /* keeps columns aligned */
+    }
+
+    tbody {
+        display: block;
+        height: 250px;    /* set your height */
+        overflow-y: auto; /* enable vertical scroll */
+    }
+
+</style>
+
+<div class="row small-text">
         <div class="col-md-6 table-responsive">
             <h4 class='text-center'>Latest Back Office Access</h4>
             <div class="div">
-                <table id="latest_logins_table" class="table table-bordered">
+                <table id="latest_logins_table" class="table table-bordered table-hover">
                     <thead>
                         <tr class='text-center bg-yellow'>
                             <th>DATE</th>
@@ -24,17 +44,17 @@
                 </table>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6 d-nonez">
             <h4 class='text-center'>Overall Progress per Client</h4>
-            <table class="table table-bordered">
-                <tbody>
+            <table class="table table-bordered table-hover">
+                <thead>
                     <tr class='text-center'>
                         <th class='table-primary' style='width:16.667%;'>COMPANY</th>
                         <th class='table-primary'>TOTAL TASKS</th>
                         <th class='table-primary'>COMPLETED</th>
                         <th class='table-primary'>%</th>
                     </tr>
-                </tbody>
+                </thead>
                 <tbody>
                     <?php foreach($task_progress as $c => $item):?>
                     <tr class='text-center'>
@@ -74,7 +94,7 @@
         <div class="col-md-6 table-responsive">
             <h4 class='text-center'>Latest Customer Portal Access</h4>
             <div class="div">
-                <table id="latest_logins_table" class="table table-bordered">
+                <table id="latest_logins_table" class="table table-bordered table-hover">
                     <thead>
                         <tr class='text-center bg-orange'>
                             <th>DATE</th>
@@ -100,7 +120,7 @@
         <div class="col-md-6 table-responsive">
             <h4 class='text-center'>Latest Developer Portal Access</h4>
             <div class="div">
-                <table id="latest_logins_table" class="table table-bordered">
+                <table id="latest_logins_table" class="table table-bordered table-hover">
                     <thead>
                         <tr class='text-center bg-teal'>
                             <th>DATE</th>
