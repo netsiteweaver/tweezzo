@@ -27,8 +27,8 @@ ul.navbar-nav {
     /* background-color: var(--developersPortalBackground) !important; */
     /* color: #fff !important; */
     letter-spacing: 2px;
-    /* border-top-left-radius: 10px; */
-    /* border-top-right-radius: 10px; */
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 .logged-in-user {
     position:absolute;
