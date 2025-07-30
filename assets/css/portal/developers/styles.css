@@ -22,8 +22,10 @@ ul.navbar-nav {
 .navbar-light .navbar-nav .nav-link.active, 
 .navbar-light .navbar-nav .show > .nav-link{
     font-weight: bold !important;
-    background-color: var(--developersPortalBackground) !important;
-    color: #fff !important;
+    border: 2px solid var(--developersPortalBackground);
+    color: var(--developersPortalBackground);
+    /* background-color: var(--developersPortalBackground) !important; */
+    /* color: #fff !important; */
     letter-spacing: 2px;
     /* border-top-left-radius: 10px; */
     /* border-top-right-radius: 10px; */
@@ -296,4 +298,29 @@ label:has(+ input:required):after, label:has(+ textarea:required):after {
 .random-quote-container .author-name {
     font-size: 0.8em;
     font-style: italic;
+}
+.navbar.sticky-nav {
+    position: fixed;
+    z-index: 999;
+    top:0;opacity: 0.9;
+    border-bottom:1px solid #ccc;
+    width:calc(100% - 30px);
+}
+.nav-sticky-container {
+    margin-top: 60px;
+}
+@media screen and (max-width:1500px) {
+    .nav-sticky-container {
+        margin-top: 90px;
+    }
+}
+
+@media only screen and (max-width:990px){
+    .logged-in-user {
+        position:absolute;
+        top: -40px;
+        right: 100px;
+        font-size: 0.7em;
+        font-weight: normal;
+    }
 }
