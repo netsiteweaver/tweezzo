@@ -21,14 +21,14 @@ ul.navbar-nav {
 }
 .navbar-light .navbar-nav .nav-link.active, 
 .navbar-light .navbar-nav .show > .nav-link{
-    font-weight: bold !important;
+    /* font-weight: bold !important; */
     border: 2px solid var(--developersPortalBackground);
     color: var(--developersPortalBackground);
     /* background-color: var(--developersPortalBackground) !important; */
     /* color: #fff !important; */
-    letter-spacing: 2px;
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
+    /* letter-spacing: 5px; */
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 .logged-in-user {
     position:absolute;
