@@ -83,7 +83,7 @@
                     <th>SECTION</th>
                     <th class="<?php echo (!empty($this->input->get("sprint_id")))?'bg-info text-white':'';?>">SPRINT</th>
                     <th class="<?php echo (!empty($this->input->get("project_id")))?'bg-info text-white':'';?>">PROJECT</th>
-                    <th class="<?php echo (!empty($this->input->get("customer_id")))?'bg-info text-white':'';?>">CUSTOMER</th>
+                    <th class="<?php echo (!empty($this->input->get("customer_id")))?'bg-info text-white d-none':'';?>">CUSTOMER</th>
                     <th>START</th>
                     <th>FINISH</th>
                     <th>DURATION (H)</th>
@@ -98,7 +98,7 @@
                     <td class='text-start'><a class='underline' href="portal/developers/view?task_uuid=<?php echo $row->taskUuid;?>"><?php echo "{$row->taskSection}";?></a></td>
                     <td><a class='underline' href="portal/developers/timesheets?sprint_id=<?php echo $row->sprintId;?>"><?php echo "{$row->sprintName}";?></a></td>
                     <td><a class='underline' href="portal/developers/timesheets?project_id=<?php echo $row->projectId;?>"><?php echo "{$row->projectName}";?></a></td>
-                    <td><a class='underline' href="portal/developers/timesheets?customer_id=<?php echo $row->customerId;?>"><?php echo "{$row->customerName}";?>
+                    <td class='<?php echo (!empty($this->input->get("customer_id")))?'bg-info text-white d-none':'';?>'><a class='underline' href="portal/developers/timesheets?customer_id=<?php echo $row->customerId;?>"><?php echo "{$row->customerName}";?>
                     </a></td>
                     <td class=''><?php echo "{$row->notes}";?></td>
                     <td class=''><?php echo "{$row->start_time}";?></td>
