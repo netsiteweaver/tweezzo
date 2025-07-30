@@ -7,42 +7,28 @@
     border-bottom: 3px solid #00d5ffee !important;
 }
 </style>
-<form action="">
-    <div class="d-flex flex-wrap align-items-end gap-1 mb-3 d-none">
-        <div>
-            <label for="">Sprint</label>
-            <select name="sprint_id" id=""
-                class="form-control <?php echo (!empty($this->input->get("sprint_id")))?'bg-info text-white':'';?>"
-                disabled>
-                <option value="">Click on a Sprint</option>
-                <?php foreach($mySprints as $c):?>
-                <option value="<?php echo $c->id;?>"
-                    <?php echo $c->id == $this->input->get("sprint_id") ? "selected" : "";?>>
-                    <?php echo "{$c->name} [{$c->project_name} ‖ {$c->company_name}]";?></option>
-                <?php endforeach;?>
+<form action="" class='mt-5'>
+    <div class="row">
+        <div class="col-md-2">
+            <label for="">From</label>
+            <input class='form-control' name="from" type="date" value="<?php echo (!empty($this->input->get("from"))) ? $this->input->get("from") : date('Y-m-01');?>">
+        </div>
+        <div class="col-md-2">
+            <label for="">To</label>
+            <input class='form-control' name="to" type="date" value="<?php echo (!empty($this->input->get("to"))) ? $this->input->get("to") : date('Y-m-t');?>">
+        </div>
+        <div class="col-md-2 d-none">
+            <label for="">By</label>
+            <select name="method" id="" class="form-select">
+                <option value="start_time" <?php echo ($this->input->get("method") == 'start_time') ? 'selected' : '';?>>Start Date</option>
+                <option value="finish_time" <?php echo ($this->input->get("method") == 'finish_time') ? 'selected' : '';?>>Finish Date</option>
             </select>
         </div>
-
-        <div>
-            <label for="">Project</label>
-            <select name="project_id" id=""
-                class="form-control <?php echo (!empty($this->input->get("project_id")))?'bg-info text-white':'';?>"
-                disabled>
-                <option value="">Click on a Project</option>
-                <?php foreach($myProjects as $c):?>
-                <option value="<?php echo $c->id;?>"
-                    <?php echo $c->id == $this->input->get("project_id") ? "selected" : "";?>>
-                    <?php echo "{$c->name} [{$c->company_name}]";?></option>
-                <?php endforeach;?>
-            </select>
-        </div>
-
-        <div>
+        <div class='col-md-2'>
             <label for="">Customer</label>
             <select name="customer_id" id=""
-                class="form-control <?php echo (!empty($this->input->get("customer_id")))?'bg-info text-white':'';?>"
-                disabled>
-                <option value="">Click on Customer</option>
+                class="form-select <?php echo (!empty($this->input->get("customer_id")))?'bg-info text-white':'';?>">
+                <option value="">Select Customer</option>
                 <?php foreach($myCustomers as $c):?>
                 <option value="<?php echo $c->customer_id;?>"
                     <?php echo $c->customer_id == $this->input->get("customer_id") ? "selected" : "";?>>
@@ -50,9 +36,32 @@
                 <?php endforeach;?>
             </select>
         </div>
-
-        <div>
-            <button class="btn btn-success"><i class="fa fa-check"></i> Apply</button>
+        <div class='col-md-2 d-none'>
+            <label for="">Sprint</label>
+            <select name="sprint_id" id=""
+                class="form-select <?php echo (!empty($this->input->get("sprint_id")))?'bg-info text-white':'';?>">
+                <option value="">Select Sprint</option>
+                <?php foreach($mySprints as $c):?>
+                <option value="<?php echo $c->id;?>"
+                    <?php echo $c->id == $this->input->get("sprint_id") ? "selected" : "";?>>
+                    <?php echo "{$c->name} [{$c->project_name} ‖ {$c->company_name}]";?></option>
+                <?php endforeach;?>
+            </select>
+        </div>
+        <div class='col-md-2 d-none'>
+            <label for="">Project</label>
+            <select name="project_id" id=""
+                class="form-select <?php echo (!empty($this->input->get("project_id")))?'bg-info text-white':'';?>">
+                <option value="">Select Project</option>
+                <?php foreach($myProjects as $c):?>
+                <option value="<?php echo $c->id;?>"
+                    <?php echo $c->id == $this->input->get("project_id") ? "selected" : "";?>>
+                    <?php echo "{$c->name} [{$c->company_name}]";?></option>
+                <?php endforeach;?>
+            </select>
+        </div>
+        <div class="col-md-1" style='margin-top:34px;'>
+            <button class="btn btn-info">Apply</button>
         </div>
     </div>
 </form>

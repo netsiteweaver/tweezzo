@@ -64,6 +64,10 @@ class Timesheets_model extends CI_Model
 
     public function getTaskByDeveloperId($developerId, $customerId="", $projectId="", $sprintId="")
     {
+        $startDate = (!empty($this->input->get("from"))) ? $this->input->get("from") : date("Y-m-01");
+        $finishDate = (!empty($this->input->get("to"))) ? $this->input->get("to") : date("Y-m-t");
+        $method = (!empty($this->input->get("method"))) ? $this->input->get("method") : 'start';
+
         $query = "SELECT
                         c.customer_id customerId, s.id sprintId, p.id projectId,
                         t2.uuid taskUuid, t2.name taskName, t2.task_number taskNumber, t2.section taskSection,
@@ -82,13 +86,17 @@ class Timesheets_model extends CI_Model
                     AND s.status = 1
                     AND p.status = 1
                     AND c.status = 1
-                    AND s.active = 1 
-                    AND p.active = 1 
-                    AND c.active = 1
+                    -- AND s.active = 1 
+                    -- AND p.active = 1 
+                    -- AND c.active = 1
                     AND t.developer_id  = $developerId";
+        $query .= " AND t.start_time >= '" . $startDate.' 00:00:00' . "'";
+        $query .= " AND t.finish_time <= '" . $finishDate.' 23:59:59' . "'";
         if(!empty($customerId)) $query .= " AND c.customer_id = '{$customerId}'";
         if(!empty($projectId)) $query .= " AND p.id = '{$projectId}'";
         if(!empty($sprintId)) $query .= " AND s.id = '{$sprintId}'";
+        $query .= " ORDER BY t.start_time DESC";
+        // echo $query;die;
         $result = $this->db->query($query)->result();
         return $result;
     }
