@@ -148,8 +148,39 @@
 <script src="<?php echo base_url("assets/AdminLTE-3.2.0/");?>/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
 <script src="<?php echo base_url("assets/AdminLTE-3.2.0/");?>/dist/js/adminlte.min.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="<?php echo base_url("assets/AdminLTE-3.2.0/");?>/dist/js/demo.js"></script>
+<script>
+    $(document).ready(function() {
+      $('.summernote').summernote({
+        callbacks: {
+          onImageUpload: function(files) {
+            // Prevent image upload
+            console.log('Image upload blocked');
+          },
+          onPaste: function(e) {
+            const clipboardData = e.originalEvent.clipboardData;
+            if (clipboardData && clipboardData.items) {
+              for (let i = 0; i < clipboardData.items.length; i++) {
+                if (clipboardData.items[i].type.indexOf("image") !== -1) {
+                  e.preventDefault(); // Block image paste
+                  console.log('Image paste blocked');
+                  return;
+                }
+              }
+            }
+          }
+        },
+        toolbar: [
+          // Exclude the 'picture' button
+          ['style', ['bold', 'italic', 'underline', 'clear']],
+          ['font', ['strikethrough', 'superscript', 'subscript']],
+          ['para', ['ul', 'ol', 'paragraph']],
+          ['insert', []], // remove 'picture'
+          ['view', ['fullscreen', 'codeview', 'help']]
+        ],
+        height: 150
+      });
+    });  
+</script>
 <!-- Toastr -->
 <script src="<?php echo base_url();?>assets/vendors/toastr/build/toastr.min.js"></script>
 <!-- Moment.js -->
