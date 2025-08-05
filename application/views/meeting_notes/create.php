@@ -52,7 +52,7 @@
         <div class="form-group">
             <label for="attendees" class="form-label">Attendees</label>
             <textarea name="attendees" id="attendees" class="form-control required"
-                rows="3" required><?= set_value('attendees', isset($note) ? $note->attendees : '') ?></textarea>
+                rows="3" placeholder="One email per line" required><?= set_value('attendees', isset($note) ? $note->attendees : '') ?></textarea>
         </div>
 
 

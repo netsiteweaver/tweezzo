@@ -49,6 +49,7 @@
         <?php endif; ?>        
     </div>
     <div class="card-footer">
-        <a href="<?= site_url('meeting_notes') ?>" class="btn btn-back mt-4"><i class="fa fa-chevron-left"></i> Back to List</a>
+        <a href="<?= site_url('meeting_notes/send_email/'.$note->id) ?>" class="btn btn-view" onclick="return confirm('Email minutes to all attendees?')"><i class="fa fa-at"></i> Email Minutes to Attendees</a>
+        <a href="<?= site_url('meeting_notes') ?>" class="btn btn-back"><i class="fa fa-chevron-left"></i> Back to List</a>
     </div>
 </div>

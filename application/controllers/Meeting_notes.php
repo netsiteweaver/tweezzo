@@ -181,11 +181,52 @@ class Meeting_notes extends MY_Controller
         }
     }
 
+    public function send_email($id) {
+        $meeting = $this->Meeting_note_model->get_note($id);
+        if (!$meeting ) {
+            $this->session->set_flashdata('error', 'Meeting not Found');
+            return redirect('meeting_notes/view/'.$id);
+        }
+
+        $attendees = $meeting->attendees;
+
+        if (empty($attendees)) {
+            $this->session->set_flashdata('error', 'No attendees to email.');
+            return redirect('meeting_notes/view/'.$id);
+        }
+
+        $this->load->library('email');
+        $this->email->set_mailtype("html");
+
+        $emails = preg_split('/[\s,;]+/', $attendees);
+
+        $this->load->model("Email_model3");
+        $this->load->model("system_model");
+
+        foreach ($emails as $email) {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                continue;
+            }
+            $emailData = [
+                'meeting'     =>  $meeting,
+                'logo'      =>  $this->system_model->getParam("logo"),
+            ];
+            $content = $this->load->view("_email/header",$emailData, true);
+            $content .= $this->load->view("_email/meeting_notes",$emailData, true);
+            $content .= $this->load->view("_email/footer",[], true);
+            $this->Email_model3->save($email,"Meeting Notes",$content);
+        }
+
+        flashSuccess('Minutes emailed to attendees.');
+        redirect('meeting_notes/view/'.$id);
+    }
+
+
     public function delete_image($imageId)
     {
         //Access Control
         if (!isAuthorised(get_class(), "delete")) return false;
-        
+
         $this->db->where("id",$imageId)->delete("attachments");
         echo json_encode(array("result"=>true));
         exit;
