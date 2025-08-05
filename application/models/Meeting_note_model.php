@@ -14,8 +14,15 @@ class Meeting_note_model extends CI_Model
     public function insert_note($data)
     {
         $data['created_at'] = date('Y-m-d H:i:s');
+        $data['customer_id'] = ($this->input->post('customer_id') == 'other') ? null : $this->input->post('customer_id');
         $this->db->insert('meeting_notes', $data);
         $note_id = $this->db->insert_id();
+
+        // Ensure upload folder exists
+        $upload_dir = './uploads/meetings/';
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0755, true);
+        }
 
         if (!empty($_FILES['attachments']['name'][0])) {
             $files = $_FILES;
@@ -29,7 +36,7 @@ class Meeting_note_model extends CI_Model
                 $_FILES['attachment']['error']    = $files['attachments']['error'][$i];
                 $_FILES['attachment']['size']     = $files['attachments']['size'][$i];
 
-                $config['upload_path']   = './uploads/';
+                $config['upload_path']   = './uploads/meetings/';
                 $config['allowed_types'] = '*';
                 $config['max_size']      = 2048;
                 $config['encrypt_name']  = TRUE;
@@ -44,7 +51,7 @@ class Meeting_note_model extends CI_Model
                         'uploaded_by'       =>  $_SESSION['user_id'],
                         'meeting_note_id'   => $note_id,
                         'file_name'         => $upload_data['orig_name'],
-                        'file_path'         => 'uploads/' . $upload_data['file_name'],
+                        'file_path'         => 'uploads/meetings/' . $upload_data['file_name'],
                     ];
                 }
             }
@@ -57,6 +64,12 @@ class Meeting_note_model extends CI_Model
 
     public function update_note($id)
     {
+        // Ensure upload folder exists
+        $upload_dir = './uploads/meetings/';
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0755, true);
+        }
+
         if (!empty($_FILES['attachments']['name'][0])) {
             $files = $_FILES;
             $count = count($files['attachments']['name']);
@@ -69,7 +82,7 @@ class Meeting_note_model extends CI_Model
                 $_FILES['attachment']['error']    = $files['attachments']['error'][$i];
                 $_FILES['attachment']['size']     = $files['attachments']['size'][$i];
 
-                $config['upload_path']   = './uploads/';
+                $config['upload_path']   = './uploads/meetings';
                 $config['allowed_types'] = '*';
                 $config['max_size']      = 4096;
                 $config['encrypt_name']  = TRUE;
@@ -84,7 +97,7 @@ class Meeting_note_model extends CI_Model
                         'uploaded_by'       =>  $_SESSION['user_id'],
                         'meeting_note_id'   =>  $id,
                         'file_name'         =>  $upload_data['orig_name'],
-                        'file_path'         =>  'uploads/' . $upload_data['file_name'],
+                        'file_path'         =>  'uploads/meetings/' . $upload_data['file_name'],
                     ];
                 }
             }

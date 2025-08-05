@@ -18,12 +18,18 @@
                     <td><?= htmlspecialchars($note->meeting_datetime) ?></td>
                     <td><?= htmlspecialchars($note->customer_name) ?></td>
                     <td>
+                        <?php if($perms['view']):?>
                         <a href="<?= site_url('meeting_notes/view/'.$note->id) ?>" class="btn btn-view me-1"><i class="fa fa-eye"></i> View</a>
+                        <?php endif;?>
+                        <?php if($perms['edit']):?>
                         <a href="<?= site_url('meeting_notes/edit/'.$note->id) ?>" class="btn btn-save me-1"><i class="fa fa-edit"></i> Edit</a>
+                        <?php endif;?>
+                        <?php if($perms['pdf']):?>
                         <a href="<?= site_url('meeting_notes/pdf/'.$note->id) ?>" class="btn btn-danger me-1"><i class="fa fa-file-pdf"></i> PDF</a>
-                        <button class="btn btn-delete delete-note" data-id="<?= $note->id ?>">
-                            <i class="fa fa-trash"></i> Delete
-                        </button>
+                        <?php endif;?>
+                        <?php if($perms['delete']):?>
+                        <button class="btn btn-delete delete-note" data-id="<?= $note->id ?>"><i class="fa fa-trash"></i> Delete</button>
+                        <?php endif;?>
                     </td>
                 </tr>
                 <?php endforeach; ?>

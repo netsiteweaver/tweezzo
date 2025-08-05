@@ -10,6 +10,14 @@ class Meeting_notes extends MY_Controller
         $this->load->helper(['form', 'url']);
         $this->load->library(['form_validation', 'upload']);
 
+        $this->load->model("accesscontrol_model");
+        $this->data['perms']['add'] = $this->accesscontrol_model->authorised("meeting_notes","create");
+        $this->data['perms']['edit'] = $this->accesscontrol_model->authorised("meeting_notes","edit");
+        $this->data['perms']['view'] = $this->accesscontrol_model->authorised("meeting_notes","view");
+        $this->data['perms']['listing'] = $this->accesscontrol_model->authorised("meeting_notes","index");
+        $this->data['perms']['pdf'] = $this->accesscontrol_model->authorised("meeting_notes","pdf");
+        $this->data['perms']['delete'] = $this->accesscontrol_model->authorised("meeting_notes","delete");
+
         //Breadcrumbs
         $this->mybreadcrumb->add('Meeting Notes', base_url('meeting_notes/index'));
     }
@@ -53,7 +61,7 @@ class Meeting_notes extends MY_Controller
     public function pdf($id)
     {
         //Access Control
-        if (!isAuthorised(get_class(), "view")) return false;
+        if (!isAuthorised(get_class(), "pdf")) return false;
 
         //Breadcrumbs
         $this->mybreadcrumb->add('PDF', base_url('meeting_notes/pdf'));
@@ -72,7 +80,7 @@ class Meeting_notes extends MY_Controller
     public function create()
     {
         //Access Control
-        if (!isAuthorised(get_class(), "add")) return false;
+        if (!isAuthorised(get_class(), "create")) return false;
 
         //Breadcrumbs
         $this->mybreadcrumb->add('Create', base_url('meeting_notes/create'));
@@ -175,6 +183,9 @@ class Meeting_notes extends MY_Controller
 
     public function delete_image($imageId)
     {
+        //Access Control
+        if (!isAuthorised(get_class(), "delete")) return false;
+        
         $this->db->where("id",$imageId)->delete("attachments");
         echo json_encode(array("result"=>true));
         exit;

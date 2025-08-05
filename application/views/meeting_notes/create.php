@@ -27,7 +27,7 @@
             <div class="row">
                 <div class="col-md-8">
                     <label for="meeting_date" class="form-label">Meeting Date</label>
-                    <input type="date" name="meeting_date" id="meeting_date" class="form-control required" min="<?php echo date('Y-m-d');?>"
+                    <input type="date" name="meeting_date" id="meeting_date" class="form-control required"
                         value="<?= set_value('meeting_date', date('Y-m-d')) ?>" required>
                 </div>
                 <div class="col-md-4">
