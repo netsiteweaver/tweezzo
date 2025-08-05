@@ -48,6 +48,31 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 
+function downloadPDF() {
+    const element = document.getElementById('meeting-notes');
+    const opt = {
+        margin:       [10, 15, 10, 15], // top, left, bottom, right (in mm)
+        // filename:     'Meeting-Minutes-2025-08-04.pdf',
+        // image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 1, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf()
+        .set(opt)
+        .from(element)
+        .toPdf()
+        .get('pdf')
+        .then(function(pdf){
+            const totalPages = pdf.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                pdf.setPage(i);
+                pdf.setFontSize(10);
+                pdf.text(`Page ${i} of ${totalPages}`, 105, 290, { align: 'center' }); // footer center
+            }
+        })
+        .save('Meeting-Minutes.pdf');
+}
+
 jQuery(function(){
     $('select[name=customer_id]').on("change",function(){
         let elemName = $('select[name=customer_id] option:selected').text();

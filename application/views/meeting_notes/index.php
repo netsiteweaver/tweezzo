@@ -20,6 +20,7 @@
                     <td>
                         <a href="<?= site_url('meeting_notes/view/'.$note->id) ?>" class="btn btn-view me-1"><i class="fa fa-eye"></i> View</a>
                         <a href="<?= site_url('meeting_notes/edit/'.$note->id) ?>" class="btn btn-save me-1"><i class="fa fa-edit"></i> Edit</a>
+                        <a href="<?= site_url('meeting_notes/pdf/'.$note->id) ?>" class="btn btn-danger me-1"><i class="fa fa-file-pdf"></i> PDF</a>
                         <button class="btn btn-delete delete-note" data-id="<?= $note->id ?>">
                             <i class="fa fa-trash"></i> Delete
                         </button>

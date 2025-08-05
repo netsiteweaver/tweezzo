@@ -50,6 +50,25 @@ class Meeting_notes extends MY_Controller
         $this->load->view("/layouts/default",$this->data);   
     }
 
+    public function pdf($id)
+    {
+        //Access Control
+        if (!isAuthorised(get_class(), "view")) return false;
+
+        //Breadcrumbs
+        $this->mybreadcrumb->add('PDF', base_url('meeting_notes/pdf'));
+        $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
+
+        // page title
+        $this->data['page_title'] = "Meeting Notes - PDF";
+        
+        $this->data['note'] = $this->Meeting_note_model->get_note($id);
+        $this->data['attachments'] = $this->Attachment_model->get_attachments($id);
+
+        $this->data["content"]=$this->load->view("meeting_notes/pdf",$this->data,true);
+        $this->load->view("/layouts/default",$this->data);   
+    }
+
     public function create()
     {
         //Access Control
