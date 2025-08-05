@@ -7,7 +7,7 @@
         <div class="row">
             <div class="col-md-9">
                 <p class='text-bold border-bottom'>Notes</p>
-                <p><?= nl2br($note->notes) ?></p>
+                <p><?= $note->notes ?></p>
             </div>
             <div class="col-md-3 border-left">
                 <p class='text-bold border-bottom'>Attendees</p>

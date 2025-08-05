@@ -23,7 +23,7 @@
             </tr>
             <tr>
                 <th style='text-align:left; width: 150px;'>MEETING NOTES</th>
-                <td><?php echo nl2br($meeting->notes);?></td>
+                <td><?php echo $meeting->notes;?></td>
             </tr>
         </tbody>
     </table>
