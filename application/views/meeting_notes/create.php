@@ -58,7 +58,7 @@
 
         <div class="form-group">
             <label for="notes" class="form-label">Notes</label>
-            <textarea name="notes" id="notes" class="form-control summernote required" rows="5" required><?= set_value('notes') ?></textarea>
+            <textarea name="notes" id="notes" class="form-control summernote2 required" rows="5" required><?= set_value('notes') ?></textarea>
         </div>
 
         <div class="form-group">

@@ -59,7 +59,7 @@
 
         <div class="form-group">
             <label for="notes" class="form-label">Notes</label>
-            <textarea name="notes" id="notes" class="form-control summernote" rows="3"
+            <textarea name="notes" id="notes" class="form-control summernote2" rows="3"
                 required><?= set_value('notes', $note->notes) ?></textarea>
         </div>
 
