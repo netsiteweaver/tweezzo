@@ -171,6 +171,36 @@ $(document).ready(function(){
 		]
 	});
 
+	$('.summernote2').summernote({
+			// styleTags: [
+			// 	'p',
+			// 		{ title: 'Blockquote', tag: 'blockquote', className: 'blockquote', value: 'blockquote' },
+			// 		'pre', 'h1', 'h2', 'h3', 'h5', 'h5', 'h6'
+			// ],
+		callbacks: {
+			// callback for pasting text only (no formatting)
+			onPaste: function (e) {
+			  var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData('Text');
+			  console.log(bufferText)
+			  e.preventDefault();
+			  bufferText = bufferText.replace(/\r?\n/g, '<br>');
+			  document.execCommand('insertHtml', false, bufferText);
+			}
+		},
+		height: 150,
+		tabsize: 4,
+		toolbar: [
+		  // [groupName, [list of button]]
+		  ['style', ['bold', 'italic', 'underline', 'clear']],
+		  ['font', ['strikethrough', 'superscript', 'subscript']],
+		  ['fontsize', ['fontsize']],
+		  ['color', ['color']],
+		  ['para', ['ul', 'ol', 'paragraph']],
+		//   ['height', ['height']],
+		//   ['view', ['fullscreen', 'codeview']],
+		]
+	});
+
 	
 	toastr.options = {
 		"closeButton": false,
