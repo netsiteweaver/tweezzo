@@ -187,7 +187,8 @@ $(document).ready(function(){
 			  document.execCommand('insertHtml', false, bufferText);
 			}
 		},
-		height: 150,
+		minHeight: 100,
+		maxHeight: null,
 		tabsize: 4,
 		toolbar: [
 		  // [groupName, [list of button]]
