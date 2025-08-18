@@ -293,12 +293,12 @@ class Customersportal_model extends CI_Model
 
     public function forgotPassword($email)
     {
-        $check = $this->db->select("*")->from("customers")->where(["email"=>$email,"status"=>1])->get()->row();
+        $check = $this->db->select("*")->from("customer_access")->where(["email"=>$email,"status"=>1])->get()->row();
         if(empty($check)) {
             return false;
         }else{
             $token = randomName(32);
-            $this->db->set("token",$token)->where("email",$email)->update("customers");
+            $this->db->set("token",$token)->where("email",$email)->update("customer_access");
             $output = new stdClass;
             $output->result = true;
             $output->token = $token;
@@ -329,12 +329,12 @@ class Customersportal_model extends CI_Model
     {
         $password = genPassword(12);
         $this->db->set("password", "md5('$password')", false);
-        $this->db->where(["email"=>urldecode($email),"token"=>$token]);
-        $this->db->update("customers");
-        if ($this->db->affected_rows() == 1) {
+        $this->db->where(["email"=>urldecode($email),"token"=>$token,"status"=>"1"]);
+        $this->db->update("customer_access");
+        if ($this->db->affected_rows() > 0) {
             $this->db->set("token", '');
             $this->db->where(["email"=>urldecode($email),"token"=>$token]);
-            $this->db->update("customers");
+            $this->db->update("customer_access");
             $this->sendConfirmationEmail(urldecode($email), $password);
         }
     }
@@ -347,7 +347,7 @@ class Customersportal_model extends CI_Model
             'email'     =>  $recipient,
             'password'  =>  $password,
             'logo'      =>  $this->system_model->getParam("logo"),
-            'signinUrl' =>  'portal/customers/signin/'
+            'signinUrl' =>  'portal/customers/signin?email='.$recipient
         ];
         $content = $this->load->view("_email/header",$emailData, true);
         $content .= $this->load->view("_email/forgotPasswordConfirmation",$emailData, true);

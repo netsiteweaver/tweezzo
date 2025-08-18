@@ -248,7 +248,7 @@ class Customers extends CI_Controller
     {
         $email = $this->input->post("email");
         $result = $this->Customersportal_model->forgotPassword($email);
-        echo json_encode(['result'=>true]);
+        echo json_encode(['result'=>($result) ? true : false]);
         exit;
     }
 
@@ -257,7 +257,16 @@ class Customers extends CI_Controller
         $token = $this->uri->segment(4);
         $email = $this->uri->segment(5);
         $this->Customersportal_model->processForgotPassword($token, $email);
-        redirect(base_url("portal/customers/signin"));
+        echo "<html><div style='font-family:Arial; font-size:18px;margin:10vh auto;width:400px;border:1px solid #ccc;padding:25px 50px;'>You will soon receive an email with your newly generated password. <br><button style='padding:5px 10px; text-align:center; text-transform:uppercase;background-color:#4c4c4c;color:#fff;margin-top:20px;' onclick=\"window.close()\">Close</button></div><script>
+        function closeTab() {
+            window.close();
+            // fallback if close() is blocked
+            setTimeout(() => {
+                alert(\"If this tab did not close automatically, please close it manually.\");
+            }, 500);
+        }
+        </script></html>";
+        // redirect(base_url("portal/customers/signin?email={$email}"));
     }
 
     public function loadNotes()
