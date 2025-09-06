@@ -94,6 +94,8 @@ class Developers extends CI_Controller
         $this->data['myCustomers'] = $this->Developersportal_model->getMyCustomers($_SESSION['developer_id']);
         $this->data['mySprints'] = $this->Developersportal_model->getMySprints($_SESSION['developer_id']);
 
+        $this->data['stages'] = ['new','in_progress','testing','staging','validated','completed','on_hold','stopped'];
+
         $this->data['content'][] = $this->load->view("/portal/developers/tasks",$this->data,true);
         $this->load->view("/portal/developers/shared/layout",$this->data);
 

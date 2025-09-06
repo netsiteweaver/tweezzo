@@ -1,7 +1,21 @@
 <style>
-    tr.selected td {
-        background-color:#eee !important;
+    #modalChooseStages .list-group-item.selected {
+        background-color:transparent !important;
+        color: #4c4c4c !important;
     }
+    .fa {
+        width:25px;
+        height:25px;
+        font-size:24px;
+        color:green;
+    }
+    li span {
+        display: none;
+    }
+    li.selected span {
+        display: inline;
+    }
+
 </style>
 
 <form id="tasks" method="get" action="./portal/developers/tasks">
@@ -49,6 +63,12 @@
                     </select>
                 </div>
                 <div class="col-md-2">
+                    <label for="">Stages</label><br>
+                    <input type="hidden" id="stage" name="stage" value='<?php echo (!empty($this->input->get("stage")))?$this->input->get("stage"):'[]';?>'>
+                    <div style='border:1px solid #ccc;border-radius:5px !important;' class="btn w-100 choose-stages">Select Stages <?php echo (!empty($this->input->get("stage")))? "[".count(json_decode($this->input->get("stage")))."]":'[0]';?></div>
+                </div>
+
+                <!-- <div class="col-md-2">
                     <label for="">Stage <span style='color:#36b936;' class='<?php echo (empty(($this->input->get("stage")))) ? 'd-none' :'';?>'><bi class="bi-check-circle-fill"></bi></span></label>
                     <select name="stage" id="stage" class="form-control autosubmit">
                         <option value="">Select Stage</option>
@@ -72,9 +92,9 @@
                         <option value="on_hold"
                             <?php echo ($this->input->get("stage") == "on_hold") ? "selected" : ""; ?>>
                             On Hold</option>
-                        <!-- <option value="stopped" <?php //echo ($this->input->get("stage") == "stopped") ? "selected" : ""; ?>>Stopped</option> -->
+                        <option value="stopped" <?php //echo ($this->input->get("stage") == "stopped") ? "selected" : ""; ?>>Stopped</option>
                     </select>
-                </div>
+                </div> -->
 
                 <div class="col-md-2">
                     <label for="">Order By <span style='color:#36b936;' class='<?php echo (empty(($this->input->get("order_by")))) ? 'd-none' :'';?>'><bi class="bi-check-circle-fill"></bi></span></label>
@@ -308,4 +328,56 @@
       </div>
     </div>
   </div>
+</div>
+
+<!-- Modal -->
+<!-- <div class="modal fade" id="" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Select Stages</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i>
+                    Cancel</button>
+                <button type="button" class="btn btn-success applyChosenStages"><i class="fa fa-check"></i> Proceed</button>
+            </div>
+        </div>
+    </div>
+</div> -->
+
+<!-- Modal -->
+<div class="modal fade" id="modalChooseStages" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Select Stages</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <ul id="stages-list" class="list-group">
+                <li data-stage='' class='list-group-item text-center'>
+                    <div class="btn btn-info select-all">Select / Deselect All</div>
+                </li>
+                <?php foreach($stages as $stage):?>
+                <li data-stage="<?php echo $stage;?>" class="text-center list-group-item cursor-pointer choose-stage <?php //echo in_array($user->id, $task->assigned_users) ? 'assigned':'';?>">
+                    <?php echo str_replace("_"," ",strtoupper($stage));?>
+                    <span class='float-end'><i class="fa fa-check-square green"></i></span>
+                </li>
+                <?php endforeach;?>
+            </ul>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-success applyChosenStages">Proceed</button>
+        </div>
+        </div>
+    </div>
 </div>

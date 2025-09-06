@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Developersportal_model extends CI_Model{
 
-    public function getMyTasks($developer_id, $customer_id="",$project_id="",$sprint_id="",$stage="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$notes_only="")
+    public function getMyTasks($developer_id, $customer_id="",$project_id="",$sprint_id="",$stageJson="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$notes_only="")
     {
         if( (empty($page)) || ($page <= 0) ) $page =1;
         $offset = ( ($page-1)*$rows_per_page);  
@@ -42,7 +42,14 @@ class Developersportal_model extends CI_Model{
         if(!empty($customer_id)) $query .= " AND c.customer_id = '{$customer_id}'";
         if(!empty($project_id)) $query .= " AND p.id = '{$project_id}'";
         if(!empty($sprint_id)) $query .= " AND s.id = '{$sprint_id}'";
-        if(!empty($stage)) $query .= " AND t.stage = '{$stage}'";
+        $stageArray = json_decode($stageJson);
+        if(!empty($stageArray)) {
+            $escaped = array_map(function($stage) {
+                return "'" . addslashes($stage) . "'";
+            }, $stageArray);
+            $stages = implode(",",$escaped);
+            $query .= " AND t.stage IN ({$stages})";
+        }
         $query .= " GROUP BY t.id";
         if($notes_only=="without") {
             $query .= " HAVING notes_count = 0";
