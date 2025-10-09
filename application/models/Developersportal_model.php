@@ -38,7 +38,10 @@ class Developersportal_model extends CI_Model{
                     LEFT JOIN task_notes tn ON tn.task_id = t.id
                     LEFT JOIN latest_timesheets ts ON ts.task_id = t.id AND ts.rn = 1
                     WHERE tu.user_id = {$developer_id} 
-                    AND t.status = '1' AND t.closed = '0'";
+                    AND t.status = '1' AND t.closed = '0'
+                    AND s.status = 1 AND s.active = 1
+                    AND p.active = 1
+                    AND c.status = 1 AND c.active = 1";
         if(!empty($customer_id)) $query .= " AND c.customer_id = '{$customer_id}'";
         if(!empty($project_id)) $query .= " AND p.id = '{$project_id}'";
         if(!empty($sprint_id)) $query .= " AND s.id = '{$sprint_id}'";
@@ -129,6 +132,12 @@ class Developersportal_model extends CI_Model{
                         tu.user_id ={$developer_id}
                     AND
                         p.active = 1
+                    AND 
+                        s.status = 1 AND s.active = 1
+                    AND 
+                        t.status = 1 AND t.closed = 0
+                    AND 
+                        c.status = 1 AND c.active = 1
                     ORDER BY p.name";
         return $this->db->query($query)->result();
 
@@ -176,7 +185,13 @@ class Developersportal_model extends CI_Model{
                     WHERE
                         tu.user_id ={$developer_id}
                     AND 
-                        s.active = 1
+                        s.active = 1 AND s.status = 1
+                    AND 
+                        p.active = 1
+                    AND 
+                        t.status = 1 AND t.closed = 0
+                    AND 
+                        c.status = 1 AND c.active = 1
                     ORDER BY s.name";
         return $this->db->query($query)->result();
 
