@@ -13,6 +13,8 @@ class Projects_model extends CI_Model{
         $this->db->from('projects p');
         $this->db->join('customers c','c.customer_id=p.customer_id','left');
         $this->db->where('p.status',1);
+        $this->db->where('p.active',1);
+        $this->db->where('c.active',1);
         if(!empty($customer_id)) $this->db->where('p.customer_id',$customer_id);
         if(!empty($stage)) $this->db->where('p.stage',$stage);
         if(!empty($order_by)) {
@@ -30,7 +32,10 @@ class Projects_model extends CI_Model{
     {
         $this->db->select('count(1) as ct');
         $this->db->from('projects p');
+        $this->db->join('customers c','c.customer_id=p.customer_id','left');
         $this->db->where('p.status',1);
+        $this->db->where('p.active',1);
+        $this->db->where('c.active',1);
         if(!empty($customer_id)) $this->db->where('p.customer_id',$customer_id);
         if(!empty($stage)) $this->db->where('p.stage',$stage);
         return $this->db->get()->row('ct');
@@ -175,6 +180,7 @@ class Projects_model extends CI_Model{
         $this->db->join('customers c','c.customer_id=p.customer_id','left');
         $this->db->where('p.status',1);
         $this->db->where('p.active',1);
+        $this->db->where('c.active',1);
         $this->db->order_by('p.name','asc');
         if(!empty($customer_id)) $this->db->where(array("p.customer_id"=>$customer_id));
         return $this->db->get()->result();

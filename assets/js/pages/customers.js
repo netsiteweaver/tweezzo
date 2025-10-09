@@ -48,6 +48,63 @@ jQuery(function(){
     //     alert(uuid)
     // })
 
+    $(".toggleActive").on("click", function(){
+        let uuid = $(this).closest("tr").data("uuid");
+        let row = $(this).closest("tr");
+        let activeIndicator = row.find(".activeOrNot div");
+        let toggleBtn = $(this);
+        
+        bootbox.confirm({
+            message: "Are you sure you want to toggle this customer's active status? This will also affect all related projects, sprints, and tasks.",
+            buttons: {
+                confirm: {
+                    label: 'Yes, Proceed',
+                    className: 'btn-warning'
+                },
+                cancel: {
+                    label: 'Cancel',
+                    className: 'btn-default'
+                }
+            },
+            callback: function (result) {
+                if(result==true){
+                    Overlay("on");
+                    $.ajax({
+                        url: "/customers/toggleActive",
+                        type: "POST",
+                        dataType: "JSON",
+                        data: {uuid: uuid},
+                        success: function(response){
+                            if(response.result){
+                                alertify.success(response.message + ". Affected: " + response.affectedProjects + " projects, " + response.affectedSprints + " sprints");
+                                
+                                // Update the active indicator
+                                if(response.newStatus == '1'){
+                                    activeIndicator.removeClass('btn-danger').addClass('btn-info');
+                                    activeIndicator.find('i').removeClass('fa-times').addClass('fa-check');
+                                    toggleBtn.removeClass('btn-success').addClass('btn-warning');
+                                    toggleBtn.find('i').removeClass('fa-eye').addClass('fa-eye-slash');
+                                    toggleBtn.attr('title', 'Set Inactive');
+                                }else{
+                                    activeIndicator.removeClass('btn-info').addClass('btn-danger');
+                                    activeIndicator.find('i').removeClass('fa-check').addClass('fa-times');
+                                    toggleBtn.removeClass('btn-warning').addClass('btn-success');
+                                    toggleBtn.find('i').removeClass('fa-eye-slash').addClass('fa-eye');
+                                    toggleBtn.attr('title', 'Set Active');
+                                }
+                            }else{
+                                alertify.error("Error: " + response.reason);
+                            }
+                        },
+                        complete: function(){
+                            Overlay("off")
+                        }
+                    });
+                }
+            }
+        });
+    });
+
     $(".deleteCustomer").on("click", function(){
         let uuid = $(this).closest("tr").data("uuid");
         $(this).closest("tr").addClass("active");

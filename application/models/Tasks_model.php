@@ -32,7 +32,7 @@ class Tasks_model extends CI_Model{
             }
         }
         
-        $this->db->where(['t.status'=>'1','t.closed'=>'0']);
+        $this->db->where(['t.status'=>'1','t.closed'=>'0','s.active'=>'1','p.active'=>'1','c.active'=>'1']);
         if(!empty($customer_id)) $this->db->where('c.customer_id',$customer_id);
         if(!empty($project_id)) $this->db->where('p.id',$project_id);
         if(!empty($sprint_id)) $this->db->where('s.id',$sprint_id);
@@ -636,7 +636,10 @@ class Tasks_model extends CI_Model{
                         JOIN customers c ON c.customer_id = p.customer_id 
                     WHERE 
                         t.status = 1 AND t.closed = 0 
-                    AND c.status = 1 AND c.active = 1 AND p.status = 1 AND s.name != 'Roadmap' 
+                    AND c.status = 1 AND c.active = 1 
+                    AND p.status = 1 AND p.active = 1 
+                    AND s.status = 1 AND s.active = 1 
+                    AND s.name != 'Roadmap' 
                     GROUP BY 
                         c.company_name
                     ORDER BY 

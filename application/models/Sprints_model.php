@@ -14,6 +14,9 @@ class Sprints_model extends CI_Model{
         $this->db->join('projects p','p.id=s.project_id','left');
         $this->db->join('customers c','c.customer_id=p.customer_id','left');
         $this->db->where('s.status',1);
+        $this->db->where('s.active',1);
+        $this->db->where('p.active',1);
+        $this->db->where('c.active',1);
         if(!empty($customer_id)) $this->db->where('c.customer_id',$customer_id);
         if(!empty($order_by)) {
             $this->db->order_by($order_by,$order_dir);
@@ -32,6 +35,9 @@ class Sprints_model extends CI_Model{
         $this->db->join('projects p','p.id=s.project_id','left');
         $this->db->join('customers c','c.customer_id=p.customer_id','left');
         $this->db->where('s.status',1);
+        $this->db->where('s.active',1);
+        $this->db->where('p.active',1);
+        $this->db->where('c.active',1);
         if(!empty($customer_id)) $this->db->where('c.customer_id',$customer_id);
         return $this->db->get()->row('ct');
     }
@@ -169,7 +175,13 @@ class Sprints_model extends CI_Model{
 
     public function lookup()
     {
-        return $this->db->select("id,name,project_id")->from("sprints")->order_by('name')->where(["status"=>"1","active"=>"1"])->get()->result();
+        $this->db->select("s.id,s.name,s.project_id");
+        $this->db->from("sprints s");
+        $this->db->join('projects p','p.id=s.project_id','left');
+        $this->db->join('customers c','c.customer_id=p.customer_id','left');
+        $this->db->where(["s.status"=>"1","s.active"=>"1","p.active"=>"1","c.active"=>"1"]);
+        $this->db->order_by('s.name');
+        return $this->db->get()->result();
     }
 
     public function lookup2($project_id)
@@ -180,6 +192,8 @@ class Sprints_model extends CI_Model{
                 ->join("customers c","c.customer_id=p.customer_id")
                 ->where("s.status",1)
                 ->where("s.active",1)
+                ->where("p.active",1)
+                ->where("c.active",1)
                 ->order_by("c.company_name,p.name,s.name");
         if(!empty($project_id)) $this->db->where("s.project_id",$project_id);
         return $this->db->get()->result();

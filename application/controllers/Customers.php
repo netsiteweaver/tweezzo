@@ -242,9 +242,12 @@ class Customers extends MY_Controller
         $this->load->model("system_model");
         $this->data['rows_per_page'] = empty($this->input->get("display"))?$this->system_model->getParam("rows_per_page"):$this->input->get("display");
         $page = $this->uri->segment(3, '1');
+        
+        $hide_completed = ($this->input->get('hide_completed') == '1') ? true : false;
 
-        $this->data['customers'] = $this->customers_model->get(null,$page,$this->data['rows_per_page'],$this->input->get('search_text'));
-        $total_records = $this->customers_model->total_records($this->input->get('search_text'));
+        $this->data['customers'] = $this->customers_model->get(null,$page,$this->data['rows_per_page'],$this->input->get('search_text'),$hide_completed);
+        $total_records = $this->customers_model->total_records($this->input->get('search_text'),$hide_completed);
+        $this->data['hide_completed'] = $hide_completed;
 // debug($this->data['customers']);
         //Breadcrumbs
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
@@ -335,6 +338,18 @@ class Customers extends MY_Controller
             "result"=>true,
             "info"=>$info
         ));
+        exit;
+    }
+
+    public function toggleActive()
+    {
+        //Access Control        
+        if (!isAuthorised(get_class(), "edit")) return false;
+
+        $uuid = $this->input->post("uuid");
+        $result = $this->customers_model->toggleActive($uuid);
+
+        echo json_encode($result);
         exit;
     }
 

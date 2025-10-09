@@ -24,6 +24,15 @@
             <div class="input-group-text clear-search cursor-pointer"><i class="fa fa-times"></i></div>
         </div>
     </div>
+    <div class="col-3 col-sm-3 col-md-3">
+        <label for="">Options</label>
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" name="hide_completed" id="hide_completed" value="1" <?php echo (!empty($hide_completed)) ? 'checked':'';?>>
+            <label class="form-check-label" for="hide_completed">
+                Hide customers with all tasks completed
+            </label>
+        </div>
+    </div>
     <div class="col-3 col-sm-3 col-md-2 mt-4">
         <button class="btn btn-info btn-block"><i class="fa fa-check"></i> Apply</button>
     </div>
@@ -62,6 +71,11 @@
                                             <a href="<?php echo base_url("customers/edit/" . $customer->uuid."?referer=customers/listing/".$this->uri->segment(3,1)); ?>">
                                                 <div class="btn btn-md btn-primary"><i class="fa fa-edit"></i></div>
                                             </a>
+                                        <?php endif; ?>
+                                        <?php if ($perms['edit']) : ?>
+                                            <div class="btn btn-<?php echo ($customer->active=='1')?'warning':'success';?> toggleActive" title="<?php echo ($customer->active=='1')?'Set Inactive':'Set Active';?>">
+                                                <i class="fa fa-<?php echo ($customer->active=='1')?'eye-slash':'eye';?>"></i>
+                                            </div>
                                         <?php endif; ?>
                                         <!-- <?php if($perms['delete']) //echo DeleteButton2('customers','uuid',$customer->uuid,'','','',false); ?> -->
                                         <?php if($perms['delete']):?>

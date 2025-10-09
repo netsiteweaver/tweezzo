@@ -5,7 +5,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 class Customers_model extends CI_Model
 {
 
-    public function get($uuid="",$page="",$rows_per_page="",$search_text="")
+    public function get($uuid="",$page="",$rows_per_page="",$search_text="",$hide_completed=false)
     {
         if(empty($uuid)){
             $this->db->select("c.*,u.name agent");
@@ -28,6 +28,22 @@ class Customers_model extends CI_Model
             }
             $offset = ($page-1) * $rows_per_page;
             $this->db->where(array("c.status"=>'1'));
+            
+            // If hide_completed is enabled, exclude customers with all tasks completed
+            if($hide_completed){
+                $sql = "c.customer_id NOT IN (
+                    SELECT DISTINCT c2.customer_id 
+                    FROM customers c2
+                    LEFT JOIN projects p ON p.customer_id = c2.customer_id AND p.status = 1 AND p.active = 1
+                    LEFT JOIN sprints s ON s.project_id = p.id AND s.status = 1 AND s.active = 1
+                    LEFT JOIN tasks t ON t.sprint_id = s.id AND t.status = 1 AND t.closed = 0
+                    WHERE c2.status = 1
+                    GROUP BY c2.customer_id
+                    HAVING COUNT(t.id) > 0 AND COUNT(t.id) = SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END)
+                )";
+                $this->db->where($sql, NULL, FALSE);
+            }
+            
             $this->db->order_by("company_name");
             $this->db->limit($rows_per_page,$offset);
             $query = $this->db->get();
@@ -46,21 +62,37 @@ class Customers_model extends CI_Model
 
     }
 
-    public function total_records($search_text="")
+    public function total_records($search_text="",$hide_completed=false)
     {
-        $this->db->select("count(customer_id) as ct")
-                ->from("customers")
-                ->where("status","1");
+        $this->db->select("count(c.customer_id) as ct")
+                ->from("customers c")
+                ->where("c.status","1");
         if(!empty($search_text)){
             $this->db->group_start();
-            $this->db->like("company_name",$search_text);
-            $this->db->or_like("full_name",$search_text);
-            $this->db->or_like("phone_number1",$search_text);
-            $this->db->or_like("phone_number2",$search_text);
-            $this->db->or_like("address",$search_text);
-            $this->db->or_like("city",$search_text);
+            $this->db->like("c.company_name",$search_text);
+            $this->db->or_like("c.full_name",$search_text);
+            $this->db->or_like("c.phone_number1",$search_text);
+            $this->db->or_like("c.phone_number2",$search_text);
+            $this->db->or_like("c.address",$search_text);
+            $this->db->or_like("c.city",$search_text);
             $this->db->group_end();
         }
+        
+        // If hide_completed is enabled, exclude customers with all tasks completed
+        if($hide_completed){
+            $sql = "c.customer_id NOT IN (
+                SELECT DISTINCT c2.customer_id 
+                FROM customers c2
+                LEFT JOIN projects p ON p.customer_id = c2.customer_id AND p.status = 1 AND p.active = 1
+                LEFT JOIN sprints s ON s.project_id = p.id AND s.status = 1 AND s.active = 1
+                LEFT JOIN tasks t ON t.sprint_id = s.id AND t.status = 1 AND t.closed = 0
+                WHERE c2.status = 1
+                GROUP BY c2.customer_id
+                HAVING COUNT(t.id) > 0 AND COUNT(t.id) = SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END)
+            )";
+            $this->db->where($sql, NULL, FALSE);
+        }
+        
         return $this->db->get()->row("ct");
     }
 
@@ -299,6 +331,48 @@ class Customers_model extends CI_Model
 
         return false;
         
+    }
+
+    public function toggleActive($uuid)
+    {
+        // Get customer details
+        $customer = $this->db->select("customer_id, active, company_name")->where("uuid",$uuid)->get("customers")->row();
+        
+        if(empty($customer)){
+            return array("result"=>false,"reason"=>"Customer not found");
+        }
+
+        // Toggle active status
+        $newActiveStatus = ($customer->active == '1') ? '0' : '1';
+        
+        // Update customer
+        $this->db->where("uuid",$uuid)->update("customers",array("active"=>$newActiveStatus));
+        $affectedCustomer = $this->db->affected_rows();
+
+        // Get customer_id for cascading
+        $customer_id = $customer->customer_id;
+
+        // Cascade to projects
+        $this->db->query("UPDATE projects SET active = '$newActiveStatus' WHERE customer_id = '$customer_id'");
+        $affectedProjects = $this->db->affected_rows();
+
+        // Cascade to sprints (via projects)
+        $this->db->query("UPDATE sprints SET active = '$newActiveStatus' 
+                         WHERE project_id IN (SELECT id FROM projects WHERE customer_id = '$customer_id')");
+        $affectedSprints = $this->db->affected_rows();
+
+        // Note: Tasks don't have an 'active' field, they use 'closed' field
+        // If you want to cascade to tasks as well, we would need to add an 'active' field to tasks table
+        // For now, we'll rely on the relationship hierarchy (inactive sprint = hide tasks)
+
+        return array(
+            "result"=>true,
+            "newStatus"=>$newActiveStatus,
+            "message"=> ($newActiveStatus == '1' ? "Customer activated" : "Customer deactivated"),
+            "affectedCustomer"=>$affectedCustomer,
+            "affectedProjects"=>$affectedProjects,
+            "affectedSprints"=>$affectedSprints
+        );
     }
 
     public function delete($uuid)
