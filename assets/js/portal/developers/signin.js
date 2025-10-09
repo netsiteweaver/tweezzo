@@ -68,7 +68,9 @@ jQuery(function(){
                    
                 }else{
                     $('.login__submit').removeClass("running");
-                    alertify.alert('Authentication failed')
+                    // Check if there's a specific message (e.g. for suspended accounts)
+                    let message = response.message ? response.message : 'Authentication failed';
+                    alertify.alert(message);
                 }
             }
         })

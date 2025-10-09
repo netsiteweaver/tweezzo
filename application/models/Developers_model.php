@@ -8,7 +8,8 @@ class Developers_model extends CI_Model{
     {
         $this->db->select("u.*, d.name department");
         $this->db->join("departments d","d.id=u.department_id","left");
-        $this->db->where(["u.status"=>"1","user_type"=>"developer"]);
+        $this->db->where("user_type","developer");
+        $this->db->where("u.status >","0"); // Show active (1) and suspended (2), but not deleted (0)
         $this->db->order_by("u.name");
         return $this->db->get("users u")->result();
     }

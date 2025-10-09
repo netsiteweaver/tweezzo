@@ -229,9 +229,34 @@ class Developersportal_model extends CI_Model{
         $this->db->where("u.password", md5($user_info['password']), true );
         $this->db->where("u.email", trim($user_info['email']));
         $this->db->where("u.user_type", 'developer');
-        $this->db->where("u.status", '1');
         $result = $this->db->get()->row();
-        $this->recordSignIn($result, trim($user_info['email']));
+        
+        // Check status and return appropriate response
+        if($result) {
+            if($result->status == '2') {
+                // Account is suspended
+                $this->recordSignIn(null, trim($user_info['email']));
+                return array(
+                    'result' => false,
+                    'status' => 'suspended',
+                    'message' => 'Your account has been suspended due to inactivity. Please contact the administrator to reactivate your account.'
+                );
+            } elseif($result->status != '1') {
+                // Account is inactive or deleted
+                $this->recordSignIn(null, trim($user_info['email']));
+                return array(
+                    'result' => false,
+                    'status' => 'inactive',
+                    'message' => 'Your account is currently inactive. Please contact the administrator.'
+                );
+            }
+            // Account is active
+            $this->recordSignIn($result, trim($user_info['email']));
+            return $result;
+        }
+        
+        // Invalid credentials
+        $this->recordSignIn(null, trim($user_info['email']));
         return $result;
     }
 

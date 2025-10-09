@@ -54,12 +54,17 @@ class Cron extends CI_Controller {
         $this->db->where("id",$id)->update("email_queue");
     }
 
-    public function getDueTasks()
+    public function getDueTasks($days = null)
     {
-        $days = $this->uri->segment(3);
-        if(empty($days)){
+        // Allow calling via URI or internally with a parameter
+        if($days === null){
+            $days = $this->uri->segment(3);
+        }
+        // Accept 0 (today); only default when truly absent
+        if($days === null || $days === ''){
             $days = 7;
         }
+        $days = (int)$days;
         $this->db->query("SET @@session.time_zone = '+04:00'");
         $query = "select t.uuid, t.id, t.task_number, t.name, t.stage, t.description, t.section, t.due_date, t.estimated_hours, s.name as sprint_name, p.name as project_name, c.company_name, u.name developer_name, u.email as developer_email
                 from tasks t 
@@ -69,40 +74,91 @@ class Cron extends CI_Controller {
                 left join customers c on c.customer_id = p.customer_id
                 left join users u on u.id = tu.user_id
                 where due_date = CURDATE() + INTERVAL $days DAY
-                and t.stage not in('completed','staging','validated')
+                and t.stage not in('completed','on_hold')
                 and u.email IS NOT NULL
                 order by u.email";
         $result = $this->db->query($query)->result();
         $grouped = array();
         if(!empty($result)){
+            $this->load->model("Email_model3");
+            $this->load->model("system_model");
+
             foreach($result as $row){
-                if(!in_array($row->developer_email,$grouped)){
-                    $grouped[$row->developer_email][] = array(
-                        "email" => $row->developer_email,
-                        "tasks" => $row
-                    );
+                if(empty($row->developer_email)) continue;
+                if(!isset($grouped[$row->developer_email])){
+                    $grouped[$row->developer_email] = array();
                 }
+                $grouped[$row->developer_email][] = array(
+                    "email" => $row->developer_email,
+                    "tasks" => $row
+                );
+            }
+
+            foreach($grouped as $tasks){
+                $emailData = [
+                    'days'              =>  $days,    
+                    'logo'              =>  $this->system_model->getParam("logo"),
+                    'tasks'             =>  $tasks,
+                    'show_lifecycle'    =>  false
+                ];
+                $content = $this->load->view("_email/header",$emailData, true);
+                $content .= $this->load->view("_email/dueTasks",$emailData, true);
+                $content .= $this->load->view("_email/footer",[], true);
+                // echo $content;
+                $this->Email_model3->save($tasks[0]['email'],"Tasks Due Reminder",$content);
             }
         }
 
-        $this->load->model("Email_model3");
-        $this->load->model("system_model");
-
-        foreach($grouped as $tasks){
-            $emailData = [
-                'days'              =>  $days,    
-                'logo'              =>  $this->system_model->getParam("logo"),
-                'tasks'             =>  $tasks,
-                'show_lifecycle'    =>  false
-            ];
-            $content = $this->load->view("_email/header",$emailData, true);
-            $content .= $this->load->view("_email/dueTasks",$emailData, true);
-            $content .= $this->load->view("_email/footer",[], true);
-            // echo $content;
-            $this->Email_model3->save($tasks[0]['email'],"Tasks Due Reminder",$content);
-        }
-        
     }
+
+    public function sendDueTaskReminders()
+    {
+        // Run reminders for tasks due in 3, 2, and 1 days
+        foreach([7,3,1,0] as $d){
+            $this->getDueTasks($d);
+        }
+    }
+
+	public function suspendInactiveDevelopers()
+	{
+		$this->db->query("SET @@session.time_zone = '+04:00'");
+		$thresholdDays = 30;
+		$query = "SELECT u.id, u.email, u.name
+				FROM users u
+				WHERE u.user_type = 'developer'
+				AND u.status = '1'
+				AND NOT EXISTS (
+					SELECT 1 FROM portal_login_history pl
+					WHERE pl.email COLLATE utf8mb4_unicode_ci = u.email COLLATE utf8mb4_unicode_ci
+					AND pl.type = 'developer'
+					AND pl.result = 'SUCCESS'
+					AND pl.datetime >= (NOW() - INTERVAL {$thresholdDays} DAY)
+				)";
+
+		$developers = $this->db->query($query)->result();
+		if(empty($developers)) return;
+
+		$this->load->model("Email_model3");
+		$this->load->model("system_model");
+
+		foreach($developers as $dev){
+			// Suspend developer
+			$this->db->set('status','2');
+			$this->db->where('id',$dev->id);
+			$this->db->update('users');
+
+			// Notify developer
+			$emailData = [
+				'user'          => $dev,
+				'logo'          => $this->system_model->getParam("logo"),
+				'thresholdDays' => $thresholdDays,
+			];
+			$content = $this->load->view("_email/header",$emailData, true);
+			$content .= $this->load->view("_email/developerSuspended",$emailData, true);
+			$content .= $this->load->view("_email/footer",[], true);
+			$this->Email_model3->save($dev->email,"Your developer account has been suspended",$content);
+		}
+	}
 
     public function fetchQuotes()
     {

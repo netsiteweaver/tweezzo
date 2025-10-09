@@ -1,6 +1,8 @@
 <div style='width:100%; text-align: center;'>
     <h3>TASKS DUE REMINDER</h3>   
-    <h4>The following tasks are due in the next <?php echo $days;?> days:</h4>
+    <h4>The following tasks are due 
+        <?php echo ($days == 0) ? 'today' : 'in the next '.$day ($days==1 ? 'day' : 'days');?>
+    </h4>
 </div>
 <div style="margin:0px auto;max-width:800px;">
     <table align="center" border="1" cellpadding="10" cellspacing="0" role="presentation" style="width:100%;">
@@ -28,7 +30,7 @@
                 <td><?php echo strtoupper(str_replace("_"," ",$task['tasks']->stage));?></td>
                 <td><?php echo $task['tasks']->due_date;?></td>
                 <td>
-                    <a style='text-decoration:none;' href="<?php echo base_url('portal/developers/view?task_uuid'.$task['tasks']->uuid);?>">
+                    <a style='text-decoration:none;' href="<?php echo base_url('portal/developers/view?task_uuid=' . $task['tasks']->uuid);?>">
                         <div style="text-decoration:none; padding:5px 10px; background-color:#4c4c4c; color:#fff;text-align:center;"><i class="bi bi-eye"></i> View Task</div>
                     </a>
                 </td>

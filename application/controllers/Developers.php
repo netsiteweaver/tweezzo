@@ -177,6 +177,44 @@ class Developers extends MY_Controller {
         echo json_encode(array("result"=>true));
     }
 
+    public function unsuspend()
+    {
+        //Access Control
+        if(!isAuthorised(get_class(),"edit")) return false;
+
+        $id = $this->input->post("id");
+        
+        // Get user details before unsuspending
+        $user = $this->developers_model->getById($id);
+        
+        if(empty($user)) {
+            echo json_encode(array("result"=>false, "message"=>"User not found"));
+            return;
+        }
+
+        // Update status to active (1)
+        $this->db->set('status','1');
+        $this->db->where('id',$id);
+        $this->db->update('users');
+
+        // Send email notification
+        $this->load->model("Email_model3");
+        $this->load->model("system_model");
+        
+        $emailData = [
+            'user'  => $user,
+            'logo'  => $this->system_model->getParam("logo"),
+        ];
+        
+        $content = $this->load->view("_email/header",$emailData, true);
+        $content .= $this->load->view("_email/developerUnsuspended",$emailData, true);
+        $content .= $this->load->view("_email/footer",[], true);
+        
+        $this->Email_model3->save($user->email, "Your developer account has been reactivated", $content);
+
+        echo json_encode(array("result"=>true, "message"=>"Developer has been unsuspended and notified via email"));
+    }
+
     public function permission()
     {
         //Access Control

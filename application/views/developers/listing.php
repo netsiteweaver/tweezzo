@@ -13,6 +13,7 @@
                             <th>Photo</th>
                             <th>Name</th>
                             <th>Email</th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -28,9 +29,21 @@
                             </td>
                             <td class="<?php echo ($developer->status!=1)?"inactive":"";?>"><?php echo $developer->name; ?></td>
                             <td class="<?php echo ($developer->status!=1)?"inactive":"";?>"><?php echo $developer->email; ?></td>
+                            <td>
+                                <?php if($developer->status == '1'): ?>
+                                    <span class="badge badge-success">Active</span>
+                                <?php elseif($developer->status == '2'): ?>
+                                    <span class="badge badge-warning">Suspended</span>
+                                <?php else: ?>
+                                    <span class="badge badge-danger">Inactive</span>
+                                <?php endif; ?>
+                            </td>
                             <td class="<?php echo ($developer->status!=1)?"inactive":"";?>">
                             <?php if($perms['edit']): ?>
                                 <a title='Update User' href="<?php echo base_url('developers/edit/' . $developer->id); ?>"><div class="btn btn-flat btn-md btn-primary"><i class='fas fa-edit'></i></div></a>
+                            <?php endif; ?>
+                            <?php if($developer->status == '2' && $perms['edit']): ?>
+                                <button title='Unsuspend User' data-url="<?php echo base_url("developers/unsuspend"); ?>" data-id="<?php echo $developer->id;?>" data-name="<?php echo htmlspecialchars($developer->name);?>" class="unsuspendDeveloper btn btn-md btn-flat btn-success"><i class='fas fa-unlock'></i></button>
                             <?php endif; ?>
                             <?php if($perms['permission']): ?>
                                 <!-- <a title='Grant Permission' href="<?php echo base_url('developers/permission/' . $developer->id); ?>"><div class="btn btn-flat btn-md btn-warning"><i class='fa fa-lock'></i></div></a> -->

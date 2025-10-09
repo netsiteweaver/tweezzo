@@ -55,6 +55,12 @@ class Developers extends CI_Controller
         
         $result = $this->Developersportal_model->authenticate($_POST);
 
+        // Check if result is an array (error response for suspended/inactive accounts)
+        if(is_array($result)) {
+            echo json_encode($result);
+            return;
+        }
+
         if($result) {
             $_SESSION['developer_id'] = $result->id;
             $_SESSION['developer_email'] = $result->email;

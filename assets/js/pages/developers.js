@@ -396,6 +396,55 @@ $(document).ready(function(){
     },5000)
   })
 
+  $('body').on('click','.unsuspendDeveloper',function(e){
+    e.preventDefault();
+    var t = $(this);
+    var id = $(this).data('id');
+    var name = $(this).data('name');
+    var url = $(this).data('url');
+
+    var message = "Are you sure you want to unsuspend <strong>" + name + "</strong>? They will be able to access the developer portal again and will receive an email notification.";
+
+    bootbox.confirm({
+        message: message,
+        buttons: {
+            confirm: {
+                label: 'Yes, Unsuspend',
+                className: 'btn-success'
+            },
+            cancel: {
+                label: 'Cancel',
+                className: 'btn-default'
+            }
+        },
+        callback: function (result) {
+          if(result==true){
+            $.ajax({
+              url:url,
+              type:"POST",
+              dataType:"JSON",
+              data:{id:id},
+              success:function(response){
+                console.log(response)
+                if(response.result){
+                  toastr["success"](response.message || "Developer has been unsuspended successfully.");
+                  setTimeout(function(){
+                    window.location.reload();
+                  }, 1500);
+                }else{
+                  toastr["error"](response.message || "Failed to unsuspend developer.");
+                }
+              },
+              error:function(){
+                toastr["error"]("An error occurred while unsuspending the developer.");
+              }
+            })
+          }
+        }
+    });   
+    return false;
+  })
+
 })
 
 function generatePassword(passwordLength) {
