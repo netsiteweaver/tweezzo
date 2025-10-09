@@ -11,6 +11,7 @@ class Customersportal_model extends CI_Model
         $this->db->where("ca.password", md5($user_info['password']), true );
         $this->db->where("ca.email", trim($user_info['email']));
         $this->db->where("c.status", '1');
+        $this->db->where("c.active", '1');
         $this->db->where("ca.status", '1');
         if(!empty($user_info['customer_id'])) {
             $this->db->where("c.customer_id",$user_info['customer_id']);
@@ -72,7 +73,9 @@ class Customersportal_model extends CI_Model
                         ->from("projects p")
                         ->join("users u","u.id=p.created_by","")
                         ->join("sprints s","s.project_id=p.id","left")
-                        ->where(["p.status"=>'1',"p.customer_id"=>$customer_id])
+                        ->join("customers c","c.customer_id = p.customer_id","left")
+                        ->where(["p.status"=>'1',"p.active"=>1,"p.customer_id"=>$customer_id])
+                        ->where(["c.status"=>1,"c.active"=>1])
                         ->group_by("p.id")
                         ->order_by("p.name")
                         ->get()
@@ -103,7 +106,9 @@ class Customersportal_model extends CI_Model
                         JOIN users u ON u.id = s.created_by 
                     WHERE
                         t.status = 1 AND t.closed = 0 
-                        AND s.status = 1 ";
+                        AND s.status = 1 AND s.active = 1
+                        AND p.active = 1
+                        AND c.status = 1 AND c.active = 1 ";
         if(empty($project_id)){
             $query .= "AND c.customer_id = $customer_id ";
         }else{
@@ -153,6 +158,9 @@ class Customersportal_model extends CI_Model
             $this->db->having("notes_count > 0");
         }
         $this->db->where(["t.status"=>'1', "t.closed" => "0"]);
+        $this->db->where(["s.status"=>1, "s.active"=>1]);
+        $this->db->where(["p.active"=>1]);
+        $this->db->where(["c.status"=>1, "c.active"=>1]);
 
         $stagesArr = (empty($this->input->get('stages'))) ? [] : explode(',',$stages);
 
@@ -181,8 +189,15 @@ class Customersportal_model extends CI_Model
         $customer_id = $this->db->select()->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row()->customer_id;
         $task = $this->db->select("t.*,u.name createdBy")
                             ->from("tasks t")
+                            ->join("sprints s","s.id = t.sprint_id","left")
+                            ->join("projects p","p.id = s.project_id","left")
+                            ->join("customers c","c.customer_id = p.customer_id","left")
                             ->join("users u","u.id=t.created_by","")
                             ->where(["t.status"=>'1',"t.closed"=>"0", "t.uuid"=>$uuid])
+                            ->where(["s.status"=>1, "s.active"=>1])
+                            ->where(["p.active"=>1])
+                            ->where(["c.status"=>1, "c.active"=>1])
+                            ->where("c.customer_id = (SELECT customer_id FROM customer_access WHERE id = ".(int)$_SESSION['customer_access_id'].")", null, false)
                             ->order_by("t.task_number")
                             ->get()
                             ->row();
