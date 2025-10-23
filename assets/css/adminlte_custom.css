@@ -1393,3 +1393,56 @@ img.img-24 {
 .border {
 	border: 1px solid #ccc;
 }
+
+/* Online Users Styling */
+#online-users-dropdown .navbar-badge {
+	font-size: 10px;
+	font-weight: bold;
+	padding: 2px 5px;
+}
+
+#online-users-menu {
+	min-width: 350px;
+	max-height: 500px;
+	overflow-y: auto;
+}
+
+#online-users-menu .dropdown-header {
+	font-weight: bold;
+	font-size: 14px;
+}
+
+#online-users-menu .media {
+	align-items: center;
+}
+
+#online-users-menu .img-size-50 {
+	width: 40px;
+	height: 40px;
+	object-fit: cover;
+}
+
+#online-users-menu .dropdown-item-title {
+	margin-bottom: 5px;
+	font-size: 14px;
+}
+
+#online-users-menu .text-sm {
+	font-size: 12px;
+}
+
+/* Pulsing animation for online indicator */
+@keyframes pulse-online {
+	0%, 100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.7;
+		transform: scale(1.1);
+	}
+}
+
+.fa-circle.text-success {
+	animation: pulse-online 2s ease-in-out infinite;
+}

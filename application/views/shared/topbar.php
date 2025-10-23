@@ -29,6 +29,26 @@
     <!-- </form> -->
 
     <!-- Right navbar links -->
+    <ul class="navbar-nav ml-auto">
+      <!-- Online Users Dropdown Menu -->
+      <li class="nav-item dropdown" id="online-users-dropdown">
+        <a class="nav-link" data-toggle="dropdown" href="#" title="Online Users">
+          <i class="fas fa-users"></i>
+          <span class="badge badge-success navbar-badge" id="online-users-count">0</span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" id="online-users-menu">
+          <span class="dropdown-item dropdown-header">
+            <i class="fas fa-circle text-success"></i> Online Users
+          </span>
+          <div class="dropdown-divider"></div>
+          <div id="online-users-list">
+            <div class="dropdown-item text-center text-muted">
+              <i class="fas fa-spinner fa-spin"></i> Loading...
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
     <ul class="navbar-nav ml-auto d-none">
       <!-- Messages Dropdown Menu -->
       <li id="search-sn-result" class="nav-item dropdown d-none">

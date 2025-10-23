@@ -280,4 +280,61 @@ class Misc extends CI_Controller
         }
         
     }
+    
+    /**
+     * Get list of online users
+     * Returns users who have been active in the last 2 minutes
+     */
+    public function getOnlineUsers()
+    {
+        // Only allow admin users to see online users
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode([
+                "result" => false,
+                "reason" => "Unauthorized"
+            ]);
+            exit;
+        }
+        
+        // Get users active in last 2 minutes
+        $timeout = date('Y-m-d H:i:s', strtotime('-2 minutes'));
+        
+        $onlineUsers = $this->db->select('*')
+                                ->from('online_users')
+                                ->where('last_activity >=', $timeout)
+                                ->order_by('user_type', 'ASC')
+                                ->order_by('name', 'ASC')
+                                ->get()
+                                ->result_array();
+        
+        // Group by user type for better organization
+        $grouped = [
+            'admin' => [],
+            'developer' => [],
+            'customer' => []
+        ];
+        
+        foreach ($onlineUsers as $user) {
+            $grouped[$user['user_type']][] = [
+                'id' => $user['user_id'],
+                'name' => $user['name'],
+                'email' => $user['email'],
+                'photo' => $user['photo'],
+                'user_type' => $user['user_type'],
+                'last_activity' => $user['last_activity'],
+                'ip_address' => $user['ip_address']
+            ];
+        }
+        
+        echo json_encode([
+            "result" => true,
+            "online_users" => $onlineUsers,
+            "grouped" => $grouped,
+            "total_count" => count($onlineUsers),
+            "admin_count" => count($grouped['admin']),
+            "developer_count" => count($grouped['developer']),
+            "customer_count" => count($grouped['customer'])
+        ]);
+        exit;
+    }
 }
