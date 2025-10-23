@@ -79,7 +79,13 @@
 <?php else:?>
 <body id="<?php echo ((isset($pageType)) && (!empty($pageType)) ) ? $pageType : '';?>" class="hold-transition sidebar-mini layout-fixed <?php echo ((isset($sidebar_collapse))&&($sidebar_collapse==1))?"sidebar-collapse":"";?>">
 <?php endif;?>
-<div id="overlay" class='hidden'><div class="loader"></div></div>
+<div id="overlay">
+	<div class="loader">
+		<div class="loader-inner"></div>
+		<div class="loader-dot"></div>
+	</div>
+	<div class="loader-text">Loading...</div>
+</div>
 <!-- Site wrapper -->
 <div class="wrapper">
   <audio id="error-sound" src="<?php echo base_url("assets/audio/error-sound.wav");?>" preload="auto"></audio>

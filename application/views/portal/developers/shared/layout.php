@@ -54,7 +54,13 @@
 </head>
 
 <body>
-<div id="overlay" class='d-none'><div class="loader"></div></div>
+<div id="overlay">
+	<div class="loader">
+		<div class="loader-inner"></div>
+		<div class="loader-dot"></div>
+	</div>
+	<div class="loader-text">Loading...</div>
+</div>
     <div class="container-fluid">
         <?php $this->load->view("portal/developers/shared/nav");?>
         <div class='nav-sticky-container'>

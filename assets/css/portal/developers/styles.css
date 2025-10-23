@@ -83,28 +83,124 @@ input[type=checkbox] {
 	position: fixed;
 	width: 100vw;
 	height: 100vh;
-	background-color: #000;
-	opacity: 0.8;
+	background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(20, 20, 40, 0.9) 100%);
+	backdrop-filter: blur(10px);
 	z-index: 99999;
-	padding-left: calc(50vw - 50px);
-  	padding-top: calc(50vh - 50px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
 }
-/* HTML: <div class="loader"></div> */
+
+/* Beautiful Loader Animation */
 .loader {
-	width: 100px;
-	--b: 16px; 
-	aspect-ratio: 1;
+	position: relative;
+	width: 120px;
+	height: 120px;
+}
+
+.loader::before,
+.loader::after {
+	content: '';
+	position: absolute;
 	border-radius: 50%;
-	padding: 1px;
-	background: conic-gradient(#0000 10%,#fff) content-box;
-	-webkit-mask:
-	  repeating-conic-gradient(#0000 0deg,#000 1deg 20deg,#0000 21deg 36deg),
-	  radial-gradient(farthest-side,#0000 calc(100% - var(--b) - 1px),#000 calc(100% - var(--b)));
-	-webkit-mask-composite: destination-in;
-			mask-composite: intersect;
-	animation:l4 2s infinite steps(24);
-  }
-  @keyframes l4 {to{transform: rotate(1turn)}}
+	animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+.loader::before {
+	width: 120px;
+	height: 120px;
+	border: 8px solid rgba(59, 130, 246, 0.3);
+	top: 0;
+	left: 0;
+}
+
+.loader::after {
+	width: 80px;
+	height: 80px;
+	border: 6px solid rgba(147, 51, 234, 0.5);
+	top: 20px;
+	left: 20px;
+	animation-delay: 0.3s;
+}
+
+.loader-inner {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	border: 5px solid transparent;
+	border-top-color: #3b82f6;
+	border-right-color: #8b5cf6;
+	animation: spin 1s linear infinite;
+}
+
+.loader-dot {
+	position: absolute;
+	width: 12px;
+	height: 12px;
+	background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+	border-radius: 50%;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	box-shadow: 0 0 20px rgba(59, 130, 246, 0.8),
+				0 0 40px rgba(139, 92, 246, 0.6);
+	animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+.loader-text {
+	margin-top: 160px;
+	color: #ffffff;
+	font-size: 16px;
+	font-weight: 500;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	animation: fade-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+	0% { transform: translate(-50%, -50%) rotate(0deg); }
+	100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes pulse-ring {
+	0% {
+		transform: scale(0.8);
+		opacity: 1;
+	}
+	50% {
+		transform: scale(1);
+		opacity: 0.7;
+	}
+	100% {
+		transform: scale(0.8);
+		opacity: 1;
+	}
+}
+
+@keyframes pulse-dot {
+	0%, 100% {
+		transform: translate(-50%, -50%) scale(1);
+		opacity: 1;
+	}
+	50% {
+		transform: translate(-50%, -50%) scale(1.3);
+		opacity: 0.8;
+	}
+}
+
+@keyframes fade-pulse {
+	0%, 100% {
+		opacity: 0.5;
+	}
+	50% {
+		opacity: 1;
+	}
+}
 
 
 /* SPRITES */

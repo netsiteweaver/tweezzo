@@ -1,4 +1,21 @@
+// Show loader on page load
+$(window).on('load', function() {
+	Overlay('off');
+});
+
+// Show loader during AJAX requests
+$(document).ajaxStart(function() {
+	Overlay('on');
+});
+
+$(document).ajaxStop(function() {
+	Overlay('off');
+});
+
 jQuery(function(){
+
+    // Show loader initially
+	Overlay('on');
 
     // init('customers');
 

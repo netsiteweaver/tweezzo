@@ -58,7 +58,13 @@
 <?php echo (!empty($flash_warning)) ? '<div class="alert alert-warning">'.$flash_warning.'</div>' : '';?>
 <?php echo (!empty($flash_success)) ? '<div class="alert alert-success">'.$flash_success.'</div>' : '';?>
 <?php echo (!empty($flash_info)) ? '<div class="alert alert-info">'.$flash_info.'</div>' : '';?>
-<div id="overlay" class='d-none'><div class="loader"></div></div>
+<div id="overlay">
+	<div class="loader">
+		<div class="loader-inner"></div>
+		<div class="loader-dot"></div>
+	</div>
+	<div class="loader-text">Loading...</div>
+</div>
     <div class="container-fluid">
         <?php $this->load->view("portal/customers/shared/nav");?>
 

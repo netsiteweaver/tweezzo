@@ -21,7 +21,24 @@ function message(data)
 	$('#search-sn-results').append(str)
 }
 
+// Show loader on page load
+$(window).on('load', function() {
+	Overlay('off');
+});
+
+// Show loader during AJAX requests
+$(document).ajaxStart(function() {
+	Overlay('on');
+});
+
+$(document).ajaxStop(function() {
+	Overlay('off');
+});
+
 $(document).ready(function(){
+
+	// Show loader initially
+	Overlay('on');
 
 	pingActive = setInterval(function(){
 		isLoggedIn();
