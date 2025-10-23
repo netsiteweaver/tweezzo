@@ -6,6 +6,29 @@ $(window).on('load', function() {
 // Track active AJAX requests that should show loader
 var activeLoaderRequests = 0;
 
+// Session ping functionality for portal users
+var pingActive;
+
+function isLoggedIn()
+{
+	$.ajax({
+		url: base_url + "ajax/ping",
+		method: "get",
+        data:{type:"developer"},
+		dataType:"json",
+		success: function(response)
+		{
+			console.log(response)
+			if( (response.result==false) && (response.reason == 'login') )
+			{
+				clearInterval(pingActive);
+				// Redirect to portal login
+				window.location.href = base_url + "portal/developers/signin";
+			}
+		}
+	})
+}
+
 // Show loader during AJAX requests (except background requests)
 $(document).ajaxSend(function(event, jqxhr, settings) {
 	// Exclude background requests from showing loader
@@ -36,6 +59,11 @@ jQuery(function(){
 
     // Show loader initially
 	Overlay('on');
+
+	// Start session ping for developers
+	pingActive = setInterval(function(){
+		isLoggedIn();
+	},1000)
 
     // init('developers');
 

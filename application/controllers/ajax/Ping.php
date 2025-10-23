@@ -13,16 +13,49 @@ class Ping extends CI_Controller
      */
     function index()
     {
-        // Track online status
-        $this->trackOnlineStatus();
+        // Get user type from request parameter
+        $requestedType = $this->input->get('type');
+        
+        // Get user ID and type based on the requested type
+        $userId = null;
+        $userType = null;
+        
+        switch ($requestedType) {
+            case 'developer':
+                if (isset($_SESSION['developer_id'])) {
+                    $userId = $_SESSION['developer_id'];
+                    $userType = 'developer';
+                }
+                break;
+                
+            case 'customer':
+                if (isset($_SESSION['customer_access_id'])) {
+                    $userId = $_SESSION['customer_access_id'];
+                    $userType = 'customer';
+                }
+                break;
+                
+            case 'admin':
+            default:
+                if (isset($_SESSION['user_id'])) {
+                    $userId = $_SESSION['user_id'];
+                    $userType = 'admin';
+                }
+                break;
+        }
+        
+        if ($userId && $userType) {
+            // Track online status
+            $this->trackOnlineStatus($userId, $userType);
+        }
         
         // Clean up inactive users (not active in last 2 minutes)
         $this->cleanupInactiveUsers();
         
         echo json_encode(array(
             "result" => true,
-            "user_id" => $this->getUserId(),
-            "user_type" => $this->getUserType(),
+            "user_id" => $userId,
+            "user_type" => $userType,
             "timestamp" => date('Y-m-d H:i:s')
         ));
     }
@@ -30,11 +63,8 @@ class Ping extends CI_Controller
     /**
      * Track user's online status in the database
      */
-    private function trackOnlineStatus()
+    private function trackOnlineStatus($userId, $userType)
     {
-        $userId = $this->getUserId();
-        $userType = $this->getUserType();
-        
         if (!$userId || !$userType) {
             return;
         }
@@ -85,19 +115,19 @@ class Ping extends CI_Controller
      */
     private function getUserId()
     {
-        // Check admin user
-        if (isset($_SESSION['user_id'])) {
-            return $_SESSION['user_id'];
-        }
-        
-        // Check customer
+        // Check customer first (portal users)
         if (isset($_SESSION['customer_access_id'])) {
             return $_SESSION['customer_access_id'];
         }
         
-        // Check developer
+        // Check developer (portal users)
         if (isset($_SESSION['developer_id'])) {
             return $_SESSION['developer_id'];
+        }
+        
+        // Check admin user last
+        if (isset($_SESSION['user_id'])) {
+            return $_SESSION['user_id'];
         }
         
         return null;
@@ -108,16 +138,19 @@ class Ping extends CI_Controller
      */
     private function getUserType()
     {
-        if (isset($_SESSION['user_id'])) {
-            return 'admin';
-        }
-        
+        // Check customer first (portal users)
         if (isset($_SESSION['customer_access_id'])) {
             return 'customer';
         }
         
+        // Check developer (portal users)
         if (isset($_SESSION['developer_id'])) {
             return 'developer';
+        }
+        
+        // Check admin user last
+        if (isset($_SESSION['user_id'])) {
+            return 'admin';
         }
         
         return null;
@@ -137,16 +170,17 @@ class Ping extends CI_Controller
                 break;
                 
             case 'customer':
-                $user = $this->db->select('CONCAT(first_name, " ", last_name) as name, email, "" as photo')
+                $user = $this->db->select('name, email, "" as photo')
                                 ->where('id', $userId)
                                 ->get('customer_access')
                                 ->row_array();
                 break;
                 
             case 'developer':
-                $user = $this->db->select('COALESCE(display_name, name) as name, email, photo')
+                $user = $this->db->select('name, email, photo')
                                 ->where('id', $userId)
-                                ->get('developers')
+                                ->where('user_type', 'developer')
+                                ->get('users')
                                 ->row_array();
                 break;
                 

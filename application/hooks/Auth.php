@@ -42,6 +42,17 @@ class Auth extends CI_Controller {
 				( (strtolower(trim($this->uri->segment(3))) == 'getusersbytaskuuid') || (strtolower(trim($this->uri->segment(3))) == 'keep_session') )
 			){
 					
+			}elseif( 
+				(strtolower(trim($this->uri->segment(1)))=='ajax') && 
+				(strtolower(trim($this->uri->segment(2))) == 'ping')
+			){
+				// Allow ping for all authenticated users (admin, customer, developer)
+				if (empty($userid) && empty($_SESSION['customer_access_id']) && empty($_SESSION['developer_id'])) {
+					echo json_encode(array(
+						"result"=>false,
+						"reason"=>"login"));
+					exit;
+				}
 			}elseif(empty($userid)) {
 				if( 
 					( ($controller == "users") && (in_array($method,['signin','authenticate','forget-password','forget_password_process','forget_password','check_user_level','isUserPermanent'])) ) || 

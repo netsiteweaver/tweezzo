@@ -6,27 +6,11 @@
       </li>
     </ul>
 
-    <div class="col-md-12 random_quote">
+    <!-- Center Quote - using flex to allow space for right menu -->
+    <div class="random_quote" style="flex-grow: 1; padding: 0 20px;">
       <span class='quote-text'><?php echo $random_quote->quote_text;?></span><br>
       <span class='author-name'><?php echo $random_quote->author_name;?></span>
     </div>
-
-    <!-- <form action=""> -->
-    <div class="col-md-4">
-      <!-- <div class="input-group"> -->
-        <!-- <input type="text" id="search_serialnumber" class="form-control" placeholder="Track a serial number" name="serialnumber"> -->
-        <!-- <div class="input-group-append"> -->
-          <!-- <span class="input-group-text"> -->
-            <!-- <i id="searching" class="fa fa-search"></i> -->
-            <!-- <i class="fa fa-spinner d-none"></i> -->
-          <!-- </span> -->
-        <!-- </div> -->
-      <!-- </div> -->
-    </div>
-    <!-- <div class="col-md-1">
-      <div class="btn btn-default" id="topbar-search"><i class="fa fa-search"></i> Search</div>
-    </div> -->
-    <!-- </form> -->
 
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">

@@ -73,14 +73,9 @@ function updateDashboardUserList(type, users) {
         html = '<div class="text-center text-muted p-2"><small>No ' + type + 's online</small></div>';
     } else {
         users.forEach(function(user) {
-            var photoUrl = user.photo && user.photo.length > 0 
-                ? base_url + 'uploads/' + user.photo 
-                : base_url + 'assets/AdminLTE-3.2.0/dist/img/user-default.png';
-            
             var lastActivity = moment(user.last_activity).fromNow();
             
             html += '<div class="online-user-item">';
-            html += '  <img src="' + photoUrl + '" alt="' + user.name + '">';
             html += '  <div class="user-info">';
             html += '    <div class="user-name">' + user.name + '</div>';
             if (user.email) {
@@ -138,25 +133,19 @@ function updateTopbarDropdown(data) {
  * Create a dropdown user item
  */
 function createDropdownUserItem(user) {
-    var photoUrl = user.photo && user.photo.length > 0 
-        ? base_url + 'uploads/' + user.photo 
-        : base_url + 'assets/AdminLTE-3.2.0/dist/img/user-default.png';
-    
     var lastActivity = moment(user.last_activity).fromNow();
     
     var html = '';
     html += '<a href="#" class="dropdown-item">';
-    html += '  <div class="media">';
-    html += '    <img src="' + photoUrl + '" alt="' + user.name + '" class="img-size-50 mr-3 img-circle">';
-    html += '    <div class="media-body">';
-    html += '      <h3 class="dropdown-item-title">' + user.name;
-    html += '        <span class="float-right text-sm text-success"><i class="fas fa-circle"></i></span>';
-    html += '      </h3>';
+    html += '  <div class="d-flex justify-content-between align-items-start">';
+    html += '    <div>';
+    html += '      <h3 class="dropdown-item-title mb-1">' + user.name + '</h3>';
     if (user.email) {
-        html += '      <p class="text-sm text-muted">' + user.email + '</p>';
+        html += '      <p class="text-sm text-muted mb-1">' + user.email + '</p>';
     }
-    html += '      <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> Active ' + lastActivity + '</p>';
+    html += '      <p class="text-sm text-muted mb-0"><i class="far fa-clock mr-1"></i> Active ' + lastActivity + '</p>';
     html += '    </div>';
+    html += '    <span class="text-success"><i class="fas fa-circle"></i></span>';
     html += '  </div>';
     html += '</a>';
     

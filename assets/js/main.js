@@ -1123,6 +1123,7 @@ function isLoggedIn()
 	$.ajax({
 		url: base_url + "ajax/ping",
 		method: "get",
+		data: {type: "admin"},
 		dataType:"json",
 		success: function(response)
 		{
