@@ -364,4 +364,108 @@ class Customers extends MY_Controller
         echo json_encode($result);
         exit;
     }
+
+    public function get_portal_access_users()
+    {
+        //Access Control        
+        if (!isAuthorised(get_class(), "view")) return false;
+
+        $uuid = $this->input->post("uuid");
+        
+        // Get customer info
+        $customer = $this->customers_model->get($uuid);
+        
+        if(empty($customer)){
+            echo json_encode(array(
+                "result" => false,
+                "reason" => "Customer not found"
+            ));
+            exit;
+        }
+
+        // Get all portal access users for this customer
+        $users = $this->db->select("id, name, email, job_description, phone_number1, admin, created_on")
+                          ->from("customer_access")
+                          ->where(array("customer_id" => $customer->customer_id, "status" => "1"))
+                          ->order_by("name", "ASC")
+                          ->get()
+                          ->result();
+
+        echo json_encode(array(
+            "result" => true,
+            "customer" => $customer,
+            "users" => $users
+        ));
+        exit;
+    }
+
+    public function reset_portal_password()
+    {
+        //Access Control        
+        if (!isAuthorised(get_class(), "edit")) return false;
+
+        $access_id = $this->input->post("access_id");
+        
+        // Get user info
+        $user = $this->db->select("ca.*, c.company_name, c.customer_id")
+                        ->from("customer_access ca")
+                        ->join("customers c", "c.customer_id = ca.customer_id")
+                        ->where(array("ca.id" => $access_id, "ca.status" => "1"))
+                        ->get()
+                        ->row();
+
+        if(empty($user)){
+            echo json_encode(array(
+                "result" => false,
+                "reason" => "User not found"
+            ));
+            exit;
+        }
+
+        // Generate new password
+        $new_password = genPassword(12);
+
+        // Update password in database
+        $this->db->set("password", md5($new_password), true)
+                 ->where("id", $access_id)
+                 ->update("customer_access");
+
+        if($this->db->affected_rows() > 0){
+            // Send email to user
+            $this->load->model("Email_model3");
+            $this->load->model("system_model");
+            
+            $emailData = [
+                'name'              => $user->name,
+                'password'          => $new_password,
+                'company_name'      => $user->company_name,
+                'logo'              => $this->system_model->getParam("logo"),
+                'link'              => base_url('portal/customers/signin?email='.$user->email),
+                'link_label'        => "Access Customer Portal",
+                'show_lifecycle'    => false
+            ];
+            
+            $content = $this->load->view("_email/header", $emailData, true);
+            $content .= $this->load->view("_email/portalPasswordReset", $emailData, true);
+            $content .= $this->load->view("_email/footer", [], true);
+            
+            $this->Email_model3->save($user->email, "Your Portal Password Has Been Reset", $content);
+
+            echo json_encode(array(
+                "result" => true,
+                "password" => $new_password,
+                "user" => array(
+                    "name" => $user->name,
+                    "email" => $user->email
+                ),
+                "message" => "Password reset successfully and email sent to user"
+            ));
+        } else {
+            echo json_encode(array(
+                "result" => false,
+                "reason" => "Failed to update password"
+            ));
+        }
+        exit;
+    }
 }

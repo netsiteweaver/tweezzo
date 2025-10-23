@@ -77,6 +77,11 @@
                                                 <i class="fa fa-<?php echo ($customer->active=='1')?'eye-slash':'eye';?>"></i>
                                             </div>
                                         <?php endif; ?>
+                                        <?php if ($perms['edit']) : ?>
+                                            <div class="btn btn-info managePortalPassword" title="Manage Portal Passwords">
+                                                <i class="fa fa-key"></i>
+                                            </div>
+                                        <?php endif; ?>
                                         <!-- <?php if($perms['delete']) //echo DeleteButton2('customers','uuid',$customer->uuid,'','','',false); ?> -->
                                         <?php if($perms['delete']):?>
                                             <div class="btn btn-danger deleteCustomer"><i class="fa fa-trash"></i></div>
@@ -166,6 +171,66 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i>Cancel</button>
                 <button type="button" data-uuid='' class="btn btn-danger deleteConfirm"><i class="fa fa-check"></i> Yes, Proceed</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Portal Access Password Management -->
+<div class="modal fade" id="modalPortalPassword" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalPortalPasswordTitle">Manage Portal Access</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Customer: <span id="portal-customer-name"></span></strong></p>
+                <div id="portal-users-list">
+                    <p class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading...</p>
+                </div>
+            </div>
+            <input type="hidden" name="portal_customer_uuid" value="">
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Display New Password -->
+<div class="modal fade" id="modalNewPassword" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="modalNewPasswordTitle">Password Reset Successful</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>User:</strong> <span id="reset-user-name"></span></p>
+                <p><strong>Email:</strong> <span id="reset-user-email"></span></p>
+                <div class="alert alert-info">
+                    <p class="mb-2"><strong>New Password:</strong></p>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="new-password-display" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" id="copy-password-btn">
+                                <i class="fa fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-success"><i class="fa fa-check-circle"></i> The password has been emailed to the user.</p>
+                <p class="text-muted"><small>You can also copy the password above and send it directly via WhatsApp.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal"><i class="fa fa-check"></i> Done</button>
             </div>
         </div>
     </div>

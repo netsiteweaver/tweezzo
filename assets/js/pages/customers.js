@@ -270,4 +270,135 @@ jQuery(function(){
 	    });	
 
     })
+
+    // Manage Portal Password functionality
+    $(".managePortalPassword").on("click", function(){
+        let uuid = $(this).closest("tr").data("uuid");
+        let companyName = $(this).closest("tr").find("td:first").text();
+        
+        $('#portal-customer-name').text(companyName);
+        $('input[name=portal_customer_uuid]').val(uuid);
+        $('#portal-users-list').html('<p class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading...</p>');
+        $('#modalPortalPassword').modal('show');
+        
+        // Load portal access users
+        $.ajax({
+            url: "/customers/get_portal_access_users",
+            type: "POST",
+            dataType: "JSON",
+            data: {uuid: uuid},
+            success: function(response){
+                if(response.result){
+                    if(response.users && response.users.length > 0){
+                        let html = '<div class="table-responsive"><table class="table table-striped table-bordered">';
+                        html += '<thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Job Description</th><th>Admin</th><th>Action</th></tr></thead>';
+                        html += '<tbody>';
+                        
+                        response.users.forEach(function(user){
+                            html += '<tr>';
+                            html += '<td>' + user.name + '</td>';
+                            html += '<td>' + user.email + '</td>';
+                            html += '<td>' + (user.phone_number1 || '-') + '</td>';
+                            html += '<td>' + (user.job_description || '-') + '</td>';
+                            html += '<td>' + (user.admin == '1' ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-secondary">No</span>') + '</td>';
+                            html += '<td><button class="btn btn-warning btn-sm reset-password-btn" data-access-id="' + user.id + '" data-name="' + user.name + '" data-email="' + user.email + '">';
+                            html += '<i class="fa fa-key"></i> Reset Password</button></td>';
+                            html += '</tr>';
+                        });
+                        
+                        html += '</tbody></table></div>';
+                        $('#portal-users-list').html(html);
+                    } else {
+                        $('#portal-users-list').html('<div class="alert alert-info">No portal access users found for this customer.</div>');
+                    }
+                } else {
+                    $('#portal-users-list').html('<div class="alert alert-danger">Error: ' + response.reason + '</div>');
+                }
+            },
+            error: function(){
+                $('#portal-users-list').html('<div class="alert alert-danger">Error loading portal access users.</div>');
+            }
+        });
+    });
+
+    // Reset password button click handler (using event delegation)
+    $('#portal-users-list').on('click', '.reset-password-btn', function(){
+        let accessId = $(this).data('access-id');
+        let userName = $(this).data('name');
+        let userEmail = $(this).data('email');
+        let btn = $(this);
+        
+        bootbox.confirm({
+            message: "Are you sure you want to reset the password for <b>" + userName + "</b>?<br><br>A new password will be generated and emailed to <b>" + userEmail + "</b>.",
+            buttons: {
+                confirm: {
+                    label: 'Yes, Reset Password',
+                    className: 'btn-warning'
+                },
+                cancel: {
+                    label: 'Cancel',
+                    className: 'btn-default'
+                }
+            },
+            callback: function (result) {
+                if(result){
+                    btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Resetting...');
+                    
+                    $.ajax({
+                        url: "/customers/reset_portal_password",
+                        type: "POST",
+                        dataType: "JSON",
+                        data: {access_id: accessId},
+                        success: function(response){
+                            if(response.result){
+                                // Close the portal password modal
+                                $('#modalPortalPassword').modal('hide');
+                                
+                                // Show the new password modal
+                                $('#reset-user-name').text(response.user.name);
+                                $('#reset-user-email').text(response.user.email);
+                                $('#new-password-display').val(response.password);
+                                $('#modalNewPassword').modal('show');
+                                
+                                alertify.success(response.message);
+                            } else {
+                                alertify.error("Error: " + response.reason);
+                                btn.prop('disabled', false).html('<i class="fa fa-key"></i> Reset Password');
+                            }
+                        },
+                        error: function(){
+                            alertify.error("Error resetting password. Please try again.");
+                            btn.prop('disabled', false).html('<i class="fa fa-key"></i> Reset Password');
+                        }
+                    });
+                }
+            }
+        });
+    });
+
+    // Copy password to clipboard
+    $('#copy-password-btn').on('click', function(){
+        let passwordField = $('#new-password-display');
+        passwordField.select();
+        document.execCommand('copy');
+        
+        let btn = $(this);
+        let originalHtml = btn.html();
+        btn.html('<i class="fa fa-check"></i> Copied!');
+        
+        setTimeout(function(){
+            btn.html(originalHtml);
+        }, 2000);
+        
+        alertify.success('Password copied to clipboard!');
+    });
+
+    // When new password modal is hidden, show the portal password modal again
+    $('#modalNewPassword').on('hidden.bs.modal', function () {
+        let uuid = $('input[name=portal_customer_uuid]').val();
+        if(uuid){
+            // Optionally reload the portal password modal
+            // $('#modalPortalPassword').modal('show');
+        }
+    });
 })
