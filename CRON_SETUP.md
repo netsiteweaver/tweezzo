@@ -18,6 +18,14 @@ This system automatically sends email reminders to developers about tasks that a
    - Only includes active tasks (not completed or on hold)
    - Groups tasks by developer email
 
+3. **Overdue Tasks** (`sendOverdueTaskReminders`):
+   - Finds tasks that are past their due date
+   - Sends urgent email reminders with subject "URGENT: Overdue Tasks - Action Required"
+   - Shows number of days overdue for each task
+   - Uses a special email template with emphasis and call-to-action
+   - Only includes active tasks (not completed or on hold)
+   - Groups tasks by developer email
+
 ### Setup Instructions:
 
 #### Option 1: Using crontab (Recommended)
@@ -34,6 +42,9 @@ Add these lines to run daily:
 
 # Send reminders for tasks due today - daily at 9 AM
 0 9 * * * cd /var/www/html/tweezzo && /usr/bin/php index.php cron sendDueTodayReminders >> /var/log/cron-due-today.log 2>&1
+
+# Send reminders for overdue tasks - daily at 10 AM
+0 10 * * * cd /var/www/html/tweezzo && /usr/bin/php index.php cron sendOverdueTaskReminders >> /var/log/cron-overdue-tasks.log 2>&1
 ```
 
 #### Option 2: Using wget/curl (if PHP CLI not available)
@@ -41,12 +52,14 @@ Add these lines to run daily:
 ```
 0 8 * * * wget -q -O- "https://yourdomain.com/cron/sendDueTaskReminders" >> /var/log/cron-due-tasks.log 2>&1
 0 9 * * * wget -q -O- "https://yourdomain.com/cron/sendDueTodayReminders" >> /var/log/cron-due-today.log 2>&1
+0 10 * * * wget -q -O- "https://yourdomain.com/cron/sendOverdueTaskReminders" >> /var/log/cron-overdue-tasks.log 2>&1
 ```
 
 Or with curl:
 ```
 0 8 * * * curl -s "https://yourdomain.com/cron/sendDueTaskReminders" >> /var/log/cron-due-tasks.log 2>&1
 0 9 * * * curl -s "https://yourdomain.com/cron/sendDueTodayReminders" >> /var/log/cron-due-today.log 2>&1
+0 10 * * * curl -s "https://yourdomain.com/cron/sendOverdueTaskReminders" >> /var/log/cron-overdue-tasks.log 2>&1
 ```
 
 ### Manual Testing:
@@ -61,6 +74,9 @@ php index.php cron sendDueTaskReminders
 # Test today's reminders
 php index.php cron sendDueTodayReminders
 
+# Test overdue task reminders
+php index.php cron sendOverdueTaskReminders
+
 # Test specific day (e.g., tasks due in 2 days)
 php index.php cron getDueTasks 2
 ```
@@ -69,14 +85,22 @@ Or visit in browser (make sure to secure this endpoint in production):
 ```
 https://yourdomain.com/cron/sendDueTaskReminders
 https://yourdomain.com/cron/sendDueTodayReminders
+https://yourdomain.com/cron/sendOverdueTaskReminders
 ```
 
-### Email Template:
+### Email Templates:
 
 The emails sent to developers use:
-- Template: `/application/views/_email/dueTasks.php`
-- Subject for upcoming tasks: "Tasks Due Reminder"
-- Subject for today's tasks: "Tasks Due Today - Urgent"
+- **Upcoming tasks** (3, 2, 1 days): 
+  - Template: `/application/views/_email/dueTasks.php`
+  - Subject: "Tasks Due Reminder"
+- **Tasks due today**: 
+  - Template: `/application/views/_email/dueTasks.php`
+  - Subject: "Tasks Due Today - Urgent"
+- **Overdue tasks**: 
+  - Template: `/application/views/_email/overdueTasks.php`
+  - Subject: "URGENT: Overdue Tasks - Action Required"
+  - Features: Red color scheme, days overdue counter, emphasis on completion, call-to-action buttons
 
 ### Configuration:
 
@@ -87,8 +111,9 @@ The reminders only include:
 - Only developers with valid email addresses
 
 To modify the reminder days, edit `/application/controllers/Cron.php`:
-- `sendDueTaskReminders()` method (line ~114): Change the array `[3, 2, 1]` to different days
-- `sendDueTodayReminders()` method (line ~123): Currently set to 0 (today)
+- `sendDueTaskReminders()` method (line ~125): Change the array `[3, 2, 1]` to different days
+- `sendDueTodayReminders()` method (line ~133): Currently set to 0 (today)
+- `sendOverdueTaskReminders()` method (line ~139): Finds all tasks where `due_date < CURDATE()`
 
 ## Suspend Inactive Developers
 
@@ -165,8 +190,9 @@ $thresholdDays = 30; // Change this value
 1. **Send Email Queue**: `php index.php cron sendEmails`
 2. **Send Due Task Reminders (3, 2, 1 days)**: `php index.php cron sendDueTaskReminders`
 3. **Send Due Today Reminders**: `php index.php cron sendDueTodayReminders`
-4. **Get Due Tasks**: `php index.php cron getDueTasks [days]`
-5. **Fetch Quotes**: `php index.php cron fetchQuotes`
+4. **Send Overdue Task Reminders**: `php index.php cron sendOverdueTaskReminders`
+5. **Get Due Tasks**: `php index.php cron getDueTasks [days]`
+6. **Fetch Quotes**: `php index.php cron fetchQuotes`
 
 ### Complete Crontab Example:
 
@@ -179,6 +205,9 @@ $thresholdDays = 30; // Change this value
 
 # Send due today reminders daily at 9 AM
 0 9 * * * cd /var/www/html/tweezzo && /usr/bin/php index.php cron sendDueTodayReminders >> /var/log/cron-due-today.log 2>&1
+
+# Send overdue task reminders daily at 10 AM
+0 10 * * * cd /var/www/html/tweezzo && /usr/bin/php index.php cron sendOverdueTaskReminders >> /var/log/cron-overdue-tasks.log 2>&1
 
 # Suspend inactive developers weekly on Sundays at 2 AM
 0 2 * * 0 cd /var/www/html/tweezzo && /usr/bin/php index.php cron suspendInactiveDevelopers >> /var/log/cron-suspend-developers.log 2>&1

@@ -136,6 +136,59 @@ class Cron extends CI_Controller {
         $this->getDueTasks(0, "Tasks Due Today - Urgent");
     }
 
+    public function sendOverdueTaskReminders()
+    {
+        // Send reminders for tasks that are past due
+        $this->db->query("SET @@session.time_zone = '+04:00'");
+        $query = "select t.uuid, t.id, t.task_number, t.name, t.stage, t.description, t.section, t.due_date, t.estimated_hours, 
+                DATEDIFF(CURDATE(), t.due_date) as days_overdue,
+                s.name as sprint_name, p.name as project_name, c.company_name, u.name developer_name, u.email as developer_email
+                from tasks t 
+                left join sprints s on s.id = t.sprint_id
+                left join projects p on p.id = s.project_id
+                left join task_user tu on tu.task_id = t.id
+                left join customers c on c.customer_id = p.customer_id
+                left join users u on u.id = tu.user_id
+                where t.due_date < CURDATE()
+                and t.stage not in('completed','on_hold')
+                and u.email IS NOT NULL
+                and t.status = '1'
+                and t.closed = '0'
+                and s.active = '1'
+                and p.active = '1'
+                and c.active = '1'
+                order by u.email, t.due_date ASC";
+        $result = $this->db->query($query)->result();
+        $grouped = array();
+        if(!empty($result)){
+            $this->load->model("Email_model3");
+            $this->load->model("system_model");
+
+            foreach($result as $row){
+                if(empty($row->developer_email)) continue;
+                if(!isset($grouped[$row->developer_email])){
+                    $grouped[$row->developer_email] = array();
+                }
+                $grouped[$row->developer_email][] = array(
+                    "email" => $row->developer_email,
+                    "tasks" => $row
+                );
+            }
+
+            foreach($grouped as $tasks){
+                $emailData = [
+                    'logo'              =>  $this->system_model->getParam("logo"),
+                    'tasks'             =>  $tasks,
+                    'show_lifecycle'    =>  false
+                ];
+                $content = $this->load->view("_email/header",$emailData, true);
+                $content .= $this->load->view("_email/overdueTasks",$emailData, true);
+                $content .= $this->load->view("_email/footer",[], true);
+                $this->Email_model3->save($tasks[0]['email'], "URGENT: Overdue Tasks - Action Required", $content);
+            }
+        }
+    }
+
 	public function suspendInactiveDevelopers()
 	{
 		$this->db->query("SET @@session.time_zone = '+04:00'");
