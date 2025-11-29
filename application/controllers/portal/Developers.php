@@ -94,7 +94,7 @@ class Developers extends CI_Controller
         $this->data['page_title'] = "Tasks";
 
         $this->load->model("Developersportal_model");
-        $this->data['tasks'] = $this->Developersportal_model->getMyTasks($_SESSION['developer_id'],$this->input->get("customer_id"),$this->input->get("project_id"),$this->input->get("sprint_id"),$this->input->get("stage"),$this->input->get("order_by"),$this->input->get("order_dir"),1,999,$this->input->get('notes_only'));
+        $this->data['tasks'] = $this->Developersportal_model->getMyTasks($_SESSION['developer_id'],$this->input->get("customer_id"),$this->input->get("project_id"),$this->input->get("sprint_id"),$this->input->get("stage"),$this->input->get("order_by"),$this->input->get("order_dir"),1,999,$this->input->get('notes_only'),$this->input->get('due_in_days'));
         // debug($this->data['tasks']);
         $this->data['myProjects'] = $this->Developersportal_model->getMyProjects($_SESSION['developer_id']);
         $this->data['myCustomers'] = $this->Developersportal_model->getMyCustomers($_SESSION['developer_id']);

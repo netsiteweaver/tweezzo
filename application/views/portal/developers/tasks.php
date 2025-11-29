@@ -178,6 +178,11 @@
                     </select>
                 </div>
 
+                <div class="col-md-2">
+                    <label for="due_in_days">Due In (Days) <span style='color:#36b936;' class='<?php echo (empty(($this->input->get("due_in_days")))) ? 'd-none' :'';?>'><bi class="bi-check-circle-fill"></bi></span></label>
+                    <input type="number" name="due_in_days" id="due_in_days" class="form-control autosubmit" min="0" placeholder="e.g. 7" value="<?php echo $this->input->get("due_in_days"); ?>">
+                </div>
+
                 <div class="col-md-2 mt-4">
                     <button class='btn btn-block btn-outline-primary' style='width:100%' type='submit'>
                         <div class="bg-icon bg-send"></div> Submit

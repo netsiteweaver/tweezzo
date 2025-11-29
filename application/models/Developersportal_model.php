@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Developersportal_model extends CI_Model{
 
-    public function getMyTasks($developer_id, $customer_id="",$project_id="",$sprint_id="",$stageJson="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$notes_only="")
+    public function getMyTasks($developer_id, $customer_id="",$project_id="",$sprint_id="",$stageJson="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$notes_only="",$due_in_days="")
     {
         if( (empty($page)) || ($page <= 0) ) $page =1;
         $offset = ( ($page-1)*$rows_per_page);  
@@ -52,6 +52,10 @@ class Developersportal_model extends CI_Model{
             }, $stageArray);
             $stages = implode(",",$escaped);
             $query .= " AND t.stage IN ({$stages})";
+        }
+        if(!empty($due_in_days) && is_numeric($due_in_days)) {
+            $due_in_days = (int)$due_in_days;
+            $query .= " AND t.due_date IS NOT NULL AND t.due_date >= CURDATE() AND t.due_date <= CURDATE() + INTERVAL {$due_in_days} DAY";
         }
         $query .= " GROUP BY t.id";
         if($notes_only=="without") {
