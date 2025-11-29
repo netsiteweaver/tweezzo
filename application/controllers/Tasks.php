@@ -471,17 +471,34 @@ class Tasks extends MY_Controller {
 
     public function assignUser()
     {
-        $userId = $this->input->post("userId");
-        $taskId = $this->input->post("taskId");
-        $result = $this->Tasks_model->assignUser($userId,$taskId);
-        if($result) {
-            echo json_encode(array(
-                "result"    =>  true
-            ));
-        }else{
+        try {
+            $userId = $this->input->post("userId");
+            $taskId = $this->input->post("taskId");
+            
+            if(empty($userId) || empty($taskId)) {
+                echo json_encode(array(
+                    "result"    =>  false,
+                    "reason"    =>  'Missing required parameters'
+                ));
+                return;
+            }
+            
+            $result = $this->Tasks_model->assignUser($userId,$taskId);
+            if($result) {
+                echo json_encode(array(
+                    "result"    =>  true
+                ));
+            }else{
+                echo json_encode(array(
+                    "result"    =>  false,
+                    "reason"    =>  'User is already assigned to this task'
+                ));
+            }
+        } catch (Exception $e) {
+            log_message('error', 'Error in assignUser: ' . $e->getMessage());
             echo json_encode(array(
                 "result"    =>  false,
-                "reason"    =>  'User is already assigned to this task'
+                "reason"    =>  'An error occurred while assigning the user'
             ));
         }
         

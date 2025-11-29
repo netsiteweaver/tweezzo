@@ -689,25 +689,38 @@ class Tasks_model extends CI_Model{
             $this->db->set("user_id",$userId);
             $this->db->insert("task_user");
 
-            $this->load->model("Email_model3");
-            $this->load->model("Tasks_model");
-            $this->load->model("system_model");
+            // Verify the insert was successful
+            if($this->db->affected_rows() == 0){
+                return false;
+            }
 
-            $user = $this->db->select("email, name")->from("users")->where("id",$userId)->get()->row();
-            $task = $this->Tasks_model->getSingleById($taskId);
+            // Try to send email, but don't let email failures prevent user assignment
+            try {
+                $this->load->model("Email_model3");
+                $this->load->model("Tasks_model");
+                $this->load->model("system_model");
 
-            $emailData = [
-                'user'      =>  $user,
-                'task'      =>  $task,
-                'logo'      =>  $this->system_model->getParam("logo"),
-                'link'      =>  "",
-                'link_label'=>  ""
-            ];
+                $user = $this->db->select("email, name")->from("users")->where("id",$userId)->get()->row();
+                $task = $this->Tasks_model->getSingleById($taskId);
 
-            $content = $this->load->view("_email/header",$emailData, true);
-            $content .= $this->load->view("_email/userHasBeenAssignedTask",$emailData, true);
-            $content .= $this->load->view("_email/footer",[], true);
-            $this->Email_model3->save($user->email,"You have been assigned a task",$content);
+                if($user && $task) {
+                    $emailData = [
+                        'user'      =>  $user,
+                        'task'      =>  $task,
+                        'logo'      =>  $this->system_model->getParam("logo"),
+                        'link'      =>  "",
+                        'link_label'=>  ""
+                    ];
+
+                    $content = $this->load->view("_email/header",$emailData, true);
+                    $content .= $this->load->view("_email/userHasBeenAssignedTask",$emailData, true);
+                    $content .= $this->load->view("_email/footer",[], true);
+                    $this->Email_model3->save($user->email,"You have been assigned a task",$content);
+                }
+            } catch (Exception $e) {
+                // Log error but don't fail the assignment
+                log_message('error', 'Failed to send assignment email: ' . $e->getMessage());
+            }
 
             return true;
         }

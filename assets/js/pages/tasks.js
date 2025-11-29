@@ -435,12 +435,19 @@ function assignUser(taskId, userId)
         data: {taskId:taskId, userId:userId},
         success: function(response)
         {
+            Overlay("off")
             if(response.result){
-                Overlay("off")
+                // Reload the page or update UI to reflect the change
+                window.location.reload();
             }else{
-                Overlay("off")
-                alertify.alert('Error',response.reason)
+                alertify.alert('Error',response.reason || 'Failed to assign user to task')
             }
+        },
+        error: function(xhr, status, error)
+        {
+            Overlay("off")
+            console.error('Error assigning user:', error);
+            alertify.alert('Error','Failed to assign user to task. Please try again.')
         }
     })
 }
