@@ -1,7 +1,7 @@
 <div style='width:100%; text-align: center;'>
     <h3>TASKS DUE REMINDER</h3>   
     <h4>The following tasks are due 
-        <?php echo ($days == 0) ? 'today' : 'in the next '.$day ($days==1 ? 'day' : 'days');?>
+        <?php echo ($days == 0) ? 'today' : 'in ' . $days . ($days == 1 ? ' day' : ' days');?>
     </h4>
 </div>
 <div style="margin:0px auto;max-width:800px;">

@@ -54,7 +54,7 @@ class Cron extends CI_Controller {
         $this->db->where("id",$id)->update("email_queue");
     }
 
-    public function getDueTasks($days = null)
+    public function getDueTasks($days = null, $subject = null)
     {
         // Allow calling via URI or internally with a parameter
         if($days === null){
@@ -65,6 +65,12 @@ class Cron extends CI_Controller {
             $days = 7;
         }
         $days = (int)$days;
+        
+        // Set default subject if not provided
+        if($subject === null){
+            $subject = "Tasks Due Reminder";
+        }
+        
         $this->db->query("SET @@session.time_zone = '+04:00'");
         $query = "select t.uuid, t.id, t.task_number, t.name, t.stage, t.description, t.section, t.due_date, t.estimated_hours, s.name as sprint_name, p.name as project_name, c.company_name, u.name developer_name, u.email as developer_email
                 from tasks t 
@@ -76,6 +82,11 @@ class Cron extends CI_Controller {
                 where due_date = CURDATE() + INTERVAL $days DAY
                 and t.stage not in('completed','on_hold')
                 and u.email IS NOT NULL
+                and t.status = '1'
+                and t.closed = '0'
+                and s.active = '1'
+                and p.active = '1'
+                and c.active = '1'
                 order by u.email";
         $result = $this->db->query($query)->result();
         $grouped = array();
@@ -105,7 +116,7 @@ class Cron extends CI_Controller {
                 $content .= $this->load->view("_email/dueTasks",$emailData, true);
                 $content .= $this->load->view("_email/footer",[], true);
                 // echo $content;
-                $this->Email_model3->save($tasks[0]['email'],"Tasks Due Reminder",$content);
+                $this->Email_model3->save($tasks[0]['email'], $subject, $content);
             }
         }
 
@@ -113,10 +124,16 @@ class Cron extends CI_Controller {
 
     public function sendDueTaskReminders()
     {
-        // Run reminders for tasks due in 3, 2, and 1 days
-        foreach([7,3,1,0] as $d){
-            $this->getDueTasks($d);
+        // Send reminders for tasks due in the next 3 days (3, 2, and 1 days from now)
+        foreach([3, 2, 1] as $d){
+            $this->getDueTasks($d, "Tasks Due Reminder");
         }
+    }
+
+    public function sendDueTodayReminders()
+    {
+        // Send reminders for tasks due today
+        $this->getDueTasks(0, "Tasks Due Today - Urgent");
     }
 
 	public function suspendInactiveDevelopers()
