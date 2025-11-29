@@ -82,7 +82,7 @@
                         </div>
                         <div class="form-group">
                             <label>Due Date</label>
-                            <input type="date" class="form-control" name="due_date" placeholder="" value="">
+                            <input type="date" class="form-control" name="due_date" placeholder="" value="<?= date('Y-m-d', strtotime('+5 days')); ?>">
                         </div>
                         <div class="form-group">
                             <label>Estimated Hours</label>
