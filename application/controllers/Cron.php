@@ -142,7 +142,8 @@ class Cron extends CI_Controller {
         $this->db->query("SET @@session.time_zone = '+04:00'");
         $query = "select t.uuid, t.id, t.task_number, t.name, t.stage, t.description, t.section, t.due_date, t.estimated_hours, 
                 DATEDIFF(CURDATE(), t.due_date) as days_overdue,
-                s.name as sprint_name, p.name as project_name, c.company_name, u.name developer_name, u.email as developer_email
+                s.name as sprint_name, p.name as project_name, c.company_name, c.customer_id, p.id as project_id,
+                u.name developer_name, u.email as developer_email
                 from tasks t 
                 left join sprints s on s.id = t.sprint_id
                 left join projects p on p.id = s.project_id
@@ -157,7 +158,7 @@ class Cron extends CI_Controller {
                 and s.active = '1'
                 and p.active = '1'
                 and c.active = '1'
-                order by u.email, t.due_date ASC";
+                order by u.email, c.company_name, p.name, t.due_date ASC";
         $result = $this->db->query($query)->result();
         $grouped = array();
         if(!empty($result)){
@@ -166,25 +167,39 @@ class Cron extends CI_Controller {
 
             foreach($result as $row){
                 if(empty($row->developer_email)) continue;
+                
+                // Group by developer email
                 if(!isset($grouped[$row->developer_email])){
                     $grouped[$row->developer_email] = array();
                 }
-                $grouped[$row->developer_email][] = array(
-                    "email" => $row->developer_email,
-                    "tasks" => $row
-                );
+                
+                // Create a key for customer-project grouping
+                $customerProjectKey = $row->company_name . '|' . $row->project_name . '|' . $row->customer_id . '|' . $row->project_id;
+                
+                // Group by customer-project within each developer
+                if(!isset($grouped[$row->developer_email][$customerProjectKey])){
+                    $grouped[$row->developer_email][$customerProjectKey] = array(
+                        'customer_name' => $row->company_name,
+                        'project_name' => $row->project_name,
+                        'customer_id' => $row->customer_id,
+                        'project_id' => $row->project_id,
+                        'tasks' => array()
+                    );
+                }
+                
+                $grouped[$row->developer_email][$customerProjectKey]['tasks'][] = $row;
             }
 
-            foreach($grouped as $tasks){
+            foreach($grouped as $developerEmail => $customerProjects){
                 $emailData = [
                     'logo'              =>  $this->system_model->getParam("logo"),
-                    'tasks'             =>  $tasks,
+                    'customerProjects'  =>  $customerProjects,
                     'show_lifecycle'    =>  false
                 ];
                 $content = $this->load->view("_email/header",$emailData, true);
                 $content .= $this->load->view("_email/overdueTasks",$emailData, true);
                 $content .= $this->load->view("_email/footer",[], true);
-                $this->Email_model3->save($tasks[0]['email'], "URGENT: Overdue Tasks - Action Required", $content);
+                $this->Email_model3->save($developerEmail, "URGENT: Overdue Tasks - Action Required", $content);
             }
         }
     }

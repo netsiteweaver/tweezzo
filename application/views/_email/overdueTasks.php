@@ -13,55 +13,66 @@
         </p>
     </div>
     
-    <table align="center" border="1" cellpadding="10" cellspacing="0" role="presentation" style="width:100%; border-collapse: collapse;">
-        <thead>
-            <tr style="background-color: #ff4444; color: #ffffff;">
-                <th style="padding: 12px; text-align: left; font-weight: bold;">TASK #</th>
-                <th style="padding: 12px; text-align: left; font-weight: bold;">CUSTOMER</th>
-                <th style="padding: 12px; text-align: left; font-weight: bold;">PROJECT</th>
-                <th style="padding: 12px; text-align: left; font-weight: bold;">SPRINT</th>
-                <th style="padding: 12px; text-align: left; font-weight: bold;">TASK NAME</th>
-                <th style="padding: 12px; text-align: left; font-weight: bold;">STAGE</th>
-                <th style="padding: 12px; text-align: left; font-weight: bold;">DUE DATE</th>
-                <th style="padding: 12px; text-align: center; font-weight: bold;">DAYS OVERDUE</th>
-                <th style="padding: 12px; text-align: center; font-weight: bold;">ACTION</th>
-            </tr>
-        </thead>
-        <tbody>
-<?php foreach($tasks as $task): 
-    $daysOverdue = isset($task['tasks']->days_overdue) ? $task['tasks']->days_overdue : 0;
-    $rowColor = $daysOverdue > 7 ? '#ffcccc' : '#ffe6e6';
-?>
-            <tr style="background-color: <?php echo $rowColor; ?>;">
-                <td style="padding: 10px; border: 1px solid #ddd;">
-                    <strong><?php echo $task['tasks']->task_number;?></strong>
-                </td>
-                <td style="padding: 10px; border: 1px solid #ddd;"><?php echo $task['tasks']->company_name;?></td>
-                <td style="padding: 10px; border: 1px solid #ddd;"><?php echo $task['tasks']->project_name;?></td>
-                <td style="padding: 10px; border: 1px solid #ddd;"><?php echo $task['tasks']->sprint_name;?></td>
-                <td style="padding: 10px; border: 1px solid #ddd;">
-                    <strong><?php echo $task['tasks']->name;?></strong>
-                </td>
-                <td style="padding: 10px; border: 1px solid #ddd;">
-                    <?php echo strtoupper(str_replace("_"," ",$task['tasks']->stage));?>
-                </td>
-                <td style="padding: 10px; border: 1px solid #ddd; color: #ff0000; font-weight: bold;">
-                    <?php echo $task['tasks']->due_date;?>
-                </td>
-                <td style="padding: 10px; border: 1px solid #ddd; text-align: center; color: #ff0000; font-weight: bold; font-size: 16px;">
-                    <?php echo $daysOverdue; ?> <?php echo $daysOverdue == 1 ? 'day' : 'days'; ?>
-                </td>
-                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
-                    <a style='text-decoration:none; display: inline-block;' href="<?php echo base_url('portal/developers/view?task_uuid=' . $task['tasks']->uuid);?>">
-                        <div style="text-decoration:none; padding:8px 15px; background-color:#ff4444; color:#fff;text-align:center; border-radius: 4px; font-weight: bold;">
-                            ✓ Complete Task
-                        </div>
-                    </a>
-                </td>
-            </tr>
-<?php endforeach;?>
-        </tbody>
-    </table>
+    <?php foreach($customerProjects as $customerProject): ?>
+    <div style="margin-bottom: 30px; border: 2px solid #ff4444; border-radius: 5px; overflow: hidden;">
+        <!-- Customer-Project Header -->
+        <div style="background-color: #ff4444; padding: 15px; color: #ffffff;">
+            <h3 style="margin: 0; font-size: 20px; font-weight: bold;">
+                📁 <?php echo htmlspecialchars($customerProject['customer_name']); ?> - <?php echo htmlspecialchars($customerProject['project_name']); ?>
+            </h3>
+            <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">
+                <?php echo count($customerProject['tasks']); ?> overdue task<?php echo count($customerProject['tasks']) != 1 ? 's' : ''; ?>
+            </p>
+        </div>
+        
+        <!-- Tasks Table for this Customer-Project -->
+        <table align="center" border="1" cellpadding="10" cellspacing="0" role="presentation" style="width:100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background-color: #ff6666; color: #ffffff;">
+                    <th style="padding: 12px; text-align: left; font-weight: bold;">TASK #</th>
+                    <th style="padding: 12px; text-align: left; font-weight: bold;">SPRINT</th>
+                    <th style="padding: 12px; text-align: left; font-weight: bold;">TASK NAME</th>
+                    <th style="padding: 12px; text-align: left; font-weight: bold;">STAGE</th>
+                    <th style="padding: 12px; text-align: left; font-weight: bold;">DUE DATE</th>
+                    <th style="padding: 12px; text-align: center; font-weight: bold;">DAYS OVERDUE</th>
+                    <th style="padding: 12px; text-align: center; font-weight: bold;">ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach($customerProject['tasks'] as $task): 
+                $daysOverdue = isset($task->days_overdue) ? $task->days_overdue : 0;
+                $rowColor = $daysOverdue > 7 ? '#ffcccc' : '#ffe6e6';
+            ?>
+                <tr style="background-color: <?php echo $rowColor; ?>;">
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        <strong><?php echo htmlspecialchars($task->task_number);?></strong>
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd;"><?php echo htmlspecialchars($task->sprint_name);?></td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        <strong><?php echo htmlspecialchars($task->name);?></strong>
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        <?php echo strtoupper(str_replace("_"," ",$task->stage));?>
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd; color: #ff0000; font-weight: bold;">
+                        <?php echo htmlspecialchars($task->due_date);?>
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center; color: #ff0000; font-weight: bold; font-size: 16px;">
+                        <?php echo $daysOverdue; ?> <?php echo $daysOverdue == 1 ? 'day' : 'days'; ?>
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
+                        <a style='text-decoration:none; display: inline-block;' href="<?php echo base_url('portal/developers/view?task_uuid=' . $task->uuid);?>">
+                            <div style="text-decoration:none; padding:8px 15px; background-color:#ff4444; color:#fff;text-align:center; border-radius: 4px; font-weight: bold;">
+                                ✓ Complete Task
+                            </div>
+                        </a>
+                    </td>
+                </tr>
+            <?php endforeach;?>
+            </tbody>
+        </table>
+    </div>
+    <?php endforeach;?>
 </div>
 
 <div style="margin:30px auto; max-width:800px; padding: 20px; background-color: #f8f9fa; border-radius: 5px;">
