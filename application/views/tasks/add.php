@@ -73,12 +73,24 @@
                         <div class="form-group">
                             <label>Task Name</label>
                             <input type="text" class="form-control required" name="name" placeholder="Enter Task Name"
-                                value="" required>
+                                value="<?php echo (!empty($meeting_note)) ? htmlspecialchars('Meeting Notes - ' . $meeting_note->customer_name . ' (' . date('d-M-Y', strtotime($meeting_note->meeting_datetime)) . ')') : ''; ?>"
+                                required>
                         </div>
                         <div class="form-group">
                             <label>Description</label>
                             <textarea name="description" id="" rows="5" class="form-control"
-                                placeholder='Enter a description of the task'></textarea>
+                                placeholder='Enter a description of the task'><?php 
+                                if(!empty($meeting_note)) {
+                                    $description = "Meeting Date: " . $meeting_note->meeting_datetime . "\n";
+                                    $description .= "Location: " . ucwords($meeting_note->lieu) . "\n";
+                                    $description .= "Attendees: " . $meeting_note->attendees . "\n\n";
+                                    $description .= "Meeting Notes:\n" . $meeting_note->notes;
+                                    echo htmlspecialchars($description);
+                                }
+                                ?></textarea>
+                            <?php if(!empty($meeting_note)): ?>
+                            <small class="form-text text-muted">Pre-filled from meeting notes. You can edit as needed.</small>
+                            <?php endif; ?>
                         </div>
                         <div class="form-group">
                             <label>Due Date</label>

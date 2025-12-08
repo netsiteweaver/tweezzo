@@ -50,6 +50,9 @@
     </div>
     <div class="card-footer">
         <a href="<?= site_url('meeting_notes/send_email/'.$note->id) ?>" class="btn btn-view" onclick="return confirm('Email minutes to all attendees?')"><i class="fa fa-at"></i> Email Minutes to Attendees</a>
+        <?php if(!empty($note->customer_id)): ?>
+        <a href="<?= site_url('meeting_notes/convertToTask/'.$note->id) ?>" class="btn btn-save"><i class="fa fa-tasks"></i> Convert to Task</a>
+        <?php endif; ?>
         <a href="<?= site_url('meeting_notes') ?>" class="btn btn-back"><i class="fa fa-chevron-left"></i> Back to List</a>
     </div>
 </div>

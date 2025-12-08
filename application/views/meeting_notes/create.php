@@ -8,7 +8,7 @@
 
         <div class="form-group">
             <label for="">Select Client</label>
-            <select name="customer_id" id="" class="form-control required" required autofocus>
+            <select name="customer_id" id="customer_id" class="form-control required" required autofocus>
                 <option value="">Select Customer</option>
                 <?php foreach($customers as $customer):?>
                 <option value="<?php echo $customer->customer_id;?>" <?php echo set_value('customer_id') == $customer->customer_id ? 'selected' : ''; ?>><?php echo $customer->company_name;?></option>

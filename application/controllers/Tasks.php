@@ -48,6 +48,14 @@ class Tasks extends MY_Controller {
             $this->data['sprints'] = $this->Sprints_model->fetchSingleById($this->input->get('sprint_id'));
         }
 
+        // Load meeting note if converting from meeting note
+        $this->data['meeting_note'] = null;
+        if(!empty($this->input->get('meeting_note_id')))
+        {
+            $this->load->model('Meeting_note_model');
+            $this->data['meeting_note'] = $this->Meeting_note_model->get_note($this->input->get('meeting_note_id'));
+        }
+
         $this->load->model("Developers_model");
         $this->data['developers'] = $this->Developers_model->lookup();
 

@@ -76,13 +76,43 @@ function downloadPDF() {
 jQuery(function(){
     $('select[name=customer_id]').on("change",function(){
         let elemName = $('select[name=customer_id] option:selected').text();
+        let customerId = $(this).val();
         console.log("Name:",elemName)
-        if($(this).val()=='other'){
+        if(customerId=='other'){
             $('input[name=customer_name]').closest(".form-group").removeClass("d-none");
             $('input[name=customer_name]').trigger('select');
         }else{
             $('input[name=customer_name]').closest(".form-group").addClass("d-none");
             $('input[name=customer_name]').val(elemName);
+            
+            // Auto-populate attendees from customer_access
+            if(customerId && customerId !== '' && customerId !== 'other'){
+                $.ajax({
+                    url: base_url + "ajax/meeting_notes/getAttendeesByCustomerId",
+                    data: {customer_id: customerId},
+                    method: "POST",
+                    dataType: "JSON",
+                    success: function(response){
+                        if(response.result && response.emails && response.emails.length > 0){
+                            let attendeesTextarea = $('#attendees');
+                            let currentValue = attendeesTextarea.val().trim();
+                            let emailsToAdd = response.emails.join('\n');
+                            
+                            // Append emails, ensuring proper line breaks
+                            if(currentValue){
+                                // If there's existing content, add a newline before appending
+                                attendeesTextarea.val(currentValue + '\n' + emailsToAdd);
+                            }else{
+                                // If empty, just set the emails
+                                attendeesTextarea.val(emailsToAdd);
+                            }
+                        }
+                    },
+                    error: function(){
+                        console.log("Error fetching attendees for customer");
+                    }
+                });
+            }
         }
     })
 })

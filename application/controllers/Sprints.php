@@ -152,4 +152,111 @@ class Sprints extends MY_Controller {
         exit;
     }
 
+    public function checkSprintExists()
+    {
+        $project_id = $this->input->post("project_id");
+        $name = $this->input->post("name");
+
+        if (empty($project_id) || empty($name)) {
+            echo json_encode(['result' => false, 'exists' => false]);
+            exit;
+        }
+
+        $sprint = $this->db->select('s.*')
+            ->from('sprints s')
+            ->where('s.project_id', $project_id)
+            ->where('s.name', $name)
+            ->where('s.status', 1)
+            ->get()
+            ->row();
+
+        if ($sprint) {
+            echo json_encode([
+                'result' => true,
+                'exists' => true,
+                'sprint' => [
+                    'id' => $sprint->id,
+                    'name' => $sprint->name
+                ]
+            ]);
+        } else {
+            echo json_encode([
+                'result' => true,
+                'exists' => false
+            ]);
+        }
+        exit;
+    }
+
+    public function createAjax()
+    {
+        //Access Control
+        if(!isAuthorised(get_class(),"add")) {
+            echo json_encode(['result' => false, 'reason' => 'Permission denied']);
+            exit;
+        }
+
+        $project_id = $this->input->post("project_id");
+        $name = $this->input->post("name");
+
+        if (empty($project_id) || empty($name)) {
+            echo json_encode(['result' => false, 'reason' => 'Project ID and name are required']);
+            exit;
+        }
+
+        // Check if sprint already exists
+        $existing = $this->db->select('s.*')
+            ->from('sprints s')
+            ->where('s.project_id', $project_id)
+            ->where('s.name', $name)
+            ->where('s.status', 1)
+            ->get()
+            ->row();
+
+        if ($existing) {
+            // Return existing sprint instead of creating duplicate
+            echo json_encode([
+                'result' => true,
+                'sprint' => [
+                    'id' => $existing->id,
+                    'name' => $existing->name
+                ],
+                'existing' => true
+            ]);
+            exit;
+        }
+
+        $data = [
+            'project_id' => $project_id,
+            'name' => $name
+        ];
+
+        $response = $this->Sprints_model->save($data);
+        
+        if ($response['result']) {
+            // Get the newly created sprint
+            $sprint = $this->db->select('s.*')
+                ->from('sprints s')
+                ->where('s.project_id', $project_id)
+                ->where('s.name', $name)
+                ->where('s.status', 1)
+                ->order_by('s.id', 'DESC')
+                ->limit(1)
+                ->get()
+                ->row();
+
+            echo json_encode([
+                'result' => true,
+                'sprint' => [
+                    'id' => $sprint->id,
+                    'name' => $sprint->name
+                ],
+                'existing' => false
+            ]);
+        } else {
+            echo json_encode(['result' => false, 'reason' => 'Failed to create sprint']);
+        }
+        exit;
+    }
+
 }
