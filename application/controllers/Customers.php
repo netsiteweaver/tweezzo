@@ -244,10 +244,15 @@ class Customers extends MY_Controller
         $page = $this->uri->segment(3, '1');
         
         $hide_completed = ($this->input->get('hide_completed') == '1') ? true : false;
+        $active_filter = $this->input->get('active_filter');
+        if(empty($active_filter)) {
+            $active_filter = 'all';
+        }
 
-        $this->data['customers'] = $this->customers_model->get(null,$page,$this->data['rows_per_page'],$this->input->get('search_text'),$hide_completed);
-        $total_records = $this->customers_model->total_records($this->input->get('search_text'),$hide_completed);
+        $this->data['customers'] = $this->customers_model->get(null,$page,$this->data['rows_per_page'],$this->input->get('search_text'),$hide_completed,$active_filter);
+        $total_records = $this->customers_model->total_records($this->input->get('search_text'),$hide_completed,$active_filter);
         $this->data['hide_completed'] = $hide_completed;
+        $this->data['active_filter'] = $active_filter;
 // debug($this->data['customers']);
         //Breadcrumbs
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();

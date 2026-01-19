@@ -5,7 +5,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 class Customers_model extends CI_Model
 {
 
-    public function get($uuid="",$page="",$rows_per_page="",$search_text="",$hide_completed=false)
+    public function get($uuid="",$page="",$rows_per_page="",$search_text="",$hide_completed=false,$active_filter="all")
     {
         if(empty($uuid)){
             $this->db->select("c.*,u.name agent");
@@ -28,6 +28,14 @@ class Customers_model extends CI_Model
             }
             $offset = ($page-1) * $rows_per_page;
             $this->db->where(array("c.status"=>'1'));
+            
+            // Filter by active status
+            if($active_filter == 'active'){
+                $this->db->where("c.active", '1');
+            } elseif($active_filter == 'inactive'){
+                $this->db->where("c.active", '0');
+            }
+            // If active_filter is 'all', don't filter by active status
             
             // If hide_completed is enabled, exclude customers with all tasks completed
             if($hide_completed){
@@ -62,11 +70,20 @@ class Customers_model extends CI_Model
 
     }
 
-    public function total_records($search_text="",$hide_completed=false)
+    public function total_records($search_text="",$hide_completed=false,$active_filter="all")
     {
         $this->db->select("count(c.customer_id) as ct")
                 ->from("customers c")
                 ->where("c.status","1");
+        
+        // Filter by active status
+        if($active_filter == 'active'){
+            $this->db->where("c.active", '1');
+        } elseif($active_filter == 'inactive'){
+            $this->db->where("c.active", '0');
+        }
+        // If active_filter is 'all', don't filter by active status
+        
         if(!empty($search_text)){
             $this->db->group_start();
             $this->db->like("c.company_name",$search_text);

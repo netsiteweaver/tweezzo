@@ -24,6 +24,14 @@
             <div class="input-group-text clear-search cursor-pointer"><i class="fa fa-times"></i></div>
         </div>
     </div>
+    <div class="col-3 col-md-2">
+        <label for="">Active Status</label>
+        <select class="form-control" name="active_filter" id="active_filter">
+            <option value="all" <?php echo (empty($active_filter) || $active_filter == 'all') ? 'selected':'';?>>All</option>
+            <option value="active" <?php echo ($active_filter == 'active') ? 'selected':'';?>>Only Active</option>
+            <option value="inactive" <?php echo ($active_filter == 'inactive') ? 'selected':'';?>>Only Inactive</option>
+        </select>
+    </div>
     <div class="col-3 col-sm-3 col-md-3">
         <label for="">Options</label>
         <div class="form-check">
