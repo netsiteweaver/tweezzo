@@ -57,6 +57,11 @@
 
 
         </style>
+        <div class="row">
+            <div class="col-md-2">
+                <div class="btn btn-sm btn-warning mt-2 mb-2 js-back"><i class="fa fa-chevron-left"></i> Back</div>
+            </div>
+        </div>
 
         <div class="row">
             <div class="col-md-6">
@@ -335,6 +340,16 @@ handlePreview('fileInput2', 'preview2');
 handlePreview('fileInput3', 'preview3');
 handlePreview('fileInput4', 'preview4');
 handlePreview('fileInput5', 'preview5');
+
+// Make .js-back behave like browser back button
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.js-back').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.history.back();
+        });
+    });
+});
 </script>
 
 <!-- Font Awesome (for icons) -->
