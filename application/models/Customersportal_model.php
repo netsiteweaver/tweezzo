@@ -162,7 +162,7 @@ class Customersportal_model extends CI_Model
         $this->db->where(["p.active"=>1]);
         $this->db->where(["c.status"=>1, "c.active"=>1]);
 
-        $stagesArr = (empty($this->input->get('stages'))) ? [] : explode(',',$stages);
+        $stagesArr = (empty($this->input->get('stages'))) ? [] : array_filter(explode(',',$stages));
 
         if(!empty($stagesArr)){
             $this->db->where_in('t.stage',$stagesArr);

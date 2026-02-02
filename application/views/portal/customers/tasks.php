@@ -1,3 +1,4 @@
+<form method="get" id="taskFilterForm">
 <div class="row mb-5">
     <div class="col-md-2">
         <input type="hidden" name="sprint_id" value="<?php echo $this->input->get("sprint_id");?>">
@@ -33,25 +34,66 @@
         </select>
     </div>    
     <div class="col-md-2">
-        <label for="">Filter Stages <img class='toggle-filter ionicon' src="assets/ionicons/arrow-down-circle.svg"
-                alt=""> <span style='font-size:14px; color:#4c4c4c;'>(Ctrl+Click for multiple selection)</span></label>
-        <select name="stages" id="" class="autosubmit <?php echo (count($stages)==0)?'d-none':'';?> form-control"
-            style='height:170px;' multiple>
-            <option value="new" <?php echo (in_array('new',$stages) )?'selected':'';?>>NEW</option>
-            <option value="in_progress" <?php echo (in_array('in_progress',$stages) )?'selected':'';?>>IN PROGRESS
-            </option>
-            <option value="testing" <?php echo (in_array('testing',$stages) )?'selected':'';?>>TESTING</option>
-            <option value="staging" <?php echo (in_array('staging',$stages) )?'selected':'';?>>STAGING</option>
-            <option value="validated" <?php echo (in_array('validated',$stages) )?'selected':'';?>>VALIDATED</option>
-            <option value="completed" <?php echo (in_array('completed',$stages) )?'selected':'';?>>COMPLETED</option>
-            <option value="on_hold" <?php echo (in_array('on_hold',$stages) )?'selected':'';?>>ON HOLD</option>
-        </select>
+        <label for="">Filter Stages</label>
+        <input type="hidden" name="stages" id="selectedStages" value="<?php echo htmlspecialchars(implode(',', $stages)); ?>">
+        <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#stageFilterModal">
+            Select Stages
+        </button>
+    <!-- Stage Filter Modal -->
+    <div class="modal fade" id="stageFilterModal" tabindex="-1" aria-labelledby="stageFilterModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="stageFilterModalLabel">Select Stages</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="all" id="selectAllStages">
+                        <label class="form-check-label" for="selectAllStages">Select All</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input stage-checkbox" type="checkbox" value="new" id="stageNew">
+                        <label class="form-check-label" for="stageNew">NEW</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input stage-checkbox" type="checkbox" value="in_progress" id="stageInProgress">
+                        <label class="form-check-label" for="stageInProgress">IN PROGRESS</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input stage-checkbox" type="checkbox" value="testing" id="stageTesting">
+                        <label class="form-check-label" for="stageTesting">TESTING</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input stage-checkbox" type="checkbox" value="staging" id="stageStaging">
+                        <label class="form-check-label" for="stageStaging">STAGING</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input stage-checkbox" type="checkbox" value="validated" id="stageValidated">
+                        <label class="form-check-label" for="stageValidated">VALIDATED</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input stage-checkbox" type="checkbox" value="completed" id="stageCompleted">
+                        <label class="form-check-label" for="stageCompleted">COMPLETED</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input stage-checkbox" type="checkbox" value="on_hold" id="stageOnHold">
+                        <label class="form-check-label" for="stageOnHold">ON HOLD</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="applyStageFilter">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
     <div class="col-md-2 mt-4">
-        <div class="btn btn-info apply"><img src="assets/ionicons/checkmark-done-outline.svg" alt=""
-                class="ionicon">Apply</div>
+        <button type="submit" class="btn btn-info apply"><img src="assets/ionicons/checkmark-done-outline.svg" alt="" class="ionicon">Apply</button>
     </div>
 </div>
+</form>
 <div class="row table-responsive">
     <div class="col-md-12">
         <table class="table table-bordered">

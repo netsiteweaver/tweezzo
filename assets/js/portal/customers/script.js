@@ -599,5 +599,45 @@ progressiveImages.forEach(container => {
   });
 
   // Start loading the full-res image
-  fullRes.src = fullRes.src; // re-trigger loading in some browsers
+    fullRes.src = fullRes.src; // re-trigger loading in some browsers
+});
+
+// --- Stage Filter Modal Logic ---
+jQuery(function(){
+    // Pre-select checkboxes in modal based on hidden input
+    $('#stageFilterModal').on('show.bs.modal', function() {
+        var selected = ($('#selectedStages').val() || '').split(',').filter(Boolean);
+        $('.stage-checkbox').each(function(){
+            $(this).prop('checked', selected.includes($(this).val()));
+        });
+        // Select All if all are checked
+        $('#selectAllStages').prop('checked', $('.stage-checkbox:checked').length === $('.stage-checkbox').length);
+    });
+
+    // Select All logic
+    $('#selectAllStages').on('change', function(){
+        $('.stage-checkbox').prop('checked', this.checked);
+    });
+    $('.stage-checkbox').on('change', function(){
+        $('#selectAllStages').prop('checked', $('.stage-checkbox:checked').length === $('.stage-checkbox').length);
+    });
+
+    // Apply button: update hidden input and submit
+    function applyStageFilter() {
+        var selected = $('.stage-checkbox:checked').map(function(){ return $(this).val(); }).get();
+        if (selected.length === 0) {
+            $('#selectedStages').val('');
+        } else {
+            $('#selectedStages').val(selected.join(','));
+        }
+        // Find the closest form and submit
+        $('#selectedStages').closest('form').submit();
+    }
+    $('#applyStageFilter').on('click', function(){
+        $('#stageFilterModal').modal('hide');
+    });
+    // Auto-apply on modal close
+    $('#stageFilterModal').on('hidden.bs.modal', function(){
+        applyStageFilter();
+    });
 });
