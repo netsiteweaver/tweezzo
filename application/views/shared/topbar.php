@@ -6,12 +6,6 @@
       </li>
     </ul>
 
-    <!-- Center Quote - using flex to allow space for right menu -->
-    <div class="random_quote" style="flex-grow: 1; padding: 0 20px;">
-      <span class='quote-text'><?php echo $random_quote->quote_text;?></span><br>
-      <span class='author-name'><?php echo $random_quote->author_name;?></span>
-    </div>
-
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
       <!-- Online Users Dropdown Menu -->

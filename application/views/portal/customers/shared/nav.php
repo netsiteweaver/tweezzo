@@ -63,9 +63,3 @@
         </div>
     </div>
 </nav>
-<div class="row">
-    <div class="random-quote-container">
-        <span class="quote-text"><?php echo $random_quote->quote_text;?></span>
-        <span class="author-name"><?php echo $random_quote->author_name;?></span>
-    </div>
-</div>
