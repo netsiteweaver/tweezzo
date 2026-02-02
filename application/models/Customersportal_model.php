@@ -187,7 +187,7 @@ class Customersportal_model extends CI_Model
     {
         //get master customer id
         $customer_id = $this->db->select()->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row()->customer_id;
-        $task = $this->db->select("t.*,u.name createdBy")
+        $task = $this->db->select("t.*,u.name createdBy, t.scope_client_expectation as scope, t.scope_not_included as not_included, t.scope_when_done as done_when")
                             ->from("tasks t")
                             ->join("sprints s","s.id = t.sprint_id","left")
                             ->join("projects p","p.id = s.project_id","left")
@@ -204,6 +204,10 @@ class Customersportal_model extends CI_Model
         if(empty($task)) {
             return false;
         }
+        // For backward compatibility in views
+        $task->scope = $task->scope_client_expectation;
+        $task->not_included = $task->scope_not_included;
+        $task->done_when = $task->scope_when_done;
         $task->notes = $this->db->select("t.*, u.name developer, ca.name as customer, COALESCE(u.name, ca.name) as author, u.country_code developer_country_code, 'mu' as customer_country_code, COALESCE(u.country_code, ca.country_code) as country_code")
                                 ->from("task_notes t")
                                 ->join("users u","u.id=t.created_by","left")
@@ -230,6 +234,33 @@ class Customersportal_model extends CI_Model
     {
         //get master customer id
         // $customer_id = $this->db->select()->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row()->customer_id;
+
+        if ( (empty($task_id)) || (empty(trim($note))) ) {
+            return false;
+        }
+
+        if(isset($_FILES['note_file']) && $_FILES['note_file']['error'] === UPLOAD_ERR_OK) {
+            $this->load->model("Files_model");
+            $image = $this->Files_model->uploadImage("note_file",'uploads/tasks/',['width'=>200,'height'=>200]);
+
+            $this->db->insert("task_images",[
+                'uuid'                      =>  gen_uuid(),
+                'task_id'                   =>  $task_id,
+                'created_on'                =>  date("Y-m-d H:i:s"),
+                'created_by'                =>  null,
+                'file_name'                 =>  $image['file_name'],
+                'thumb_name'                =>  $image['image_resized'],
+                'file_ext'                  =>  '',
+                'file_size'                 =>  0,
+                'image_height'              =>  0,
+                'image_width'               =>  0,
+                'image_type'                =>  '',
+                'status'                    =>  1,
+                'created_by_customer'       =>  $_SESSION['customer_access_id'],
+                'uploaded_by_user_type'     =>  'customer'
+            ]);
+
+        }
         $this->db->set("task_id",$task_id);
         $this->db->set("notes",$note);
         $this->db->set("created_by_customer",$_SESSION['customer_access_id']);
@@ -237,19 +268,31 @@ class Customersportal_model extends CI_Model
         $this->db->set("display_type",'public');
         $this->db->set("status",'1');
         $this->db->insert("task_notes");
+        
+        // if ($uploaded_file) {
+        //     $this->db->set('file', $uploaded_file);
+        // }
 
-        $this->load->model("Tasks_model");
 
-        //get task details by id
-        $taskUuid = $this->db->select("uuid")->from("tasks")->where("id",$task_id)->get()->row()->uuid;
-        $taskDetails = $this->Tasks_model->fetchSingle($taskUuid);
+        // Return the inserted note row for AJAX rendering
+        $note_id = $this->db->insert_id();
+        $note_row = $this->db->select('tn.*, ca.name customer, ca.country_code')->from('task_notes tn')
+        ->join("customer_access ca","ca.id=tn.created_by_customer","left")
+        ->where('tn.id', $note_id)->get()->row_array();
+        return $note_row;
 
-        // get customer email
-        $author = $this->db->select("email, name")->from('customer_access')->where('id',$_SESSION['customer_access_id'])->get()->row();
+        // $this->load->model("Tasks_model");
 
-        $this->Tasks_model->notifyUsers($taskDetails, ['task_id'=>$task_id, 'notes'=>$note], $author);
+        // //get task details by id
+        // $taskUuid = $this->db->select("uuid")->from("tasks")->where("id",$task_id)->get()->row()->uuid;
+        // $taskDetails = $this->Tasks_model->fetchSingle($taskUuid);
 
-        return $this->db->affected_rows();
+        // // get customer email
+        // $author = $this->db->select("email, name")->from('customer_access')->where('id',$_SESSION['customer_access_id'])->get()->row();
+
+        // $this->Tasks_model->notifyUsers($taskDetails, ['task_id'=>$task_id, 'notes'=>$note], $author);
+
+        // return $this->db->affected_rows();
     }
 
     public function validateTask($task_id)

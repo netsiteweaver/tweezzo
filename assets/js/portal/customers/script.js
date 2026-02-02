@@ -29,6 +29,58 @@ function isLoggedIn()
 	})
 }
 
+$('#task_notes').off('submit').on('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    var notesField = $(form).find('[name="notes"]');
+    var notesValue = notesField.val() || '';
+    if (notesValue.trim() === '' || notesValue.replace(/<[^>]*>/g, '').trim() === '') {
+        alert('Please enter a note before submitting.');
+        notesField.focus();
+        return false;
+    }
+    var formData = new FormData(form);
+    var $btn = $('#saveNote');
+    $btn.prop('disabled', true);
+    $.ajax({
+        url: '/portal/customers/saveNote',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        success: function(response) {
+            if(response.result && response.note) {
+                var note = response.note;
+                var fileLink = note.file ? '<br><a href="/uploads/notes/' + note.file + '" target="_blank" class="badge bg-secondary"><i class="bi bi-paperclip"></i> Download Attachment</a>' : '';
+                var outOfScope = note.out_of_scope == '1' ? 'out-of-scope' : '';
+                var deleteBtn = "<div class='btn btn-sm btn-danger deleteNote' data-note-id='" + note.id + "'><i class='bi bi-trash'></i></div>";
+                var outOfScopeImg = note.out_of_scope == '1' ? "<img style='width:24px; height:24px;' src='/assets/images/OUT-OF-SCOPE-36PX.png' alt=''>" : '';
+                var devInfo = "<div class='float-end developer' title='" + (note.country_code || '') + "'>by " + (note.developer || '') + (note.customer || '') + " <i class='flag flag-" + (note.country_code || '') + "'></i> on " + (note.created_on_fmt || note.created_on) + "</div>";
+                var row = "<tr class='" + outOfScope + "'>" +
+                    // "<td>NEW</td>" +
+                    "<td>" + (note.notes ? note.notes.replace(/\n/g, '<br>') : '') + fileLink + devInfo + "</td>" +
+                    "<td>" + deleteBtn + outOfScopeImg + "</td>" +
+                    "</tr>";
+                $('#previous_notes tbody').prepend(row);
+                // Clear the form
+                form.reset();
+                if(window.jQuery && $('.summernote').length) {
+                  $('.summernote').summernote('reset');
+                }
+            } else {
+                alert(response.reason || 'Failed to save note.');
+            }
+        },
+        error: function() {
+            alert('An error occurred while saving the note.');
+        },
+        complete: function() {
+            $btn.prop('disabled', false);
+        }
+    });
+});
+
 // Show loader during AJAX requests (except background requests)
 $(document).ajaxSend(function(event, jqxhr, settings) {
 	// Exclude background requests from showing loader
@@ -66,6 +118,30 @@ jQuery(function(){
 	},1000)
 
     // init('customers');
+
+    // Image preview for note_file
+    $('#note_file').on('change', function(){
+        var input = this;
+        var previewBox = $('#note_file_preview');
+        var previewImg = $('#note_file_img');
+        if (input.files && input.files[0]) {
+            var file = input.files[0];
+            if (file.type.match('image.*')) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.attr('src', e.target.result);
+                    previewBox.show();
+                }
+                reader.readAsDataURL(file);
+            } else {
+                previewBox.hide();
+                previewImg.attr('src', '');
+            }
+        } else {
+            previewBox.hide();
+            previewImg.attr('src', '');
+        }
+    });
 
     $('.resetFilter').on('click', function(){
         window.location.href = base_url + "portal/customers/notes";
@@ -467,10 +543,12 @@ jQuery(function(){
         
     })
 
+    $('#previous_notes').on("click",".deleteNote",function(){
 
-    $('.deleteNote').on("click", function(){
+
         let note_id = $(this).data("note-id");
         let row = $(this).closest("tr");
+        $(this).closest("tr").addClass("alert alert-danger");
         alertify.confirm('Delete Confirmation','Are you sure you want to delete your note?'
             , function(){
                 Overlay("on");
@@ -480,21 +558,24 @@ jQuery(function(){
                     method:"POST",
                     dataType:"JSON",
                     success: function(response) {
-                        if(response.affected_rows==1){
+                        // if(response.affected_rows==1){
                             $(row).remove();
                             alertify.success("Note deleted");
-                            $('#previous_notes tbody tr').each(function(i,j){
-                                $(this).find("td").eq(0).text(i+1)
-                            })
-                        }
+                            // $('#previous_notes tbody tr').each(function(i,j){
+                            //     $(this).find("td").eq(0).text(i+1)
+                            // })
+                        // }
                     },
                     complete: function(ev) {
                         Overlay("off");
+                        $('#previous_notes tr').removeClass("alert alert-danger");
                     }
                 })
             }
             ,function() {
-                alertify.error('Cancelled')
+                alertify.error('Cancelled');
+                console.log('cleaning up')
+                $('#previous_notes tr').removeClass("alert alert-danger")
             }
         )
        

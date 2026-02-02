@@ -28,10 +28,11 @@ class Customers extends CI_Controller
         $this->data['random_quote'] = $this->Quotes_model->getRandomQuote();
 
         if(isset($_SESSION['customer_access_id'])){
-            $this->data['isAdmin'] = $this->db->select("admin")->from("customer_access")->where(array(
+            $adminRow = $this->db->select("admin")->from("customer_access")->where(array(
                 "status"        =>  "1",
                 "id"            =>  $_SESSION['customer_access_id']
-            ))->get()->row()->admin;
+            ))->get()->row();
+            $this->data['isAdmin'] = $adminRow ? $adminRow->admin : 0;
             $this->data['user_access'] = $this->db->query("
                 SELECT ca.id, c.company_name, ca.name userName, ca.email userEmail, COALESCE(ca.admin, null) isAdmin
                 FROM customers c
@@ -178,14 +179,18 @@ class Customers extends CI_Controller
     public function saveNote()
     {
         $task_id = $this->input->post("task_id");
-        $note = $this->input->post("note");
-        if(empty($note)){
-            echo json_encode(['result'=>false,'reason'=>'Notes cannot be empty']);
+        $note = $this->input->post("notes");
+        // if(empty(trim($note))){
+        //     echo json_encode(['result'=>false,'reason'=>'1 Notes cannot be empty']);
+        //     exit;
+        // }
+        $note_row = $this->Customersportal_model->saveNote($task_id, $note);
+        if(!$note_row){
+            echo json_encode(['result'=>false,'reason'=>'2 Notes cannot be empty']);
             exit;
         }
-        $result = $this->Customersportal_model->saveNote($task_id, $note);
 
-        echo json_encode(['result'=>true,'affected_rows'=>$result]);
+        echo json_encode(['result'=>true,'note'=>$note_row]);
         exit;
     }
 
@@ -405,6 +410,11 @@ class Customers extends CI_Controller
             "result"    =>  $result
         ));
         exit;
+    }
+
+    public function getNotesForTask()
+    {
+
     }
     
 }
