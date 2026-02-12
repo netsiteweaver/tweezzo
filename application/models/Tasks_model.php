@@ -10,7 +10,7 @@ class Tasks_model extends CI_Model{
             if( (empty($page)) || ($page <= 0) ) $page =1;
             $offset = ( ($page-1)*$rows_per_page);  
 
-            $this->db->select('t.*,count(tn.id) as notes, c.company_name,c.full_name, c.email, p.name project_name, s.name sprint_name');
+            $this->db->select('t.*,count(tn.id) as notes, c.company_name,c.full_name, c.email, p.name project_name, s.name sprint_name, u.name created_by_name');
         }else{
             $this->db->select('count(1) as ct');
         }
@@ -19,6 +19,7 @@ class Tasks_model extends CI_Model{
         $this->db->join('sprints s','s.id=t.sprint_id','left');
         $this->db->join('projects p','p.id=s.project_id','left');
         $this->db->join('customers c','c.customer_id=p.customer_id','left');
+        $this->db->join('users u','u.id=t.created_by','left');
         if(!$totalRows) $this->db->join('task_notes tn','tn.task_id=t.id','left');
         if(!empty($assigned_to)) {
             $this->db->join('task_user tu','tu.task_id=t.id','left');

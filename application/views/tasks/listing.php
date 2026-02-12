@@ -158,6 +158,7 @@ $cleanQuery = http_build_query($queryArray);
             <option value="project_name" <?php echo ($this->input->get("order_by") == "project_name") ? "selected" : ""; ?>>Project</option>
             <option value="company_name" <?php echo ($this->input->get("order_by") == "company_name") ? "selected" : ""; ?>>Customer</option>
             <option value="stage" <?php echo ($this->input->get("order_by") == "stage") ? "selected" : ""; ?>>Stage </option>
+            <option value="created_on" <?php echo ($this->input->get("order_by") == "created_on") ? "selected" : ""; ?>>Created Date</option>
             <option value="due_date" <?php echo ($this->input->get("order_by") == "due_date") ? "selected" : ""; ?>> Due Date</option>
         </select>
     </div>
@@ -296,6 +297,8 @@ $cleanQuery = http_build_query($queryArray);
                             <th>Customer <?php echo ($this->input->get("order_by") == "company_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <?php endif;?>
                             <th>Stage <?php echo ($this->input->get("order_by") == "stage") ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <th>Created Date <?php echo ($this->input->get("order_by") == "created_on") ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <th>Created By</th>
                             <th class='no-print'>Due Date <?php echo ($this->input->get("order_by") == "due_date") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th class='no-print'>Hours</th>
                             <th class='no-print'>Developers</th>
@@ -346,6 +349,8 @@ $cleanQuery = http_build_query($queryArray);
                                     <?php echo ucwords(str_replace("_"," ",$task->stage)); ?>
                                 </div>
                             </td>
+                            <td><?php echo !empty($task->created_on) ? date('Y-m-d', strtotime($task->created_on)) : '';?></td>
+                            <td><?php echo !empty($task->created_by_name) ? $task->created_by_name : '';?></td>
                             <td class='no-print text-center <?php echo ( (!empty($task->due_date)) && ( strtotime($task->due_date) <= time()) ) ? 'red text-bold' : ''?>'>
                                 <?php echo (!empty($task->due_date)) ? date_format(date_create($task->due_date),'Y-m-d') : '';?>
                             </td>

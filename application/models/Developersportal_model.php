@@ -23,6 +23,8 @@ class Developersportal_model extends CI_Model{
                     , t.section
                     , t.description task_description
                     , t.due_date, t.estimated_hours
+                    , t.created_on
+                    , u.name created_by_name
                     , s.name sprint_name
                     , p.name project_name
                     , c.company_name
@@ -32,6 +34,7 @@ class Developersportal_model extends CI_Model{
                     , ts.finish_time
                     FROM task_user tu
                     LEFT JOIN tasks t ON t.id = tu.task_id
+                    LEFT JOIN users u ON u.id = t.created_by
                     LEFT JOIN sprints s ON s.id = t.sprint_id
                     LEFT JOIN projects p ON p.id = s.project_id
                     LEFT JOIN customers c ON c.customer_id = p.customer_id

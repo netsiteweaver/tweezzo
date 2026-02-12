@@ -212,6 +212,8 @@
                         <th>SPRINT <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'sprint_name') ? '' :'d-none';?>'></th>
                         <th>PROJECT <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'project_name') ? '' :'d-none';?>'></th>
                         <th>CUSTOMER <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'company_name') ? '' :'d-none';?>'></th>
+                        <th>CREATED DATE</th>
+                        <th>CREATED BY</th>
                         <th>DUE DATE <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'due_date') ? '' :'d-none';?>'></th>
                         <th>ESTIMATED HOURS <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'estimated_hours') ? '' :'d-none';?>'></th>
                         <th>STAGE <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'stage') ? '' :'d-none';?>'></th>
@@ -239,6 +241,8 @@
                         <td><?php echo $task->sprint_name;?></td>
                         <td><?php echo $task->project_name;?></td>
                         <td><?php echo $task->company_name;?></td>
+                        <td><?php echo !empty($task->created_on) ? date('Y-m-d', strtotime($task->created_on)) : '';?></td>
+                        <td><?php echo !empty($task->created_by_name) ? $task->created_by_name : '';?></td>
                         <td><?php echo $task->due_date;?></td>
                         <td><?php echo $task->estimated_hours;?></td>
                         <td class="text-center">
@@ -262,7 +266,7 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th colspan='7' class='text-center'>
+                        <th colspan='11' class='text-center'>
                             TOTAL:
                             <?php echo count($tasks) . " | NEW: " . $totals['new'] . " | IN PROGRESS: " . $totals['in_progress'] . " | TESTING: " . $totals['testing'] . " | STAGING: " . $totals['staging'] . " | VALIDATED: " . $totals['validated'] . " | COMPLETED: " . $totals['completed'] . " | ON HOLD: " . $totals['on_hold'];?>
                         </th>
