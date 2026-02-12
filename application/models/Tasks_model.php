@@ -161,6 +161,10 @@ class Tasks_model extends CI_Model{
         $this->load->model("System_model");
         $this->load->model("email_model2");
         
+        // Get current stage before updating
+        $current_task = $this->db->select('stage')->from('tasks')->where('uuid', $data['task_uuid'])->get()->row();
+        $old_stage = $current_task ? $current_task->stage : null;
+        
         $this->db->query("SET @current_user_email = '{$_SESSION['authenticated_user']->email}'");
         $this->db->query("SET @current_user_ip = '{$_SERVER['REMOTE_ADDR']}'");
         $this->db->query("SET @current_user_agent = '{$_SERVER['HTTP_USER_AGENT']}'");
@@ -170,6 +174,16 @@ class Tasks_model extends CI_Model{
 
         $this->db->set('stage',$data['stage']);
         $this->db->set('progress',$data['progress']);
+        
+        // Handle completed_date
+        if($data['stage'] == 'completed') {
+            // Set completed_date when stage changes to completed
+            $this->db->set('completed_date', date('Y-m-d H:i:s'));
+        } elseif($old_stage == 'completed' && $data['stage'] != 'completed') {
+            // Clear completed_date when changing from completed to another stage
+            $this->db->set('completed_date', null);
+        }
+        
         $this->db->where('uuid',$data['task_uuid']);
         $this->db->update('tasks');
 
@@ -258,6 +272,10 @@ class Tasks_model extends CI_Model{
             $this->db->set('stage',$data['stage']);
             $this->db->set('progress',floatval($data['progress']));
             $this->db->set('status','1');
+            // Set completed_date if stage is completed
+            if($data['stage'] == 'completed') {
+                $this->db->set('completed_date', date('Y-m-d H:i:s'));
+            }
             $this->db->insert('tasks');
 
             $taskId = $this->db->insert_id();
@@ -510,7 +528,15 @@ class Tasks_model extends CI_Model{
     public function bulkChangeStage($taskIds, $stage)
     {
         $taskids = implode(',',$taskIds);
-        $this->db->query("UPDATE tasks SET stage = '$stage' WHERE id IN ($taskids)");
+        
+        // Handle completed_date
+        if($stage == 'completed') {
+            // Set completed_date when stage changes to completed
+            $this->db->query("UPDATE tasks SET stage = '$stage', completed_date = NOW() WHERE id IN ($taskids)");
+        } else {
+            // Clear completed_date when changing from completed to another stage, or set stage normally
+            $this->db->query("UPDATE tasks SET stage = '$stage', completed_date = CASE WHEN stage = 'completed' THEN NULL ELSE completed_date END WHERE id IN ($taskids)");
+        }
     }
     
     public function bulkChangeSprint($taskIds, $sprintId)

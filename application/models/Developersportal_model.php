@@ -355,6 +355,10 @@ class Developersportal_model extends CI_Model{
 
     public function moveStage($task_id,$stage)
     {
+        // Get current stage before updating
+        $current_task = $this->db->select('stage')->from('tasks')->where('id', $task_id)->get()->row();
+        $old_stage = $current_task ? $current_task->stage : null;
+        
         $this->db->query("SET @current_user_email = '{$_SESSION['developer_email']}'");
         $this->db->query("SET @current_user_ip = '{$_SERVER['REMOTE_ADDR']}'");
         $this->db->query("SET @current_user_agent = '{$_SERVER['HTTP_USER_AGENT']}'");
@@ -362,7 +366,18 @@ class Developersportal_model extends CI_Model{
         $this->db->query("SET @current_user_type = 'developer'");
         $this->db->query("SET @@session.time_zone = '+04:00'");
 
-        $this->db->set("stage",$stage)->where("id",$task_id)->update("tasks");
+        $this->db->set("stage",$stage);
+        
+        // Handle completed_date
+        if($stage == 'completed') {
+            // Set completed_date when stage changes to completed
+            $this->db->set('completed_date', date('Y-m-d H:i:s'));
+        } elseif($old_stage == 'completed' && $stage != 'completed') {
+            // Clear completed_date when changing from completed to another stage
+            $this->db->set('completed_date', null);
+        }
+        
+        $this->db->where("id",$task_id)->update("tasks");
 
         $result = $this->db->select("c.customer_id,c.company_name, c.email customer_email, 
                                     s.id sprint_id, s.name sprint_name, 

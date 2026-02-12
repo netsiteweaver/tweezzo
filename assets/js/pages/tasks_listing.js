@@ -463,6 +463,20 @@ jQuery(function(){
         $('#stages-list li.selected').removeClass("selected");
     })
 
+    // Initialize Bootstrap tooltips for completed date info icons
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // Show alert on click for completed date info
+    $('.completed-date-info').on('click', function(e) {
+        e.preventDefault();
+        var completedDate = $(this).data('completed-date');
+        if(typeof alertify !== 'undefined') {
+            alertify.alert('Task Completed', 'This task was completed on: ' + completedDate);
+        } else {
+            alert('This task was completed on: ' + completedDate);
+        }
+    });
+
 })
 
 function assignUsers(taskIds, userIds,customerId,projectId,sprintId)

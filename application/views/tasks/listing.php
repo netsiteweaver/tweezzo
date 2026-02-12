@@ -345,9 +345,17 @@ $cleanQuery = http_build_query($queryArray);
                             </td>
                             <?php endif;?>
                             <td class='stage text-center'>
-                                <div class="stage-button stage-button-<?php echo $task->stage;?>">
+                                <div class="stage-button stage-button-<?php echo $task->stage;?>" style="display:inline-block;">
                                     <?php echo ucwords(str_replace("_"," ",$task->stage)); ?>
                                 </div>
+                                <?php if($task->stage == 'completed' && !empty($task->completed_date)): ?>
+                                <i class="fa fa-info-circle text-info cursor-pointer completed-date-info" 
+                                   style="margin-left: 5px; font-size: 14px;" 
+                                   data-toggle="tooltip" 
+                                   data-placement="top" 
+                                   title="Completed: <?php echo date('Y-m-d H:i', strtotime($task->completed_date)); ?>"
+                                   data-completed-date="<?php echo date('Y-m-d H:i', strtotime($task->completed_date)); ?>"></i>
+                                <?php endif; ?>
                             </td>
                             <td><?php echo !empty($task->created_on) ? date('Y-m-d', strtotime($task->created_on)) : '';?></td>
                             <td><?php echo !empty($task->created_by_name) ? $task->created_by_name : '';?></td>
