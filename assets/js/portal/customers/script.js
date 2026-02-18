@@ -490,9 +490,15 @@ jQuery(function(){
                     dataType: "JSON",
                     success: function(response) {
                         if(response.result) {
-                            $('select[name=stage]').val("validated");
-                            $(".validate").parent().remove();
-                            $(".reject").closest('.row').remove();
+                            // Update the stage badge in the top right with proper styling
+                            $('#task-stage-badge').removeClass().addClass('stage-button stage-button-validated').text('VALIDATED');
+                            // Remove validation section
+                            $(".validate").closest('.card.card-info').remove();
+                            // Show success message and reload after a short delay
+                            alertify.success("Task validated successfully!");
+                            setTimeout(function(){
+                                window.location.reload();
+                            }, 1000);
                         }else{
                             alert(response.reason)
                         }
@@ -526,9 +532,15 @@ jQuery(function(){
                     dataType: "JSON",
                     success: function(response) {
                         if(response.result) {
-                            $('select[name=stage]').val("on_hold");
-                            $(".validate").parent().remove();
-                            $(".reject").closest('.row').remove();
+                            // Update the stage badge in the top right with proper styling
+                            $('#task-stage-badge').removeClass().addClass('stage-button stage-button-on_hold').text('ON HOLD');
+                            // Remove validation section
+                            $(".validate").closest('.card.card-info').remove();
+                            // Show success message and reload after a short delay
+                            alertify.success("Task rejected. Changes will be made.");
+                            setTimeout(function(){
+                                window.location.reload();
+                            }, 1000);
                         }else{
                             alert(response.reason)
                         }

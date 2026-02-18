@@ -20,7 +20,7 @@
 					<i class="bi bi-clipboard-check"></i>
 					<span class="fw-bold">Task #<?php echo $task->task_number;?>: <?php echo htmlspecialchars($task->name);?></span>
 				</div>
-				<span class="badge bg-info text-dark">Stage: <?php echo strtoupper($task->stage);?></span>
+				<div class="stage-button stage-button-<?php echo $task->stage;?>" id="task-stage-badge" style="display:inline-block;"><?php echo strtoupper(str_replace("_"," ",$task->stage));?></div>
 			</div>
 			<div class="card-body">
 				<!-- Progress Bar for Stage -->
@@ -51,7 +51,31 @@
 				<div class="tab-content" id="taskTabContent">
 									   <!-- Details Tab -->
 									   <div class="tab-pane fade show active" id="details" role="tabpanel">
+										   <input type="hidden" name="id" value="<?php echo $task->id;?>">
 										   <div class="mb-3"><strong>Description:</strong><br><?php echo $task->description;?></div>
+										   
+										   <!-- Validation Section for Staging Tasks -->
+										   <?php if($task->stage == 'staging'):?>
+										   <div class="card card-info mb-3">
+											   <div class="card-body">
+												   <p class='mb-2'><strong>Task Validation</strong></p>
+												   <p class='text-muted small mb-3'>This task has successfully passed our internal testing and is now available on the <b>Staging Server</b> for your review.</p>
+												   <p class='text-muted small mb-3'>Please verify it against the requirements and click the <b>Validate</b> button below if everything meets your expectations.</p>
+												   <p class='text-muted small mb-3'>If you find any discrepancies, kindly send us a note detailing what does not match your expectations (as per the task description).</p>
+												   <div class="btn btn-info validate mt-2"><i class="bi bi-check-circle"></i> Validate</div>
+												   <div class="mt-3 pt-3 border-top">
+													   <label class="small"><strong>Rejection Reason (if applicable):</strong></label>
+													   <textarea name="reject_reason" rows="3" class="form-control mt-2" placeholder="Please explain why this task is being rejected to help us make necessary corrections"></textarea>
+													   <div class="btn btn-danger mt-2 reject"><i class="bi bi-x-circle"></i> Reject</div>
+												   </div>
+											   </div>
+										   </div>
+										   <?php elseif($task->stage != 'validated'):?>
+										   <div class="alert alert-info mb-3">
+											   <p class='mb-0 small'>This task will be available for validation once it reaches the <span class="stage-button stage-button-staging" id="task-stage-badge" style="display:inline-block; padding:0px 5px !important;border-radius:0px !important;">Staging</span> stage. Your validation is required before deploying to the Production Server.</p>
+										   </div>
+										   <?php endif;?>
+										   
 										   <!-- Notes Section: Only in Details Tab -->
 										   <div class="card card-secondary shadow-sm mt-4">
 											 <div class="card-header bg-info text-white"><i class="bi bi-chat-dots"></i> Notes</div>
