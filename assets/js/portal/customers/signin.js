@@ -56,7 +56,7 @@ jQuery(function(){
                     }else{
                         localStorage.removeItem('email');
                     }
-                    window.location.href = base_url + "portal/customers/projects";
+                    window.location.href = base_url + "portal/customers/tasks";
                 }else{
                     console.log(response.customers);
                     if( (response.customers=="") && (response.users !== "") ){

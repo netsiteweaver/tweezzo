@@ -74,7 +74,7 @@ class Customers extends CI_Controller
     public function signin()
     {
         if(isset($_SESSION['customer_access_id'])){
-            redirect('portal/customers/projects');
+            redirect('portal/customers/tasks');
         }
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
         $this->data['page_title'] = "Signin";
