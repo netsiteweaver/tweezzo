@@ -35,6 +35,11 @@
         font-size:0.9em;
     }
 
+    .task-ref-cell { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .task-ref-cell .copy-task-ref { cursor: pointer; opacity: 0.6; padding: 2px 4px; border: none; background: none; color: inherit; font-size: 14px; }
+    .task-ref-cell .copy-task-ref:hover { opacity: 1; }
+    .task-ref-cell .copy-task-ref.copied { opacity: 1; color: #28a745; }
+
 </style>
 <?php 
 // Parse the query string into an array
@@ -327,7 +332,17 @@ $cleanQuery = http_build_query($queryArray);
                             <td class='no-print' style='width:20px;font-size:14px;vertical-align:middle;color:#ccc;text-align:center;'>
                                 <?php echo ($i+1)+( ($page-1)*$display );?>
                             </td>
-                            <td class='task-number'><?php echo $task->task_number;?></td>
+                            <td class='task-number task-ref-cell'>
+                                <?php
+                                $display_ref = (isset($task->task_ref) && $task->task_ref !== '') ? $task->task_ref : (isset($task->task_number) ? $task->task_number : '');
+                                if ($display_ref === '' && function_exists('task_ref')) {
+                                    $display_ref = task_ref(isset($task->project_code) ? $task->project_code : null, isset($task->sprint_code) ? $task->sprint_code : null, isset($task->task_number) ? $task->task_number : '');
+                                }
+                                $display_ref = $display_ref !== '' ? $display_ref : (isset($task->task_number) ? $task->task_number : '');
+                                ?>
+                                <span class="task-ref-text"><?php echo htmlspecialchars($display_ref); ?></span>
+                                <button type="button" class="copy-task-ref" data-ref="<?php echo htmlspecialchars($display_ref); ?>" title="Copy reference"><i class="fa fa-copy"></i></button>
+                            </td>
                             <td class='task-section'><?php echo $task->section; ?></td>
                             <td class='task-name'>
                                 <div style='border-bottom:1px dashed #ccc;padding-bottom:3px;margin-bottom:-5px;'><?php echo $task->name; ?></div>

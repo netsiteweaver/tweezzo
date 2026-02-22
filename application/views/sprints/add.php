@@ -12,7 +12,11 @@
 						<label for="">Sprint Name</label>
 						<input type="text" class="form-control required" name="name" placeholder="Enter Sprint Name" value="" required autofocus>
                     </div>
-                    
+                    <div class="form-group">
+						<label for="">Code</label>
+						<input type="text" class="form-control" name="code" placeholder="e.g. S3 (unique per project)" value="" maxlength="20">
+						<small class="form-text text-muted">Short code for task references (e.g. WR-S3-001). Unique per project. Leave empty to use task number only.</small>
+                    </div>
 					<div class="form-group">
 						<label for="">Project</label>
 						<select class="form-control required" name="project_id" required>

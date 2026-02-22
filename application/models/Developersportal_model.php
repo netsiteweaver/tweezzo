@@ -26,7 +26,9 @@ class Developersportal_model extends CI_Model{
                     , t.created_on
                     , u.name created_by_name
                     , s.name sprint_name
+                    , s.code sprint_code
                     , p.name project_name
+                    , p.code project_code
                     , c.company_name
                     , count(tn.id) notes_count 
                     , ts.id timesheet_id
@@ -74,7 +76,18 @@ class Developersportal_model extends CI_Model{
             $query .= " ORDER BY t.task_number";
         }
 // echo $query;die;
-        return $this->db->query($query)->result();
+        $results = $this->db->query($query)->result();
+        if (!function_exists('task_ref')) {
+            $CI =& get_instance();
+            $CI->load->helper('general');
+        }
+        foreach ($results as $task) {
+            $pc = isset($task->project_code) ? $task->project_code : null;
+            $sc = isset($task->sprint_code) ? $task->sprint_code : null;
+            $tn = isset($task->task_number) ? $task->task_number : '';
+            $task->task_ref = $tn !== '' ? task_ref($pc, $sc, $tn) : '';
+        }
+        return $results;
 
     }
 

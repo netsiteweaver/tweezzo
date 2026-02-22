@@ -2,9 +2,35 @@ jQuery(function(){
 
     // tableSort("#task-list","tasks");
 
+    // Copy task reference to clipboard
+    $(document).on("click", ".copy-task-ref", function(e) {
+        var btn = e.currentTarget;
+        var ref = $(btn).data("ref") || ($(btn).closest(".task-ref-cell").find(".task-ref-text").text() || "").trim();
+        if (!ref) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(ref).then(function() {
+                $(btn).addClass("copied").attr("title", "Copied!");
+                setTimeout(function() { $(btn).removeClass("copied").attr("title", "Copy reference"); }, 1500);
+            });
+        } else {
+            var ta = document.createElement("textarea");
+            ta.value = ref;
+            ta.style.position = "fixed";
+            ta.style.left = "-9999px";
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand("copy");
+                $(btn).addClass("copied").attr("title", "Copied!");
+                setTimeout(function() { $(btn).removeClass("copied").attr("title", "Copy reference"); }, 1500);
+            } catch (err) {}
+            document.body.removeChild(ta);
+        }
+    });
+
     $('.view-notes').on("click", function() {
         let taskId = $(this).closest("tr").data("id");
-        let taskNumber = $(this).closest("tr").find("td.task-number").html();
+        let taskNumber = $(this).closest("tr").find("td.task-number .task-ref-text").text() || $(this).closest("tr").find("td.task-number").text();
         let taskSection = $(this).closest("tr").find("td.task-section").html();
         let taskName = $(this).closest("tr").find("td.task-name").text();
 

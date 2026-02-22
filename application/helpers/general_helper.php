@@ -594,3 +594,21 @@ function incrementTaskNumber($taskNumber) {
     // Return original if it doesn't match the expected format
     // return $taskNumber;
 }
+
+/**
+ * Build combined task reference from project code, sprint code and task number.
+ * When both codes are set returns e.g. "WR-S3-001"; otherwise returns task_number only.
+ *
+ * @param string|null $project_code
+ * @param string|null $sprint_code
+ * @param string      $task_number
+ * @return string
+ */
+function task_ref($project_code, $sprint_code, $task_number) {
+    $project_code = trim((string) $project_code);
+    $sprint_code  = trim((string) $sprint_code);
+    if ($project_code !== '' && $sprint_code !== '') {
+        return $project_code . '-' . $sprint_code . '-' . $task_number;
+    }
+    return $task_number;
+}

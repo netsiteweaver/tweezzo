@@ -144,7 +144,7 @@ class Customersportal_model extends CI_Model
     {
         //get master customer id
         $customer_id = $this->db->select()->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row()->customer_id;
-        $this->db->select("t.*,u.name createdBy, p.name project_name, s.name sprint_name, count(tn.id) notes_count")
+        $this->db->select("t.*,u.name createdBy, p.name project_name, p.code project_code, s.name sprint_name, s.code sprint_code, count(tn.id) notes_count")
                         ->from("tasks t")
                         ->join("sprints s","s.id=t.sprint_id")
                         ->join("projects p","p.id=s.project_id")
@@ -178,9 +178,19 @@ class Customersportal_model extends CI_Model
         }else{
             $this->db->order_by($sort_by,$sort_dir);
         }
-        
-        
-        return $this->db->get()->result();                        
+
+        $tasks = $this->db->get()->result();
+        if (!function_exists('task_ref')) {
+            $CI =& get_instance();
+            $CI->load->helper('general');
+        }
+        foreach ($tasks as $task) {
+            $pc = isset($task->project_code) ? $task->project_code : null;
+            $sc = isset($task->sprint_code) ? $task->sprint_code : null;
+            $tn = isset($task->task_number) ? $task->task_number : '';
+            $task->task_ref = $tn !== '' ? task_ref($pc, $sc, $tn) : '';
+        }
+        return $tasks;
     }
 
     public function getTask($uuid)

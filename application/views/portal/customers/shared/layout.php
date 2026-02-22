@@ -109,6 +109,7 @@
 
     <script src="<?php echo base_url("node_modules/lightbox2/dist/js/lightbox.min.js");?>"></script>
     <script src="<?php echo base_url("assets/js/portal/customers/script.js?t=".date("YmdHis"));?>"></script>
+    <script src="<?php echo base_url("assets/portal/js/task-ref-copy.js?t=".date("YmdHis"));?>"></script>
     <script src="<?php echo base_url('assets/js/userSelectModal.js')."?".date("YmdHis"); ?>"></script>
     <script src="<?php echo base_url("assets/js/downloadTableAsCSV.js?t=".date("YmdHis"));?>"></script>
     <!-- Option 2: Separate Popper and Bootstrap JS -->

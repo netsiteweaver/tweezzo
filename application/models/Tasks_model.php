@@ -10,7 +10,7 @@ class Tasks_model extends CI_Model{
             if( (empty($page)) || ($page <= 0) ) $page =1;
             $offset = ( ($page-1)*$rows_per_page);  
 
-            $this->db->select('t.*,count(tn.id) as notes, c.company_name,c.full_name, c.email, p.name project_name, s.name sprint_name, u.name created_by_name');
+            $this->db->select('t.*,count(tn.id) as notes, c.company_name,c.full_name, c.email, p.name project_name, p.code project_code, s.name sprint_name, s.code sprint_code, u.name created_by_name');
         }else{
             $this->db->select('count(1) as ct');
         }
@@ -66,13 +66,20 @@ class Tasks_model extends CI_Model{
         }
         if(!$totalRows){
             $tasks = $this->db->get()->result();
-
+            if (!function_exists('task_ref')) {
+                $CI =& get_instance();
+                $CI->load->helper('general');
+            }
             foreach($tasks as $i => $task){
                 $tasks[$i]->users = $this->db->select("u.name,u.display_name,u.email,u.user_type,u.photo")
                                     ->from("task_user t")
                                     ->join("users u","u.id=t.user_id")
                                     ->where(["t.task_id"=>$task->id])
                                     ->get()->result();
+                $pc = isset($task->project_code) ? $task->project_code : null;
+                $sc = isset($task->sprint_code) ? $task->sprint_code : null;
+                $tn = isset($task->task_number) ? $task->task_number : '';
+                $tasks[$i]->task_ref = $tn !== '' ? task_ref($pc, $sc, $tn) : '';
             }
             return $tasks;
         }else{
@@ -100,7 +107,7 @@ class Tasks_model extends CI_Model{
     }
 
     public function fetchSingle($uuid){
-        $this->db->select('t.*, c.customer_id, c.company_name, c.full_name, p.id project_id, p.name project_name, s.name sprint_name');
+        $this->db->select('t.*, c.customer_id, c.company_name, c.full_name, p.id project_id, p.name project_name, p.code project_code, s.name sprint_name, s.code sprint_code');
         $this->db->from('tasks t');
         $this->db->join('sprints s','s.id=t.sprint_id','left');
         $this->db->join('projects p','p.id=s.project_id','left');
@@ -109,6 +116,11 @@ class Tasks_model extends CI_Model{
         $this->db->where(['t.status'=>'1','t.closed'=>'0']);
         $task = $this->db->get()->row();
         if(empty($task)) return [];
+        if (!function_exists('task_ref')) {
+            get_instance()->load->helper('general');
+        }
+        $tn = isset($task->task_number) ? $task->task_number : '';
+        $task->task_ref = $tn !== '' ? task_ref(isset($task->project_code) ? $task->project_code : null, isset($task->sprint_code) ? $task->sprint_code : null, $tn) : '';
         $task->notes = $this->db->select('tn.id, tn.notes,tn.created_by, tn.created_on,u.name, tn.out_of_scope, c.company_name customer')
                                 ->from('task_notes tn')
                                 ->join('users u','u.id=tn.created_by','left')

@@ -70,6 +70,7 @@ class Sprints_model extends CI_Model{
         $this->load->model("System_model");
 
         $this->db->set('name',$data['name']);
+        $this->db->set('code',!empty($data['code']) ? trim($data['code']) : null);
         $this->db->set('project_id',$data['project_id']);
 
         if(empty($data['uuid'])){
@@ -113,6 +114,7 @@ class Sprints_model extends CI_Model{
             }
         }else{
             $this->db->set("active",isset($_POST['active'])?'1':'0');
+            $this->db->set('code',!empty($data['code']) ? trim($data['code']) : null);
             $this->db->where('uuid',$data['uuid']);
             $this->db->update('sprints');
         }

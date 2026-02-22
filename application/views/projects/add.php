@@ -13,6 +13,11 @@
 						<input type="text" class="form-control required" name="name" placeholder="Enter Task Name" value="" required autofocus>
                     </div>
                     <div class="form-group">
+						<label for="">Code</label>
+						<input type="text" class="form-control" name="code" placeholder="e.g. WR (short unique code for references)" value="" maxlength="20">
+						<small class="form-text text-muted">Short unique code used in task references (e.g. WR-S3-001). Leave empty to use task number only.</small>
+                    </div>
+                    <div class="form-group">
                         <label for="">Description</label>
 						<textarea name="description" id="" rows="3" class="form-control"></textarea>
                     </div>

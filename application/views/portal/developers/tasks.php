@@ -15,6 +15,10 @@
     li.selected span {
         display: inline;
     }
+    .task-ref-cell { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .task-ref-cell .copy-task-ref { cursor: pointer; opacity: 0.6; padding: 2px 4px; border: none; background: none; color: inherit; font-size: 14px; }
+    .task-ref-cell .copy-task-ref:hover { opacity: 1; }
+    .task-ref-cell .copy-task-ref.copied { opacity: 1; color: #28a745; }
 
 </style>
 
@@ -235,7 +239,17 @@
                     <?php foreach($tasks as $task):?>
                     <?php $totals[$task->task_stage]++; ?>
                     <tr data-id="<?php echo $task->id;?>">
-                        <td class='task-number'><?php echo $task->task_number;?></td>
+                        <td class='task-number task-ref-cell'>
+                                <?php
+                                $display_ref = (isset($task->task_ref) && $task->task_ref !== '') ? $task->task_ref : (isset($task->task_number) ? $task->task_number : '');
+                                if ($display_ref === '' && function_exists('task_ref')) {
+                                    $display_ref = task_ref(isset($task->project_code) ? $task->project_code : null, isset($task->sprint_code) ? $task->sprint_code : null, isset($task->task_number) ? $task->task_number : '');
+                                }
+                                $display_ref = $display_ref !== '' ? $display_ref : (isset($task->task_number) ? $task->task_number : '');
+                                ?>
+                                <span class="task-ref-text"><?php echo htmlspecialchars($display_ref); ?></span>
+                                <button type="button" class="copy-task-ref" data-ref="<?php echo htmlspecialchars($display_ref); ?>" title="Copy reference"><i class="bi bi-clipboard"></i></button>
+                            </td>
                         <td class='task-section'><?php echo $task->section;?></td>
                         <td class='task-name'><?php echo $task->task_name;?></td>
                         <td><?php echo $task->sprint_name;?></td>

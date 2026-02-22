@@ -15,6 +15,11 @@
 						<input type="text" class="form-control required" name="name" placeholder="Enter Task Name" value="<?php echo $project->name;?>" required autofocus>
                     </div>
                     <div class="form-group">
+						<label for="">Code</label>
+						<input type="text" class="form-control" name="code" placeholder="e.g. WR (short unique code for references)" value="<?php echo isset($project->code) ? htmlspecialchars($project->code) : '';?>" maxlength="20">
+						<small class="form-text text-muted">Short unique code used in task references (e.g. WR-S3-001). Leave empty to use task number only.</small>
+                    </div>
+                    <div class="form-group">
                         <label for="">Description</label>
 						<textarea name="description" id="" rows="5" class="form-control"><?php echo $project->description;?></textarea>
                     </div>
