@@ -3,7 +3,11 @@ class Meeting_note_model extends CI_Model
 {
     public function get_all_notes()
     {
-        return $this->db->order_by('meeting_datetime', 'DESC')->get('meeting_notes')->result();
+        return $this->db
+            ->select('mn.*, u.name updatedBy')
+            ->from('meeting_notes mn')
+            ->join('users u','u.id = mn.last_updated_by','left')
+            ->order_by('last_updated', 'DESC')->get()->result();
     }
 
     public function get_note($id)
@@ -13,7 +17,8 @@ class Meeting_note_model extends CI_Model
 
     public function insert_note($data)
     {
-        $data['created_at'] = date('Y-m-d H:i:s');
+        $data['last_updated'] = $data['created_at'] = date('Y-m-d H:i:s');
+        $data['last_updated_by'] = $_SESSION['user_id'];
         $data['customer_id'] = ($this->input->post('customer_id') == 'other') ? null : $this->input->post('customer_id');
         $this->db->insert('meeting_notes', $data);
         $note_id = $this->db->insert_id();
@@ -114,6 +119,7 @@ class Meeting_note_model extends CI_Model
             'notes' => $this->input->post('notes'),
             'attendees' => $this->input->post('attendees', true),
             'lieu' => $this->input->post('lieu', true),
+            'last_updated'  =>  date("Y-m-d H:i:s")
         ];
         return $this->db->where('id', $id)->update('meeting_notes', $data);
     }

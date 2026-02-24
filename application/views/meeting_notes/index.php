@@ -9,6 +9,7 @@
                 <tr>
                     <th>DATE & TIME</th>
                     <th>CUSTOMER</th>
+                    <th>LAST UPDATED</th>
                     <th></th>
                 </tr>
             </thead>
@@ -17,6 +18,11 @@
                 <tr id="note-<?= $note->id ?>">
                     <td><?= htmlspecialchars($note->meeting_datetime) ?></td>
                     <td><?= htmlspecialchars($note->customer_name) ?></td>
+                    <td>
+                        <?php if($note->last_updated_by):?>
+                        <?= $note->last_updated . ( ($note->last_updated_by) ? ' by ' . $note->updatedBy : '' ) ?>
+                        <?php endif;?>
+                    </td>
                     <td>
                         <?php if($perms['view']):?>
                         <a href="<?= site_url('meeting_notes/view/'.$note->id) ?>" class="btn btn-view me-1"><i class="fa fa-eye"></i> View</a>
