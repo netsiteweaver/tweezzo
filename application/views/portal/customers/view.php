@@ -52,6 +52,7 @@
 									   <!-- Details Tab -->
 									   <div class="tab-pane fade show active" id="details" role="tabpanel">
 										   <input type="hidden" name="id" value="<?php echo $task->id;?>">
+										   <div class="mb-3"><strong>Work type:</strong> <?php echo !empty($task->work_type) ? ucfirst($task->work_type) : '—';?> &nbsp;|&nbsp; <strong>Billable:</strong> <?php echo isset($task->billable) && $task->billable == 1 ? 'Yes' : (isset($task->billable) && $task->billable == 0 ? 'No' : '—');?></div>
 										   <div class="mb-3"><strong>Description:</strong><br><?php echo $task->description;?></div>
 										   
 										   <!-- Validation Section for Staging Tasks -->

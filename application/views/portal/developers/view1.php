@@ -108,6 +108,13 @@
                             </tr>
 
                             <tr>
+                                <th>Work type:</th>
+                                <td><?php echo !empty($task->work_type) ? ucfirst($task->work_type) : '—';?></td>
+                                <th>Billable:</th>
+                                <td colspan='3'><?php echo isset($task->billable) && $task->billable == 1 ? 'Yes' : (isset($task->billable) && $task->billable == 0 ? 'No' : '—');?></td>
+                            </tr>
+
+                            <tr>
                                 <th>Task:</th>
                                 <td colspan='5'><?php echo $task->name;?></td>
                             </tr>

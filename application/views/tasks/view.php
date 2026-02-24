@@ -89,20 +89,34 @@
 						</div>
 					</div>
 				</div>
-				<div class="form-group">
-					<label for="">Stage</label>
-					<select class="form-control " name="stage"  disabled>
-						<option value="" disabled>Select</option>
-						<option value="new" <?php echo ($task->stage == 'new')?'selected':'';?>>New</option>
-						<option value="in_progress" <?php echo ($task->stage == 'in_progress')?'selected':'';?>>In Progress</option>
-						<option value="completed" <?php echo ($task->stage == 'completed')?'selected':'';?>>Completed</option>
-						<option value="on_hold" <?php echo ($task->stage == 'on_hold')?'selected':'';?>>On Hold</option>
-						<option value="stopped" <?php echo ($task->stage == 'stopped')?'selected':'';?>>Stopped</option>
+                <div class="form-group">
+                    <label for="">Stage</label>
+                    <select class="form-control " name="stage"  disabled>
+                        <option value="" disabled>Select</option>
+                        <option value="new" <?php echo ($task->stage == 'new')?'selected':'';?>>New</option>
+                        <option value="in_progress" <?php echo ($task->stage == 'in_progress')?'selected':'';?>>In Progress</option>
+                        <option value="completed" <?php echo ($task->stage == 'completed')?'selected':'';?>>Completed</option>
+                        <option value="on_hold" <?php echo ($task->stage == 'on_hold')?'selected':'';?>>On Hold</option>
+                        <option value="stopped" <?php echo ($task->stage == 'stopped')?'selected':'';?>>Stopped</option>
 
-					</select>
-				</div>
+                    </select>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="">Work type</label>
+                            <input type="text" class="form-control" value="<?php echo !empty($task->work_type) ? ucfirst($task->work_type) : '—';?>" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="">Billable</label>
+                            <input type="text" class="form-control" value="<?php echo isset($task->billable) && $task->billable == 1 ? 'Yes' : (isset($task->billable) && $task->billable == 0 ? 'No' : '—');?>" disabled>
+                        </div>
+                    </div>
+                </div>
 
-				<?php if(count($task->files) > 0):?>
+                <?php if(count($task->files) > 0):?>
 				<div id="attachments">
 					<div class="row"><div class="col-md-12 text-center">ATTACHMENTS</div></div>
 					<div class="row">

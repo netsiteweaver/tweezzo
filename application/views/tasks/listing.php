@@ -132,6 +132,24 @@ $cleanQuery = http_build_query($queryArray);
             <option value="with" <?php echo ($this->input->get("notes_only") == "with") ? "selected" : ""; ?>>Only With</option>
         </select>
     </div>
+    <div class="col-md-2">
+        <label for="work_type">Work type</label>
+        <select name="work_type" class="form-control monitor" id="work_type">
+            <option value="">All</option>
+            <option value="development" <?php echo $this->input->get("work_type") == "development" ? "selected" : ""; ?>>Development</option>
+            <option value="maintenance" <?php echo $this->input->get("work_type") == "maintenance" ? "selected" : ""; ?>>Maintenance</option>
+            <option value="support" <?php echo $this->input->get("work_type") == "support" ? "selected" : ""; ?>>Support</option>
+            <option value="other" <?php echo $this->input->get("work_type") == "other" ? "selected" : ""; ?>>Other</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label for="billable">Billable</label>
+        <select name="billable" class="form-control monitor" id="billable">
+            <option value="">All</option>
+            <option value="1" <?php echo $this->input->get("billable") === "1" ? "selected" : ""; ?>>Yes</option>
+            <option value="0" <?php echo $this->input->get("billable") === "0" ? "selected" : ""; ?>>No</option>
+        </select>
+    </div>
     <input type="password" name="fake-password" autocomplete="new-password" style="position:absolute; top:-1000px; left:-1000px;">
     <div class="col-md-2">
         <label for="search">Search</label>
@@ -302,6 +320,8 @@ $cleanQuery = http_build_query($queryArray);
                             <th>Customer <?php echo ($this->input->get("order_by") == "company_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <?php endif;?>
                             <th>Stage <?php echo ($this->input->get("order_by") == "stage") ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <th class='no-print'>Work type</th>
+                            <th class='no-print'>Billable</th>
                             <th>Created Date <?php echo ($this->input->get("order_by") == "created_on") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>Created By</th>
                             <th class='no-print'>Due Date <?php echo ($this->input->get("order_by") == "due_date") ? "<i class='fa fa-sort'></i>" : '';?></th>
@@ -372,6 +392,8 @@ $cleanQuery = http_build_query($queryArray);
                                    data-completed-date="<?php echo date('Y-m-d H:i', strtotime($task->completed_date)); ?>"></i>
                                 <?php endif; ?>
                             </td>
+                            <td class='no-print'><?php echo !empty($task->work_type) ? ucfirst($task->work_type) : '—';?></td>
+                            <td class='no-print'><?php echo isset($task->billable) && $task->billable == 1 ? 'Yes' : (isset($task->billable) && $task->billable == 0 ? 'No' : '—');?></td>
                             <td><?php echo !empty($task->created_on) ? date('Y-m-d', strtotime($task->created_on)) : '';?></td>
                             <td><?php echo !empty($task->created_by_name) ? $task->created_by_name : '';?></td>
                             <td class='no-print text-center <?php echo ( (!empty($task->due_date)) && ( strtotime($task->due_date) <= time()) ) ? 'red text-bold' : ''?>'>

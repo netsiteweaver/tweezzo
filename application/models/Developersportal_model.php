@@ -23,6 +23,7 @@ class Developersportal_model extends CI_Model{
                     , t.section
                     , t.description task_description
                     , t.due_date, t.estimated_hours
+                    , t.work_type, t.billable
                     , t.created_on
                     , u.name created_by_name
                     , s.name sprint_name

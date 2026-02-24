@@ -391,6 +391,8 @@ jQuery(function(){
         let assigned_to = $('#assigned_to').val();
         let notes_only = $('#notes_only').val();
         let search_text = $('#search_text').val();
+        let work_type = $('#work_type').val();
+        let billable = $('#billable').val();
 
         if(customer_id!=='') {
             localStorage.setItem('LastSelectedCustomer',customer_id);
@@ -415,7 +417,7 @@ jQuery(function(){
         
         Overlay("on");
         setTimeout(function(){
-            window.location.href = '/tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+search_text;
+            window.location.href = '/tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+search_text+"&work_type="+work_type+"&billable="+billable;
         },100)
     })
 
@@ -467,6 +469,8 @@ jQuery(function(){
         let assigned_to = $('#assigned_to').val();
         let notes_only = $('#notes_only').val();
         let search_text = $('#search_text').val();
+        let work_type = $('#work_type').val();
+        let billable = $('#billable').val();
 
         let selectedStages = [];
         $('#stages-list li.selected').each(function(i,j){
@@ -479,7 +483,7 @@ jQuery(function(){
 
         Overlay("on");
         setTimeout(function(){
-            window.location.href = '/tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+JSON.stringify(selectedStages)+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+search_text;
+            window.location.href = '/tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+JSON.stringify(selectedStages)+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+search_text+"&work_type="+work_type+"&billable="+billable;
 
             // $('.monitor').trigger("change")
         },100)

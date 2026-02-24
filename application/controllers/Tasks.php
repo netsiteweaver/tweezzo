@@ -199,12 +199,13 @@ class Tasks extends MY_Controller {
         $order_dir = $this->input->get('order_dir');
         $notes_only = $this->input->get('notes_only');
         $search_text = $this->input->get('search_text');
-
+        $work_type = $this->input->get('work_type');
+        $billable = $this->input->get('billable');
 
         $page = $this->uri->segment(3);
         $per_page = (!empty($this->input->get("display"))) ? $this->input->get("display") : $this->system_model->getParam("rows_per_page");
-        $this->data['tasks'] = $this->Tasks_model->fetchAll($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$page,$per_page,"",$notes_only,$search_text);
-        $total_rows = $this->Tasks_model->totalRows($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$notes_only,$search_text);
+        $this->data['tasks'] = $this->Tasks_model->fetchAll($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$page,$per_page,"",$notes_only,$search_text,false,$work_type,$billable);
+        $total_rows = $this->Tasks_model->totalRows($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$notes_only,$search_text,$work_type,$billable);
         $this->data['total_rows'] = $total_rows;
         $this->data['pagination'] = getPagination("tasks/listing",$total_rows,$per_page);
 

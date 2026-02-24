@@ -221,6 +221,8 @@
                         <th>DUE DATE <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'due_date') ? '' :'d-none';?>'></th>
                         <th>ESTIMATED HOURS <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'estimated_hours') ? '' :'d-none';?>'></th>
                         <th>STAGE <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'stage') ? '' :'d-none';?>'></th>
+                        <th>WORK TYPE</th>
+                        <th>BILLABLE</th>
                         <th><i class="bi bi-chat-dots"></i></th>
                         <th><i class="bi bi-stopwatch"></i></th>
                         <th></th>
@@ -265,6 +267,8 @@
                             </div>
 
                         </td>
+                        <td><?php echo !empty($task->work_type) ? ucfirst($task->work_type) : '—';?></td>
+                        <td><?php echo isset($task->billable) && $task->billable == 1 ? 'Yes' : (isset($task->billable) && $task->billable == 0 ? 'No' : '—');?></td>
                         <td class=''><?php echo $task->notes_count;?><br><i class="bi bi-eye view-notes cursor-pointer"></i></td>
                         <td class='cursor-pointer '>
                             <i class="bi bi-stop-circle-fill timer_stop <?php echo ( ($task->start_time != "") && ($task->finish_time == "")) ? '' : 'd-none';?>" style="font-size:1.2em;color:#f00;"></i>
@@ -280,7 +284,7 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th colspan='11' class='text-center'>
+                        <th colspan='13' class='text-center'>
                             TOTAL:
                             <?php echo count($tasks) . " | NEW: " . $totals['new'] . " | IN PROGRESS: " . $totals['in_progress'] . " | TESTING: " . $totals['testing'] . " | STAGING: " . $totals['staging'] . " | VALIDATED: " . $totals['validated'] . " | COMPLETED: " . $totals['completed'] . " | ON HOLD: " . $totals['on_hold'];?>
                         </th>

@@ -112,6 +112,8 @@
                     <th>TASK <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('sort_by') == 'name') ? '' :'d-none';?>'></th>
                     <th>DUE DATE <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('sort_by') == 'due_date') ? '' :'d-none';?>'></th>
                     <th>STAGE <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('sort_by') == 'stage') ? '' :'d-none';?>'></th>
+                    <th>WORK TYPE</th>
+                    <th>BILLABLE</th>
                     <th><i class="bi bi-chat-dots"></i></th>
                     <th></th>
                 </tr>
@@ -152,6 +154,8 @@
                         </button>
 
                     </td>
+                    <td><?php echo !empty($task->work_type) ? ucfirst($task->work_type) : '—';?></td>
+                    <td><?php echo isset($task->billable) && $task->billable == 1 ? 'Yes' : (isset($task->billable) && $task->billable == 0 ? 'No' : '—');?></td>
                     <td class=''><?php echo $task->notes_count;?><br><i class="bi bi-eye view-notes cursor-pointer"></i></td>
                     <td>
                         <a href="portal/customers/view?task_uuid=<?php echo $task->uuid;?>">
@@ -163,7 +167,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <th colspan='7' class='text-center'>
+                    <th colspan='9' class='text-center'>
                         TOTAL:
                         <?php echo count($tasks) . " | NEW: " . $totals['new'] . " | IN PROGRESS: " . $totals['in_progress'] . " | TESTING: " . $totals['testing'] . " | STAGING: " . $totals['staging'] . " | VALIDATED: " . $totals['validated'] . " | COMPLETED: " . $totals['completed'] . " | ON HOLD: " . $totals['on_hold'];?>
                     </th>

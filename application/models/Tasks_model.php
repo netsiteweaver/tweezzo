@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Tasks_model extends CI_Model{
 
-    public function fetchAll($customer_id="",$project_id="",$sprint_id="",$stage=[],$assigned_to="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$output="",$notes_only="",$search_text="",$totalRows=false)
+    public function fetchAll($customer_id="",$project_id="",$sprint_id="",$stage=[],$assigned_to="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$output="",$notes_only="",$search_text="",$totalRows=false,$work_type="",$billable="")
     {
         if(!$totalRows){
             if( (empty($page)) || ($page <= 0) ) $page =1;
@@ -51,6 +51,8 @@ class Tasks_model extends CI_Model{
             $this->db->or_like("t.stage",$search_text);
             $this->db->group_end();
         }
+        if(!empty($work_type)) $this->db->where('t.work_type',$work_type);
+        if($billable !== '' && $billable !== null) $this->db->where('t.billable',$billable);
         // echo $this->db->get_compiled_select();die;
         if(!$totalRows){
             if(!empty($order_by)) {
@@ -88,9 +90,9 @@ class Tasks_model extends CI_Model{
         
     }
 
-    public function totalRows($customer_id="",$project_id="",$sprint_id="",$stage="",$assigned_to="",$order_by="",$order_dir="asc",$notes_only="",$search_text="")
+    public function totalRows($customer_id="",$project_id="",$sprint_id="",$stage="",$assigned_to="",$order_by="",$order_dir="asc",$notes_only="",$search_text="",$work_type="",$billable="")
     {
-        $rows = $this->fetchAll($customer_id, $project_id, $sprint_id, $stage, $assigned_to, $order_by, $order_dir, 1, 10, '', $notes_only, $search_text, true);
+        $rows = $this->fetchAll($customer_id, $project_id, $sprint_id, $stage, $assigned_to, $order_by, $order_dir, 1, 10, '', $notes_only, $search_text, true, $work_type, $billable);
         return $rows;
 
     }
@@ -268,6 +270,8 @@ class Tasks_model extends CI_Model{
         $this->db->set('section',$data['section']);
         $this->db->set('due_date',!empty($data['due_date']) ? $data['due_date'] : null);
         $this->db->set('estimated_hours',!empty($data['estimated_hours']) ? $data['estimated_hours'] : null);
+        $this->db->set('work_type',!empty($data['work_type']) ? $data['work_type'] : null);
+        $this->db->set('billable',isset($data['billable']) && $data['billable'] ? 1 : (isset($data['billable']) ? 0 : null));
         $this->db->set('scope_client_expectation',$data['scope_client_expectation']);
         $this->db->set('scope_not_included',$data['scope_not_included']);
         $this->db->set('scope_when_done',$data['scope_when_done']);

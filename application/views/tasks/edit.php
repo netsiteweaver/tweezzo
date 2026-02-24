@@ -98,7 +98,21 @@
 										<input type="number" step='0.25' min='0' class="form-control" name="estimated_hours"  value="<?php echo $task->estimated_hours;?>">
 									</div>
 								</div>
-								
+								<div class="form-group">
+									<label>Work type</label>
+									<select class="form-control" name="work_type">
+										<option value="">Select</option>
+										<option value="development" <?php echo (isset($task->work_type) && $task->work_type == 'development') ? 'selected' : '';?>>Development</option>
+										<option value="maintenance" <?php echo (isset($task->work_type) && $task->work_type == 'maintenance') ? 'selected' : '';?>>Maintenance</option>
+										<option value="support" <?php echo (isset($task->work_type) && $task->work_type == 'support') ? 'selected' : '';?>>Support</option>
+										<option value="other" <?php echo (isset($task->work_type) && $task->work_type == 'other') ? 'selected' : '';?>>Other</option>
+									</select>
+								</div>
+								<div class="form-group">
+									<label>Billable</label>
+									<input type="hidden" name="billable" value="0">
+									<input type="checkbox" name="billable" value="1" <?php echo (isset($task->billable) && $task->billable == 1) ? 'checked' : '';?>>
+								</div>
 							</div>
 							<div class="alert alert-danger">Scope Definition</div>
 							<div class="form-group">

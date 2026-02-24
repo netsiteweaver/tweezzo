@@ -101,6 +101,21 @@
                             <input type="number" step='0.25' min='0' class="form-control" name="estimated_hours"
                                 value="1">
                         </div>
+                        <div class="form-group">
+                            <label>Work type</label>
+                            <select class="form-control" name="work_type">
+                                <option value="">Select</option>
+                                <option value="development">Development</option>
+                                <option value="maintenance">Maintenance</option>
+                                <option value="support">Support</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Billable</label>
+                            <input type="hidden" name="billable" value="0">
+                            <input type="checkbox" name="billable" value="1">
+                        </div>
 
                         <!-- </div> -->
                         <div class="form-group d-none">
