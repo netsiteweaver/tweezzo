@@ -18,7 +18,6 @@ class Meeting_note_model extends CI_Model
     public function insert_note($data)
     {
         $data['last_updated'] = $data['created_at'] = date('Y-m-d H:i:s');
-        $data['last_updated_by'] = $_SESSION['user_id'];
         $data['customer_id'] = ($this->input->post('customer_id') == 'other') ? null : $this->input->post('customer_id');
         $this->db->insert('meeting_notes', $data);
         $note_id = $this->db->insert_id();
@@ -119,7 +118,8 @@ class Meeting_note_model extends CI_Model
             'notes' => $this->input->post('notes'),
             'attendees' => $this->input->post('attendees', true),
             'lieu' => $this->input->post('lieu', true),
-            'last_updated'  =>  date("Y-m-d H:i:s")
+            'last_updated'  =>  date("Y-m-d H:i:s"),
+            'last_updated_by'   =>  $_SESSION['user_id']
         ];
         return $this->db->where('id', $id)->update('meeting_notes', $data);
     }
