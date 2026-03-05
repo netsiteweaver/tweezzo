@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <a href="portal/customers/tasks">
-            <img src="assets/images/<?php echo $logoDark;?>" alt="" style='height:25px;'>
+    <div class="container-fluid portal-navbar-inner">
+        <a class="portal-logo-link" href="portal/customers/tasks">
+            <img src="assets/images/<?php echo $logoDark;?>" alt="" class="portal-logo-img">
         </a>
         <!-- <a class="navbar-brand" href="#">Task Manager <span class="notes">v1.0</span></a> -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -12,13 +12,13 @@
             <ul class="navbar-nav mb-2 mb-lg-0">
                 
                 <li class="nav-item">
-                    <a class="nav-link <?php echo ($this->uri->segment(3)=='projects')?'active':'';?>" href="portal/customers/projects"><div class="bg-icon bg-project_management"></div> Projects</a>
+                    <a class="nav-link <?php echo ($this->uri->segment(3)=='projects')?'active':'';?>" href="portal/customers/projects"><i class="bi bi-folder2-open me-2"></i>Projects</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?php echo ($this->uri->segment(3)=='sprints')?'active':'';?>" href="portal/customers/sprints"><div class="bg-icon bg-race"></div>Sprints</a>
+                    <a class="nav-link <?php echo ($this->uri->segment(3)=='sprints')?'active':'';?>" href="portal/customers/sprints"><i class="bi bi-trophy me-2"></i>Sprints</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?php echo ($this->uri->segment(3)=='tasks')?'active':'';?>" href="portal/customers/tasks"><div class="bg-icon bg-clipboard"></div>Tasks</a>
+                    <a class="nav-link <?php echo ($this->uri->segment(3)=='tasks')?'active':'';?>" href="portal/customers/tasks"><i class="bi bi-list-check me-2"></i>Tasks</a>
                 </li>
                 <!-- <li class="nav-item">
                     <a class="nav-link <?php //echo ($this->uri->segment(3)=='notes')?'active':'';?>" href="portal/customers/notes"><div class="bg-icon bg-chat"></div>Notes</a>
@@ -41,22 +41,22 @@
                     <a class="nav-link" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
                 </li> -->
                 <div class="nav-item">
-                    <a href="portal/customers/signout" class="nav-link"><div class="bg-icon bg-logout"></div>Signout</a>
+                    <a href="portal/customers/signout" class="nav-link"><i class="bi bi-box-arrow-right me-2"></i>Signout</a>
                 </div>
             </ul>
-            <ul class="navbar-nav mb-2 mb-lg-0">
-                <li class="nav-item cursor-pointer add-task" style='margin-right:25px;'>
-                    <img id="submitTask" style="width:24px;" src="assets/images/add_task_48px.png" alt="">
-                    <!-- <div id="submitTask" class="bg-icon bg-add_task"></div> -->
+            <ul class="navbar-nav mb-2 mb-lg-0 align-items-center">
+                <li class="nav-item portal-nav-separator" aria-hidden="true"></li>
+                <li class="nav-item cursor-pointer add-task portal-nav-action">
+                    <span class="portal-nav-action-label"><i id="submitTask" class="bi bi-plus-circle-fill portal-nav-icon" aria-hidden="true"></i><span class="portal-nav-action-text">Submit task</span></span>
                 </li>
-                <li class="nav-item cursor-pointer add-user-access">
-                    <img id="addUser" style="width:24px;" src="assets/images/add-user-48px.png" alt="">
+                <li class="nav-item cursor-pointer add-user-access portal-nav-action">
+                    <span class="portal-nav-action-label"><i id="addUser" class="bi bi-person-plus-fill portal-nav-icon" aria-hidden="true"></i><span class="portal-nav-action-text">Add user</span></span>
                 </li>
             </ul>
-            <ul class="navbar-nav mb-2 mb-lg-0 ms-auto align-items-center">
+            <ul class="navbar-nav mb-2 mb-lg-0 ms-auto align-items-center portal-user-info">
                 <?php if (!empty($_SESSION['customer_company_name'])): ?>
                 <li class="nav-item me-3">
-                    <span class="nav-link py-0" style="font-weight:600;"><?php echo htmlspecialchars($_SESSION['customer_company_name']); ?></span>
+                    <span class="nav-link py-0"><?php echo htmlspecialchars($_SESSION['customer_company_name']); ?></span>
                 </li>
                 <?php endif; ?>
                 <li class="nav-item">

@@ -150,17 +150,6 @@ jQuery(function(){
     $('.download').on('click', function(){
         downloadTableAsCSV('notes','notes',{ includeColumns: [1,2,3,4] });
     })
-    
-    zoomIconForSeconds('submitTask',6);
-    setTimeout(function(){
-        zoomIconForSeconds('addUser',9);
-    },1000)
-    
-
-    // $('#submitTask').hover(function(){
-    //     zoomIconForSeconds('submitTask',3)
-    // })
-
 
     $('.summernote').summernote({
 		callbacks: {
@@ -660,16 +649,6 @@ function Overlay(option)
 		$('#overlay').addClass('d-none');
 	}
 }
-
-function zoomIconForSeconds(elementID, seconds) {
-    const icon = document.getElementById(elementID);
-    
-    icon.classList.add('zoom-animation'); // Start animation
-    
-    setTimeout(() => {
-      icon.classList.remove('zoom-animation'); // Stop animation after X seconds
-    }, seconds * 1000); // seconds → milliseconds
-  }
 
 function validEmail(email) {
     const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -200,58 +200,125 @@ jQuery(function(){
         $('#customers_listing tbody tr.active').removeClass("active");
     })
 
-    $('#add-user-access').on("click", function(){
-        $('#addUserAccessModal').modal("show");
-        $('#addUserAccessModal').on("shown.bs.modal",function(){
-            $("#addUserAccessModal .name").trigger("focus")
-        })
-    })
+    function setAddUserModalMode(mode) {
+        var $m = $('#addUserAccessModal');
+        if (mode === 'add') {
+            $m.find('.access_id').val('');
+            $m.find('.name, .email, .phone, .password').val('');
+            $m.find('.country_code').val('mu');
+            $m.find('.admin').prop('checked', false);
+            $('#addUserAccessModalTitle').html('<i class="fa fa-unlock"></i> Grant User Access');
+            $m.find('.password-group .form-control').attr('placeholder', 'Enter password');
+            $m.find('.add-mode-hint').show();
+        } else {
+            $('#addUserAccessModalTitle').html('<i class="fa fa-edit"></i> Edit User Access');
+            $m.find('.password-group .form-control').attr('placeholder', 'Leave blank to keep current password');
+            $m.find('.add-mode-hint').hide();
+        }
+    }
 
-    $('#addUserAccessModal').on("hidden.bs.modal",function(){
-        // alert();
-    })
+    $('#add-user-access').on("click", function(){
+        setAddUserModalMode('add');
+        $('#addUserAccessModal').modal("show");
+        $('#addUserAccessModal').one("shown.bs.modal", function(){
+            $("#addUserAccessModal .name").trigger("focus");
+        });
+    });
+
+    $('#addUserAccessModal').on("hidden.bs.modal", function(){
+        $('#addUserAccessModal .access_id').val('');
+    });
+
+    $('#existing_users').on("click", ".editUser", function(){
+        var $tr = $(this).closest("tr");
+        var id = $tr.data("id");
+        var name = $tr.find(".userName").val();
+        var phone = $tr.find(".userPhone").val();
+        var email = $tr.find(".userEmail").val();
+        var flagClass = $tr.find("td:eq(3) .flag").attr("class") || "";
+        var countryCode = (flagClass.match(/flag-(\w+)/) || [null, "mu"])[1];
+        var isAdmin = $tr.find("td:eq(4) .badge").length > 0;
+        $('#addUserAccessModal .access_id').val(id);
+        $('#addUserAccessModal .name').val(name);
+        $('#addUserAccessModal .phone').val(phone);
+        $('#addUserAccessModal .email').val(email);
+        $('#addUserAccessModal .country_code').val(countryCode);
+        $('#addUserAccessModal .admin').prop('checked', isAdmin);
+        $('#addUserAccessModal .password').val('');
+        setAddUserModalMode('edit');
+        $('#addUserAccessModal').modal("show");
+        $('#addUserAccessModal').one("shown.bs.modal", function(){
+            $("#addUserAccessModal .name").trigger("focus");
+        });
+    });
 
     $('#addUserAccessModal .save').on("click", function(){
         let uuid = $("input[name=uuid]").val();
-        // console.log(uuid)
+        let accessId = $('#addUserAccessModal .access_id').val();
         let name = $('#addUserAccessModal .name').val().trim();
         let email = $('#addUserAccessModal .email').val();
         let phone = $('#addUserAccessModal .phone').val();
         let password = $('#addUserAccessModal .password').val();
         let country_code = $('#addUserAccessModal .country_code').val();
+        let admin = $('#addUserAccessModal .admin').is(':checked') ? 1 : 0;
         let errorMessage = "";
 
         if(name.length < 4){
             errorMessage += "- a name of at least 4 chars\r\n";
         }
-
         if(!isValidEmail(email)){
             errorMessage += "- a valid email\r\n";
         }
-
-        if(password.length < 4){
-            errorMessage += "- a valid password of at least 4 chars\r\n";
+        if(!accessId && password.length < 4){
+            errorMessage += "- a valid password of at least 4 chars (required for new user)\r\n";
         }
-
         if(errorMessage.length > 0){
             errorMessage = "Please correct the following error(s):\r\n" + errorMessage;
-            alert(errorMessage)
+            alert(errorMessage);
             return false;
         }
 
-        $.ajax({
-            url: base_url + "portal/customers/addUserAccess",
-            method: "POST",
-            dataType: "JSON",
-            data:{uuid:uuid,name:name,email:email,phone:phone,password:password,country_code:country_code},
-            success:function(response){
-                if(response.result == false){
-                    alertify.alert(response.reason);
-                }else{
-                    $("#addUserAccessModal input, #addUserAccessModal textarea").val("");
-                    $("#addUserAccessModal select").val("mu");
-                    $('#addUserAccessModal').modal("hide");
-                    let row = `<tr data-id="${response.user_id}">
+        if (accessId) {
+            $.ajax({
+                url: base_url + "portal/customers/updateUserAccess",
+                method: "POST",
+                dataType: "JSON",
+                data: { access_id: accessId, name: name, email: email, phone: phone, country_code: country_code, admin: admin, password: password },
+                success: function(response){
+                    if(response.result === false){
+                        alertify.alert(response.reason || 'Update failed');
+                    } else {
+                        var adminBadge = admin ? '<span class="badge badge-info">Yes</span>' : 'No';
+                        var $row = $("#existing_users tbody tr[data-id='" + accessId + "']");
+                        $row.find(".userName").val(name);
+                        $row.find(".userPhone").val(phone);
+                        $row.find(".userEmail").val(email);
+                        $row.find("td:eq(3)").html('<i class="flag flag-' + country_code + '"></i><input type="text" class="form-control d-none" placeholder="' + country_code + '?">');
+                        $row.find("td:eq(4)").html(adminBadge);
+                        $("#addUserAccessModal input, #addUserAccessModal textarea").val("");
+                        $("#addUserAccessModal .access_id").val("");
+                        $("#addUserAccessModal .admin").prop("checked", false);
+                        $('#addUserAccessModal').modal("hide");
+                    }
+                }
+            });
+        } else {
+            $.ajax({
+                url: base_url + "portal/customers/addUserAccess",
+                method: "POST",
+                dataType: "JSON",
+                data:{uuid:uuid,name:name,email:email,phone:phone,password:password,country_code:country_code,admin:admin},
+                success:function(response){
+                    if(response.result == false){
+                        alertify.alert(response.reason);
+                    }else{
+                        $("#addUserAccessModal input, #addUserAccessModal textarea").val("");
+                        $("#addUserAccessModal select").val("mu");
+                        $("#addUserAccessModal .admin").prop("checked", false);
+                        $("#addUserAccessModal .access_id").val("");
+                        $('#addUserAccessModal').modal("hide");
+                        let adminBadge = admin ? '<span class="badge badge-info">Yes</span>' : 'No';
+                        let row = `<tr data-id="${response.user_id}">
                             <td><input type="text" class="form-control" placeholder="Enter Name" value="${name}" readonly=""></td>
                             <td><input type="text" class="form-control" placeholder="Enter Phone" value="${phone}" readonly=""></td>
                             <td><input type="text" class="form-control" placeholder="Enter Email" value="${email}" readonly=""></td>
@@ -259,16 +326,18 @@ jQuery(function(){
                                 <i class="flag flag-${country_code}"></i>
                                 <input type="text" class="form-control d-none" placeholder="${country_code}?">
                             </td>
+                            <td>${adminBadge}</td>
                             <td>
-                                <div class="btn btn-danger deleteUser"><i class="fa fa-trash"></i></div>
+                                <div class="btn btn-info btn-sm editUser" title="Edit"><i class="fa fa-edit"></i></div>
+                                <div class="btn btn-danger btn-sm deleteUser" title="Remove access"><i class="fa fa-trash"></i></div>
                             </td>
                         </tr>`;
-                    $("#existing_users tbody").append(row);
+                        $("#existing_users tbody").append(row);
+                    }
                 }
-            }
-        })
-
-    })
+            });
+        }
+    });
 
     $('#existing_users').on("click",".deleteUser",function(){
         let row = $(this);

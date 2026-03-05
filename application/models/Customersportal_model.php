@@ -562,9 +562,10 @@ class Customersportal_model extends CI_Model
     }
 
     /**
-     * addUserAccess is called from the back office
+     * addUserAccess is called from the back office or from the portal (portal always passes admin=0).
+     * @param int $admin 1 = portal admin (can add/remove other users), 0 = normal user
      */
-    public function addUserAccess($uuid, $name,$email,$phone,$password, $country_code)
+    public function addUserAccess($uuid, $name,$email,$phone,$password, $country_code, $admin = 0)
     {
         $author = $this->db->select("name,email")->from("users")->where("id",$_SESSION['user_id'])->get()->row();
         $customer = $this->db->select("customer_id, email, full_name, company_name")->from("customers")->where("uuid",$uuid)->get()->row();
@@ -586,7 +587,7 @@ class Customersportal_model extends CI_Model
         $this->db->set("customer_id",$customer->customer_id);
         $this->db->set("created_on",'NOW()',true);
         $this->db->set("created_by_type","customer");
-        $this->db->set("admin","0");
+        $this->db->set("admin", (int) $admin);
         $this->db->insert("customer_access");
         $newUserId = $this->db->insert_id();
 
@@ -596,6 +597,40 @@ class Customersportal_model extends CI_Model
             'result'    =>  true,
             "user_id"   =>  $newUserId
         ];
+    }
+
+    /**
+     * Update an existing portal user (customer_access). Called from back office.
+     * @param int $access_id customer_access.id
+     * @param string $password optional; if empty, password is not changed
+     */
+    public function updateUserAccess($access_id, $name, $email, $phone, $country_code, $admin, $password = '')
+    {
+        $row = $this->db->select("id, customer_id")->from("customer_access")->where(array("id" => $access_id, "status" => "1"))->get()->row();
+        if (empty($row)) {
+            return ['result' => false, 'reason' => 'User not found.'];
+        }
+
+        // If email is being changed, ensure it's not already used by another user for this customer
+        $existing = $this->db->select("id")->from("customer_access")
+            ->where(array("customer_id" => $row->customer_id, "status" => "1", "email" => $email))
+            ->get()->row();
+        if ($existing && (int) $existing->id !== (int) $access_id) {
+            return ['result' => false, 'reason' => 'Email already used by another user for this company.'];
+        }
+
+        $this->db->set("name", $name);
+        $this->db->set("email", $email);
+        $this->db->set("phone_number1", $phone);
+        $this->db->set("country_code", $country_code);
+        $this->db->set("admin", (int) $admin);
+        if ($password !== '') {
+            $this->db->set("password", md5($password), true);
+        }
+        $this->db->where("id", $access_id);
+        $this->db->update("customer_access");
+
+        return ['result' => true];
     }
 
     public function removeAccess($userId)

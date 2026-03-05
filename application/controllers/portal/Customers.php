@@ -8,7 +8,7 @@ class Customers extends CI_Controller
     {
         parent::__construct();
 
-        if( ( !in_array( $this->uri->segment(3) , ['signin', 'authenticate', 'forgotPassword','processForgotPassword','addUserAccess','removeAccess']) ) && (!isset($_SESSION['customer_access_id'])) ){
+        if( ( !in_array( $this->uri->segment(3) , ['signin', 'authenticate', 'forgotPassword','processForgotPassword','addUserAccess','updateUserAccess','removeAccess']) ) && (!isset($_SESSION['customer_access_id'])) ){
             redirect('portal/customers/signin');
         }
 
@@ -353,6 +353,7 @@ class Customers extends CI_Controller
         $phone = trim($this->input->post("phone"));
         $password = trim($this->input->post("password"));
         $country_code = trim($this->input->post("country_code"));
+        $admin = $this->input->post("admin") ? 1 : 0; // from back-office Add User; portal users get 0
         // $confirm_password = trim($this->input->post("confirm_password"));
         $valid = true;
         $php_errormsg = "";
@@ -394,10 +395,30 @@ class Customers extends CI_Controller
             exit;
         }
 
-        $result = $this->Customersportal_model->addUserAccess($uuid, $name, $email, $phone, $password, $country_code);
+        $result = $this->Customersportal_model->addUserAccess($uuid, $name, $email, $phone, $password, $country_code, $admin);
 
         echo json_encode($result);
 
+        exit;
+    }
+
+    public function updateUserAccess()
+    {
+        $access_id = (int) $this->input->post("access_id");
+        $name = trim($this->input->post("name"));
+        $email = trim($this->input->post("email"));
+        $phone = trim($this->input->post("phone"));
+        $country_code = trim($this->input->post("country_code"));
+        $admin = $this->input->post("admin") ? 1 : 0;
+        $password = trim($this->input->post("password")); // optional; if empty, keep current
+
+        if ($access_id <= 0 || strlen($name) < 4 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            echo json_encode(['result' => false, 'reason' => 'Invalid access id, name (4 chars min), or email.']);
+            exit;
+        }
+
+        $result = $this->Customersportal_model->updateUserAccess($access_id, $name, $email, $phone, $country_code, $admin, $password);
+        echo json_encode($result);
         exit;
     }
 

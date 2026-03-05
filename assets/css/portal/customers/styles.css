@@ -2,6 +2,103 @@
     --customersPortalBackground: #a152d6;
     --developersPortalBackground: #2cbfc6;
 }
+/* Customer portal top bar – use --customersPortalBackground */
+.navbar.navbar-expand-lg.navbar-light.bg-light {
+    background-color: var(--customersPortalBackground) !important;
+    border-bottom: none;
+}
+/* No white patch under logo – keep bar colour continuous */
+.navbar .container-fluid.portal-navbar-inner {
+    background-color: transparent !important;
+}
+.portal-logo-link {
+    background-color: transparent !important;
+    padding: 0.25rem 0.5rem;
+}
+/* White logo on coloured bar for visibility */
+.portal-logo-img {
+    height: 25px;
+    display: block;
+    filter: brightness(0) invert(1);
+}
+/* White icons and text in top bar */
+.navbar-light .navbar-nav .nav-link,
+.navbar-light .navbar-nav .nav-link .bi {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+.navbar-light .navbar-nav .nav-link {
+    border-bottom: none !important;
+}
+.navbar-light .navbar-nav .nav-link:hover {
+    color: #fff !important;
+    background-color: rgba(0, 0, 0, 0.1) !important;
+}
+.navbar-light .navbar-nav .nav-link:hover .bi {
+    color: #fff !important;
+}
+.navbar-light .navbar-nav .nav-link.active,
+.navbar-light .navbar-nav .show > .nav-link {
+    font-weight: bold !important;
+    background-color: rgba(0, 0, 0, 0.15) !important;
+    color: #fff !important;
+    border-bottom: none !important;
+}
+.navbar-light .navbar-nav .nav-link.active .bi {
+    color: #fff !important;
+}
+/* Separator after Signout */
+.portal-nav-separator {
+    width: 1px;
+    height: 1.5rem;
+    margin: 0 0.75rem;
+    padding: 0;
+    background-color: rgba(255, 255, 255, 0.5);
+    align-self: center;
+}
+.portal-nav-separator::before {
+    content: none;
+}
+
+/* Action icons (add task, add user) – white with label */
+.portal-nav-action {
+    margin-right: 0.75rem;
+}
+.portal-nav-action:last-child {
+    margin-right: 0;
+}
+.portal-nav-action-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.5rem;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 0.9rem;
+    border-radius: 4px;
+}
+.portal-nav-action:hover .portal-nav-action-label {
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+.portal-nav-action .portal-nav-icon {
+    color: inherit !important;
+    font-size: 1.2rem;
+}
+.portal-nav-action-text {
+    white-space: nowrap;
+}
+/* Company / user / email – smaller font, no border */
+.portal-user-info .nav-link {
+    font-size: 0.8rem !important;
+    border: none !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+.navbar-light .navbar-toggler {
+    color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.navbar-light .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
 footer {
     display: none;
     padding: 5px;
@@ -11,22 +108,14 @@ footer {
     font-size: 0.8em;
 }
 ul.navbar-nav {
-    margin-left: 30px;;
+    margin-left: 30px;
 }
 .navbar-light .navbar-nav .nav-link {
-    border-bottom: 2px solid var(--customersPortalBackground);
+    letter-spacing: 1px;
 }
-.navbar-light .navbar-nav .nav-link{
-    letter-spacing: 2px;
-}
-.navbar-light .navbar-nav .nav-link.active, 
-.navbar-light .navbar-nav .show > .nav-link{
-    font-weight: bold !important;
-    background-color: var(--customersPortalBackground) !important;
-    color: #fff !important;
-    letter-spacing: 2px;
-    /* border-top-left-radius: 10px; */
-    /* border-top-right-radius: 10px; */
+.navbar-light .navbar-nav .nav-link.active,
+.navbar-light .navbar-nav .show > .nav-link {
+    letter-spacing: 1px;
 }
 .logged-in-user {
     position:absolute;
@@ -239,19 +328,6 @@ a:hover {
     /* color: #ffffff; */
 }
 
-@keyframes zoomInOut {
-    0%, 100% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(2);
-    }
-  }
-  
-  .zoom-animation {
-    animation: zoomInOut 1.5s ease-in-out infinite;
-  }
-  
 .notes-black {
     color: #4c4c4c;
     font-style: italic;

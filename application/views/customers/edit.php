@@ -75,6 +75,7 @@
                             <th>Phone</th>
                             <th>Email</th>
                             <th style='width:30px;'>Country</th>
+                            <th style='width:60px;'>Admin</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -84,6 +85,7 @@
                             <td><input type="text" class="form-control" placeholder="Enter Phone"></td>
                             <td><input type="text" class="form-control" placeholder="Enter Email"></td>
                             <td><input type="text" class="form-control" placeholder="mu?"></td>
+                            <td></td>
                             <td>
                                 <div class="btn btn-info"><i class="fa fa-edit"></i></div>
                                 <div class="btn btn-success"><i class="fa fa-save"></i></div>
@@ -92,15 +94,17 @@
                         </tr>
                         <?php foreach($customer->access as $user):?>
                         <tr data-id="<?php echo $user->id;?>">
-                            <td><input type="text" class="form-control userName" placeholder="Enter Name" value="<?php echo $user->name;?>" readonly></td>
-                            <td><input type="text" class="form-control userPhone" placeholder="Enter Phone" value="<?php echo $user->phone_number1;?>" readonly></td>
-                            <td><input type="text" class="form-control userEmail" placeholder="Enter Email" value="<?php echo $user->email;?>" readonly></td>
+                            <td><input type="text" class="form-control userName" placeholder="Enter Name" value="<?php echo htmlspecialchars($user->name);?>" readonly></td>
+                            <td><input type="text" class="form-control userPhone" placeholder="Enter Phone" value="<?php echo htmlspecialchars($user->phone_number1 ?? '');?>" readonly></td>
+                            <td><input type="text" class="form-control userEmail" placeholder="Enter Email" value="<?php echo htmlspecialchars($user->email);?>" readonly></td>
                             <td>
                                 <i class="flag flag-<?php echo $user->country_code;?>"></i>
                                 <input type="text" class="form-control d-none" placeholder="mu?">
                             </td>
+                            <td><?php echo !empty($user->admin) ? '<span class="badge badge-info">Yes</span>' : 'No'; ?></td>
                             <td>
-                                <div class="btn btn-danger deleteUser"><i class="fa fa-trash"></i></div>
+                                <div class="btn btn-info btn-sm editUser" title="Edit"><i class="fa fa-edit"></i></div>
+                                <div class="btn btn-danger btn-sm deleteUser" title="Remove access"><i class="fa fa-trash"></i></div>
                             </td>
                         </tr>
                         <?php endforeach;?>
@@ -111,17 +115,18 @@
     </div>
 </div>
 
-<!-- Modal -->
+<!-- Modal Add/Edit User Access -->
 <div class="modal fade" id="addUserAccessModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLongTitle"><i class="fa fa-unlock"></i> Grant User Access</h5>
+        <h5 class="modal-title" id="addUserAccessModalTitle"><i class="fa fa-unlock"></i> Grant User Access</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
+        <input type="hidden" class="access_id" value="">
         <div class="form-group">
             <label for="">Name</label>
             <input type="text" class="name form-control required" placeholder="Enter user's name">
@@ -134,9 +139,17 @@
             <label for="">Phone</label>
             <input type="text" class="phone form-control" placeholder="[OPTIONAL] Enter phone number">
         </div>
-        <div class="form-group">
+        <div class="form-group password-group">
             <label for="">Password</label>
-            <input type="text" class="password form-control required" placeholder="Enter password">
+            <input type="text" class="password form-control" placeholder="Enter password (leave blank when editing to keep current)">
+            <small class="form-text text-muted add-mode-hint">Required for new user</small>
+        </div>
+        <div class="form-group">
+            <label for="">Admin</label>
+            <div class="form-check">
+                <input type="checkbox" class="admin form-check-input" id="addUserAdmin" value="1">
+                <label class="form-check-label" for="addUserAdmin">Portal admin (can add/remove other users)</label>
+            </div>
         </div>
         <div class="form-group">
             <label for="">Country</label>
