@@ -71,12 +71,17 @@
     align-items: center;
     gap: 0.35rem;
     padding: 0.4rem 0.5rem;
-    color: rgba(255, 255, 255, 0.95);
+    color: rgba(255, 255, 255, 0.95) !important;
     font-size: 0.9rem;
     border-radius: 4px;
 }
-.portal-nav-action:hover .portal-nav-action-label {
-    color: #fff;
+.portal-nav-action-label .portal-nav-action-text {
+    display: inline !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+.portal-nav-action:hover .portal-nav-action-label,
+.portal-nav-action:hover .portal-nav-action-label .portal-nav-action-text {
+    color: #fff !important;
     background-color: rgba(0, 0, 0, 0.1);
 }
 .portal-nav-action .portal-nav-icon {
@@ -84,6 +89,7 @@
     font-size: 1.2rem;
 }
 .portal-nav-action-text {
+    display: inline !important;
     white-space: nowrap;
 }
 /* Company / user / email – smaller font, no border */

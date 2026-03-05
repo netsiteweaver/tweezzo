@@ -1,9 +1,8 @@
-<nav class="navbar sticky-nav navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <a href="portal/developers/tasks">
-            <img src="assets/images/<?php echo $logoDark;?>" alt="" style='height:25px;'>
+<nav class="navbar sticky-nav navbar-expand-lg navbar-light bg-light portal-navbar-developers">
+    <div class="container-fluid portal-navbar-inner">
+        <a class="portal-logo-link" href="portal/developers/tasks">
+            <img src="assets/images/<?php echo $logoDark;?>" alt="" class="portal-logo-img">
         </a>
-        <!-- <a class="navbar-brand" href="#">Task Manager <span class="notes">v1.0</span></a> -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -11,71 +10,37 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link <?php echo (!in_array($this->uri->segment(3),['myCustomers','myProjects','mySprints','notes','timesheets']))?'active':'';?>" href="portal/developers/tasks"><div class="bg-icon bg-clipboard"></div>Tasks</a>
+                    <a class="nav-link <?php echo (!in_array($this->uri->segment(3),['myCustomers','myProjects','mySprints','notes','timesheets']))?'active':'';?>" href="portal/developers/tasks"><i class="bi bi-list-check me-2"></i>Tasks</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?php echo ($this->uri->segment(3)=='myCustomers')?'active':'';?>" href="portal/developers/myCustomers">
-                        <div class="bg-icon bg-group"></div>Customers
-                    </a>
+                    <a class="nav-link <?php echo ($this->uri->segment(3)=='myCustomers')?'active':'';?>" href="portal/developers/myCustomers"><i class="bi bi-people me-2"></i>Customers</a>
+                </li>
+                <!--<li class="nav-item">
+                    <a class="nav-link <?php echo ($this->uri->segment(3)=='myProjects')?'active':'';?>" href="portal/developers/myProjects"><i class="bi bi-folder2-open me-2"></i>Projects</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?php echo ($this->uri->segment(3)=='myProjects')?'active':'';?>" href="portal/developers/myProjects">
-                        <div class="bg-icon bg-project_management"></div>Projects
-                    </a>
+                    <a class="nav-link <?php echo ($this->uri->segment(3)=='mySprints')?'active':'';?>" href="portal/developers/mySprints"><i class="bi bi-trophy me-2"></i>Sprints</a>
+                </li>-->
+                <li class="nav-item">
+                    <a class="nav-link <?php echo ($this->uri->segment(3)=='notes')?'active':'';?>" href="portal/developers/notes"><i class="bi bi-chat-dots me-2"></i>Notes</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?php echo ($this->uri->segment(3)=='mySprints')?'active':'';?>" href="portal/developers/mySprints">
-                        <div class="bg-icon bg-race"></div>Sprints
-                    </a>
+                    <a class="nav-link <?php echo ($this->uri->segment(3)=='timesheets')?'active':'';?>" href="portal/developers/timesheets"><i class="bi bi-clock-history me-2"></i>Timesheets</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php echo ($this->uri->segment(3)=='notes')?'active':'';?>" href="portal/developers/notes">
-                        <div class="bg-icon bg-chat"></div>Notes
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php echo ($this->uri->segment(3)=='timesheets')?'active':'';?>" href="portal/developers/timesheets">
-                        <div class="bg-icon bg-chat"></div>Timesheets
-                    </a>
-                </li>
-                
-                <!-- <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        Dropdown
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="#">Action</a></li>
-                        <li><a class="dropdown-item" href="#">Another action</a></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item" href="#">Something else here</a></li>
-                    </ul>
-                </li> -->
-                <!-- <li class="nav-item">
-                    <a class="nav-link" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-                </li> -->
                 <div class="nav-item">
-                    <a href="portal/developers/signout" class="nav-link"><div class="bg-icon bg-clipboard"></div>Signout</a>
+                    <a href="portal/developers/signout" class="nav-link"><i class="bi bi-box-arrow-right me-2"></i>Signout</a>
                 </div>
             </ul>
-            <!-- <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item cursor-pointer add-task" style='margin-right:25px;'>
-                    <img src="assets/images/more-32px.png" style='width:32px;height:32px;' alt="">
-                </li> -->
-                <!-- <li class="nav-item cursor-pointer add-user-access">
-                    <img src="assets/images/contact-32px.png" style='width:32px;height:32px;' alt="">
-                </li> -->
-            <!-- </ul> -->
-            <ul class="navbar-nav mb-2 mb-lg-0">
-                <li class="nav-item cursor-pointer add-task" style='margin-right:25px;'>
-                    <img id="submitTask" style="width:24px;" src="assets/images/add_task_48px.png" alt="">
-                    <!-- <div id="submitTask" class="bg-icon bg-add_task"></div> -->
+            <ul class="navbar-nav mb-2 mb-lg-0 align-items-center">
+                <li class="nav-item portal-nav-separator" aria-hidden="true"></li>
+                <li class="nav-item cursor-pointer add-task portal-nav-action">
+                    <span class="portal-nav-action-label"><i id="submitTask" class="bi bi-plus-circle-fill portal-nav-icon" aria-hidden="true"></i><span class="portal-nav-action-text">Submit Task</span></span>
                 </li>
             </ul>
-            <ul class="navbar-nav mb-2 mb-lg-0">
-                <?php echo "{$_SESSION['developer_name']} &lt;{$_SESSION['developer_email']}&gt; ";?>
+            <ul class="navbar-nav mb-2 mb-lg-0 ms-auto align-items-center portal-user-info">
+                <li class="nav-item">
+                    <span class="nav-link py-0"><?php echo htmlspecialchars($_SESSION['developer_name']); ?> &lt;<?php echo htmlspecialchars($_SESSION['developer_email']); ?>&gt;</span>
+                </li>
             </ul>
             <!-- <form class="d-flex">
                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">

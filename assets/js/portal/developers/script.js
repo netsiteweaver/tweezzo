@@ -67,12 +67,6 @@ jQuery(function(){
 
     // init('developers');
 
-    zoomIconForSeconds(6);
-
-    $('#submitTask').hover(function(){
-        zoomIconForSeconds(3)
-    })
-
     $('.resetFilter').on('click', function(){
         window.location.href = base_url + "portal/developers/notes";
     })
@@ -721,13 +715,3 @@ function Overlay(option)
 		$('#overlay').addClass('d-none');
 	}
 }
-
-function zoomIconForSeconds(seconds) {
-    const icon = document.getElementById('submitTask');
-    
-    icon.classList.add('zoom-animation'); // Start animation
-    
-    setTimeout(() => {
-      icon.classList.remove('zoom-animation'); // Stop animation after X seconds
-    }, seconds * 1000); // seconds → milliseconds
-  }

@@ -10,7 +10,7 @@ class Submitted_tasks_model extends CI_Model{
             if( (empty($page)) || ($page <= 0) ) $page =1;
             $offset = ( ($page-1)*$rows_per_page);  
 
-            $this->db->select('t.*, t.stage as request_stage, COALESCE(ca_sub.name, u.name) as submitted_by, COALESCE(ca_sub.email, u.email) as submitted_by_email, c2.company_name');
+            $this->db->select('t.*, t.stage as request_stage, COALESCE(ca_sub.name, u.name) as submitted_by, COALESCE(ca_sub.email, u.email) as submitted_by_email, COALESCE(c2.company_name, c_sprint.company_name) as company_name');
         }else{
             $this->db->select('count(1) as ct');
         }
@@ -19,9 +19,12 @@ class Submitted_tasks_model extends CI_Model{
         $this->db->join('users u','u.id=t.created_by','left');
         $this->db->join('customer_access ca_sub','ca_sub.id=t.created_by_customer_access','left');
         $this->db->join('customers c2','c2.customer_id=t.created_by_customer','left');
+        $this->db->join('sprints s','s.id=t.sprint_id','left');
+        $this->db->join('projects p','p.id=s.project_id','left');
+        $this->db->join('customers c_sprint','c_sprint.customer_id=p.customer_id','left');
         
         $this->db->where('t.status',1);
-        if(!empty($customer_id)) $this->db->where('c2.customer_id',$customer_id);
+        if(!empty($customer_id)) $this->db->group_start()->where('c2.customer_id',$customer_id)->or_where('c_sprint.customer_id',$customer_id)->group_end();
         if(!empty($developer_id)) $this->db->where('t.created_by',$developer_id);
         if($stage !== '' && $stage !== null) $this->db->where('t.stage',$stage);
         if(!empty($search_text)){

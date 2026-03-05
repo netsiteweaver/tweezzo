@@ -346,6 +346,28 @@ class Developers extends CI_Controller
 
     public function timesheets()
     {
+        $sessionKey = 'portal_developer_timesheets_params';
+        $get = $this->input->get();
+
+        if (!empty($get)) {
+            $saved = [
+                'from'        => !empty($get['from']) ? $get['from'] : date('Y-m-01'),
+                'to'          => !empty($get['to']) ? $get['to'] : date('Y-m-t'),
+                'method'      => !empty($get['method']) ? $get['method'] : 'start_time',
+                'customer_id' => isset($get['customer_id']) ? (string) $get['customer_id'] : '',
+                'sprint_id'   => isset($get['sprint_id']) ? (string) $get['sprint_id'] : '',
+                'project_id'  => isset($get['project_id']) ? (string) $get['project_id'] : '',
+            ];
+            $_SESSION[$sessionKey] = $saved;
+        } else {
+            $saved = isset($_SESSION[$sessionKey]) ? $_SESSION[$sessionKey] : null;
+            if (!empty($saved) && is_array($saved)) {
+                $qs = http_build_query($saved);
+                redirect(base_url('portal/developers/timesheets?' . $qs));
+                return;
+            }
+        }
+
         $this->data['page_title'] = "Timesheets";
 
         $this->load->model("Timesheets_model");
