@@ -457,8 +457,16 @@ class Customersportal_model extends CI_Model
             ];
         }
 
+        // get master customer id linked to this portal user
+        $customer_id = $this->db->select("customer_id")
+                                ->from("customer_access")
+                                ->where("id", $_SESSION['customer_access_id'])
+                                ->get()
+                                ->row()
+                                ->customer_id;
+
         $this->db->set("uuid",gen_uuid());
-        $this->db->set("created_by_customer",$_SESSION['customer_access_id']);
+        $this->db->set("created_by_customer",$customer_id);
         $this->db->set("created_on",date("Y-m-d H:i:s"));
         $this->db->set("name",$name);
         $this->db->set("section",$section);
