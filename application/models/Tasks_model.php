@@ -272,6 +272,9 @@ class Tasks_model extends CI_Model{
         $this->db->set('estimated_hours',!empty($data['estimated_hours']) ? $data['estimated_hours'] : null);
         $this->db->set('work_type',!empty($data['work_type']) ? $data['work_type'] : null);
         $this->db->set('billable',isset($data['billable']) && $data['billable'] ? 1 : (isset($data['billable']) ? 0 : null));
+        $this->db->set('settled', isset($data['settled']) && $data['settled'] ? 1 : (isset($data['settled']) ? 0 : null));
+        $this->db->set('settled_on', !empty($data['settled_on']) ? $data['settled_on'] : null);
+        $this->db->set('ref', !empty($data['ref']) ? $data['ref'] : null);
         $this->db->set('scope_client_expectation',$data['scope_client_expectation']);
         $this->db->set('scope_not_included',$data['scope_not_included']);
         $this->db->set('scope_when_done',$data['scope_when_done']);

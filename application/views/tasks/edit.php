@@ -95,23 +95,56 @@
 								<div class="col-md-6">
 									<div class="form-group">
 										<label>Estimated Hours</label>
-										<input type="number" step='0.25' min='0' class="form-control" name="estimated_hours"  value="<?php echo $task->estimated_hours;?>">
+										<input type="number" step='0.25' min='0' class="form-control" name="estimated_hours" value="<?php echo $task->estimated_hours;?>">
 									</div>
 								</div>
-								<div class="form-group">
-									<label>Work type</label>
-									<select class="form-control" name="work_type">
-										<option value="">Select</option>
-										<option value="development" <?php echo (isset($task->work_type) && $task->work_type == 'development') ? 'selected' : '';?>>Development</option>
-										<option value="maintenance" <?php echo (isset($task->work_type) && $task->work_type == 'maintenance') ? 'selected' : '';?>>Maintenance</option>
-										<option value="support" <?php echo (isset($task->work_type) && $task->work_type == 'support') ? 'selected' : '';?>>Support</option>
-										<option value="other" <?php echo (isset($task->work_type) && $task->work_type == 'other') ? 'selected' : '';?>>Other</option>
-									</select>
+							</div>
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group">
+										<label>Work type</label>
+										<select class="form-control" name="work_type">
+											<option value="">Select</option>
+											<option value="development" <?php echo (isset($task->work_type) && $task->work_type == 'development') ? 'selected' : '';?>>Development</option>
+											<option value="maintenance" <?php echo (isset($task->work_type) && $task->work_type == 'maintenance') ? 'selected' : '';?>>Maintenance</option>
+											<option value="support" <?php echo (isset($task->work_type) && $task->work_type == 'support') ? 'selected' : '';?>>Support</option>
+											<option value="other" <?php echo (isset($task->work_type) && $task->work_type == 'other') ? 'selected' : '';?>>Other</option>
+										</select>
+									</div>
 								</div>
-								<div class="form-group">
-									<label>Billable</label>
-									<input type="hidden" name="billable" value="0">
-									<input type="checkbox" name="billable" value="1" <?php echo (isset($task->billable) && $task->billable == 1) ? 'checked' : '';?>>
+								<div class="col-md-6 billable-only" style="display:<?php echo (isset($task->billable) && $task->billable == 1) ? 'block' : 'none';?>;">
+									<div class="form-group">
+										<label>Ref (Inv / Quote #)</label>
+										<input type="text" class="form-control" name="ref" placeholder="e.g. INV-2026-001 or QUO-001" value="<?php echo isset($task->ref) ? htmlspecialchars($task->ref) : '';?>">
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group">
+										<div class="form-check mt-4">
+											<input type="hidden" name="billable" value="0">
+											<input type="checkbox" class="form-check-input task-billable-cb" name="billable" value="1" id="edit_billable" <?php echo (isset($task->billable) && $task->billable == 1) ? 'checked' : '';?>>
+											<label class="form-check-label" for="edit_billable">Billable</label>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 billable-only" style="display:<?php echo (isset($task->billable) && $task->billable == 1) ? 'block' : 'none';?>;">
+									<div class="form-group">
+										<div class="form-check mt-4">
+											<input type="hidden" name="settled" value="0">
+											<input type="checkbox" class="form-check-input" name="settled" value="1" id="edit_settled" <?php echo (isset($task->settled) && $task->settled == 1) ? 'checked' : '';?>>
+											<label class="form-check-label" for="edit_settled">Settled</label>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6 billable-only" style="display:<?php echo (isset($task->billable) && $task->billable == 1) ? 'block' : 'none';?>;">
+									<div class="form-group">
+										<label>Date settled</label>
+										<input type="date" class="form-control" name="settled_on" value="<?php echo isset($task->settled_on) && $task->settled_on ? date('Y-m-d', strtotime($task->settled_on)) : '';?>">
+									</div>
 								</div>
 							</div>
 							<div class="alert alert-danger">Scope Definition</div>
@@ -299,3 +332,17 @@
 		<a href="tasks/listing?customer_id=<?php echo $this->input->get("customer_id");?>"><div class="btn btn-warning"><i class="fa fa-chevron-left"></i> Back</div></a>
 	</div>
 </div>
+<script>
+(function(){
+    var cb = document.querySelector('.task-billable-cb');
+    var fields = document.querySelectorAll('.billable-only');
+    function toggle() {
+        var show = cb && cb.checked;
+        fields.forEach(function(el) { el.style.display = show ? 'block' : 'none'; });
+    }
+    if (cb) {
+        cb.addEventListener('change', toggle);
+        toggle();
+    }
+})();
+</script>

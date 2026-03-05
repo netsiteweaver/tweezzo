@@ -53,8 +53,15 @@
                     <img id="addUser" style="width:24px;" src="assets/images/add-user-48px.png" alt="">
                 </li>
             </ul>
-            <ul class="navbar-nav mb-2 mb-lg-0">
-            <?php echo "{$_SESSION['customer_name']} &lt;{$_SESSION['customer_email']}&gt; ";?>
+            <ul class="navbar-nav mb-2 mb-lg-0 ms-auto align-items-center">
+                <?php if (!empty($_SESSION['customer_company_name'])): ?>
+                <li class="nav-item me-3">
+                    <span class="nav-link py-0" style="font-weight:600;"><?php echo htmlspecialchars($_SESSION['customer_company_name']); ?></span>
+                </li>
+                <?php endif; ?>
+                <li class="nav-item">
+                    <span class="nav-link py-0"><?php echo htmlspecialchars($_SESSION['customer_name']); ?> &lt;<?php echo htmlspecialchars($_SESSION['customer_email']); ?>&gt;</span>
+                </li>
             </ul>
             <!-- <form class="d-flex">
                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">

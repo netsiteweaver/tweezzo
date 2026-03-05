@@ -322,6 +322,9 @@ $cleanQuery = http_build_query($queryArray);
                             <th>Stage <?php echo ($this->input->get("order_by") == "stage") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th class='no-print'>Work type</th>
                             <th class='no-print'>Billable</th>
+                            <th class='no-print'>Settled</th>
+                            <th class='no-print'>Date settled</th>
+                            <th class='no-print'>Ref</th>
                             <th>Created Date <?php echo ($this->input->get("order_by") == "created_on") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>Created By</th>
                             <th class='no-print'>Due Date <?php echo ($this->input->get("order_by") == "due_date") ? "<i class='fa fa-sort'></i>" : '';?></th>
@@ -394,6 +397,9 @@ $cleanQuery = http_build_query($queryArray);
                             </td>
                             <td class='no-print'><?php echo !empty($task->work_type) ? ucfirst($task->work_type) : '—';?></td>
                             <td class='no-print'><?php echo isset($task->billable) && $task->billable == 1 ? 'Yes' : (isset($task->billable) && $task->billable == 0 ? 'No' : '—');?></td>
+                            <td class='no-print'><?php echo isset($task->settled) && $task->settled == 1 ? 'Yes' : (isset($task->settled) && $task->settled == 0 ? 'No' : '—');?></td>
+                            <td class='no-print'><?php echo isset($task->settled_on) && $task->settled_on ? date('Y-m-d', strtotime($task->settled_on)) : '—';?></td>
+                            <td class='no-print'><?php echo isset($task->ref) && $task->ref !== '' ? htmlspecialchars($task->ref) : '—';?></td>
                             <td><?php echo !empty($task->created_on) ? date('Y-m-d', strtotime($task->created_on)) : '';?></td>
                             <td><?php echo !empty($task->created_by_name) ? $task->created_by_name : '';?></td>
                             <td class='no-print text-center <?php echo ( (!empty($task->due_date)) && ( strtotime($task->due_date) <= time()) ) ? 'red text-bold' : ''?>'>

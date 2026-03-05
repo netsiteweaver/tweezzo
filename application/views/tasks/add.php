@@ -92,29 +92,67 @@
                             <small class="form-text text-muted">Pre-filled from meeting notes. You can edit as needed.</small>
                             <?php endif; ?>
                         </div>
-                        <div class="form-group">
-                            <label>Due Date</label>
-                            <input type="date" class="form-control" name="due_date" placeholder="" value="<?= date('Y-m-d', strtotime('+5 days')); ?>">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Due Date</label>
+                                    <input type="date" class="form-control" name="due_date" placeholder="" value="<?= date('Y-m-d', strtotime('+5 days')); ?>">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Estimated Hours</label>
+                                    <input type="number" step='0.25' min='0' class="form-control" name="estimated_hours" value="1">
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Estimated Hours</label>
-                            <input type="number" step='0.25' min='0' class="form-control" name="estimated_hours"
-                                value="1">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Work type</label>
+                                    <select class="form-control" name="work_type">
+                                        <option value="">Select</option>
+                                        <option value="development">Development</option>
+                                        <option value="maintenance">Maintenance</option>
+                                        <option value="support">Support</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6 billable-only" style="display:none;">
+                                <div class="form-group">
+                                    <label>Ref (Inv / Quote #)</label>
+                                    <input type="text" class="form-control" name="ref" placeholder="e.g. INV-2026-001 or QUO-001" value="">
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Work type</label>
-                            <select class="form-control" name="work_type">
-                                <option value="">Select</option>
-                                <option value="development">Development</option>
-                                <option value="maintenance">Maintenance</option>
-                                <option value="support">Support</option>
-                                <option value="other">Other</option>
-                            </select>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="form-check mt-4">
+                                        <input type="hidden" name="billable" value="0">
+                                        <input type="checkbox" class="form-check-input task-billable-cb" name="billable" value="1" id="add_billable">
+                                        <label class="form-check-label" for="add_billable">Billable</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 billable-only" style="display:none;">
+                                <div class="form-group">
+                                    <div class="form-check mt-4">
+                                        <input type="hidden" name="settled" value="0">
+                                        <input type="checkbox" class="form-check-input" name="settled" value="1" id="add_settled">
+                                        <label class="form-check-label" for="add_settled">Settled</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Billable</label>
-                            <input type="hidden" name="billable" value="0">
-                            <input type="checkbox" name="billable" value="1">
+                        <div class="row">
+                            <div class="col-md-6 billable-only" style="display:none;">
+                                <div class="form-group">
+                                    <label>Date settled</label>
+                                    <input type="date" class="form-control" name="settled_on" value="">
+                                </div>
+                            </div>
                         </div>
 
                         <!-- </div> -->
@@ -207,3 +245,17 @@
         </div>
     </div>
 </form>
+<script>
+(function(){
+    var cb = document.querySelector('.task-billable-cb');
+    var fields = document.querySelectorAll('.billable-only');
+    function toggle() {
+        var show = cb && cb.checked;
+        fields.forEach(function(el) { el.style.display = show ? 'block' : 'none'; });
+    }
+    if (cb) {
+        cb.addEventListener('change', toggle);
+        toggle();
+    }
+})();
+</script>

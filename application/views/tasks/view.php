@@ -114,6 +114,26 @@
                             <input type="text" class="form-control" value="<?php echo isset($task->billable) && $task->billable == 1 ? 'Yes' : (isset($task->billable) && $task->billable == 0 ? 'No' : '—');?>" disabled>
                         </div>
                     </div>
+                    <?php if (isset($task->billable) && $task->billable == 1): ?>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="">Settled</label>
+                            <input type="text" class="form-control" value="<?php echo isset($task->settled) && $task->settled == 1 ? 'Yes' : (isset($task->settled) && $task->settled == 0 ? 'No' : '—');?>" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="">Date settled</label>
+                            <input type="text" class="form-control" value="<?php echo isset($task->settled_on) && $task->settled_on ? date('d M Y', strtotime($task->settled_on)) : '—';?>" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="">Ref (Inv / Quote #)</label>
+                            <input type="text" class="form-control" value="<?php echo isset($task->ref) && $task->ref !== '' ? htmlspecialchars($task->ref) : '—';?>" disabled>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                 </div>
 
                 <?php if(count($task->files) > 0):?>
