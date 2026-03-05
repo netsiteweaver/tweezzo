@@ -69,8 +69,15 @@
             <?php endforeach; ?>
         </select>
     </div>
-    
-
+    <div class="col-md-2">
+        <label for="">Stage</label>
+        <select class="form-control monitor" id="stage">
+            <option value="">All</option>
+            <option value="new" <?php echo ($this->input->get("stage") == "new") ? "selected" : ""; ?>>New</option>
+            <option value="validated" <?php echo ($this->input->get("stage") == "validated") ? "selected" : ""; ?>>Validated</option>
+            <option value="rejected" <?php echo ($this->input->get("stage") == "rejected") ? "selected" : ""; ?>>Rejected</option>
+        </select>
+    </div>
 
     <div class="col-md-2">
         <label for="search">Search</label>
@@ -151,6 +158,8 @@
                             <th class='no-print'></th>
                             <th style='width:60px;'><i class='fa fa-building'></i> / <i class='fa fa-user'></i></th>
                             <th style='width:150px;'>Submitted</th>
+                            <th style='width:140px;'>Company</th>
+                            <th style='width:100px;'>Stage</th>
                             <th>Task <?php echo ($this->input->get("order_by") == "name") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th class='no-print'>Actions</th>
                         </tr>
@@ -166,6 +175,14 @@
                                 <?php echo (!empty($submitted_task->created_by)) ? "<i class='fa fa-building'></i>" : "<i class='fa fa-user'></i>";?>
                             </td>
                             <td><?php echo " {$submitted_task->submitted_by}<br>{$submitted_task->created_on}" ; ?></td>
+                            <td><?php echo isset($submitted_task->company_name) ? htmlspecialchars($submitted_task->company_name) : '—'; ?></td>
+                            <td class='text-center'>
+                                <?php
+                                $st = isset($submitted_task->request_stage) ? $submitted_task->request_stage : (isset($submitted_task->stage) ? $submitted_task->stage : 'new');
+                                $badge = $st === 'rejected' ? 'danger' : ($st === 'validated' ? 'success' : 'warning');
+                                ?>
+                                <span class="badge badge-<?php echo $badge; ?>"><?php echo strtoupper(str_replace('_', ' ', $st)); ?></span>
+                            </td>
                             <td class='submitted_task-name'>
                                 <div style='border-bottom:1px dashed #ccc;padding-bottom:3px;margin-bottom:5px;'><b>Section:</b> <?php echo $submitted_task->name; ?></div>
                                 <div style='border-bottom:1px dashed #ccc;padding-bottom:3px;margin-bottom:5px;'><b>Task:</b> <?php echo $submitted_task->section; ?></div>

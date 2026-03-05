@@ -22,10 +22,24 @@
 			<input type="hidden" name="customer_id" value="<?php echo $this->input->get("customer_id");?>">
 			<input type="hidden" name="stage" value="<?php echo $this->input->get("stage");?>">
 			<input type="hidden" name="qs" value="<?php echo $qs;?>">
-			<div class="card-header bg-purple">
-				<h3 class='card-title'>Task Information</h3>
+			<?php $request_stage = isset($task->request_stage) ? $task->request_stage : (isset($task->stage) ? $task->stage : 'new'); ?>
+			<div class="card-header bg-purple d-flex justify-content-between align-items-center">
+				<h3 class='card-title mb-0'>Request Information</h3>
+				<span class="badge badge-<?php echo $request_stage === 'rejected' ? 'danger' : ($request_stage === 'validated' ? 'success' : 'warning'); ?>"><?php echo strtoupper(str_replace('_', ' ', $request_stage)); ?></span>
 			</div>
 			<div class="card-body">
+				<?php if ($request_stage === 'rejected' && !empty($task->rejection_reason)): ?>
+				<div class="alert alert-danger">
+					<strong>Rejected</strong><?php echo !empty($task->rejected_on) ? ' on ' . date('d M Y H:i', strtotime($task->rejected_on)) : ''; ?><?php echo !empty($task->rejected_by_name) ? ' by ' . htmlspecialchars($task->rejected_by_name) : ''; ?>
+					<p class="mb-0 mt-2"><?php echo nl2br(htmlspecialchars($task->rejection_reason)); ?></p>
+				</div>
+				<?php endif; ?>
+				<?php if ($request_stage === 'validated' && !empty($task->converted_task_uuid)): ?>
+				<div class="alert alert-success">
+					<strong>Approved</strong><?php echo !empty($task->validated_on) ? ' on ' . date('d M Y H:i', strtotime($task->validated_on)) : ''; ?><?php echo !empty($task->validated_by_name) ? ' by ' . htmlspecialchars($task->validated_by_name) : ''; ?>
+					<p class="mb-0 mt-2"><a href="<?php echo base_url('tasks/view?task_uuid=' . $task->converted_task_uuid); ?>" class="alert-link">View converted task &rarr;</a></p>
+				</div>
+				<?php endif; ?>
 				<div class="form-group">
 					<label for="">Customer</label>
 					<select class="form-control " name="customer_id"  disabled>
@@ -35,6 +49,13 @@
 						<?php endforeach;?>
 					</select>
 				</div>
+
+				<?php if(!empty($task->submitted_by)): ?>
+				<div class="form-group">
+					<label for="">Submitted by</label>
+					<input type="text" class="form-control" value="<?php echo htmlspecialchars($task->submitted_by); ?><?php echo !empty($task->submitted_by_email) ? ' (' . htmlspecialchars($task->submitted_by_email) . ')' : ''; ?>" disabled readonly>
+				</div>
+				<?php endif; ?>
 
 				<div class="form-group">
 					<label for="project_id">Projects</label>
@@ -61,7 +82,7 @@
 					<div class="col-md-6">
 						<div class="form-group">
 							<label for="">Task Number</label>
-							<input type="text" class="form-control" name="task_number" placeholder="Enter Task Number, e.g. #01.14" value="<?php echo $task->task_number;?>"  disabled>
+							<input type="text" class="form-control" name="task_number" placeholder="Enter Task Number, e.g. #01.14" value="<?php echo isset($task->task_number) ? htmlspecialchars($task->task_number) : '';?>"  disabled>
 						</div>
 					</div>
 				</div>
@@ -79,13 +100,13 @@
 					<div class="col-md-6">
 						<div class="form-group">
 							<label for="">Due Date</label>
-							<input type="date" class="form-control" name="task_number" placeholder="" value="<?php echo $task->due_date;?>"  disabled>
+							<input type="date" class="form-control" name="task_number" placeholder="" value="<?php echo isset($task->due_date) ? htmlspecialchars($task->due_date) : '';?>"  disabled>
 						</div>
 					</div>
 					<div class="col-md-6">
 						<div class="form-group">
 							<label for="">Estimated Hours</label>
-							<input type="number" class="form-control" name="" placeholder="" value="<?php echo $task->estimated_hours;?>"  disabled>
+							<input type="number" class="form-control" name="" placeholder="" value="<?php echo isset($task->estimated_hours) ? htmlspecialchars($task->estimated_hours) : '';?>"  disabled>
 						</div>
 					</div>
 				</div>
@@ -93,16 +114,13 @@
 					<label for="">Stage</label>
 					<select class="form-control " name="stage"  disabled>
 						<option value="" disabled>Select</option>
-						<option value="new" <?php echo ($task->stage == 'new')?'selected':'';?>>New</option>
-						<option value="in_progress" <?php echo ($task->stage == 'in_progress')?'selected':'';?>>In Progress</option>
-						<option value="completed" <?php echo ($task->stage == 'completed')?'selected':'';?>>Completed</option>
-						<option value="on_hold" <?php echo ($task->stage == 'on_hold')?'selected':'';?>>On Hold</option>
-						<option value="stopped" <?php echo ($task->stage == 'stopped')?'selected':'';?>>Stopped</option>
-
+						<option value="new" <?php echo ($request_stage == 'new')?'selected':'';?>>New</option>
+						<option value="validated" <?php echo ($request_stage == 'validated')?'selected':'';?>>Validated</option>
+						<option value="rejected" <?php echo ($request_stage == 'rejected')?'selected':'';?>>Rejected</option>
 					</select>
 				</div>
 
-				<?php if(count($task->files) > 0):?>
+				<?php if(!empty($task->files) && count($task->files) > 0):?>
 				<div id="attachments">
 					<div class="row"><div class="col-md-12 text-center">ATTACHMENTS</div></div>
 					<div class="row">
@@ -154,8 +172,13 @@
 			<!-- /.card-body -->
 
 			<div class="card-footer">
-				<a href="<?php echo "tasks/listing?customer_id=".$this->input->get('customer_id')."&stage=".$this->input->get("stage");?>"><div class="btn btn-warning btn-flat"><i class="fa fa-chevron-left"></i> Back</div></a>
-				<!-- <div class="btn btn-danger btn-flat float-right"><i class="fa fa-trash"></i> Delete</div> -->
+				<a href="<?php echo base_url('submitted_tasks/listing?' . $qs); ?>" class="btn btn-warning btn-flat"><i class="fa fa-chevron-left"></i> Back</a>
+				<?php if ($request_stage === 'new' && !empty($perms['edit'])): ?>
+				<button type="button" class="btn btn-danger btn-flat" data-toggle="modal" data-target="#modalReject"><i class="fa fa-times"></i> Reject</button>
+				<?php endif; ?>
+				<?php if ($request_stage === 'new' && !empty($perms['add'])): ?>
+				<button type="button" class="btn btn-success btn-flat" data-toggle="modal" data-target="#modalApproveConvert"><i class="fa fa-check"></i> Approve &amp; Convert to Task</button>
+				<?php endif; ?>
 			</div>
         </div>
     </div>
@@ -204,13 +227,15 @@
 						</tr>
 					</thead>
 					<tbody>
-						<?php foreach($task->stage_history as $history):?>
+						<?php if (!empty($task->stage_history)): foreach($task->stage_history as $history):?>
 						<tr>
 							<td><?php echo date('d-M-Y h:i A',strtotime($history->created_on));?></td>
 							<td><?php echo "{$history->created_by_email}<span class='pull-right float-right'>[{$history->user_type}]</span>";?></td>
 							<td><?php echo "From <b>" . strtoupper(str_replace("_"," ",$history->old_stage)) . "</b> to <b>" . strtoupper(str_replace("_"," ",$history->new_stage))."</b>";?></td>
 						</tr>
-						<?php endforeach;?>
+						<?php endforeach; else: ?>
+						<tr><td colspan="3" class="text-muted">No stage history</td></tr>
+						<?php endif; ?>
 					</tbody>
 				</table>
 			</div>
@@ -233,3 +258,88 @@
 		</div>
 	</div>
 </div>
+
+<!-- Reject modal -->
+<div class="modal fade" id="modalReject" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form method="post" action="<?php echo base_url('submitted_tasks/rejectRequest'); ?>">
+				<input type="hidden" name="uuid" value="<?php echo htmlspecialchars($task->uuid); ?>">
+				<input type="hidden" name="qs" value="<?php echo htmlspecialchars($qs); ?>">
+				<div class="modal-header">
+					<h5 class="modal-title">Reject Request</h5>
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="reject_reason">Reason <span class="text-danger">*</span></label>
+						<textarea class="form-control" id="reject_reason" name="reason" rows="4" required placeholder="Enter the reason for rejecting this request..."></textarea>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button type="submit" class="btn btn-danger"><i class="fa fa-times"></i> Reject</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- Approve & Convert modal -->
+<div class="modal fade" id="modalApproveConvert" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form method="post" action="<?php echo base_url('submitted_tasks/approveConvert'); ?>">
+				<input type="hidden" name="uuid" value="<?php echo htmlspecialchars($task->uuid); ?>">
+				<input type="hidden" name="qs" value="<?php echo htmlspecialchars($qs); ?>">
+				<div class="modal-header">
+					<h5 class="modal-title">Approve &amp; Convert to Task</h5>
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="approve_sprint_id">Sprint <span class="text-danger">*</span></label>
+						<select class="form-control" id="approve_sprint_id" name="sprint_id" required>
+							<option value="">Select sprint</option>
+							<?php if (!empty($sprints)): foreach ($sprints as $s): ?>
+							<option value="<?php echo $s->id; ?>"><?php echo htmlspecialchars($s->project_name . ' / ' . $s->name); ?></option>
+							<?php endforeach; endif; ?>
+						</select>
+					</div>
+					<div class="form-group">
+						<label>Assign users (optional)</label>
+						<ul id="approve-users-list" class="list-group" style="max-height: 200px; overflow-y: auto;">
+							<?php foreach ($users as $user): ?>
+							<?php if ($user->user_type != 'developer') continue; ?>
+							<li data-id="<?php echo $user->id; ?>" class="list-group-item list-group-item-action approve-user-item" style="cursor: pointer;">
+								<?php echo htmlspecialchars($user->email . ' (' . $user->name . ')'); ?>
+							</li>
+							<?php endforeach; ?>
+						</ul>
+						<input type="hidden" name="userIds" id="approve_user_ids" value="[]">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button type="submit" class="btn btn-success"><i class="fa fa-check"></i> Approve &amp; Convert</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<script>
+(function(){
+	var selected = [];
+	var input = document.getElementById('approve_user_ids');
+	var items = document.querySelectorAll('#approve-users-list .approve-user-item');
+	items.forEach(function(li){
+		li.addEventListener('click', function(){
+			var id = parseInt(li.getAttribute('data-id'), 10);
+			var i = selected.indexOf(id);
+			if (i === -1) { selected.push(id); li.classList.add('active'); }
+			else { selected.splice(i, 1); li.classList.remove('active'); }
+			input.value = JSON.stringify(selected);
+		});
+	});
+})();
+</script>

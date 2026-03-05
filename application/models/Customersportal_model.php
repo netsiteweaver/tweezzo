@@ -467,6 +467,7 @@ class Customersportal_model extends CI_Model
 
         $this->db->set("uuid",gen_uuid());
         $this->db->set("created_by_customer",$customer_id);
+        $this->db->set("created_by_customer_access", (int) $_SESSION['customer_access_id']);
         $this->db->set("created_on",date("Y-m-d H:i:s"));
         $this->db->set("name",$name);
         $this->db->set("section",$section);
@@ -495,10 +496,14 @@ class Customersportal_model extends CI_Model
     {
         $this->load->model("Email_model3");
         $this->load->model("System_model");
-        $submitted_task = $this->db->query("SELECT st.*, ca.name customerName, ca.email customerEmail
+        $submitted_task = $this->db->query("SELECT st.*,
+                            COALESCE(ca_sub.name, ca_fallback.name) AS customerName,
+                            COALESCE(ca_sub.email, ca_fallback.email) AS customerEmail
                             FROM submitted_tasks st
-                            JOIN customer_access ca on ca.customer_id = st.created_by_customer
-                            WHERE st.id = $task_id")->row();
+                            LEFT JOIN customer_access ca_sub ON ca_sub.id = st.created_by_customer_access
+                            LEFT JOIN (SELECT customer_id, MIN(id) AS id FROM customer_access GROUP BY customer_id) ca_fb ON ca_fb.customer_id = st.created_by_customer
+                            LEFT JOIN customer_access ca_fallback ON ca_fallback.id = ca_fb.id
+                            WHERE st.id = " . (int) $task_id)->row();
         $emailData = [
             'title'     =>  'Task Submitted',
             'task'      =>  $submitted_task,

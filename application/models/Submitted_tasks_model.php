@@ -4,25 +4,26 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Submitted_tasks_model extends CI_Model{
 
-    public function fetchAll($customer_id="",$developer_id="",$page=1,$rows_per_page=10,$search_text="",$totalRows=false)
+    public function fetchAll($customer_id="",$developer_id="",$page=1,$rows_per_page=10,$search_text="",$totalRows=false,$stage="")
     {
         if(!$totalRows){
             if( (empty($page)) || ($page <= 0) ) $page =1;
             $offset = ( ($page-1)*$rows_per_page);  
 
-            $this->db->select('t.*,COALESCE(c.name,u.name) as submitted_by, c2.company_name');
+            $this->db->select('t.*, t.stage as request_stage, COALESCE(ca_sub.name, u.name) as submitted_by, COALESCE(ca_sub.email, u.email) as submitted_by_email, c2.company_name');
         }else{
             $this->db->select('count(1) as ct');
         }
         
         $this->db->from('submitted_tasks t');
         $this->db->join('users u','u.id=t.created_by','left');
-        $this->db->join('customer_access c','c.id=t.created_by_customer','left');
-        $this->db->join('customers c2','c2.customer_id=c.customer_id','left');
+        $this->db->join('customer_access ca_sub','ca_sub.id=t.created_by_customer_access','left');
+        $this->db->join('customers c2','c2.customer_id=t.created_by_customer','left');
         
         $this->db->where('t.status',1);
         if(!empty($customer_id)) $this->db->where('c2.customer_id',$customer_id);
         if(!empty($developer_id)) $this->db->where('t.created_by',$developer_id);
+        if($stage !== '' && $stage !== null) $this->db->where('t.stage',$stage);
         if(!empty($search_text)){
             $this->db->group_start();
             $this->db->like("t.name",$search_text);
@@ -45,28 +46,36 @@ class Submitted_tasks_model extends CI_Model{
         
     }
 
-    public function totalRows($customer_id="",$developer_id,$search_text="")
+    public function totalRows($customer_id="",$developer_id="",$search_text="",$stage="")
     {
-        $rows = $this->fetchAll($customer_id, $developer_id,"", "", $search_text, true);
+        $rows = $this->fetchAll($customer_id, $developer_id, "", "", $search_text, true, $stage);
         return $rows;
 
     }
 
     public function fetchSingle($uuid){
-        $this->db->select('t.*, c.customer_id, c.company_name, c.full_name, p.id project_id, p.name project_name, s.name sprint_name');
+        $this->db->select('t.id, t.uuid, t.name, t.section, t.description, t.created_on, t.created_by, t.created_by_customer, t.created_by_customer_access, t.sprint_id, t.scope_client_expectation, t.scope_not_included, t.scope_when_done, t.status, t.validated_on, t.validated_by, t.rejected_on, t.rejected_by, t.rejection_reason, t.converted_task_id, t.stage as request_stage, COALESCE(c.customer_id, c_cust.customer_id) as customer_id, COALESCE(c.company_name, c_cust.company_name) as company_name, COALESCE(c.full_name, c_cust.full_name) as full_name, p.id project_id, p.name project_name, s.name sprint_name, COALESCE(ca_sub.name, u.name) as submitted_by, COALESCE(ca_sub.email, u.email) as submitted_by_email, task_converted.uuid as converted_task_uuid, u_rej.name as rejected_by_name, u_val.name as validated_by_name');
         $this->db->from('submitted_tasks t');
         $this->db->join('sprints s','s.id=t.sprint_id','left');
         $this->db->join('projects p','p.id=s.project_id','left');
         $this->db->join('customers c','c.customer_id=p.customer_id','left');
+        $this->db->join('customers c_cust','c_cust.customer_id=t.created_by_customer','left');
+        $this->db->join('customer_access ca_sub','ca_sub.id=t.created_by_customer_access','left');
+        $this->db->join('users u','u.id=t.created_by','left');
+        $this->db->join('tasks task_converted','task_converted.id=t.converted_task_id','left');
+        $this->db->join('users u_rej','u_rej.id=t.rejected_by','left');
+        $this->db->join('users u_val','u_val.id=t.validated_by','left');
         $this->db->where('t.uuid',$uuid);
         $this->db->where('t.status',1);
         $task = $this->db->get()->row();
         if(empty($task)) return [];
         $t = $this->db->select('GROUP_CONCAT(tu.user_id) as users')
                                         ->from('task_user tu')
-                                        ->join('users u','u.id=tu.user_id','left')
                                         ->where('tu.task_id',$task->id)
-                                        ->get()->row()->users;
+                                        ->get()->row();
+        $task->assigned_users = !empty($t->users) ? array_map('intval', array_filter(explode(',', $t->users))) : [];
+        $task->files = $this->db->select('ti.*')->from('task_images ti')->where('ti.task_id', $task->id)->get()->result();
+        $task->stage_history = []; // submitted_tasks do not use stage_change_history (that table is for tasks)
         return $task;
     }
 
@@ -78,11 +87,13 @@ class Submitted_tasks_model extends CI_Model{
 
     public function getByIds($ids)
     {
-        $this->db->select('t.*, c.customer_id, c.company_name, c.full_name, p.id project_id, p.name project_name, s.name sprint_name');
+        $this->db->select('t.*, c.customer_id, c.company_name, c.full_name, p.id project_id, p.name project_name, s.name sprint_name, COALESCE(ca_sub.name, u.name) as submitted_by, COALESCE(ca_sub.email, u.email) as submitted_by_email');
         $this->db->from('submitted_tasks t');
         $this->db->join('sprints s','s.id=t.sprint_id','left');
         $this->db->join('projects p','p.id=s.project_id','left');
         $this->db->join('customers c','c.customer_id=p.customer_id','left');
+        $this->db->join('customer_access ca_sub','ca_sub.id=t.created_by_customer_access','left');
+        $this->db->join('users u','u.id=t.created_by','left');
         $this->db->where_in('t.id',$ids);
         $this->db->where('t.status',1);
         $this->db->order_by("task_number");
@@ -315,6 +326,112 @@ class Submitted_tasks_model extends CI_Model{
         $this->db->where("uuid",$uuid);
         $this->db->update("submitted_tasks");
         return $this->db->affected_rows();
+    }
+
+    /**
+     * Reject a submitted request with a reason.
+     * @param string $uuid submitted_tasks.uuid
+     * @param string $reason Rejection reason
+     * @return array ['result' => bool, 'reason' => string]
+     */
+    public function rejectRequest($uuid, $reason)
+    {
+        $row = $this->db->select('id, stage')->from('submitted_tasks')->where(['uuid' => $uuid, 'status' => 1])->get()->row();
+        if (empty($row)) {
+            return ['result' => false, 'reason' => 'Request not found.'];
+        }
+        if ($row->stage !== 'new') {
+            return ['result' => false, 'reason' => 'Only requests in "New" stage can be rejected.'];
+        }
+        $this->db->set('stage', 'rejected');
+        $this->db->set('rejected_on', date('Y-m-d H:i:s'));
+        $this->db->set('rejected_by', (int) $_SESSION['user_id']);
+        $this->db->set('rejection_reason', $reason);
+        $this->db->set('validated_on', null);
+        $this->db->set('validated_by', null);
+        $this->db->set('converted_task_id', null);
+        $this->db->where('uuid', $uuid);
+        $this->db->update('submitted_tasks');
+        return ['result' => true];
+    }
+
+    /**
+     * Approve a submitted request and convert it to a task in the given sprint.
+     * @param string $uuid submitted_tasks.uuid
+     * @param int $sprint_id Sprint to create the task in
+     * @param array $user_ids Optional user IDs to assign to the new task
+     * @return array ['result' => bool, 'reason' => string, 'task_uuid' => string]
+     */
+    public function approveAndConvertToTask($uuid, $sprint_id, $user_ids = [])
+    {
+        $st = $this->db->select('st.*, p.customer_id, p.id project_id')
+            ->from('submitted_tasks st')
+            ->join('sprints s', 's.id = st.sprint_id', 'left')
+            ->join('projects p', 'p.id = s.project_id', 'left')
+            ->where('st.uuid', $uuid)
+            ->where('st.status', 1)
+            ->get()->row();
+
+        if (empty($st)) {
+            return ['result' => false, 'reason' => 'Request not found.'];
+        }
+        if ($st->stage !== 'new') {
+            return ['result' => false, 'reason' => 'Only requests in "New" stage can be approved.'];
+        }
+
+        $sprint = $this->db->select('s.id, s.name, p.id project_id, p.customer_id')
+            ->from('sprints s')
+            ->join('projects p', 'p.id = s.project_id')
+            ->where('s.id', (int) $sprint_id)
+            ->where('s.status', 1)
+            ->where('s.active', 1)
+            ->get()->row();
+        if (empty($sprint)) {
+            return ['result' => false, 'reason' => 'Invalid sprint.'];
+        }
+
+        $customer_id = !empty($st->created_by_customer) ? $st->created_by_customer : $sprint->customer_id;
+        if (empty($customer_id)) {
+            $customer_id = $sprint->customer_id;
+        }
+
+        $tn = $this->db->query("SELECT MAX(task_number) as tn FROM tasks WHERE sprint_id = '" . (int) $sprint_id . "' AND status = 1")->row()->tn;
+        $task_number = incrementTaskNumber($tn);
+
+        $task_uuid = gen_uuid();
+        $this->db->set('uuid', $task_uuid);
+        $this->db->set('name', $st->name);
+        $this->db->set('description', $st->description);
+        $this->db->set('section', $st->section);
+        $this->db->set('sprint_id', (int) $sprint_id);
+        $this->db->set('task_number', $task_number);
+        $this->db->set('stage', 'new');
+        $this->db->set('progress', 0);
+        $this->db->set('status', 1);
+        $this->db->set('created_by', (int) $_SESSION['user_id']);
+        $this->db->set('created_on', date('Y-m-d H:i:s'));
+        $this->db->set('scope_client_expectation', $st->scope_client_expectation ?: '');
+        $this->db->set('scope_not_included', $st->scope_not_included ?: '');
+        $this->db->set('scope_when_done', $st->scope_when_done ?: '');
+        $this->db->insert('tasks');
+        $new_task_id = $this->db->insert_id();
+
+        $this->db->set('stage', 'validated');
+        $this->db->set('validated_on', date('Y-m-d H:i:s'));
+        $this->db->set('validated_by', (int) $_SESSION['user_id']);
+        $this->db->set('converted_task_id', $new_task_id);
+        $this->db->set('rejected_on', null);
+        $this->db->set('rejected_by', null);
+        $this->db->set('rejection_reason', null);
+        $this->db->where('uuid', $uuid);
+        $this->db->update('submitted_tasks');
+
+        if (!empty($user_ids) && is_array($user_ids)) {
+            $this->load->model('Tasks_model');
+            $this->Tasks_model->assignUsers($user_ids, [$new_task_id], $customer_id, $sprint->project_id, (int) $sprint_id);
+        }
+
+        return ['result' => true, 'task_uuid' => $task_uuid];
     }
 
     public function deleteMultiple($taskIds)

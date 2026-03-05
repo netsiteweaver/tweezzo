@@ -99,6 +99,11 @@ class Submitted_tasks extends MY_Controller {
 
         $task_uuid = $this->input->get("task_uuid");
         $this->data['task'] = $this->Submitted_tasks_model->fetchSIngle($task_uuid);
+        if (empty($this->data['task'])) {
+            flashDanger('Submitted request not found.');
+            redirect(base_url('submitted_tasks/listing'));
+            return;
+        }
 
         //Breadcrumbs
         $this->mybreadcrumb->add('Tasks', base_url('submitted_tasks/listing'));
@@ -110,6 +115,9 @@ class Submitted_tasks extends MY_Controller {
 
         $this->load->model('Projects_model');
         $this->data['projects'] = $this->Projects_model->lookup();
+
+        $this->load->model('Sprints_model');
+        $this->data['sprints'] = $this->Sprints_model->fetchAll(!empty($this->data['task']->customer_id) ? $this->data['task']->customer_id : '', 's.name', 'asc', 1, 500);
 
         $this->load->model('Users_model');
         $this->data['users'] = $this->Users_model->lookup();
@@ -134,20 +142,13 @@ class Submitted_tasks extends MY_Controller {
 
         $customer_id = $this->input->get('customer_id');
         $developer_id = $this->input->get('developer_id');
-        // $project_id = $this->input->get('project_id');
-        // $sprint_id = $this->input->get('sprint_id');
-        // $stage = $this->input->get('stage');
-        // $assigned_to = $this->input->get('assigned_to');
-        // $order_by = $this->input->get('order_by');
-        // $order_dir = $this->input->get('order_dir');
-        // $notes_only = $this->input->get('notes_only');
+        $stage = $this->input->get('stage');
         $search_text = $this->input->get('search_text');
-
 
         $page = $this->uri->segment(3);
         $per_page = (!empty($this->input->get("display"))) ? $this->input->get("display") : $this->system_model->getParam("rows_per_page");
-        $this->data['submitted_tasks'] = $this->Submitted_tasks_model->fetchAll($customer_id,$developer_id,$page,$per_page,$search_text);
-        $total_rows = $this->Submitted_tasks_model->totalRows($customer_id,$developer_id,$page,$per_page,$search_text);
+        $this->data['submitted_tasks'] = $this->Submitted_tasks_model->fetchAll($customer_id,$developer_id,$page,$per_page,$search_text,false,$stage);
+        $total_rows = $this->Submitted_tasks_model->totalRows($customer_id,$developer_id,$search_text,$stage);
         $this->data['total_rows'] = $total_rows;
         $this->data['pagination'] = getPagination("submitted_tasks/listing",$total_rows,$per_page);
 
@@ -305,6 +306,62 @@ class Submitted_tasks extends MY_Controller {
             "result"    =>  true,
             "affected_rows" =>  $affected_rows
         ));
+    }
+
+    /**
+     * Reject a submitted request with a reason (POST: uuid, reason).
+     */
+    public function rejectRequest()
+    {
+        if (!isAuthorised(get_class(), "edit")) return false;
+
+        $uuid = $this->input->post('uuid');
+        $reason = $this->input->post('reason');
+        if (empty($uuid) || trim($reason) === '') {
+            flashDanger('Please provide a rejection reason.');
+            redirect(base_url('submitted_tasks/view?task_uuid=' . urlencode($uuid) . '&' . $this->data['qs']));
+            return;
+        }
+        $result = $this->Submitted_tasks_model->rejectRequest($uuid, trim($reason));
+        if ($result['result']) {
+            flashSuccess('Request has been rejected.');
+        } else {
+            flashDanger($result['reason']);
+        }
+        redirect(base_url('submitted_tasks/view?task_uuid=' . urlencode($uuid) . '&' . $this->data['qs']));
+    }
+
+    /**
+     * Approve and convert submitted request to a task (POST: uuid, sprint_id, userIds[] optional).
+     */
+    public function approveConvert()
+    {
+        if (!isAuthorised(get_class(), "add")) return false;
+
+        $uuid = $this->input->post('uuid');
+        $sprint_id = (int) $this->input->post('sprint_id');
+        $user_ids = $this->input->post('userIds');
+        if (is_string($user_ids)) {
+            $user_ids = json_decode($user_ids);
+        }
+        if (!is_array($user_ids)) {
+            $user_ids = [];
+        }
+
+        if (empty($uuid) || $sprint_id <= 0) {
+            flashDanger('Please select a sprint.');
+            redirect(base_url('submitted_tasks/view?task_uuid=' . urlencode($uuid) . '&' . $this->data['qs']));
+            return;
+        }
+
+        $result = $this->Submitted_tasks_model->approveAndConvertToTask($uuid, $sprint_id, $user_ids);
+        if ($result['result']) {
+            flashSuccess('Request approved and converted to task.');
+            redirect(base_url('tasks/view?task_uuid=' . $result['task_uuid']));
+        } else {
+            flashDanger($result['reason']);
+            redirect(base_url('submitted_tasks/view?task_uuid=' . urlencode($uuid) . '&' . $this->data['qs']));
+        }
     }
 
     public function index()

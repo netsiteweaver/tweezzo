@@ -282,20 +282,11 @@ jQuery(function(){
     $(".monitor").on("change", function(){
         let customer_id = $('#customer_id').val();
         let developer_id = $('#developer_id').val();
-        
-        // let project_id = $('#project_id').val();
-        // let sprint_id = $('#sprint_id').val();
-        // let stage = $('#stage').val();
-        // let order_by = $('#order_by').val();
-        // let order_dir = $('#order_dir').val();
+        let stage = $('#stage').val();
         let display = $('#display').val();
-        // let assigned_to = $('#assigned_to').val();
-        // let notes_only = $('#notes_only').val();
         let search_text = $('#search_text').val();
 
-        // Overlay("on");
-        let url = `/submitted_tasks/listing?customer_id=${customer_id}&developer_id=${developer_id}&search_text=${search_text}&display=${display}`;
-        console.log(url);
+        let url = `/submitted_tasks/listing?customer_id=${customer_id}&developer_id=${developer_id}&stage=${stage}&search_text=${search_text}&display=${display}`;
         window.location.href = url;
     })
 
