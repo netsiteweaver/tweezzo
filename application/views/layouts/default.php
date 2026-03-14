@@ -215,6 +215,7 @@
 <script src="<?php echo base_url("assets/js/downloadTableAsCSV.js?t=".date("YmdHis"));?>"></script>
 <script src="<?php echo base_url('assets/js/userSelectModal.js')."?".date("YmdHis"); ?>"></script>
 <script src="<?php echo base_url('assets/js/online-users.js')."?".date("YmdHis"); ?>"></script>
+<script src="<?php echo base_url('assets/js/global-search.js')."?".date("YmdHis"); ?>"></script>
 <!-- <script src="<?php echo base_url('assets/js/messages.min.js')."?".date("YmdHis"); ?>"></script> -->
 
 <!-- AUTO LOADER FOR JS -->

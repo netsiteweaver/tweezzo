@@ -8,6 +8,23 @@
 
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
+      <!-- Global search (tasks by ref, name, etc.) -->
+      <li class="nav-item">
+        <a class="nav-link" data-widget="navbar-search" data-target="#navbar-global-search" href="#" role="button" title="Search tasks">
+          <i class="fas fa-search"></i>
+        </a>
+        <div class="navbar-search-block" id="navbar-global-search">
+          <div class="form-inline position-relative">
+            <input class="form-control form-control-navbar" type="search" id="global-search-input" placeholder="Search tasks (e.g. WR-S3-001)…" aria-label="Search tasks" autocomplete="off">
+            <div class="input-group-append">
+              <button class="btn btn-navbar" type="button" data-widget="navbar-search">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div id="global-search-results" class="dropdown-menu dropdown-menu-lg shadow position-absolute w-100" style="top: 100%; left: 0; display: none; max-height: 70vh; overflow-y: auto; z-index: 1050;"></div>
+          </div>
+        </div>
+      </li>
       <!-- Online Users Dropdown Menu -->
       <li class="nav-item dropdown" id="online-users-dropdown">
         <a class="nav-link" data-toggle="dropdown" href="#" title="Online Users">
