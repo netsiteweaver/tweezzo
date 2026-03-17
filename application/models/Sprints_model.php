@@ -171,7 +171,7 @@ class Sprints_model extends CI_Model{
 
     public function getByProjectId($project_id)
     {
-        $this->db->select("*")->from("sprints")->where("project_id",$project_id)->where("status",1);
+        $this->db->select("*")->from("sprints")->where("project_id",$project_id)->where(["status"=>1,"active"=>1]);
         return $this->db->get()->result();
     }
 
