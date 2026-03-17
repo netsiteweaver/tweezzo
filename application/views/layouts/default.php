@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="<?php echo base_url('assets/css/adminlte_custom.min.css?').date('YmdHis');?>">
   <link rel="stylesheet" href="<?php echo base_url('assets/css/stages.min.css?').date('YmdHis');?>">
   <link rel="stylesheet" href="<?php echo base_url('assets/css/country-flags.css?').date('YmdHis');?>">
+  <link rel="stylesheet" href="<?php echo base_url('assets/css/backoffice-global-search.css?').date('YmdHis');?>">
   <!-- Toastr -->
   <link rel="stylesheet" href="<?php echo base_url();?>assets/vendors/toastr/build/toastr.min.css">
   <!-- AlertifyJS -->

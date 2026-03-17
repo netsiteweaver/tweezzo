@@ -26,11 +26,11 @@ function showUserSelectModal() {
 }
 
 function init() {
-    let url = "/ajax/Misc/getUsersByTaskUuid";
+    let url = base_url + "/ajax/Misc/getUsersByTaskUuid";
     const path = window.location.pathname;
     const pathSegments = path.split('/').filter(segment => segment !== '');
     if(pathSegments.indexOf('portal') == -1){
-        url = '/portal/Misc/getUsersByTaskUuid';
+        url = base_url + '/portal/Misc/getUsersByTaskUuid';
     }
 
     // Get the full query string

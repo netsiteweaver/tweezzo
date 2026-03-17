@@ -15,6 +15,7 @@
     <!-- <link rel="stylesheet" href="./assets/css/portal/customers/tasks.css"> -->
     <link rel="stylesheet" href="./assets/css/portal/customers/styles.css?t=<?php echo date('YmdHis');?>">
     <link rel="stylesheet" href="<?php echo base_url('assets/css/stages.min.css?').date('YmdHis');?>">
+    <link rel="stylesheet" href="<?php echo base_url('assets/css/portal/global-search.css?').date('YmdHis');?>">
     <!-- Summernote CSS -->
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.css" rel="stylesheet">
 
@@ -110,6 +111,7 @@
     <script src="<?php echo base_url("node_modules/lightbox2/dist/js/lightbox.min.js");?>"></script>
     <script src="<?php echo base_url("assets/js/portal/customers/script.js?t=".date("YmdHis"));?>"></script>
     <script src="<?php echo base_url("assets/portal/js/task-ref-copy.js?t=".date("YmdHis"));?>"></script>
+    <script src="<?php echo base_url("assets/js/portal/global-search.js?t=".date("YmdHis"));?>"></script>
     <script src="<?php echo base_url('assets/js/userSelectModal.js')."?".date("YmdHis"); ?>"></script>
     <script src="<?php echo base_url("assets/js/downloadTableAsCSV.js?t=".date("YmdHis"));?>"></script>
     <!-- Option 2: Separate Popper and Bootstrap JS -->

@@ -79,6 +79,37 @@ class Developers extends CI_Controller
         redirect(base_url("portal/developers/signin"));
     }
 
+    /**
+     * Global search: tasks by task ref, name, etc. Returns JSON for navbar typeahead.
+     */
+    public function searchTasks()
+    {
+        if (empty($_SESSION['developer_id'])) {
+            $this->output->set_content_type('application/json')->set_output(json_encode(['result' => false, 'reason' => 'Not signed in']));
+            return;
+        }
+        $q = $this->input->get('q');
+        $q = is_string($q) ? trim($q) : '';
+        if ($q === '') {
+            $this->output->set_content_type('application/json')->set_output(json_encode(['result' => true, 'tasks' => []]));
+            return;
+        }
+        $rows = $this->Developersportal_model->searchTasks($_SESSION['developer_id'], $q, 15);
+        $tasks = [];
+        foreach ($rows as $task) {
+            $tasks[] = [
+                'uuid'         => $task->uuid,
+                'task_ref'     => isset($task->task_ref) ? $task->task_ref : '',
+                'name'         => $task->name,
+                'section'      => isset($task->section) ? $task->section : '',
+                'project_name' => isset($task->project_name) ? $task->project_name : '',
+                'sprint_name'  => isset($task->sprint_name) ? $task->sprint_name : '',
+                'view_url'     => base_url('portal/developers/view?task_uuid=' . rawurlencode($task->uuid)),
+            ];
+        }
+        $this->output->set_content_type('application/json')->set_output(json_encode(['result' => true, 'tasks' => $tasks]));
+    }
+
     public function myaccount()
     {
         //Breadcrumbs
