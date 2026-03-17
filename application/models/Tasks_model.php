@@ -49,6 +49,9 @@ class Tasks_model extends CI_Model{
             $this->db->or_like("p.name",$search_text);
             $this->db->or_like("c.company_name",$search_text);
             $this->db->or_like("t.stage",$search_text);
+            // Match combined task ref (e.g. WR-S3-001) for global search / sharing
+            $like_val = '%' . $this->db->escape_like_str($search_text) . '%';
+            $this->db->or_where("CONCAT(IFNULL(p.code,''), '-', IFNULL(s.code,''), '-', IFNULL(t.task_number,'')) LIKE " . $this->db->escape($like_val), null, false);
             $this->db->group_end();
         }
         if(!empty($work_type)) $this->db->where('t.work_type',$work_type);

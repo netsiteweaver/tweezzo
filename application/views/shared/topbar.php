@@ -6,6 +6,14 @@
       </li>
     </ul>
 
+    <!-- Global search (tasks) – always visible in top bar -->
+    <div class="backoffice-global-search-wrapper" id="navbar-global-search">
+      <div class="form-inline position-relative">
+        <input class="form-control form-control-navbar" type="search" id="global-search-input" placeholder="Search tasks (e.g. WR-S3-001)…" aria-label="Search tasks" autocomplete="off">
+        <div id="global-search-results" class="dropdown-menu dropdown-menu-lg shadow position-absolute w-100" style="top: 100%; left: 0; display: none; max-height: 70vh; overflow-y: auto; z-index: 1050;"></div>
+      </div>
+    </div>
+
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
       <!-- Online Users Dropdown Menu -->

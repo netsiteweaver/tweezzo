@@ -102,6 +102,43 @@ class Customers extends CI_Controller
 
     }
 
+    /**
+     * Global search: tasks by task ref, name, etc. Returns JSON for navbar typeahead.
+     */
+    public function searchTasks()
+    {
+        if (empty($_SESSION['customer_access_id'])) {
+            $this->output->set_content_type('application/json')->set_output(json_encode(['result' => false, 'reason' => 'Not signed in']));
+            return;
+        }
+        $customer_id = $this->db->select('customer_id')->from('customer_access')->where('id', (int) $_SESSION['customer_access_id'])->get()->row();
+        if (empty($customer_id)) {
+            $this->output->set_content_type('application/json')->set_output(json_encode(['result' => false, 'reason' => 'Invalid session']));
+            return;
+        }
+        $customer_id = $customer_id->customer_id;
+        $q = $this->input->get('q');
+        $q = is_string($q) ? trim($q) : '';
+        if ($q === '') {
+            $this->output->set_content_type('application/json')->set_output(json_encode(['result' => true, 'tasks' => []]));
+            return;
+        }
+        $rows = $this->Customersportal_model->searchTasks($customer_id, $q, 15);
+        $tasks = [];
+        foreach ($rows as $task) {
+            $tasks[] = [
+                'uuid'         => $task->uuid,
+                'task_ref'     => isset($task->task_ref) ? $task->task_ref : '',
+                'name'         => $task->name,
+                'section'      => isset($task->section) ? $task->section : '',
+                'project_name' => isset($task->project_name) ? $task->project_name : '',
+                'sprint_name'  => isset($task->sprint_name) ? $task->sprint_name : '',
+                'view_url'     => base_url('portal/customers/view?task_uuid=' . rawurlencode($task->uuid)),
+            ];
+        }
+        $this->output->set_content_type('application/json')->set_output(json_encode(['result' => true, 'tasks' => $tasks]));
+    }
+
     public function projects()
     {
         $this->data['page_title'] = "Projects";

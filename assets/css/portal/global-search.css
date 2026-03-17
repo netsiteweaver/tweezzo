@@ -1,0 +1,53 @@
+/**
+ * Portal global search – always visible in top bar (customers & developers).
+ */
+.portal-navbar-search-wrapper {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 280px;
+  margin-right: 0.5rem;
+}
+.portal-navbar-search-wrapper .portal-global-search-input {
+  width: 100%;
+}
+
+@media (min-width: 992px) {
+  .portal-navbar-search-wrapper {
+    max-width: 320px;
+  }
+}
+
+/**
+ * Portal global search typeahead – same appearance on all pages (tasks, timesheets, etc.).
+ */
+.portal-global-search-results {
+  min-width: 300px !important;
+  max-width: 400px;
+  z-index: 9999 !important;
+  padding: 0.25rem 0;
+}
+
+.portal-global-search-results .dropdown-item {
+  display: block;
+  padding: 0.5rem 1rem;
+  white-space: normal;
+  line-height: 1.35;
+}
+
+.portal-global-search-results .dropdown-item .fw-bold {
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+.portal-global-search-results .dropdown-item small {
+  display: block;
+  line-height: 1.3;
+}
+
+.portal-global-search-results .dropdown-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.portal-global-search-results .dropdown-item.text-muted {
+  padding: 0.75rem 1rem;
+}

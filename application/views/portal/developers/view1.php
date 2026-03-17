@@ -81,6 +81,10 @@
                             </colgroup>
 
                             <tr>
+                                <th>Code:</th>
+                                <td colspan="5"><?php echo isset($task->task_ref) && $task->task_ref !== '' ? htmlspecialchars($task->task_ref) : htmlspecialchars($task->task_number);?></td>
+                            </tr>
+                            <tr>
                                 <th>Task #:</th>
                                 <td><?php echo $task->task_number;?></td>
                                 <th>Sprint:</th>

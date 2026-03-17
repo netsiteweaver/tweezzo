@@ -92,11 +92,64 @@ class Developersportal_model extends CI_Model{
 
     }
 
+    /**
+     * Search tasks assigned to developer (for portal global search).
+     * @param int $developer_id
+     * @param string $q search term (task ref, name, section, etc.)
+     * @param int $limit
+     * @return array
+     */
+    public function searchTasks($developer_id, $q, $limit = 15)
+    {
+        $q = trim((string) $q);
+        if ($q === '') {
+            return [];
+        }
+        $developer_id = (int) $developer_id;
+        $like_val = '%' . $this->db->escape_like_str($q) . '%';
+        $this->db->select('t.id, t.uuid, t.name, t.task_number, t.section, p.name project_name, p.code project_code, s.name sprint_name, s.code sprint_code');
+        $this->db->from('task_user tu');
+        $this->db->join('tasks t', 't.id = tu.task_id');
+        $this->db->join('sprints s', 's.id = t.sprint_id');
+        $this->db->join('projects p', 'p.id = s.project_id');
+        $this->db->join('customers c', 'c.customer_id = p.customer_id');
+        $this->db->where('tu.user_id', $developer_id);
+        $this->db->where('t.status', '1');
+        $this->db->where('t.closed', '0');
+        $this->db->where('s.status', 1);
+        $this->db->where('s.active', 1);
+        $this->db->where('p.active', 1);
+        $this->db->where('c.status', 1);
+        $this->db->where('c.active', 1);
+        $this->db->group_start();
+        $this->db->like('t.name', $q);
+        $this->db->or_like('t.task_number', $q);
+        $this->db->or_like('t.section', $q);
+        $this->db->or_where('CONCAT(IFNULL(p.code,\'\'), \'-\', IFNULL(s.code,\'\'), \'-\', IFNULL(t.task_number,\'\')) LIKE ' . $this->db->escape($like_val), null, false);
+        $this->db->group_end();
+        $this->db->limit($limit);
+        $this->db->order_by('t.task_number');
+        $results = $this->db->get()->result();
+        if (!function_exists('task_ref')) {
+            $CI =& get_instance();
+            $CI->load->helper('general');
+        }
+        foreach ($results as $task) {
+            $pc = isset($task->project_code) ? $task->project_code : null;
+            $sc = isset($task->sprint_code) ? $task->sprint_code : null;
+            $tn = isset($task->task_number) ? $task->task_number : '';
+            $task->task_ref = $tn !== '' ? task_ref($pc, $sc, $tn) : '';
+        }
+        return $results;
+    }
+
     public function getSingleTask($uuid)
     {
         $query = "SELECT t.*, 
                     s.name sprint_name, 
+                    s.code sprint_code,
                     p.name project_name, 
+                    p.code project_code,
                     c.company_name
                     FROM tasks t
                     LEFT JOIN sprints s ON s.id = t.sprint_id
@@ -107,6 +160,15 @@ class Developersportal_model extends CI_Model{
         if(empty($task)) {
             return false;
         }
+        if (!function_exists('task_ref')) {
+            $CI =& get_instance();
+            $CI->load->helper('general');
+        }
+        $task->task_ref = task_ref(
+            isset($task->project_code) ? $task->project_code : null,
+            isset($task->sprint_code) ? $task->sprint_code : null,
+            isset($task->task_number) ? $task->task_number : ''
+        );
         $task->assigned_to = $this->db->select("u.name,u.email,u.user_type, u.photo")
                                     ->from("task_user tu")
                                     ->join("users u","u.id=tu.user_id","left")

@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="./assets/css/portal/developers/tasks.css?t=<?php echo date("YmdHis");?>">
     <link rel="stylesheet" href="./assets/css/portal/developers/styles.css?t=<?php echo date("YmdHis");?>">
     <link rel="stylesheet" href="<?php echo base_url('assets/css/stages.min.css?').date('YmdHis');?>">
+    <link rel="stylesheet" href="<?php echo base_url('assets/css/portal/global-search.css?').date('YmdHis');?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     <!-- AlertifyJS -->
@@ -98,6 +99,7 @@
     <script src="<?php echo base_url('assets/js/userSelectModal.js')."?".date("YmdHis"); ?>"></script>
     <script src="<?php echo base_url("assets/js/portal/developers/script.js?t=".date("YmdHis"));?>"></script>
     <script src="<?php echo base_url("assets/portal/js/task-ref-copy.js?t=".date("YmdHis"));?>"></script>
+    <script src="<?php echo base_url("assets/js/portal/global-search.js?t=".date("YmdHis"));?>"></script>
     <script src="<?php echo base_url("assets/js/downloadTableAsCSV.js?t=".date("YmdHis"));?>"></script>
 
         <!-- Option 2: Separate Popper and Bootstrap JS -->

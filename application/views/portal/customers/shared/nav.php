@@ -8,6 +8,12 @@
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+        <div class="portal-navbar-search-wrapper d-flex align-items-center">
+            <div class="position-relative" data-portal-search-url="<?php echo base_url('portal/customers/searchTasks'); ?>">
+                <input class="form-control form-control-sm portal-global-search-input" type="search" placeholder="Search tasks (e.g. WR-S3-001)…" aria-label="Search tasks" autocomplete="off" style="min-width: 180px;">
+                <div class="portal-global-search-results dropdown-menu shadow position-absolute start-0 mt-1" style="max-height: 70vh; overflow-y: auto; display: none;"></div>
+            </div>
+        </div>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mb-2 mb-lg-0">
                 
