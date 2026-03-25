@@ -259,4 +259,29 @@ class Sprints extends MY_Controller {
         exit;
     }
 
+    public function checkCodeAvailable()
+    {
+        if(!isAuthorised(get_class(),"add")) return false;
+
+        $project_id = $this->input->post("project_id");
+        $code = trim((string)$this->input->post("code"));
+        $uuid = trim((string)$this->input->post("uuid"));
+
+        if (empty($project_id) || $code === "") {
+            echo json_encode([
+                "result" => false,
+                "exists" => false,
+                "reason" => "Project and code are required"
+            ]);
+            exit;
+        }
+
+        $exists = $this->Sprints_model->codeExists($project_id, $code, $uuid);
+        echo json_encode([
+            "result" => true,
+            "exists" => $exists
+        ]);
+        exit;
+    }
+
 }

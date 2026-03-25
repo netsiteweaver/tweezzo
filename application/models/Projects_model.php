@@ -194,4 +194,20 @@ class Projects_model extends CI_Model{
         return $this->db->get()->result();
     }
 
+    public function codeExists($code, $exclude_uuid = "")
+    {
+        $code = trim((string)$code);
+        if ($code === "") return false;
+
+        $this->db->select("id");
+        $this->db->from("projects");
+        $this->db->where("code", $code);
+
+        if (!empty($exclude_uuid)) {
+            $this->db->where("uuid !=", $exclude_uuid);
+        }
+
+        return (bool)$this->db->get()->row();
+    }
+
 }

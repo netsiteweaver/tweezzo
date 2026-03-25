@@ -14,8 +14,15 @@
                     </div>
                     <div class="form-group">
 						<label for="">Code</label>
-						<input type="text" class="form-control" name="code" placeholder="e.g. WR (short unique code for references)" value="" maxlength="20">
-						<small class="form-text text-muted">Short unique code used in task references (e.g. WR-S3-001). Leave empty to use task number only.</small>
+						<div class="input-group">
+							<input type="text" class="form-control" name="code" placeholder="e.g. WR (short unique code for references)" value="" maxlength="20" readonly tabindex="-1">
+							<div class="input-group-append">
+								<button type="button" class="btn btn-outline-secondary" id="generate_project_code" tabindex="-1">
+									<i class="fa fa-magic"></i> Generate
+								</button>
+							</div>
+						</div>
+						<small class="form-text text-muted">Short unique code used in task references (e.g. WR-S3-001).</small>
                     </div>
                     <div class="form-group">
                         <label for="">Description</label>

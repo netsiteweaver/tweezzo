@@ -51,6 +51,7 @@
                     <thead>
                         <tr class='text-center' style='text-transform:uppercase;'>
                             <th>Name <?php echo ( (empty($this->input->get("order_by"))) || ($this->input->get("order_by") == "name") ) ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <th>Code</th>
                             <th>Project <?php echo ($this->input->get("order_by") == "project_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>Customer <?php echo ($this->input->get("order_by") == "company_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>&nbsp;</th>
@@ -61,6 +62,7 @@
                         <?php foreach($sprints as $task): ?>
                         <tr>
                             <td><?php echo $task->name;?></td>
+                            <td><?php echo !empty($task->code) ? htmlspecialchars($task->code) : '—';?></td>
                             <td><?php echo $task->project_name;?></td>
                             <td><?php echo "<b>{$task->company_name}</b><br>{$task->full_name}";?></td>
                             <td class='text-center activeOrNot'><div class="btn btn-block btn-<?php echo ($task->active=='1')?'info':'danger';?>"><i class='fa fa-<?php echo ($task->active=='1')?'check':'times';?>'></i></div></td>

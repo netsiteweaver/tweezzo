@@ -74,6 +74,11 @@
 												   <p class='mb-2'><strong>Task Validation</strong></p>
 												   <p class='text-muted small mb-3'>This task has successfully passed our internal testing and is now available on the <b>Staging Server</b> for your review.</p>
 												   <p class='text-muted small mb-3'>Please verify it against the requirements and click the <b>Validate</b> button below if everything meets your expectations.</p>
+												   <p class='mb-3'>
+													   <a href="<?php echo base_url('portal/customers/validationGuide');?>" class="btn btn-outline-primary btn-sm">
+														   <i class="bi bi-journal-text me-1"></i> Open Validation Guide
+													   </a>
+												   </p>
 												   <p class='text-muted small mb-3'>If you find any discrepancies, kindly send us a note detailing what does not match your expectations (as per the task description).</p>
 												   <div class="btn btn-info validate mt-2"><i class="bi bi-check-circle"></i> Validate</div>
 												   <div class="mt-3 pt-3 border-top">

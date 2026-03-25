@@ -110,7 +110,7 @@ jQuery(function(){
                 if(result==true){
                     Overlay("on");
                     $.ajax({
-                        url: "/customers/toggleActive",
+                        url: base_url + "/customers/toggleActive",
                         type: "POST",
                         dataType: "JSON",
                         data: {uuid: uuid},
@@ -150,7 +150,7 @@ jQuery(function(){
         $(this).closest("tr").addClass("active");
         Overlay("on");
         $.ajax({
-            url: "/customers/info",
+            url: base_url + "/customers/info",
             type: "POST",
             dataType: "JSON",
             data: {uuid: uuid},
@@ -176,7 +176,7 @@ jQuery(function(){
         let uuid = $('#modalCustomerInfo input[name=customer_uuid]').val()
         Overlay("on");
         $.ajax({
-            url: "/customers/delete",
+            url: base_url + "/customers/delete",
             type: "POST",
             dataType: "JSON",
             data: {uuid: uuid},
@@ -392,7 +392,7 @@ jQuery(function(){
         
         // Load portal access users
         $.ajax({
-            url: "/customers/get_portal_access_users",
+            url: base_url + "/customers/get_portal_access_users",
             type: "POST",
             dataType: "JSON",
             data: {uuid: uuid},
@@ -454,7 +454,7 @@ jQuery(function(){
                     btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Resetting...');
                     
                     $.ajax({
-                        url: "/customers/reset_portal_password",
+                        url: base_url + "/customers/reset_portal_password",
                         type: "POST",
                         dataType: "JSON",
                         data: {access_id: accessId},

@@ -170,6 +170,30 @@ class Projects extends MY_Controller {
         exit;
     }
 
+    public function checkCodeAvailable()
+    {
+        if(!isAuthorised(get_class(),"add")) return false;
+
+        $code = trim((string)$this->input->post("code"));
+        $uuid = trim((string)$this->input->post("uuid"));
+
+        if ($code === "") {
+            echo json_encode([
+                "result" => false,
+                "exists" => false,
+                "reason" => "Code is required"
+            ]);
+            exit;
+        }
+
+        $exists = $this->Projects_model->codeExists($code, $uuid);
+        echo json_encode([
+            "result" => true,
+            "exists" => $exists
+        ]);
+        exit;
+    }
+
 
     public function team()
     {

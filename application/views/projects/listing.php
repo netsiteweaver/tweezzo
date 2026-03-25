@@ -38,6 +38,7 @@
                     <thead>
                         <tr class='text-center' style='text-transform:uppercase;'>
                             <th>Project Name <?php echo ( (empty($this->input->get("order_by"))) || ($this->input->get("order_by") == "name") ) ? "<i class='fa fa-sort'></i>" : '';?></th>
+                            <th>Code</th>
                             <th>Customer <?php echo ($this->input->get("order_by") == "company_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>Start Date <?php echo ($this->input->get("order_by") == "start_date") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>End Date <?php echo ($this->input->get("order_by") == "end_date") ? "<i class='fa fa-sort'></i>" : '';?></th>
@@ -49,6 +50,7 @@
                         <?php foreach($projects as $project): ?>
                         <tr>
                             <td><?php echo $project->name;?></td>
+                            <td><?php echo !empty($project->code) ? htmlspecialchars($project->code) : '—';?></td>
                             <td><?php echo "{$project->company_name}"; ?></td>
                             <td><?php echo (!empty($project->start_date)) ? date_format(date_create($project->start_date),'d-m-Y') : '';?></td>
                             <td><?php echo (!empty($project->end_date)) ? date_format(date_create($project->end_date),'d-m-Y') : '';?></td>

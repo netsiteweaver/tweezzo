@@ -209,4 +209,21 @@ class Sprints_model extends CI_Model{
                                     where s.id = $sprint_id")->row();
     }
 
+    public function codeExists($project_id, $code, $exclude_uuid = "")
+    {
+        $code = trim((string)$code);
+        if (empty($project_id) || $code === "") return false;
+
+        $this->db->select("id");
+        $this->db->from("sprints");
+        $this->db->where("project_id", $project_id);
+        $this->db->where("code", $code);
+
+        if (!empty($exclude_uuid)) {
+            $this->db->where("uuid !=", $exclude_uuid);
+        }
+
+        return (bool)$this->db->get()->row();
+    }
+
 }
