@@ -417,7 +417,7 @@ jQuery(function(){
         
         Overlay("on");
         setTimeout(function(){
-            window.location.href = '/tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+search_text+"&work_type="+work_type+"&billable="+billable;
+            window.location.href = base_url + 'tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+search_text+"&work_type="+work_type+"&billable="+billable;
         },100)
     })
 

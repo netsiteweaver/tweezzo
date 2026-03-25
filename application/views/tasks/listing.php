@@ -86,7 +86,7 @@ $cleanQuery = http_build_query($queryArray);
             <?php endforeach; ?>
         </select>
     </div>
-    <div class="col-md-2 <?php echo (empty($this->input->get("project_id"))) ? 'd-none' : '';?>"">
+    <div class="col-md-2 <?php echo (empty($this->input->get("project_id"))) ? 'd-none' : '';?>">
         <label for="">Sprint</label>
         <select class="form-control monitor" id="sprint_id">
             <option value="">Select Sprint</option>
@@ -378,8 +378,13 @@ $cleanQuery = http_build_query($queryArray);
                             <td><?php echo $task->project_name; ?></td>
                             <?php endif;?>
                             <?php if(empty($this->input->get("customer_id"))):?>
-                            <td><a style='color:#4c4c4c; text-decoration:none;'
-                                    href='tasks/listing?customer_id=<?php echo $task->customer_id;?>'><?php echo "{$task->company_name}"; ?></a>
+                            <td>
+                                <?php if (isset($task->customer_id) && $task->customer_id !== null && $task->customer_id !== ''): ?>
+                                <a style='color:#4c4c4c; text-decoration:none;'
+                                    href='tasks/listing?customer_id=<?php echo $task->customer_id;?>'><?php echo isset($task->company_name) ? $task->company_name : '—'; ?></a>
+                                <?php else: ?>
+                                <?php echo isset($task->company_name) && $task->company_name !== '' ? $task->company_name : '—'; ?>
+                                <?php endif; ?>
                             </td>
                             <?php endif;?>
                             <td class='stage text-center'>

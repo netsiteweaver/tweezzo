@@ -320,7 +320,7 @@ function getByCustomerId(customer_id)
 {
     Overlay("on")
     $.ajax({
-        url: '/projects/getByCustomerId',
+        url: base_url + '/projects/getByCustomerId',
         type: 'POST',
         data: {customer_id: customer_id},
         dataType: 'json',
@@ -356,7 +356,7 @@ function getByProjectId(project_id)
 {
     Overlay("on")
     $.ajax({
-        url: '/sprints/getByProjectId',
+        url: base_url + '/sprints/getByProjectId',
         type: 'POST',
         data: {project_id: project_id},
         dataType: 'json',
@@ -391,7 +391,7 @@ function getMaxTaskNumberBySprintId(sprint_id)
 {
     Overlay("on")
     $.ajax({
-        url: '/tasks/getMaxTaskNumberBySprintId',
+        url: base_url + '/tasks/getMaxTaskNumberBySprintId',
         type: 'POST',
         data: {sprint_id: sprint_id},
         dataType: 'json',
