@@ -9,6 +9,7 @@ class Customers extends CI_Controller
         parent::__construct();
 
         if( ( !in_array( $this->uri->segment(3) , ['signin', 'authenticate', 'forgotPassword','processForgotPassword','addUserAccess','updateUserAccess','removeAccess']) ) && (!isset($_SESSION['customer_access_id'])) ){
+            $this->_remember_customer_portal_intended_url();
             redirect('portal/customers/signin');
         }
 
@@ -47,6 +48,52 @@ class Customers extends CI_Controller
             $this->data['projects'] = $this->Customersportal_model->getProjects($_SESSION['customer_access_id']);
             $this->data['sprints'] = $this->Customersportal_model->getSprints();
         }
+    }
+
+    /**
+     * Remember full requested path + query so post-login redirect can return to e.g. staging-filtered tasks.
+     */
+    private function _remember_customer_portal_intended_url()
+    {
+        $uri = $this->uri->uri_string();
+        if ($uri === '') {
+            return;
+        }
+        if (strpos($uri, 'portal/customers/') !== 0) {
+            return;
+        }
+        $qs = (string) $this->input->server('QUERY_STRING');
+        $full = $uri . ($qs !== '' ? '?' . $qs : '');
+        $_SESSION['customer_portal_intended_url'] = $full;
+    }
+
+    /**
+     * Prevent open redirects: only allow relative portal/customers destinations (no scheme, no odd chars).
+     */
+    private function _safe_customer_portal_redirect($path_and_query)
+    {
+        if (!is_string($path_and_query) || $path_and_query === '') {
+            return false;
+        }
+        if (strpos($path_and_query, "\n") !== false || strpos($path_and_query, "\r") !== false) {
+            return false;
+        }
+        if (strpos($path_and_query, '://') !== false || strpos($path_and_query, '//') === 0) {
+            return false;
+        }
+        $path = $path_and_query;
+        if (($pos = strpos($path_and_query, '?')) !== false) {
+            $path = substr($path_and_query, 0, $pos);
+        }
+        if (strpos($path, 'portal/customers/') !== 0) {
+            return false;
+        }
+        $seg = explode('/', $path);
+        $method = isset($seg[2]) ? $seg[2] : '';
+        if (in_array($method, ['signin', 'authenticate', 'forgotPassword', 'processForgotPassword', 'addUserAccess', 'updateUserAccess', 'removeAccess'], true)) {
+            return false;
+        }
+        return true;
     }
 
     public function removeUser()
@@ -95,6 +142,13 @@ class Customers extends CI_Controller
             $_SESSION['customer_email'] = $result['user'][0]->email;
             $_SESSION['customer_company_name'] = $result['user'][0]->company_name;
             $_SESSION['customer_name'] = $result['user'][0]->name;
+            if (!empty($_SESSION['customer_portal_intended_url'])) {
+                $cand = $_SESSION['customer_portal_intended_url'];
+                unset($_SESSION['customer_portal_intended_url']);
+                if ($this->_safe_customer_portal_redirect($cand)) {
+                    $result['redirect'] = $cand;
+                }
+            }
             echo json_encode($result);
         }else{
             echo json_encode($result);

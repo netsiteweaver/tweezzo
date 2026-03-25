@@ -117,9 +117,64 @@ class Sprints_model extends CI_Model{
             $this->db->set('code',!empty($data['code']) ? trim($data['code']) : null);
             $this->db->where('uuid',$data['uuid']);
             $this->db->update('sprints');
+
+            $sprint = $this->db->select("id")->from("sprints")->where("uuid",$data['uuid'])->get()->row();
+            if(!empty($sprint)){
+                $isReady = isset($data['ready_for_validation']) ? 1 : 0;
+                $this->setValidationReadiness((int)$sprint->id, $isReady, (int)$_SESSION['user_id']);
+            }
         }
         return array('result'=>true,'data'=>$data);
 
+    }
+
+    public function getValidationReminderState($sprint_id)
+    {
+        $row = $this->db->select("*")
+                        ->from("sprint_validation_reminders")
+                        ->where("sprint_id", (int)$sprint_id)
+                        ->get()->row();
+
+        if(empty($row)){
+            return (object)[
+                "sprint_id" => (int)$sprint_id,
+                "ready_for_validation" => 0,
+                "ready_set_on" => null,
+                "ready_set_by" => null,
+                "last_sent_on" => null
+            ];
+        }
+
+        return $row;
+    }
+
+    public function setValidationReadiness($sprint_id, $is_ready, $user_id = null)
+    {
+        $sprint_id = (int)$sprint_id;
+        $is_ready = (int)$is_ready;
+        $user_id = empty($user_id) ? null : (int)$user_id;
+        $now = date("Y-m-d H:i:s");
+
+        $existing = $this->db->select("id")->from("sprint_validation_reminders")->where("sprint_id", $sprint_id)->get()->row();
+        if(empty($existing)){
+            $this->db->set("sprint_id", $sprint_id);
+            $this->db->set("ready_for_validation", $is_ready);
+            $this->db->set("ready_set_on", $is_ready ? $now : null);
+            $this->db->set("ready_set_by", $is_ready ? $user_id : null);
+            $this->db->set("last_sent_on", null);
+            $this->db->insert("sprint_validation_reminders");
+            return $this->db->affected_rows() > 0;
+        }
+
+        $this->db->set("ready_for_validation", $is_ready);
+        $this->db->set("ready_set_on", $is_ready ? $now : null);
+        $this->db->set("ready_set_by", $is_ready ? $user_id : null);
+        if($is_ready === 0){
+            $this->db->set("last_sent_on", null);
+        }
+        $this->db->where("sprint_id", $sprint_id);
+        $this->db->update("sprint_validation_reminders");
+        return $this->db->affected_rows() >= 0;
     }
 
     public function delete($uuid)

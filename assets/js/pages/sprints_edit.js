@@ -1,4 +1,26 @@
 jQuery(function(){
+    function updateValidationHelp() {
+        var enabled = $("#ready_for_validation").is(":checked");
+        var $help = $("#ready_for_validation_help");
+        if ($help.length === 0) return;
+
+        if (enabled) {
+            $help
+                .removeClass("text-muted")
+                .addClass("text-success")
+                .text("Weekly reminders are enabled for this sprint.");
+            return;
+        }
+
+        $help
+            .removeClass("text-success")
+            .addClass("text-muted")
+            .text("Keep this OFF while tasks are still being pushed to staging.");
+    }
+
+    $("#ready_for_validation").on("change", updateValidationHelp);
+    updateValidationHelp();
+
     function getProjectPrefix() {
         var selectedText = $('select[name="project_id"] option:selected').text() || "";
         var projectName = selectedText.split("/")[0].trim().toUpperCase().replace(/[^A-Z0-9\s]/g, " ");

@@ -43,6 +43,7 @@ class Sprints extends MY_Controller {
 
         $uuid = $this->uri->segment(3);
         $this->data['sprint'] = $this->Sprints_model->fetchSIngle($uuid);
+        $this->data['validationReminder'] = $this->Sprints_model->getValidationReminderState((int)$this->data['sprint']->id);
 
         //Breadcrumbs
         $this->mybreadcrumb->add('Sprints', base_url('sprints/listing'));

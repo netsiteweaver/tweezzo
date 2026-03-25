@@ -40,6 +40,28 @@
 						<label for="">Active</label>
 						<input type="checkbox" name="active" value="" <?php echo ($sprint->active=='1')?'checked':'';?>>
 					</div>
+                    <div class="form-group">
+                        <label for="ready_for_validation">Ready For Customer Validation</label>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox"
+                                   class="custom-control-input"
+                                   id="ready_for_validation"
+                                   name="ready_for_validation"
+                                   value="1"
+                                   <?php echo (!empty($validationReminder) && (int)$validationReminder->ready_for_validation === 1) ? 'checked' : ''; ?>>
+                            <label class="custom-control-label" for="ready_for_validation">
+                                Enable weekly staging reminders for this sprint
+                            </label>
+                        </div>
+                        <small id="ready_for_validation_help" class="form-text text-muted">
+                            Keep this OFF while tasks are still being pushed to staging.
+                        </small>
+                        <?php if(!empty($validationReminder) && !empty($validationReminder->last_sent_on)): ?>
+                            <small class="form-text text-info">
+                                Last reminder sent on: <?php echo date('d M Y H:i', strtotime($validationReminder->last_sent_on)); ?>
+                            </small>
+                        <?php endif; ?>
+                    </div>
                 </div>
                 <!-- /.card-body -->
 

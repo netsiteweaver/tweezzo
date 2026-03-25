@@ -245,6 +245,86 @@ class Cron extends CI_Controller {
 		}
 	}
 
+    public function sendStagingValidationReminders()
+    {
+        $this->db->query("SET @@session.time_zone = '+04:00'");
+
+        $query = "SELECT svr.sprint_id,
+                        svr.last_sent_on,
+                        s.name AS sprint_name,
+                        p.name AS project_name,
+                        p.id AS project_id,
+                        c.customer_id,
+                        c.company_name,
+                        COUNT(t.id) AS staging_count
+                    FROM sprint_validation_reminders svr
+                    JOIN sprints s ON s.id = svr.sprint_id
+                    JOIN projects p ON p.id = s.project_id
+                    JOIN customers c ON c.customer_id = p.customer_id
+                    JOIN tasks t ON t.sprint_id = s.id
+                    WHERE svr.ready_for_validation = 1
+                      AND s.status = '1'
+                      AND s.active = '1'
+                      AND p.active = '1'
+                      AND c.active = '1'
+                      AND t.status = '1'
+                      AND t.closed = '0'
+                      AND t.stage = 'staging'
+                    GROUP BY svr.sprint_id, svr.last_sent_on, s.name, p.name, p.id, c.customer_id, c.company_name
+                    HAVING svr.last_sent_on IS NULL
+                        OR svr.last_sent_on <= (NOW() - INTERVAL 7 DAY)";
+        $candidates = $this->db->query($query)->result();
+
+        if(empty($candidates)) return;
+
+        $this->load->model("Email_model3");
+        $this->load->model("system_model");
+
+        foreach($candidates as $item){
+            $recipients = $this->db->select("name,email")
+                                ->from("customer_access")
+                                ->where("customer_id", $item->customer_id)
+                                ->where("status", "1")
+                                ->where("email IS NOT NULL", null, false)
+                                ->where("email !=", "")
+                                ->get()->result();
+
+            if(empty($recipients)) continue;
+
+            $tasks_link = rtrim(site_url('portal/customers/tasks'), '/')
+                . '?' . http_build_query([
+                    'sprint_id' => (int) $item->sprint_id,
+                    'stages' => 'staging',
+                ]);
+            $emailData = [
+                "logo" => $this->system_model->getParam("logo"),
+                "customer_name" => $item->company_name,
+                "sprint_name" => $item->sprint_name,
+                "project_name" => $item->project_name,
+                "staging_count" => (int)$item->staging_count,
+                "tasks_link" => $tasks_link
+            ];
+
+            $content = $this->load->view("_email/header", $emailData, true);
+            $content .= $this->load->view("_email/stagingValidationReminder", $emailData, true);
+            $content .= $this->load->view("_email/footer", [], true);
+            $subject = "Reminder: Tasks awaiting validation for sprint {$item->sprint_name}";
+
+            $sent = 0;
+            foreach($recipients as $recipient){
+                if(empty($recipient->email)) continue;
+                $this->Email_model3->save($recipient->email, $subject, $content);
+                $sent++;
+            }
+
+            if($sent > 0){
+                $this->db->set("last_sent_on", "NOW()", false);
+                $this->db->where("sprint_id", (int)$item->sprint_id);
+                $this->db->update("sprint_validation_reminders");
+            }
+        }
+    }
+
     public function fetchQuotes()
     {
         $curl = curl_init();
