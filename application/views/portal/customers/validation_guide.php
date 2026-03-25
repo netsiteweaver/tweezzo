@@ -10,6 +10,24 @@
                     Validation confirms the task is ready for production.
                 </p>
 
+                <div class="border rounded p-3 mb-4" style="background:#f8fbff;">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap">
+                        <div class="mb-2 mb-md-0">
+                            <strong><i class="bi bi-stars text-warning me-1"></i> Validation Flow</strong>
+                            <div class="text-muted small">Review -> Test -> Decide</div>
+                        </div>
+                        <div class="small text-center">
+                            <span class="badge bg-light text-dark border">1. Inspect</span>
+                            <i class="bi bi-arrow-right mx-1"></i>
+                            <span class="badge bg-light text-dark border">2. Test</span>
+                            <i class="bi bi-arrow-right mx-1"></i>
+                            <span class="badge bg-success">3. Validate</span>
+                            <span class="mx-1 text-muted">or</span>
+                            <span class="badge bg-danger">Reject</span>
+                        </div>
+                    </div>
+                </div>
+
                 <ol class="mb-4">
                     <li class="mb-2">
                         Open <strong>Tasks</strong> and select the task to review.
@@ -27,6 +45,30 @@
                         If something is wrong, add a note and use <strong>Reject</strong> with a clear reason.
                     </li>
                 </ol>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 h-100 text-center">
+                            <div style="font-size:30px;">🔍</div>
+                            <strong>Scope Check</strong>
+                            <div class="text-muted small">Confirm details match your request.</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 h-100 text-center">
+                            <div style="font-size:30px;">🧪</div>
+                            <strong>Staging Test</strong>
+                            <div class="text-muted small">Try the feature and edge cases.</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 h-100 text-center">
+                            <div style="font-size:30px;">✅ / ❌</div>
+                            <strong>Final Decision</strong>
+                            <div class="text-muted small">Validate if correct, reject with notes if not.</div>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="alert alert-success mb-3">
                     <strong>After validation:</strong> an email notification is sent requesting the team to push the validated task to production.
