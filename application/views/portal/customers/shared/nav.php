@@ -26,6 +26,9 @@
                 <li class="nav-item">
                     <a class="nav-link <?php echo ($this->uri->segment(3)=='tasks')?'active':'';?>" href="portal/customers/tasks"><i class="bi bi-list-check me-2"></i>Tasks</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php echo ($this->uri->segment(3)=='validationGuide')?'active':'';?>" href="portal/customers/validationGuide"><i class="bi bi-journal-check me-2"></i>Validation guide</a>
+                </li>
                 <!-- <li class="nav-item">
                     <a class="nav-link <?php //echo ($this->uri->segment(3)=='notes')?'active':'';?>" href="portal/customers/notes"><div class="bg-icon bg-chat"></div>Notes</a>
                 </li> -->

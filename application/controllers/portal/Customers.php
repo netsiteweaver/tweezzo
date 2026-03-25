@@ -182,6 +182,13 @@ class Customers extends CI_Controller
         $this->load->view("/portal/customers/shared/layout",$this->data);
     }
 
+    public function validationGuide()
+    {
+        $this->data['page_title'] = "Task Validation Guide";
+        $this->data['content'][] = $this->load->view("/portal/customers/validation_guide", $this->data, true);
+        $this->load->view("/portal/customers/shared/layout", $this->data);
+    }
+
     public function notes()
     {
         $this->data['page_title'] = "Notes";
