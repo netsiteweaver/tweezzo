@@ -354,3 +354,17 @@ a:hover {
     font-size: 0.8em;
     font-style: italic;
 }
+
+/* Smooth zoom/slide animation for customer portal modals (open + close) */
+#addUserAccessModal.modal.fade .modal-dialog {
+    transform: translateY(-8px) scale(0.97);
+    opacity: 0;
+    transition:
+        transform 180ms ease-out,
+        opacity 180ms ease-out;
+}
+
+#addUserAccessModal.modal.show .modal-dialog {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}

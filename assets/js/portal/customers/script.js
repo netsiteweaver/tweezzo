@@ -460,6 +460,12 @@ jQuery(function(){
                         let row = "<tr data-id='"+j.id+"'>";
                         row += `<td>${j.name}</td>`;
                         row += `<td>${j.email}</td>`;
+                        // country flag (if any)
+                        if (j.country_code) {
+                            row += `<td><i class="flag flag-${j.country_code}"></i></td>`;
+                        } else {
+                            row += "<td></td>";
+                        }
                         if(j.admin==0){
                             row += "<td class='remove-user'><i class='bi bi-trash'></i></td>";
                         }else{
@@ -471,6 +477,95 @@ jQuery(function(){
                     alertify.alert("User has been added");
                     $("#addUserAccessModal input[name=name]").val("");
                     $("#addUserAccessModal input[name=email]").val("");
+                    $("#addUserAccessModal input[name=password]").val("");
+                    $("#addUserAccessModal input[name=confirm_password]").val("");
+                }
+            }
+        })
+    })
+
+    // When clicking on name or email cell, load user into the form for editing
+    $('#addUserAccessModal #existing_users').on('click', 'td:nth-child(1), td:nth-child(2)', function(){
+        let row = $(this).closest('tr');
+        let id = row.data('id');
+        let name = row.find('td').eq(0).text();
+        let email = row.find('td').eq(1).text();
+        $("#addUserAccessModal input[name=access_id]").val(id);
+        $("#addUserAccessModal input[name=name]").val(name);
+        $("#addUserAccessModal input[name=email]").val(email);
+        // Do not pre-fill password fields for security; admin can enter a new one if needed.
+        $("#addUserAccessModal input[name=password]").val("");
+        $("#addUserAccessModal input[name=confirm_password]").val("");
+        $("#addUserAccessModal .update-user-access").removeClass("d-none");
+    });
+
+
+    // Update existing user access (including optional password change)
+    $('.update-user-access').on('click', function(){
+        let accessId = $("#addUserAccessModal input[name=access_id]").val();
+        let name = $("#addUserAccessModal input[name=name]").val();
+        let email = $("#addUserAccessModal input[name=email]").val();
+        let pswd = $("#addUserAccessModal input[name=password]").val();
+        let pswd2 = $("#addUserAccessModal input[name=confirm_password]").val();
+
+        if(!accessId){
+            alertify.error("Please select a user to update from the list on the right.");
+            return;
+        }
+
+        let valid = true;
+        let errorMessage = "";
+
+        if(name.length < 4){
+            valid = false;
+            errorMessage += "Please enter a name (4 chars min)<br>";
+        }
+
+        if(!validEmail(email)){
+            valid = false;
+            errorMessage += "Please enter a valid email<br>";
+        }
+
+        // Password is optional; if provided, validate it and confirmation
+        if(pswd.length > 0 && pswd.length < 4){
+            valid = false;
+            errorMessage += "Please enter a password (4 chars min) or leave it blank to keep the current one<br>";
+        }
+        if(pswd !== pswd2){
+            valid = false;
+            errorMessage += "Confirmation password does not match<br>";
+        }
+
+        if(!valid){
+            alertify.error(errorMessage);
+            return false;
+        }
+
+        $.ajax({
+            url: base_url + "portal/customers/updateUserAccess",
+            method: "POST",
+            dataType: "json",
+            data:{
+                access_id: accessId,
+                name: name,
+                email: email,
+                // Only send password when admin entered one; backend will keep other fields unchanged
+                password: pswd
+            },
+            success:function(response)
+            {
+                if(!response.result){
+                    alertify.alert(response.reason || "Failed to update user.");
+                }else{
+                    // Reflect changes in the existing users table
+                    $("#addUserAccessModal #existing_users tbody tr").each(function(){
+                        if($(this).data('id') == accessId){
+                            $(this).find('td').eq(0).text(name);
+                            $(this).find('td').eq(1).text(email);
+                        }
+                    });
+                    alertify.success("User updated successfully.");
+                    // Clear only the password fields; keep name/email for further edits if needed.
                     $("#addUserAccessModal input[name=password]").val("");
                     $("#addUserAccessModal input[name=confirm_password]").val("");
                 }
@@ -564,7 +659,16 @@ jQuery(function(){
     })
 
     $('#addUserAccessModal').on('hidden.bs.modal', function (e) {
-        $('#existing_users tbody tr.active').removeClass("active")
+        // Clear any active/selected state in the user list
+        $('#existing_users tbody tr').removeClass("active selected");
+        // Reset the form fields
+        $("#addUserAccessModal input[name=access_id]").val("");
+        $("#addUserAccessModal input[name=name]").val("");
+        $("#addUserAccessModal input[name=email]").val("");
+        $("#addUserAccessModal input[name=password]").val("");
+        $("#addUserAccessModal input[name=confirm_password]").val("");
+        // Hide the update button until a user is selected again
+        $("#addUserAccessModal .update-user-access").addClass("d-none");
     })
 
     $("#saveNote").on("click", function() {

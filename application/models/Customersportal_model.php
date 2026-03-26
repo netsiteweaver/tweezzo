@@ -866,7 +866,7 @@ class Customersportal_model extends CI_Model
      * @param int $access_id customer_access.id
      * @param string $password optional; if empty, password is not changed
      */
-    public function updateUserAccess($access_id, $name, $email, $phone, $country_code, $admin, $password = '')
+    public function updateUserAccess($access_id, $name, $email, $phone = null, $country_code = null, $admin = null, $password = '')
     {
         $row = $this->db->select("id, customer_id")->from("customer_access")->where(array("id" => $access_id, "status" => "1"))->get()->row();
         if (empty($row)) {
@@ -883,14 +883,27 @@ class Customersportal_model extends CI_Model
 
         $this->db->set("name", $name);
         $this->db->set("email", $email);
-        $this->db->set("phone_number1", $phone);
-        $this->db->set("country_code", $country_code);
-        $this->db->set("admin", (int) $admin);
+        // Only update extra fields when explicitly provided.
+        if ($phone !== null) {
+            $this->db->set("phone_number1", $phone);
+        }
+        if ($country_code !== null) {
+            $this->db->set("country_code", $country_code);
+        }
+        if ($admin !== null) {
+            $this->db->set("admin", (int) $admin);
+        }
         if ($password !== '') {
             $this->db->set("password", md5($password), true);
         }
         $this->db->where("id", $access_id);
         $this->db->update("customer_access");
+
+        // If password was changed, email the new password to the user
+        if ($password !== '') {
+            // Reuse the same confirmation email as the forgot password flow
+            $this->sendConfirmationEmail($email, $password);
+        }
 
         return ['result' => true];
     }

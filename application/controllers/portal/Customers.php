@@ -35,7 +35,7 @@ class Customers extends CI_Controller
             ))->get()->row();
             $this->data['isAdmin'] = $adminRow ? $adminRow->admin : 0;
             $this->data['user_access'] = $this->db->query("
-                SELECT ca.id, c.company_name, ca.name userName, ca.email userEmail, COALESCE(ca.admin, null) isAdmin
+                SELECT ca.id, c.company_name, ca.name userName, ca.email userEmail, ca.country_code, COALESCE(ca.admin, null) isAdmin
                 FROM customers c
                 LEFT JOIN customer_access ca ON ca.customer_id = c.customer_id
                 WHERE c.status = 1 AND ca.status = 1 AND c.customer_id = (SELECT customer_id FROM customer_access WHERE id = {$_SESSION['customer_access_id']})
@@ -517,12 +517,32 @@ class Customers extends CI_Controller
 
     public function updateUserAccess()
     {
+        // Allow either back-office users (with user_id) or portal customer admins
+        if (isset($_SESSION['customer_access_id'])) {
+            $adminRow = $this->db->select('admin')
+                ->from('customer_access')
+                ->where([
+                    'id'     => (int) $_SESSION['customer_access_id'],
+                    'status' => 1
+                ])
+                ->get()
+                ->row();
+            if (empty($adminRow) || (int) $adminRow->admin !== 1) {
+                echo json_encode(['result' => false, 'reason' => 'You do not have permission to update user access.']);
+                exit;
+            }
+        } elseif (!isset($_SESSION['user_id'])) {
+            echo json_encode(['result' => false, 'reason' => 'Not authorized.']);
+            exit;
+        }
+
         $access_id = (int) $this->input->post("access_id");
         $name = trim($this->input->post("name"));
         $email = trim($this->input->post("email"));
-        $phone = trim($this->input->post("phone"));
-        $country_code = trim($this->input->post("country_code"));
-        $admin = $this->input->post("admin") ? 1 : 0;
+        // Optional fields: if not provided (e.g. from portal), pass null so model won't overwrite them
+        $phone = $this->input->post("phone", true);
+        $country_code = $this->input->post("country_code", true);
+        $admin = $this->input->post("admin", true);
         $password = trim($this->input->post("password")); // optional; if empty, keep current
 
         if ($access_id <= 0 || strlen($name) < 4 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {

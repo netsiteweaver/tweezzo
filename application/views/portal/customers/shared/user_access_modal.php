@@ -17,6 +17,7 @@
                           <tr>
                             <th>User</th>
                             <th>Email</th>
+                            <th>Country</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -24,6 +25,11 @@
                           <tr data-id='<?php echo $user->id;?>' class='<?php echo ($user->isAdmin) ? 'admin-user' : '';?>'>
                             <td><?php echo $user->userName;?></td>
                             <td><?php echo $user->userEmail;?></td>
+                            <td>
+                              <?php if (!empty($user->country_code)): ?>
+                                <i class="flag flag-<?php echo htmlspecialchars($user->country_code); ?>"></i>
+                              <?php endif; ?>
+                            </td>
                           </tr>
                           <?php endforeach;?>
                         </tbody>
