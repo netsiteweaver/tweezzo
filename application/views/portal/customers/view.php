@@ -60,9 +60,9 @@
 											   <?php if (isset($task->settled_on) && $task->settled_on): ?>
 											   &nbsp;|&nbsp; <strong>Date settled:</strong> <?php echo date('d M Y', strtotime($task->settled_on));?>
 											   <?php endif; ?>
+											   <?php endif; ?>
 											   <?php if (isset($task->ref) && $task->ref !== ''): ?>
 											   &nbsp;|&nbsp; <strong>Ref:</strong> <?php echo htmlspecialchars($task->ref);?>
-											   <?php endif; ?>
 											   <?php endif; ?>
 										   </div>
 										   <div class="mb-3"><strong>Description:</strong><br><?php echo $task->description;?></div>
