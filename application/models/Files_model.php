@@ -216,7 +216,7 @@ class Files_model extends CI_Model{
                     $errors[$id] = strip_tags($this->upload->display_errors());
                 }else{
                     $filesUploaded[$id] = $this->upload->data();
-                    file_put_contents('./debug/logfile.txt', "[" . date('Y-m-d H:i:s') . "] " . $filesUploaded[0]['full_path'] . "\r\n", FILE_APPEND);
+                    file_put_contents('application/logs/logfile.txt', "[" . date('Y-m-d H:i:s') . "] " . $filesUploaded[0]['full_path'] . "\r\n", FILE_APPEND);
                 }
             }
         }

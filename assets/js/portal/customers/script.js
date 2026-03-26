@@ -143,6 +143,149 @@ jQuery(function(){
         }
     });
 
+    // --- Submitted task image upload (client-side compress + preview) ---
+    var taskImagesQueue = [];
+    var taskImagesPreviewUrls = [];
+    var taskImagesCompressing = false;
+
+    function revokeTaskImagePreviews()
+    {
+        taskImagesPreviewUrls.forEach(function(u){
+            try { URL.revokeObjectURL(u); } catch(e) {}
+        });
+        taskImagesPreviewUrls = [];
+        taskImagesQueue = [];
+    }
+
+    function compressImageFile(file, maxDim, quality)
+    {
+        return new Promise(function(resolve, reject){
+            var reader = new FileReader();
+            reader.onerror = function(){ reject(new Error('Failed to read image')); };
+            reader.onload = function(e){
+                var img = new Image();
+                img.onload = function(){
+                    var w = img.width;
+                    var h = img.height;
+                    var scale = 1;
+                    if (w > maxDim || h > maxDim) {
+                        scale = Math.min(maxDim / w, maxDim / h);
+                    }
+                    var canvas = document.createElement('canvas');
+                    canvas.width = Math.max(1, Math.round(w * scale));
+                    canvas.height = Math.max(1, Math.round(h * scale));
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    canvas.toBlob(function(blob){
+                        if (!blob) {
+                            reject(new Error('Failed to compress image'));
+                            return;
+                        }
+                        resolve(blob);
+                    }, 'image/jpeg', quality);
+                };
+                img.onerror = function(){ reject(new Error('Failed to load image')); };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    $('#task_images_input').on('change', function(){
+        var input = this;
+        var files = input.files;
+
+        revokeTaskImagePreviews();
+        $('#task_images_preview').empty();
+
+        if (!files || files.length === 0) {
+            return;
+        }
+
+        taskImagesCompressing = true;
+        $('.submit-task').prop('disabled', true).addClass('disabled');
+        $('#task_images_preview').html("<div class='text-muted' id='task_images_status'>Compressing images...</div>");
+
+        // These totals are captured in the handler scope so we can use them after compression finishes.
+        var originalTotalBytes = 0;
+        var compressedTotalBytes = 0;
+
+        (async function(){
+            var maxDim = 1200;
+            var quality = 0.8;
+
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                if (!file || !file.type || !file.type.match('image.*')) {
+                    continue;
+                }
+
+                try {
+                    var compressedBlob = await compressImageFile(file, maxDim, quality);
+                    originalTotalBytes += (typeof file.size === 'number' ? file.size : 0);
+                    compressedTotalBytes += (compressedBlob && typeof compressedBlob.size === 'number') ? compressedBlob.size : 0;
+                    // normalize name to .jpg since we always encode as JPEG
+                    var baseName = file.name.replace(/\.[^/.]+$/, '');
+                    var compressedName = baseName + '.jpg';
+                    var previewUrl = URL.createObjectURL(compressedBlob);
+                    taskImagesQueue.push({ blob: compressedBlob, name: compressedName });
+                    taskImagesPreviewUrls.push(previewUrl);
+
+                    $('#task_images_preview').append(
+                        `<div class='col-4'>
+                            <img class='img-thumbnail' style='width:100%;height:auto;' src='${previewUrl}' alt='preview'>
+                        </div>`
+                    );
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        })().then(function(){
+            taskImagesCompressing = false;
+            $('.submit-task').prop('disabled', false).removeClass('disabled');
+            if (taskImagesQueue.length === 0) {
+                $('#task_images_preview').html("<div class='text-muted'>No valid images selected.</div>");
+                return;
+            }
+
+            // Show compression stats (remove the 'Compressing...' message)
+            var statusEl = document.getElementById('task_images_status');
+            if (statusEl) statusEl.remove();
+
+            // Compute totals from the queue blobs
+            var compressedBytes = compressedTotalBytes;
+
+            // We can safely estimate savings only when at least one blob exists and original bytes were tracked.
+            // If originalTotalBytes wasn't set (shouldn't happen), we just show compressed size.
+            if (typeof originalTotalBytes === 'number' && originalTotalBytes > 0 && compressedBytes > 0) {
+                var saved = originalTotalBytes - compressedBytes;
+                var pct = (saved > 0) ? (saved / originalTotalBytes) * 100 : 0;
+                var fmt = function(b){
+                    if (!b || b <= 0) return '0 B';
+                    var kb = b / 1024;
+                    var mb = kb / 1024;
+                    if (mb >= 1) return mb.toFixed(1) + ' MB';
+                    return kb.toFixed(0) + ' KB';
+                };
+                $('#task_images_preview').prepend(
+                    `<div class="text-muted mb-2">
+                        Compressed ${taskImagesQueue.length} image(s). Saved ${fmt(saved)} (${pct.toFixed(0)}%).
+                    </div>`
+                );
+            } else {
+                $('#task_images_preview').prepend(
+                    `<div class="text-muted mb-2">
+                        Compressed ${taskImagesQueue.length} image(s).
+                    </div>`
+                );
+            }
+        }).catch(function(){
+            taskImagesCompressing = false;
+            $('.submit-task').prop('disabled', false).removeClass('disabled');
+            $('#task_images_preview').html("<div class='text-muted'>Failed to process images.</div>");
+        });
+    });
+
     $('.resetFilter').on('click', function(){
         window.location.href = base_url + "portal/customers/notes";
     })
@@ -591,12 +734,38 @@ jQuery(function(){
         let scope_not_included = $('textarea[name=scope_not_included]').val();
         let scope_client_expectation = $('textarea[name=scope_client_expectation]').val();
 
+        if (taskImagesCompressing) {
+            alertify.error("Please wait while images are being compressed.");
+            $(this).removeClass("d-none");
+            return false;
+        }
+
+        var formData = new FormData();
+        formData.append('name', name);
+        formData.append('section', section);
+        formData.append('description', description);
+        formData.append('scope_when_done', scope_when_done);
+        formData.append('scope_not_included', scope_not_included);
+        formData.append('scope_client_expectation', scope_client_expectation);
+
+        // Append compressed images (if any)
+        if (taskImagesQueue && taskImagesQueue.length) {
+            for (var i = 0; i < taskImagesQueue.length; i++) {
+                var item = taskImagesQueue[i];
+                if (item && item.blob) {
+                    formData.append('task_images[]', item.blob, item.name);
+                }
+            }
+        }
+
         Overlay("on");
         $.ajax({
             url: base_url + "portal/customers/submitTask",
             method: "POST",
             dataType: "JSON",
-            data: {name:name,section:section,description:description,scope_when_done:scope_when_done,scope_not_included:scope_not_included,scope_client_expectation:scope_client_expectation},
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(response)
             {
                 if(response.result){
@@ -624,6 +793,9 @@ jQuery(function(){
         $('#addTaskModal textarea[name=scope_not_included]').val('');        
         $('#addTaskModal textarea[name=scope_client_expectation]').val('');     
         $('.submit-task').removeClass("d-none");   
+        $('#task_images_input').val('');
+        $('#task_images_preview').empty();
+        revokeTaskImagePreviews();
     })
 
 })

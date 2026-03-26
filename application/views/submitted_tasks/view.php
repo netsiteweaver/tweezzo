@@ -300,11 +300,54 @@
 					<div class="form-group">
 						<label for="approve_sprint_id">Sprint <span class="text-danger">*</span></label>
 						<select class="form-control" id="approve_sprint_id" name="sprint_id" required>
-							<option value="">Select sprint</option>
-							<?php if (!empty($sprints)): foreach ($sprints as $s): ?>
-							<option value="<?php echo $s->id; ?>"><?php echo htmlspecialchars($s->project_name . ' / ' . $s->name); ?></option>
-							<?php endforeach; endif; ?>
+							<?php if (!empty($sprints) && count($sprints) === 1): ?>
+								<?php foreach ($sprints as $s): ?>
+									<option value="<?php echo $s->id; ?>" selected><?php echo htmlspecialchars($s->project_name . ' / ' . $s->name); ?></option>
+									<?php break; ?>
+								<?php endforeach; ?>
+							<?php else: ?>
+								<option value="">Select sprint</option>
+								<?php if (!empty($sprints)): foreach ($sprints as $s): ?>
+									<option value="<?php echo $s->id; ?>"><?php echo htmlspecialchars($s->project_name . ' / ' . $s->name); ?></option>
+								<?php endforeach; endif; ?>
+							<?php endif; ?>
 						</select>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="approve_estimated_hours">Estimated Hours</label>
+								<input type="number" step="0.25" min="0" class="form-control" id="approve_estimated_hours" name="estimated_hours" value="1">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="approve_work_type">Work type</label>
+								<select class="form-control" id="approve_work_type" name="work_type">
+									<option value="development" selected>Development</option>
+									<option value="maintenance">Maintenance</option>
+									<option value="support">Support</option>
+									<option value="other">Other</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="row mt-3">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="approve_ref">Ref</label>
+								<input type="text" class="form-control" id="approve_ref" name="ref" placeholder="e.g. INV001234 or QUO001234">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="approve_billable">Billable</label>
+								<select class="form-control" id="approve_billable" name="billable">
+									<option value="1">Yes</option>
+									<option value="0" selected>No</option>
+								</select>
+							</div>
+						</div>
 					</div>
 					<div class="form-group">
 						<label>Assign users (optional)</label>

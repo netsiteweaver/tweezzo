@@ -55,8 +55,14 @@
             </ul>
             <ul class="navbar-nav mb-2 mb-lg-0 align-items-center">
                 <li class="nav-item portal-nav-separator" aria-hidden="true"></li>
-                <li class="nav-item cursor-pointer add-task portal-nav-action">
-                    <span class="portal-nav-action-label"><i id="submitTask" class="bi bi-plus-circle-fill portal-nav-icon" aria-hidden="true"></i><span class="portal-nav-action-text">Submit task</span></span>
+                <li class="nav-item dropdown portal-nav-action">
+                    <a class="nav-link dropdown-toggle portal-nav-action-label <?php echo ($this->uri->segment(3)=='submittedTasks')?'active':'';?>" href="#" id="submitTaskMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i id="submitTask" class="bi bi-plus-circle-fill portal-nav-icon" aria-hidden="true"></i><span class="portal-nav-action-text">Submit task</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="submitTaskMenu">
+                        <li><button type="button" class="dropdown-item add-task"><i class="bi bi-plus-circle me-2"></i>New request</button></li>
+                        <li><a class="dropdown-item" href="portal/customers/submittedTasks"><i class="bi bi-card-checklist me-2"></i>View submitted</a></li>
+                    </ul>
                 </li>
                 <li class="nav-item cursor-pointer add-user-access portal-nav-action">
                     <span class="portal-nav-action-label"><i id="addUser" class="bi bi-person-plus-fill portal-nav-icon" aria-hidden="true"></i><span class="portal-nav-action-text">Add user</span></span>

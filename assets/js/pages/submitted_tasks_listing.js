@@ -285,8 +285,10 @@ jQuery(function(){
         let stage = $('#stage').val();
         let display = $('#display').val();
         let search_text = $('#search_text').val();
+        let start_date = $('#start_date').val();
+        let end_date = $('#end_date').val();
 
-        let url = `/submitted_tasks/listing?customer_id=${customer_id}&developer_id=${developer_id}&stage=${stage}&search_text=${search_text}&display=${display}`;
+        let url = `/submitted_tasks/listing?customer_id=${customer_id}&developer_id=${developer_id}&stage=${stage}&search_text=${encodeURIComponent(search_text)}&display=${display}&start_date=${start_date}&end_date=${end_date}`;
         window.location.href = url;
     })
 

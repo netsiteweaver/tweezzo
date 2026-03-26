@@ -196,7 +196,10 @@
 									<?php foreach($task->stage_history as $history):?>
 									<tr>
 										<td><?php echo date('d-M-Y h:i A',strtotime($history->created_on));?></td>
-										<td><?php echo "{$history->created_by_email}<span class='text-muted'> [{$history->user_type}]</span>";?></td>
+										<td>
+											<?php echo !empty($history->name) ? htmlspecialchars($history->name) : '—'; ?>
+											<span class='text-muted'> [<?php echo !empty($history->user_type) ? htmlspecialchars($history->user_type) : 'user'; ?>]</span>
+										</td>
 										<td><?php echo "From <b>" . strtoupper(str_replace("_"," ",$history->old_stage)) . "</b> to <b>" . strtoupper(str_replace("_"," ",$history->new_stage))."</b>";?></td>
 									</tr>
 									<?php endforeach;?>

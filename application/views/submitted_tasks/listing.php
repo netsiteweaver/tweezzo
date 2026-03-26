@@ -69,7 +69,7 @@
             <?php endforeach; ?>
         </select>
     </div>
-    <div class="col-md-2">
+    <div class="col-md-1">
         <label for="">Stage</label>
         <select class="form-control monitor" id="stage">
             <option value="">All</option>
@@ -78,7 +78,14 @@
             <option value="rejected" <?php echo ($this->input->get("stage") == "rejected") ? "selected" : ""; ?>>Rejected</option>
         </select>
     </div>
-
+    <div class="col-md-2">
+        <label for="start_date">From</label>
+        <input type="date" class="form-control monitor" id="start_date" value="<?php echo htmlspecialchars(isset($start_date) ? (string)$start_date : (string)$this->input->get('start_date')); ?>">
+    </div>
+    <div class="col-md-2">
+        <label for="end_date">To</label>
+        <input type="date" class="form-control monitor" id="end_date" value="<?php echo htmlspecialchars(isset($end_date) ? (string)$end_date : (string)$this->input->get('end_date')); ?>">
+    </div>
     <div class="col-md-2">
         <label for="search">Search</label>
         <div class="input-group mb-3">

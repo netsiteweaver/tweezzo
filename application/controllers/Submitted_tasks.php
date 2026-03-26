@@ -144,11 +144,21 @@ class Submitted_tasks extends MY_Controller {
         $developer_id = $this->input->get('developer_id');
         $stage = $this->input->get('stage');
         $search_text = $this->input->get('search_text');
+        $start_date = $this->input->get('start_date');
+        $end_date = $this->input->get('end_date');
+
+        // Default range: last 30 days (including today) when no date is provided.
+        if (empty($start_date) && empty($end_date)) {
+            $end_date = date('Y-m-d');
+            $start_date = date('Y-m-d', strtotime('-29 days'));
+        }
+        $this->data['start_date'] = $start_date;
+        $this->data['end_date'] = $end_date;
 
         $page = $this->uri->segment(3);
         $per_page = (!empty($this->input->get("display"))) ? $this->input->get("display") : $this->system_model->getParam("rows_per_page");
-        $this->data['submitted_tasks'] = $this->Submitted_tasks_model->fetchAll($customer_id,$developer_id,$page,$per_page,$search_text,false,$stage);
-        $total_rows = $this->Submitted_tasks_model->totalRows($customer_id,$developer_id,$search_text,$stage);
+        $this->data['submitted_tasks'] = $this->Submitted_tasks_model->fetchAll($customer_id,$developer_id,$page,$per_page,$search_text,false,$stage,$start_date,$end_date);
+        $total_rows = $this->Submitted_tasks_model->totalRows($customer_id,$developer_id,$search_text,$stage,$start_date,$end_date);
         $this->data['total_rows'] = $total_rows;
         $this->data['pagination'] = getPagination("submitted_tasks/listing",$total_rows,$per_page);
 
@@ -341,6 +351,13 @@ class Submitted_tasks extends MY_Controller {
         $uuid = $this->input->post('uuid');
         $sprint_id = (int) $this->input->post('sprint_id');
         $user_ids = $this->input->post('userIds');
+        $estimated_hours = $this->input->post('estimated_hours');
+        $work_type = $this->input->post('work_type');
+        $billable = $this->input->post('billable');
+        $ref = trim((string)$this->input->post('ref'));
+        if ($ref === '') {
+            $ref = null;
+        }
         if (is_string($user_ids)) {
             $user_ids = json_decode($user_ids);
         }
@@ -354,7 +371,15 @@ class Submitted_tasks extends MY_Controller {
             return;
         }
 
-        $result = $this->Submitted_tasks_model->approveAndConvertToTask($uuid, $sprint_id, $user_ids);
+        $result = $this->Submitted_tasks_model->approveAndConvertToTask(
+            $uuid,
+            $sprint_id,
+            $user_ids,
+            $estimated_hours,
+            $work_type,
+            $billable,
+            $ref
+        );
         if ($result['result']) {
             flashSuccess('Request approved and converted to task.');
             redirect(base_url('tasks/view?task_uuid=' . $result['task_uuid']));

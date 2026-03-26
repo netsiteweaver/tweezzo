@@ -534,6 +534,7 @@ class Customersportal_model extends CI_Model
         $this->db->insert("submitted_tasks");
         $insert_id = $this->db->insert_id();
         if($insert_id) {
+            $this->saveSubmittedTaskImages($insert_id, $customer_id);
             $this->emailForTaskCreated($insert_id);
             return [
                 "result"    =>  true
@@ -544,6 +545,213 @@ class Customersportal_model extends CI_Model
                 "reason"   =>  "Unable to create task. Please try again."
             ];
         }
+    }
+
+    /**
+     * Upload images for a submitted task.
+     * Saves originals and resized thumbs into `uploads/tasks/` and records them in `submitted_tasks_images`.
+     */
+    private function saveSubmittedTaskImages($submitted_task_id, $customer_id)
+    {
+        if (empty($submitted_task_id) || empty($_FILES['task_images'])) {
+            return;
+        }
+
+        // If no files were selected
+        if (empty($_FILES['task_images']['name']) || !is_array($_FILES['task_images']['name'])) {
+            return;
+        }
+
+        $hasFiles = false;
+        foreach ($_FILES['task_images']['name'] as $name) {
+            if (!empty($name)) {
+                $hasFiles = true;
+                break;
+            }
+        }
+        if (!$hasFiles) {
+            return;
+        }
+
+        $this->load->model("Files_model");
+        $uploadResult = $this->Files_model->uploadImages2('task_images', 'uploads/tasks/', false);
+        $filesUploaded = isset($uploadResult['filesUploaded']) ? $uploadResult['filesUploaded'] : [];
+
+        if (empty($filesUploaded)) {
+            return;
+        }
+
+        $uploadBaseFolder = realpath('.') . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'tasks';
+
+        foreach ($filesUploaded as $uploaded) {
+            if (empty($uploaded['file_name'])) {
+                continue;
+            }
+
+            $fileName = (string) $uploaded['file_name'];
+            $rawName = isset($uploaded['raw_name']) ? (string) $uploaded['raw_name'] : pathinfo($fileName, PATHINFO_FILENAME);
+            $fileExt = isset($uploaded['file_ext']) ? (string) $uploaded['file_ext'] : (string) pathinfo($fileName, PATHINFO_EXTENSION);
+            if ($fileExt !== '' && $fileExt[0] !== '.') {
+                $fileExt = '.' . $fileExt;
+            }
+
+            $sourcePath = !empty($uploaded['full_path']) ? $uploaded['full_path'] : ($uploadBaseFolder . DIRECTORY_SEPARATOR . $fileName);
+            if (!file_exists($sourcePath)) {
+                continue;
+            }
+
+            // Create a thumb (resized marker) for the future gallery / previews.
+            $this->Files_model->resizeImage($sourcePath, 200, 200, 'resized');
+
+            $thumbName = $rawName . '_resized' . $fileExt;
+            $thumbPath = $uploadBaseFolder . DIRECTORY_SEPARATOR . $thumbName;
+
+            $width = 0;
+            $height = 0;
+            $mimeType = '';
+            $imgInfo = @getimagesize($sourcePath);
+            if (is_array($imgInfo) && count($imgInfo) >= 2) {
+                $width = (int) $imgInfo[0];
+                $height = (int) $imgInfo[1];
+            }
+            $mimeType = function_exists('mime_content_type') ? @mime_content_type($sourcePath) : '';
+            if ($mimeType === false || empty($mimeType)) {
+                $mimeType = $uploaded['file_type'] ?? '';
+            }
+
+            $fileSize = isset($uploaded['file_size']) ? (float) $uploaded['file_size'] : 0.0;
+
+            $this->db->insert("submitted_tasks_images", [
+                'uuid'                   => gen_uuid(),
+                'submitted_task_id'     => (int) $submitted_task_id,
+                'created_on'            => date("Y-m-d H:i:s"),
+                'created_by_customer'  => !empty($customer_id) ? (int) $customer_id : null,
+                'uploaded_by_user_type' => 'customer',
+                'file_name'             => $fileName,
+                'thumb_name'            => file_exists($thumbPath) ? $thumbName : $fileName,
+                'file_ext'              => $fileExt,
+                'file_size'             => $fileSize,
+                'image_width'           => $width,
+                'image_height'          => $height,
+                'image_type'            => (string) $mimeType,
+                'status'                => 1
+            ]);
+        }
+    }
+
+    /**
+     * Return submitted task requests for the logged-in customer company.
+     * Includes conversion link info when a request has been approved.
+     */
+    public function getSubmittedTasks($customer_access_id)
+    {
+        $customer_access_id = (int) $customer_access_id;
+        if ($customer_access_id <= 0) {
+            return [];
+        }
+
+        $customer_row = $this->db->select('customer_id, admin')
+            ->from('customer_access')
+            ->where('id', $customer_access_id)
+            ->where('status', 1)
+            ->get()
+            ->row();
+        if (empty($customer_row)) {
+            return [];
+        }
+
+        $customer_id = (int) $customer_row->customer_id;
+        $isAdmin = !empty($customer_row->admin) ? (int) $customer_row->admin : 0;
+        $this->db->select('st.id, st.uuid, st.name, st.section, st.description, st.scope_client_expectation, st.scope_not_included, st.scope_when_done, st.rejection_reason, st.stage, st.created_on, st.converted_task_id, ca.name as submitted_by, t.uuid as converted_task_uuid, t.task_number as converted_task_number, p.code as project_code, s.code as sprint_code');
+        $this->db->from('submitted_tasks st');
+        $this->db->join('customer_access ca', 'ca.id = st.created_by_customer_access', 'left');
+        $this->db->join('tasks t', 't.id = st.converted_task_id', 'left');
+        $this->db->join('sprints s', 's.id = t.sprint_id', 'left');
+        $this->db->join('projects p', 'p.id = s.project_id', 'left');
+        $this->db->where('st.status', 1);
+        $this->db->where('st.created_by_customer', $customer_id);
+        $this->db->order_by('st.created_on', 'desc');
+        $rows = $this->db->get()->result();
+
+        if (!function_exists('task_ref')) {
+            $CI =& get_instance();
+            $CI->load->helper('general');
+        }
+
+        // Attach uploaded images to each submitted task.
+        $imageMap = [];
+        $taskIds = array_values(array_filter(array_map(function ($r) { return isset($r->id) ? (int) $r->id : 0; }, $rows)));
+        if (!empty($taskIds)) {
+            $imageRows = $this->db->select('submitted_task_id, file_name, thumb_name')
+                ->from('submitted_tasks_images')
+                ->where('status', 1)
+                ->where_in('submitted_task_id', $taskIds)
+                ->order_by('id', 'asc')
+                ->get()
+                ->result();
+
+            foreach ($imageRows as $img) {
+                $sid = (int) $img->submitted_task_id;
+                if (!isset($imageMap[$sid])) {
+                    $imageMap[$sid] = [];
+                }
+                $imageMap[$sid][] = $img;
+            }
+        }
+
+        foreach ($rows as $row) {
+            $row->converted_task_ref = '';
+            if (!empty($row->converted_task_number)) {
+                $row->converted_task_ref = task_ref($row->project_code, $row->sprint_code, $row->converted_task_number);
+            }
+            $row->images = isset($imageMap[(int) $row->id]) ? $imageMap[(int) $row->id] : [];
+            $row->can_delete = ($isAdmin === 1) && (($row->stage !== 'validated') && empty($row->converted_task_id));
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Soft-delete a submitted task created by this customer, only if not approved yet.
+     */
+    public function deleteSubmittedTask($task_uuid, $customer_access_id)
+    {
+        $task_uuid = trim((string) $task_uuid);
+        $customer_access_id = (int) $customer_access_id;
+        if ($task_uuid === '' || $customer_access_id <= 0) {
+            return ['result' => false, 'reason' => 'Invalid request.'];
+        }
+
+        $customer_row = $this->db->select('customer_id, admin')
+            ->from('customer_access')
+            ->where('id', $customer_access_id)
+            ->where('status', 1)
+            ->get()
+            ->row();
+        if (empty($customer_row)) {
+            return ['result' => false, 'reason' => 'Invalid session.'];
+        }
+        $isAdmin = !empty($customer_row->admin) ? (int) $customer_row->admin : 0;
+        if ($isAdmin !== 1) {
+            return ['result' => false, 'reason' => 'Only admins can delete submitted tasks.'];
+        }
+
+        $row = $this->db->select('id, stage, converted_task_id')
+            ->from('submitted_tasks')
+            ->where('uuid', $task_uuid)
+            ->where('status', 1)
+            ->where('created_by_customer', (int) $customer_row->customer_id)
+            ->get()
+            ->row();
+        if (empty($row)) {
+            return ['result' => false, 'reason' => 'Task not found.'];
+        }
+        if ($row->stage === 'validated' || !empty($row->converted_task_id)) {
+            return ['result' => false, 'reason' => 'Approved task requests cannot be deleted.'];
+        }
+
+        $this->db->set('status', 0)->where('id', (int) $row->id)->update('submitted_tasks');
+        return ['result' => true];
     }
 
     private function emailForTaskCreated($task_id)

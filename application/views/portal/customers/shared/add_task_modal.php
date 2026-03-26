@@ -16,16 +16,17 @@ p.title {
     margin-top: 20px;
 }
 p.notes {
-    font-size: 0.95em;
-    font-weight: bold;
-    color: #f66;
+    font-size: 0.8em;
+    font-style:normal;
+    /* font-weight: bold; */
+    color: #888888;
     margin-bottom: 0px;
     margin-top: 0px;
 }
 </style>
 <!-- Modal -->
 <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="addTaskModalLabel">Request for additional Task</h5>
@@ -52,24 +53,30 @@ p.notes {
                         <div class="form-group">
                             <p class='title'>Task Description</p>
                             <p class="notes">Describe the task in more details here</p>
-                            <textarea type="text" rows='5' name='description' class="form-control"></textarea>
+                            <textarea type="text" rows='2' name='description' class="form-control"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <p class="title">Attachments (images)</p>
+                            <p class="notes">Optional. You can upload multiple images. They will be compressed before sending.</p>
+                            <input type="file" id="task_images_input" name="task_images[]" class="form-control" accept="image/*" multiple>
+                            <div id="task_images_preview" class="row mt-3 g-2"></div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <p class="title">What's expected from this task</p>
                             <p class="notes">Tell us what you expect from this task. This can be in terms of display, print, performance or any other</p>
-                            <textarea class="form-control" rows="5" name="scope_client_expectation" id="" placeholder="" required></textarea>
+                            <textarea class="form-control" rows="2" name="scope_client_expectation" id="" placeholder="" required></textarea>
                         </div>
                         <div class="form-group">
                             <p class="title">What's not included</p>
                             <p class="notes">To avoid confusion and delay, let us know what is not included in this task. If nothing is specified here, the scope of this task will be limited <u>strictly</u> to the task description.</p>
-                            <textarea class="form-control" rows="5" name="scope_not_included" id="" placeholder="" required></textarea>
+                            <textarea class="form-control" rows="2" name="scope_not_included" id="" placeholder="" required></textarea>
                         </div>
                         <div class="form-group">
                             <p class="title">When it's considered done</p>
                             <p class="notes">Tell us what you expect from this task for it to be completed.</p>
-                            <textarea class="form-control" rows="5" name="scope_when_done" id="" placeholder="" required></textarea>
+                            <textarea class="form-control" rows="2" name="scope_when_done" id="" placeholder="" required></textarea>
                         </div>
                     </div>
                 </div>

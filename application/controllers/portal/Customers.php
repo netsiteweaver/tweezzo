@@ -236,6 +236,21 @@ class Customers extends CI_Controller
         $this->load->view("/portal/customers/shared/layout",$this->data);
     }
 
+    public function submittedTasks()
+    {
+        $this->data['page_title'] = "Submitted Tasks";
+        $this->data['submitted_tasks'] = $this->Customersportal_model->getSubmittedTasks($_SESSION['customer_access_id']);
+        $this->data['content'][] = $this->load->view("/portal/customers/submitted_tasks", $this->data, true);
+        $this->load->view("/portal/customers/shared/layout", $this->data);
+    }
+
+    public function deleteSubmittedTask()
+    {
+        $task_uuid = $this->input->post('task_uuid');
+        $result = $this->Customersportal_model->deleteSubmittedTask($task_uuid, (int) $_SESSION['customer_access_id']);
+        $this->output->set_content_type('application/json')->set_output(json_encode($result));
+    }
+
     public function validationGuide()
     {
         $this->data['page_title'] = "Task Validation Guide";
@@ -388,7 +403,7 @@ class Customers extends CI_Controller
     public function submitTask()
     {
         $this->load->model("Customersportal_model");
-        $status = $this->Customersportal_model->submitTask($_POST);
+        $status = $this->Customersportal_model->submitTask();
         if($status['result'] == false){
             echo json_encode(array(
                 "result"    =>  false,

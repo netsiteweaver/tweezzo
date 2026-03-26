@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Submitted_tasks_model extends CI_Model{
 
-    public function fetchAll($customer_id="",$developer_id="",$page=1,$rows_per_page=10,$search_text="",$totalRows=false,$stage="")
+    public function fetchAll($customer_id="",$developer_id="",$page=1,$rows_per_page=10,$search_text="",$totalRows=false,$stage="",$start_date="",$end_date="")
     {
         if(!$totalRows){
             if( (empty($page)) || ($page <= 0) ) $page =1;
@@ -32,6 +32,12 @@ class Submitted_tasks_model extends CI_Model{
             $this->db->like("t.name",$search_text);
             $this->db->group_end();
         }
+        if(!empty($start_date)){
+            $this->db->where("DATE(t.created_on) >=", $start_date);
+        }
+        if(!empty($end_date)){
+            $this->db->where("DATE(t.created_on) <=", $end_date);
+        }
         if(!$totalRows){
             if(empty($output)) {
                 // $this->db->order_by($order_by,$order_dir);
@@ -49,9 +55,9 @@ class Submitted_tasks_model extends CI_Model{
         
     }
 
-    public function totalRows($customer_id="",$developer_id="",$search_text="",$stage="")
+    public function totalRows($customer_id="",$developer_id="",$search_text="",$stage="",$start_date="",$end_date="")
     {
-        $rows = $this->fetchAll($customer_id, $developer_id, "", "", $search_text, true, $stage);
+        $rows = $this->fetchAll($customer_id, $developer_id, "", "", $search_text, true, $stage, $start_date, $end_date);
         return $rows;
 
     }
@@ -77,7 +83,14 @@ class Submitted_tasks_model extends CI_Model{
                                         ->where('tu.task_id',$task->id)
                                         ->get()->row();
         $task->assigned_users = !empty($t->users) ? array_map('intval', array_filter(explode(',', $t->users))) : [];
-        $task->files = $this->db->select('ti.*')->from('task_images ti')->where('ti.task_id', $task->id)->get()->result();
+        // Uploaded images for submitted tasks are stored in `submitted_tasks_images`.
+        // The `submitted_tasks/view` template expects `$task->files` with `file_name` + `thumb_name`.
+        $task->files = $this->db->select('si.*')
+            ->from('submitted_tasks_images si')
+            ->where('si.submitted_task_id', $task->id)
+            ->where('si.status', 1)
+            ->get()
+            ->result();
         $task->stage_history = []; // submitted_tasks do not use stage_change_history (that table is for tasks)
         return $task;
     }
@@ -363,9 +376,10 @@ class Submitted_tasks_model extends CI_Model{
      * @param string $uuid submitted_tasks.uuid
      * @param int $sprint_id Sprint to create the task in
      * @param array $user_ids Optional user IDs to assign to the new task
+     * @param string|null $ref Optional reference number/string (e.g. invoice/quote)
      * @return array ['result' => bool, 'reason' => string, 'task_uuid' => string]
      */
-    public function approveAndConvertToTask($uuid, $sprint_id, $user_ids = [])
+    public function approveAndConvertToTask($uuid, $sprint_id, $user_ids = [], $estimated_hours = null, $work_type = null, $billable = null, $ref = null)
     {
         $st = $this->db->select('st.*, p.customer_id, p.id project_id')
             ->from('submitted_tasks st')
@@ -413,6 +427,10 @@ class Submitted_tasks_model extends CI_Model{
         $this->db->set('status', 1);
         $this->db->set('created_by', (int) $_SESSION['user_id']);
         $this->db->set('created_on', date('Y-m-d H:i:s'));
+        $this->db->set('estimated_hours', $estimated_hours !== null && $estimated_hours !== '' ? floatval($estimated_hours) : null);
+        $this->db->set('work_type', !empty($work_type) ? $work_type : 'development');
+        $this->db->set('billable', $billable !== null && $billable !== '' ? (int) $billable : null);
+        $this->db->set('ref', $ref !== null && $ref !== '' ? (string) $ref : null);
         $this->db->set('scope_client_expectation', $st->scope_client_expectation ?: '');
         $this->db->set('scope_not_included', $st->scope_not_included ?: '');
         $this->db->set('scope_when_done', $st->scope_when_done ?: '');
@@ -429,12 +447,84 @@ class Submitted_tasks_model extends CI_Model{
         $this->db->where('uuid', $uuid);
         $this->db->update('submitted_tasks');
 
+        // Copy uploaded submitted-request images to the converted task.
+        // This ensures tasks/view shows the same attachments.
+        $this->copySubmittedTaskImagesToTask((int) $st->id, (int) $new_task_id, (int) $customer_id);
+
         if (!empty($user_ids) && is_array($user_ids)) {
             $this->load->model('Tasks_model');
             $this->Tasks_model->assignUsers($user_ids, [$new_task_id], $customer_id, $sprint->project_id, (int) $sprint_id);
         }
 
         return ['result' => true, 'task_uuid' => $task_uuid];
+    }
+
+    /**
+     * Move/copy images for submitted_tasks -> task_images for the converted task.
+     * Files are already stored in `uploads/tasks/`; we only create the DB records.
+     */
+    private function copySubmittedTaskImagesToTask($submitted_task_id, $task_id, $customer_id)
+    {
+        if (empty($submitted_task_id) || empty($task_id)) {
+            return;
+        }
+        if (!$this->db->table_exists('submitted_tasks_images') || !$this->db->table_exists('task_images')) {
+            return;
+        }
+
+        $user_id = (isset($_SESSION['user_id']) && is_numeric($_SESSION['user_id'])) ? (int) $_SESSION['user_id'] : 0;
+        if ($user_id <= 0) {
+            // created_by on task_images is required; without an admin session we can't insert.
+            return;
+        }
+
+        $rows = $this->db->select('submitted_task_id, file_name, thumb_name, file_ext, file_size, image_width, image_height, image_type, created_by_customer, uploaded_by_user_type')
+            ->from('submitted_tasks_images')
+            ->where('submitted_task_id', (int) $submitted_task_id)
+            ->where('status', 1)
+            ->get()
+            ->result();
+
+        if (empty($rows)) {
+            return;
+        }
+
+        // Detect optional columns on task_images.
+        $hasCreatedByCustomer = $this->db->field_exists('created_by_customer', 'task_images');
+        $hasUploadedByUserType = $this->db->field_exists('uploaded_by_user_type', 'task_images');
+
+        foreach ($rows as $img) {
+            $fileExt = isset($img->file_ext) ? (string) $img->file_ext : '';
+            $imgType = isset($img->image_type) ? (string) $img->image_type : '';
+            if ($imgType === '') {
+                // Best-effort default; avoids NOT NULL issues.
+                $imgType = 'image/jpeg';
+            }
+
+            $data = [
+                'uuid'         => gen_uuid(),
+                'task_id'      => (int) $task_id,
+                'created_on'   => date("Y-m-d H:i:s"),
+                'created_by'   => $user_id,
+                'file_name'    => (string) $img->file_name,
+                'thumb_name'   => (string) $img->thumb_name,
+                'file_ext'     => $fileExt,
+                'file_size'    => (float) $img->file_size,
+                'image_width'  => (int) $img->image_width,
+                'image_height' => (int) $img->image_height,
+                'image_type'   => $imgType,
+                'status'       => 1
+            ];
+
+            if ($hasCreatedByCustomer) {
+                $data['created_by_customer'] = !empty($img->created_by_customer) ? (int) $img->created_by_customer : (int) $customer_id;
+            }
+            if ($hasUploadedByUserType) {
+                $data['uploaded_by_user_type'] = !empty($img->uploaded_by_user_type) ? $img->uploaded_by_user_type : 'customer';
+            }
+
+            $this->db->insert('task_images', $data);
+        }
     }
 
     public function deleteMultiple($taskIds)
