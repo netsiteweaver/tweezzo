@@ -786,9 +786,9 @@ class Customersportal_model extends CI_Model
     }
 
     /**
-     * createUSerAccess is called from customer portal
+     * createUserAccess is called from customer portal
      */
-    public function createUserAccess($name,$email,$password)
+    public function createUserAccess($name, $email, $password, $job_description = '')
     {
         $customer = $this->db->select("customer_id, email, name")->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row();
 
@@ -802,6 +802,9 @@ class Customersportal_model extends CI_Model
         }
         $this->db->set("name",$name);
         $this->db->set("email",$email);
+        if (!empty($job_description)) {
+            $this->db->set("job_description", $job_description);
+        }
         $this->db->set("password",md5($password),true);
         $this->db->set("created_by_customer",$_SESSION['customer_access_id']);
         $this->db->set("customer_id",$customer->customer_id);
@@ -862,11 +865,12 @@ class Customersportal_model extends CI_Model
     }
 
     /**
-     * Update an existing portal user (customer_access). Called from back office.
+     * Update an existing portal user (customer_access). Called from back office or portal.
      * @param int $access_id customer_access.id
      * @param string $password optional; if empty, password is not changed
+     * @param string|null $job_description optional; if null, leave unchanged
      */
-    public function updateUserAccess($access_id, $name, $email, $phone = null, $country_code = null, $admin = null, $password = '')
+    public function updateUserAccess($access_id, $name, $email, $phone = null, $country_code = null, $admin = null, $password = '', $job_description = null)
     {
         $row = $this->db->select("id, customer_id")->from("customer_access")->where(array("id" => $access_id, "status" => "1"))->get()->row();
         if (empty($row)) {
@@ -895,6 +899,9 @@ class Customersportal_model extends CI_Model
         }
         if ($password !== '') {
             $this->db->set("password", md5($password), true);
+        }
+        if ($job_description !== null) {
+            $this->db->set("job_description", $job_description);
         }
         $this->db->where("id", $access_id);
         $this->db->update("customer_access");

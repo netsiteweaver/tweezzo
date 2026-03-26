@@ -35,10 +35,19 @@ class Customers extends CI_Controller
             ))->get()->row();
             $this->data['isAdmin'] = $adminRow ? $adminRow->admin : 0;
             $this->data['user_access'] = $this->db->query("
-                SELECT ca.id, c.company_name, ca.name userName, ca.email userEmail, ca.country_code, COALESCE(ca.admin, null) isAdmin
+                SELECT 
+                    ca.id,
+                    c.company_name,
+                    ca.name userName,
+                    ca.email userEmail,
+                    ca.country_code,
+                    ca.job_description,
+                    COALESCE(ca.admin, null) isAdmin
                 FROM customers c
                 LEFT JOIN customer_access ca ON ca.customer_id = c.customer_id
-                WHERE c.status = 1 AND ca.status = 1 AND c.customer_id = (SELECT customer_id FROM customer_access WHERE id = {$_SESSION['customer_access_id']})
+                WHERE c.status = 1 
+                  AND ca.status = 1 
+                  AND c.customer_id = (SELECT customer_id FROM customer_access WHERE id = {$_SESSION['customer_access_id']})
                 ORDER BY ca.name
             ")->result();
         }
@@ -421,6 +430,7 @@ class Customers extends CI_Controller
     {
         $name = trim($this->input->post("name"));
         $email = trim($this->input->post("email"));
+        $job_description = trim($this->input->post("job_description"));
         $password = trim($this->input->post("password"));
         // $confirm_password = trim($this->input->post("confirm_password"));
         $valid = true;
@@ -428,6 +438,10 @@ class Customers extends CI_Controller
 
         if(strlen($name)<4){;
             $php_errormsg .= "Please enter a name (4 chars min)<br>";
+            $valid = false;
+        }
+        if(strlen($job_description) < 5){
+            $php_errormsg .= "Please enter a job description (5 chars min)<br>";
             $valid = false;
         }
         if(!filter_var($email,FILTER_VALIDATE_EMAIL)){
@@ -444,14 +458,36 @@ class Customers extends CI_Controller
             exit;
         }
 
-        $ct = $this->db->select("count(id) as ct")->from("customer_access")->where(array("email"=>$email,"status"=>"1"))->get()->row()->ct;
-        
-        if($ct>0){
-            echo json_encode(['result'=>false,'reason'=>"Email already used"]);
-            exit;
+        // Enforce email uniqueness only within the current customer's company,
+        // so the same email can be reused for different customers.
+        $customer = $this->db->select('customer_id')
+            ->from('customer_access')
+            ->where([
+                'id'     => (int) $_SESSION['customer_access_id'],
+                'status' => 1
+            ])
+            ->get()
+            ->row();
+
+        if ($customer) {
+            $ct = $this->db->select('count(id) as ct')
+                ->from('customer_access')
+                ->where([
+                    'email'       => $email,
+                    'status'      => '1',
+                    'customer_id' => (int) $customer->customer_id
+                ])
+                ->get()
+                ->row()
+                ->ct;
+
+            if ($ct > 0) {
+                echo json_encode(['result' => false, 'reason' => "Email already used for this company"]);
+                exit;
+            }
         }
 
-        $result = $this->Customersportal_model->createUserAccess($name, $email, $password);
+        $result = $this->Customersportal_model->createUserAccess($name, $email, $password, $job_description);
 
         echo json_encode($result);
 
@@ -539,18 +575,19 @@ class Customers extends CI_Controller
         $access_id = (int) $this->input->post("access_id");
         $name = trim($this->input->post("name"));
         $email = trim($this->input->post("email"));
+        $job_description = $this->input->post("job_description", true);
         // Optional fields: if not provided (e.g. from portal), pass null so model won't overwrite them
         $phone = $this->input->post("phone", true);
         $country_code = $this->input->post("country_code", true);
         $admin = $this->input->post("admin", true);
         $password = trim($this->input->post("password")); // optional; if empty, keep current
 
-        if ($access_id <= 0 || strlen($name) < 4 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            echo json_encode(['result' => false, 'reason' => 'Invalid access id, name (4 chars min), or email.']);
+        if ($access_id <= 0 || strlen($name) < 4 || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen(trim((string)$job_description)) < 5) {
+            echo json_encode(['result' => false, 'reason' => 'Invalid access id, name (4 chars min), email, or job description (5 chars min).']);
             exit;
         }
 
-        $result = $this->Customersportal_model->updateUserAccess($access_id, $name, $email, $phone, $country_code, $admin, $password);
+        $result = $this->Customersportal_model->updateUserAccess($access_id, $name, $email, $phone, $country_code, $admin, $password, $job_description);
         echo json_encode($result);
         exit;
     }

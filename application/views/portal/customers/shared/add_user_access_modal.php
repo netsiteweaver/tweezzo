@@ -13,7 +13,7 @@
             </div>
             <div class="modal-body">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label for="">Name</label>
                             <input type="hidden" name="access_id">
@@ -24,6 +24,10 @@
                             <input name="email" type="email" class="form-control">
                         </div>
                         <div class="form-group">
+                            <label for="">Job Description</label>
+                            <input name="job_description" type="text" class="form-control" placeholder="e.g. Project Manager, Developer">
+                        </div>
+                        <div class="form-group">
                             <label for="">Password</label>
                             <input name="password" type="password" class="form-control">
                         </div>
@@ -32,13 +36,14 @@
                             <input name="confirm_password" type="password" class="form-control">
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-8">
                       <p class='label-existing-users'><?php echo count($user_access) . " Existing User".( count($user_access)>1?'s':'' );?> <i>(max 5 users)</i></p>
                       <p class='text-muted small'>Click on a user to edit.</p>
                       <table id='existing_users' class="table">
                         <thead>
                           <tr>
                             <th>User</th>
+                            <th>Job</th>
                             <th>Email</th>
                             <th>Country</th>
                             <th></th>
@@ -46,8 +51,11 @@
                         </thead>
                         <tbody>
                           <?php foreach($user_access as $user):?>
-                          <tr data-id='<?php echo $user->id;?>' class='<?php echo ($user->isAdmin) ? 'text-bold' : '';?>'>
+                          <tr data-id='<?php echo $user->id;?>'
+                              data-job-description="<?php echo htmlspecialchars(isset($user->job_description) ? $user->job_description : '', ENT_QUOTES, 'UTF-8'); ?>"
+                              class='<?php echo ($user->isAdmin) ? 'text-bold' : '';?>'>
                             <td><?php echo $user->userName;?></td>
+                            <td><?php echo htmlspecialchars(isset($user->job_description) ? $user->job_description : '', ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?php echo $user->userEmail;?></td>
                             <td>
                               <?php if (!empty($user->country_code)): ?>

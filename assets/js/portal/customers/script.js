@@ -410,6 +410,7 @@ jQuery(function(){
     $('.create-user-access').on('click', function(){
         let name = $("#addUserAccessModal input[name=name]").val();
         let email = $("#addUserAccessModal input[name=email]").val();
+        let jobDescription = $("#addUserAccessModal input[name=job_description]").val();
         let pswd = $("#addUserAccessModal input[name=password]").val();
         let pswd2 = $("#addUserAccessModal input[name=confirm_password]").val();
         let valid = true;
@@ -419,6 +420,11 @@ jQuery(function(){
         if(name.length < 4){
             valid = false;
             errorMessage += "Please enter a name (4 chars min)<br>";
+        }
+
+        if(!jobDescription || jobDescription.trim().length < 5){
+            valid = false;
+            errorMessage += "Please enter a job description (5 chars min)<br>";
         }
 
         if(!validEmail(email)){
@@ -445,7 +451,7 @@ jQuery(function(){
             url: base_url + "portal/customers/createUserAccess",
             method: "POST",
             dataType: "json",
-            data:{name:name,email:email,password:pswd},
+            data:{name:name,email:email,job_description:jobDescription,password:pswd},
             success:function(response)
             {
                 if(!response.result){
@@ -457,8 +463,10 @@ jQuery(function(){
                         $("#addUserAccessModal .create-user-access").remove();
                     }
                     $(response.users).each(function(i,j){
-                        let row = "<tr data-id='"+j.id+"'>";
+                        let safeJob = (j.job_description || '').replace(/'/g, '&#39;');
+                        let row = "<tr data-id='"+j.id+"' data-job-description='"+safeJob+"'>";
                         row += `<td>${j.name}</td>`;
+                        row += `<td>${safeJob}</td>`;
                         row += `<td>${j.email}</td>`;
                         // country flag (if any)
                         if (j.country_code) {
@@ -477,6 +485,7 @@ jQuery(function(){
                     alertify.alert("User has been added");
                     $("#addUserAccessModal input[name=name]").val("");
                     $("#addUserAccessModal input[name=email]").val("");
+                    $("#addUserAccessModal input[name=job_description]").val("");
                     $("#addUserAccessModal input[name=password]").val("");
                     $("#addUserAccessModal input[name=confirm_password]").val("");
                 }
@@ -484,15 +493,17 @@ jQuery(function(){
         })
     })
 
-    // When clicking on name or email cell, load user into the form for editing
-    $('#addUserAccessModal #existing_users').on('click', 'td:nth-child(1), td:nth-child(2)', function(){
+    // When clicking on name or job/email cell, load user into the form for editing
+    $('#addUserAccessModal #existing_users').on('click', 'td:nth-child(1), td:nth-child(2), td:nth-child(3)', function(){
         let row = $(this).closest('tr');
         let id = row.data('id');
         let name = row.find('td').eq(0).text();
-        let email = row.find('td').eq(1).text();
+        let jobDescription = row.find('td').eq(1).text();
+        let email = row.find('td').eq(2).text();
         $("#addUserAccessModal input[name=access_id]").val(id);
         $("#addUserAccessModal input[name=name]").val(name);
         $("#addUserAccessModal input[name=email]").val(email);
+        $("#addUserAccessModal input[name=job_description]").val(jobDescription);
         // Do not pre-fill password fields for security; admin can enter a new one if needed.
         $("#addUserAccessModal input[name=password]").val("");
         $("#addUserAccessModal input[name=confirm_password]").val("");
@@ -505,6 +516,7 @@ jQuery(function(){
         let accessId = $("#addUserAccessModal input[name=access_id]").val();
         let name = $("#addUserAccessModal input[name=name]").val();
         let email = $("#addUserAccessModal input[name=email]").val();
+        let jobDescription = $("#addUserAccessModal input[name=job_description]").val();
         let pswd = $("#addUserAccessModal input[name=password]").val();
         let pswd2 = $("#addUserAccessModal input[name=confirm_password]").val();
 
@@ -519,6 +531,11 @@ jQuery(function(){
         if(name.length < 4){
             valid = false;
             errorMessage += "Please enter a name (4 chars min)<br>";
+        }
+
+        if(!jobDescription || jobDescription.trim().length < 5){
+            valid = false;
+            errorMessage += "Please enter a job description (5 chars min)<br>";
         }
 
         if(!validEmail(email)){
@@ -549,6 +566,7 @@ jQuery(function(){
                 access_id: accessId,
                 name: name,
                 email: email,
+                job_description: jobDescription,
                 // Only send password when admin entered one; backend will keep other fields unchanged
                 password: pswd
             },
@@ -561,13 +579,20 @@ jQuery(function(){
                     $("#addUserAccessModal #existing_users tbody tr").each(function(){
                         if($(this).data('id') == accessId){
                             $(this).find('td').eq(0).text(name);
-                            $(this).find('td').eq(1).text(email);
+                            $(this).find('td').eq(1).text(jobDescription);
+                            $(this).find('td').eq(2).text(email);
+                            $(this).attr('data-job-description', jobDescription);
                         }
                     });
                     alertify.success("User updated successfully.");
-                    // Clear only the password fields; keep name/email for further edits if needed.
+                    // Clear the form so it's ready for a fresh entry
+                    $("#addUserAccessModal input[name=access_id]").val("");
+                    $("#addUserAccessModal input[name=name]").val("");
+                    $("#addUserAccessModal input[name=email]").val("");
+                    $("#addUserAccessModal input[name=job_description]").val("");
                     $("#addUserAccessModal input[name=password]").val("");
                     $("#addUserAccessModal input[name=confirm_password]").val("");
+                    $("#addUserAccessModal .update-user-access").addClass("d-none");
                 }
             }
         })
@@ -665,6 +690,7 @@ jQuery(function(){
         $("#addUserAccessModal input[name=access_id]").val("");
         $("#addUserAccessModal input[name=name]").val("");
         $("#addUserAccessModal input[name=email]").val("");
+        $("#addUserAccessModal input[name=job_description]").val("");
         $("#addUserAccessModal input[name=password]").val("");
         $("#addUserAccessModal input[name=confirm_password]").val("");
         // Hide the update button until a user is selected again
