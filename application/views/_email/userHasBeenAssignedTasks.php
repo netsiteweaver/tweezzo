@@ -1,8 +1,18 @@
 <div style='width:100%; text-align: center;'>
     <h3>TASKS ASSIGNED</h3>
-    <?php echo (!empty($sprint)) ? "<h4>Sprint: $sprint</h4>" : "";?>
-    <?php echo (!empty($project)) ? "<h4>Project: $project</h4>" : "";?>
-    <?php echo (!empty($customer)) ? "<h4>Customer: $customer</h4>" : "";?>
+    <?php
+        $headerParts = [];
+        if (!empty($sprint)) {
+            $headerParts[] = "<b>Sprint:</b> $sprint";
+        }
+        if (!empty($project)) {
+            $headerParts[] = "<b>Project:</b> $project";
+        }
+        if (!empty($customer)) {
+            $headerParts[] = "<b>Customer:</b> $customer";
+        }
+        echo (!empty($headerParts)) ? "<p>" . implode(" | ", $headerParts) . "</p>" : "";
+    ?>
 </div>
 <div style="margin:0px auto;max-width:800px;">
     <p>Dear <?php echo $user->name;?></p>

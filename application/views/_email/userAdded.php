@@ -20,10 +20,10 @@
                 <th class='text-left'>CUSTOMER</th>
                 <td><?php echo nl2br($customer->company_name);?></td>
             </tr>
-            <tr>
+            <!-- <tr>
                 <th class="text-left">CREATED BY</th>
-                <td><?php echo "{$author->name} &lt;{$author->email}&gt;";?></td>
-            </tr>
+                <td><?php //echo "{$author->name} &lt;{$author->email}&gt;";?></td>
+            </tr> -->
         </tbody>
     </table>
 </div>
