@@ -65,7 +65,7 @@
 					<div class="progress flex-grow-1 position-relative" style="height: 22px;">
 					  <div class="progress-bar <?php echo $progress_class;?>" role="progressbar" style="width: <?php echo $progress;?>%; <?php echo $progress_style;?>" aria-valuenow="<?php echo $progress;?>" aria-valuemin="0" aria-valuemax="100">
 					  </div>
-					  <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center text-white" style="left:0; top:0; font-size:12px; font-weight:600; text-shadow:0 1px 1px rgba(0,0,0,.35);">
+					  <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center text-dark" style="left:0; top:0; font-size:12px; font-weight:700;">
 						<?php echo $stage_label;?> - <?php echo $progress;?>%
 					  </div>
 					</div>
