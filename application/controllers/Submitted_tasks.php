@@ -110,8 +110,7 @@ class Submitted_tasks extends MY_Controller {
         $this->mybreadcrumb->add('Edit', base_url('submitted_tasks/edit'));
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
 
-        $this->load->model('Customers_model');
-        $this->data['customers'] = $this->Customers_model->lookup();
+        $this->data['customers'] = $this->Submitted_tasks_model->getCustomersWithSubmittedTasks();
 
         $this->load->model('Projects_model');
         $this->data['projects'] = $this->Projects_model->lookup();
@@ -178,8 +177,7 @@ class Submitted_tasks extends MY_Controller {
         $this->load->model('Developers_model');
         $this->data['developers'] = $this->Developers_model->lookup();
 
-        $this->load->model('Customers_model');
-        $this->data['customers'] = $this->Customers_model->lookup();
+        $this->data['customers'] = $this->Submitted_tasks_model->getCustomersWithSubmittedTasks($start_date, $end_date);
 
         $this->data["content"]=$this->load->view("/submitted_tasks/listing",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   

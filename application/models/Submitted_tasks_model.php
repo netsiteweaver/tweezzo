@@ -4,6 +4,34 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Submitted_tasks_model extends CI_Model{
 
+    /**
+     * Return only customers that have at least one active submitted task
+     * within the provided date range (if set).
+     */
+    public function getCustomersWithSubmittedTasks($start_date = "", $end_date = "")
+    {
+        $this->db->select('COALESCE(c2.customer_id, c_sprint.customer_id) as customer_id, COALESCE(c2.company_name, c_sprint.company_name) as company_name');
+        $this->db->from('submitted_tasks t');
+        $this->db->join('customers c2','c2.customer_id=t.created_by_customer','left');
+        $this->db->join('sprints s','s.id=t.sprint_id','left');
+        $this->db->join('projects p','p.id=s.project_id','left');
+        $this->db->join('customers c_sprint','c_sprint.customer_id=p.customer_id','left');
+        $this->db->where('t.status',1);
+        if(!empty($start_date)){
+            $this->db->where("DATE(t.created_on) >=", $start_date);
+        }
+        if(!empty($end_date)){
+            $this->db->where("DATE(t.created_on) <=", $end_date);
+        }
+        $this->db->group_start();
+        $this->db->where('c2.customer_id IS NOT NULL', null, false);
+        $this->db->or_where('c_sprint.customer_id IS NOT NULL', null, false);
+        $this->db->group_end();
+        $this->db->group_by('COALESCE(c2.customer_id, c_sprint.customer_id)', false);
+        $this->db->order_by('COALESCE(c2.company_name, c_sprint.company_name)', 'asc', false);
+        return $this->db->get()->result();
+    }
+
     public function fetchAll($customer_id="",$developer_id="",$page=1,$rows_per_page=10,$search_text="",$totalRows=false,$stage="",$start_date="",$end_date="")
     {
         if(!$totalRows){
