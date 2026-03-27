@@ -15,23 +15,60 @@
 <div class="row justify-content-center mb-5">
 	<div class="col-lg-8 col-md-10">
 		<div class="card card-secondary shadow-lg animate__animated animate__fadeIn">
-			<div class="card-header bg-primary text-white d-flex align-items-center justify-content-between">
+			<div class="card-header bg-primary text-white">
 				<div>
 					<i class="bi bi-clipboard-check"></i>
 					<span class="fw-bold">Task #<?php echo $task->task_number;?>: <?php echo htmlspecialchars($task->name);?></span>
 				</div>
-				<div class="stage-button stage-button-<?php echo $task->stage;?>" id="task-stage-badge" style="display:inline-block;"><?php echo strtoupper(str_replace("_"," ",$task->stage));?></div>
 			</div>
 			<div class="card-body">
 				<!-- Progress Bar for Stage -->
-				<?php 
-				$stages_order = ['new','in_progress','testing','staging','validated','completed','on_hold','stopped'];
-				$progress = (array_search($task->stage, $stages_order) !== false) ? round((array_search($task->stage, $stages_order)+1)/count($stages_order)*100) : 0;
+				<?php
+				// Use explicit stage progress so "new" starts at 0% and only completed is green.
+				$stage_progress = [
+					'new' => 0,
+					'in_progress' => 20,
+					'testing' => 40,
+					'staging' => 60,
+					'validated' => 80,
+					'completed' => 100,
+					'on_hold' => 20,
+					'stopped' => 0,
+				];
+				$stage_bar_class = [
+					'new' => '',
+					'in_progress' => '',
+					'testing' => '',
+					'staging' => '',
+					'validated' => '',
+					'completed' => '',
+					'on_hold' => '',
+					'stopped' => '',
+				];
+				$stage_bar_style = [
+					'new' => 'background-color:#1c8be6;',
+					'in_progress' => 'background-color:#44ab8e;',
+					'testing' => 'background-color:#98c363;',
+					'staging' => 'background-color:#f36930;',
+					'validated' => 'background-color:#c44866;',
+					'completed' => 'background-color:#4e67c7;',
+					'on_hold' => 'background-color:#ff0000;',
+					'stopped' => 'background-color:#343a40;',
+				];
+				$progress = isset($stage_progress[$task->stage]) ? $stage_progress[$task->stage] : 0;
+				$stage_label = strtoupper(str_replace("_"," ",$task->stage));
+				$progress_class = isset($stage_bar_class[$task->stage]) ? $stage_bar_class[$task->stage] : 'bg-secondary';
+				$progress_style = isset($stage_bar_style[$task->stage]) ? $stage_bar_style[$task->stage] : '';
 				?>
-				<div class="progress mb-3" style="height: 18px;">
-				  <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $progress;?>%;" aria-valuenow="<?php echo $progress;?>" aria-valuemin="0" aria-valuemax="100">
-					<?php echo $progress;?>%
-				  </div>
+				<div class="d-flex align-items-center mb-3">
+					<div class="me-2"><strong>Progress:</strong></div>
+					<div class="progress flex-grow-1 position-relative" style="height: 22px;">
+					  <div class="progress-bar <?php echo $progress_class;?>" role="progressbar" style="width: <?php echo $progress;?>%; <?php echo $progress_style;?>" aria-valuenow="<?php echo $progress;?>" aria-valuemin="0" aria-valuemax="100">
+					  </div>
+					  <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center text-white" style="left:0; top:0; font-size:12px; font-weight:600; text-shadow:0 1px 1px rgba(0,0,0,.35);">
+						<?php echo $stage_label;?> - <?php echo $progress;?>%
+					  </div>
+					</div>
 				</div>
 				<!-- Tabs -->
 								<ul class="nav nav-tabs mb-3" id="taskTab" role="tablist">
