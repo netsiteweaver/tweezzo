@@ -12,21 +12,49 @@
     .dash-bg-blue { background: linear-gradient(135deg, #1c8be6, #0d6efd); }
     .dash-bg-green { background: linear-gradient(135deg, #44ab8e, #2f9d7d); }
     .dash-bg-orange { background: linear-gradient(135deg, #f36930, #e5571c); }
+    .dash-bg-amber { background: linear-gradient(135deg, #ff9f1a, #f77f00); }
     .dash-bg-purple { background: linear-gradient(135deg, #6f42c1, #5a32a3); }
     .dash-bg-indigo { background: linear-gradient(135deg, #4e67c7, #3e56b2); }
     .dash-bg-red { background: linear-gradient(135deg, #ff4d4f, #dc3545); }
     .dash-bg-teal { background: linear-gradient(135deg, #20c997, #17a589); }
+    .dash-stage-box {
+        color: #fff;
+        border-radius: 8px;
+        padding: 6px 8px;
+        min-height: 56px;
+        box-shadow: 0 3px 8px rgba(0,0,0,.10);
+    }
+    .dash-stage-box .label {
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        line-height: 1.1;
+        opacity: .95;
+    }
+    .dash-stage-box .count {
+        font-size: 1.15rem;
+        line-height: 1;
+        font-weight: 700;
+        margin-top: 2px;
+    }
+    .stage-new { background-color: #1c8be6; }
+    .stage-in-progress { background-color: #44ab8e; }
+    .stage-testing { background-color: #98c363; }
+    .stage-staging { background-color: #f36930; }
+    .stage-validated { background-color: #c44866; }
+    .stage-completed { background-color: #4e67c7; }
+    .stage-on-hold { background-color: #ff0000; }
 </style>
 
 <div class="row justify-content-center mb-4 mt-2">
-    <div class="col-lg-10">
+    <div class="col-lg-12">
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white">
                 <i class="bi bi-speedometer2 me-2"></i>Customer Portal Overview
             </div>
             <div class="card-body">
-                <div class="row g-3 mb-4">
-                    <div class="col-md-3">
+                <div class="row g-3 mb-4 justify-content-md-between">
+                    <div class="col-12 col-md-2">
                         <div class="dash-stat-card dash-bg-blue p-3 h-100">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <div class="small text-uppercase">Total Tasks</div>
@@ -35,7 +63,7 @@
                             <div class="h3 mb-0"><?php echo (int) ($dashboard_stats->total_tasks ?? 0); ?></div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-12 col-md-2">
                         <div class="dash-stat-card dash-bg-green p-3 h-100">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <div class="small text-uppercase">Completed Tasks</div>
@@ -44,7 +72,16 @@
                             <div class="h3 mb-0"><?php echo (int) ($dashboard_stats->completed_tasks ?? 0); ?></div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-12 col-md-2">
+                        <div class="dash-stat-card dash-bg-amber p-3 h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div class="small text-uppercase">In Staging</div>
+                                <i class="bi bi-hourglass-top dash-stat-icon"></i>
+                            </div>
+                            <div class="h3 mb-0"><?php echo (int) ($dashboard_stats->staging_tasks ?? 0); ?></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-2">
                         <div class="dash-stat-card dash-bg-orange p-3 h-100">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <div class="small text-uppercase">Open Tasks</div>
@@ -53,7 +90,7 @@
                             <div class="h3 mb-0"><?php echo (int) ($dashboard_stats->open_tasks ?? 0); ?></div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-12 col-md-2">
                         <div class="dash-stat-card dash-bg-purple p-3 h-100">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <div class="small text-uppercase">Task Progress</div>
@@ -62,6 +99,68 @@
                             <div class="h3 mb-0"><?php echo (int) ($dashboard_stats->overall_progress_pct ?? 0); ?>%</div>
                         </div>
                     </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="mb-0">Tasks by Stage</h6>
+                </div>
+                <div class="row row-cols-2 row-cols-md-4 row-cols-lg-7 g-1 mb-3">
+                    <?php if ((int) ($dashboard_stats->new_tasks ?? 0) > 0): ?>
+                    <div class="col">
+                        <div class="dash-stage-box stage-new">
+                            <div class="label"><i class="bi bi-circle-fill me-1"></i>New</div>
+                            <div class="count"><?php echo (int) ($dashboard_stats->new_tasks ?? 0); ?></div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                    <?php if ((int) ($dashboard_stats->in_progress_tasks ?? 0) > 0): ?>
+                    <div class="col">
+                        <div class="dash-stage-box stage-in-progress">
+                            <div class="label"><i class="bi bi-play-circle me-1"></i>In Progress</div>
+                            <div class="count"><?php echo (int) ($dashboard_stats->in_progress_tasks ?? 0); ?></div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                    <?php if ((int) ($dashboard_stats->testing_tasks ?? 0) > 0): ?>
+                    <div class="col">
+                        <div class="dash-stage-box stage-testing">
+                            <div class="label"><i class="bi bi-beaker me-1"></i>Testing</div>
+                            <div class="count"><?php echo (int) ($dashboard_stats->testing_tasks ?? 0); ?></div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                    <?php if ((int) ($dashboard_stats->staging_tasks ?? 0) > 0): ?>
+                    <div class="col">
+                        <div class="dash-stage-box stage-staging">
+                            <div class="label"><i class="bi bi-hourglass-top me-1"></i>Staging</div>
+                            <div class="count"><?php echo (int) ($dashboard_stats->staging_tasks ?? 0); ?></div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                    <?php if ((int) ($dashboard_stats->validated_tasks ?? 0) > 0): ?>
+                    <div class="col">
+                        <div class="dash-stage-box stage-validated">
+                            <div class="label"><i class="bi bi-patch-check me-1"></i>Validated</div>
+                            <div class="count"><?php echo (int) ($dashboard_stats->validated_tasks ?? 0); ?></div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                    <?php if ((int) ($dashboard_stats->completed_tasks ?? 0) > 0): ?>
+                    <div class="col">
+                        <div class="dash-stage-box stage-completed">
+                            <div class="label"><i class="bi bi-check2-circle me-1"></i>Completed</div>
+                            <div class="count"><?php echo (int) ($dashboard_stats->completed_tasks ?? 0); ?></div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                    <?php if ((int) ($dashboard_stats->on_hold_tasks ?? 0) > 0): ?>
+                    <div class="col">
+                        <div class="dash-stage-box stage-on-hold">
+                            <div class="label"><i class="bi bi-pause-circle me-1"></i>On Hold</div>
+                            <div class="count"><?php echo (int) ($dashboard_stats->on_hold_tasks ?? 0); ?></div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                 </div>
 
                 <div class="row g-3 mb-4">

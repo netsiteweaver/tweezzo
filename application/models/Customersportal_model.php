@@ -207,6 +207,13 @@ class Customersportal_model extends CI_Model
             return (object) [
                 'total_tasks' => 0,
                 'completed_tasks' => 0,
+                'staging_tasks' => 0,
+                'new_tasks' => 0,
+                'in_progress_tasks' => 0,
+                'testing_tasks' => 0,
+                'validated_tasks' => 0,
+                'on_hold_tasks' => 0,
+                'stopped_tasks' => 0,
                 'open_tasks' => 0,
                 'overall_progress_pct' => 0,
                 'total_sprints' => 0,
@@ -224,6 +231,13 @@ class Customersportal_model extends CI_Model
             return (object) [
                 'total_tasks' => 0,
                 'completed_tasks' => 0,
+                'staging_tasks' => 0,
+                'new_tasks' => 0,
+                'in_progress_tasks' => 0,
+                'testing_tasks' => 0,
+                'validated_tasks' => 0,
+                'on_hold_tasks' => 0,
+                'stopped_tasks' => 0,
                 'open_tasks' => 0,
                 'overall_progress_pct' => 0,
                 'total_sprints' => 0,
@@ -236,7 +250,14 @@ class Customersportal_model extends CI_Model
         $stats = $this->db->query("
             SELECT
                 COUNT(DISTINCT t.id) AS total_tasks,
+                SUM(CASE WHEN t.stage = 'new' THEN 1 ELSE 0 END) AS new_tasks,
+                SUM(CASE WHEN t.stage = 'in_progress' THEN 1 ELSE 0 END) AS in_progress_tasks,
+                SUM(CASE WHEN t.stage = 'testing' THEN 1 ELSE 0 END) AS testing_tasks,
                 SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) AS completed_tasks,
+                SUM(CASE WHEN t.stage = 'staging' THEN 1 ELSE 0 END) AS staging_tasks,
+                SUM(CASE WHEN t.stage = 'validated' THEN 1 ELSE 0 END) AS validated_tasks,
+                SUM(CASE WHEN t.stage = 'on_hold' THEN 1 ELSE 0 END) AS on_hold_tasks,
+                SUM(CASE WHEN t.stage = 'stopped' THEN 1 ELSE 0 END) AS stopped_tasks,
                 (COUNT(DISTINCT t.id) - SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END)) AS open_tasks,
                 ROUND(
                     AVG(
@@ -299,6 +320,13 @@ class Customersportal_model extends CI_Model
         return $stats ?: (object) [
             'total_tasks' => 0,
             'completed_tasks' => 0,
+            'staging_tasks' => 0,
+            'new_tasks' => 0,
+            'in_progress_tasks' => 0,
+            'testing_tasks' => 0,
+            'validated_tasks' => 0,
+            'on_hold_tasks' => 0,
+            'stopped_tasks' => 0,
             'open_tasks' => 0,
             'overall_progress_pct' => 0,
             'total_sprints' => 0,
