@@ -58,7 +58,7 @@ jQuery(function(){
                     }
                     var nextUrl = (response.redirect && response.redirect.length)
                         ? (response.redirect.indexOf('http') === 0 ? response.redirect : (base_url + response.redirect))
-                        : (base_url + "portal/customers/tasks");
+                        : (base_url + "portal/customers/dashboard");
                     window.location.href = nextUrl;
                 }else{
                     console.log(response.customers);

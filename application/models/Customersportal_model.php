@@ -198,6 +198,143 @@ class Customersportal_model extends CI_Model
     }
 
     /**
+     * Aggregate stats for the customer portal landing dashboard.
+     */
+    public function getDashboardStats($customer_access_id)
+    {
+        $customer_access_id = (int) $customer_access_id;
+        if ($customer_access_id <= 0) {
+            return (object) [
+                'total_tasks' => 0,
+                'completed_tasks' => 0,
+                'open_tasks' => 0,
+                'overall_progress_pct' => 0,
+                'total_sprints' => 0,
+                'completed_sprints' => 0,
+                'sprint_progress_pct' => 0
+            ];
+        }
+
+        $customer_id = $this->db->select('customer_id')
+            ->from('customer_access')
+            ->where('id', $customer_access_id)
+            ->get()
+            ->row();
+        if (empty($customer_id)) {
+            return (object) [
+                'total_tasks' => 0,
+                'completed_tasks' => 0,
+                'open_tasks' => 0,
+                'overall_progress_pct' => 0,
+                'total_sprints' => 0,
+                'completed_sprints' => 0,
+                'sprint_progress_pct' => 0
+            ];
+        }
+        $customer_id = (int) $customer_id->customer_id;
+
+        $stats = $this->db->query("
+            SELECT
+                COUNT(DISTINCT t.id) AS total_tasks,
+                SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) AS completed_tasks,
+                (COUNT(DISTINCT t.id) - SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END)) AS open_tasks,
+                ROUND(
+                    CASE WHEN COUNT(DISTINCT t.id) > 0
+                    THEN (SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) / COUNT(DISTINCT t.id)) * 100
+                    ELSE 0 END
+                , 0) AS overall_progress_pct,
+                COUNT(DISTINCT s.id) AS total_sprints,
+                COUNT(DISTINCT CASE WHEN sprint_stats.progress_pct = 100 THEN s.id END) AS completed_sprints,
+                ROUND(
+                    CASE WHEN COUNT(DISTINCT s.id) > 0
+                    THEN AVG(COALESCE(sprint_stats.progress_pct, 0))
+                    ELSE 0 END
+                , 0) AS sprint_progress_pct
+            FROM tasks t
+            JOIN sprints s ON s.id = t.sprint_id
+            JOIN projects p ON p.id = s.project_id
+            JOIN customers c ON c.customer_id = p.customer_id
+            LEFT JOIN (
+                SELECT
+                    t2.sprint_id,
+                    ROUND(
+                        CASE WHEN COUNT(t2.id) > 0
+                        THEN (SUM(CASE WHEN t2.stage = 'completed' THEN 1 ELSE 0 END) / COUNT(t2.id)) * 100
+                        ELSE 0 END
+                    , 0) AS progress_pct
+                FROM tasks t2
+                WHERE t2.status = 1 AND t2.closed = 0
+                GROUP BY t2.sprint_id
+            ) sprint_stats ON sprint_stats.sprint_id = s.id
+            WHERE t.status = 1
+              AND t.closed = 0
+              AND s.status = 1
+              AND s.active = 1
+              AND p.active = 1
+              AND c.status = 1
+              AND c.active = 1
+              AND c.customer_id = {$customer_id}
+        ")->row();
+
+        return $stats ?: (object) [
+            'total_tasks' => 0,
+            'completed_tasks' => 0,
+            'open_tasks' => 0,
+            'overall_progress_pct' => 0,
+            'total_sprints' => 0,
+            'completed_sprints' => 0,
+            'sprint_progress_pct' => 0
+        ];
+    }
+
+    /**
+     * Per-sprint progress list for customer dashboard.
+     */
+    public function getDashboardSprintProgress($customer_access_id)
+    {
+        $customer_access_id = (int) $customer_access_id;
+        if ($customer_access_id <= 0) {
+            return [];
+        }
+        $customer_id = $this->db->select('customer_id')
+            ->from('customer_access')
+            ->where('id', $customer_access_id)
+            ->get()
+            ->row();
+        if (empty($customer_id)) {
+            return [];
+        }
+        $customer_id = (int) $customer_id->customer_id;
+
+        return $this->db->query("
+            SELECT
+                s.id,
+                s.name,
+                p.name AS project_name,
+                COUNT(t.id) AS tasks_count,
+                SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) AS completed_tasks,
+                ROUND(
+                    CASE WHEN COUNT(t.id) > 0
+                    THEN (SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) / COUNT(t.id)) * 100
+                    ELSE 0 END
+                , 0) AS progress_pct
+            FROM sprints s
+            JOIN projects p ON p.id = s.project_id
+            JOIN customers c ON c.customer_id = p.customer_id
+            LEFT JOIN tasks t ON t.sprint_id = s.id AND t.status = 1 AND t.closed = 0
+            WHERE s.status = 1
+              AND s.active = 1
+              AND p.active = 1
+              AND c.status = 1
+              AND c.active = 1
+              AND c.customer_id = {$customer_id}
+              AND s.name <> 'Roadmap'
+            GROUP BY s.id, s.name, p.name
+            ORDER BY progress_pct ASC, s.name ASC
+        ")->result();
+    }
+
+    /**
      * Search tasks for customer (for portal global search).
      * @param int $customer_id
      * @param string $q search term (task ref, name, section, etc.)

@@ -130,11 +130,20 @@ class Customers extends CI_Controller
     public function signin()
     {
         if(isset($_SESSION['customer_access_id'])){
-            redirect('portal/customers/tasks');
+            redirect('portal/customers/dashboard');
         }
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
         $this->data['page_title'] = "Signin";
         $this->load->view("/portal/customers/signin_18",$this->data);
+    }
+
+    public function dashboard()
+    {
+        $this->data['page_title'] = "Dashboard";
+        $this->data['dashboard_stats'] = $this->Customersportal_model->getDashboardStats($_SESSION['customer_access_id']);
+        $this->data['dashboard_sprints'] = $this->Customersportal_model->getDashboardSprintProgress($_SESSION['customer_access_id']);
+        $this->data['content'][] = $this->load->view("/portal/customers/dashboard", $this->data, true);
+        $this->load->view("/portal/customers/shared/layout", $this->data);
     }
 
     public function authenticate()
