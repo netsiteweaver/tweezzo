@@ -675,7 +675,19 @@ class Tasks_model extends CI_Model{
                         COUNT(1) AS total_tasks,
                         COUNT(CASE WHEN t.stage = 'completed' THEN 1 END) AS completed_tasks,
                         ROUND(
-                            COUNT(CASE WHEN t.stage = 'completed' THEN 1 END) / NULLIF(COUNT(1), 0) * 100,
+                            AVG(
+                                CASE t.stage
+                                    WHEN 'new' THEN 0
+                                    WHEN 'in_progress' THEN 20
+                                    WHEN 'testing' THEN 40
+                                    WHEN 'staging' THEN 60
+                                    WHEN 'validated' THEN 80
+                                    WHEN 'completed' THEN 100
+                                    WHEN 'on_hold' THEN 20
+                                    WHEN 'stopped' THEN 0
+                                    ELSE 0
+                                END
+                            ),
                             2
                         ) AS overall_progress_pct
                     FROM 

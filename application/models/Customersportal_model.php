@@ -239,9 +239,19 @@ class Customersportal_model extends CI_Model
                 SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) AS completed_tasks,
                 (COUNT(DISTINCT t.id) - SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END)) AS open_tasks,
                 ROUND(
-                    CASE WHEN COUNT(DISTINCT t.id) > 0
-                    THEN (SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) / COUNT(DISTINCT t.id)) * 100
-                    ELSE 0 END
+                    AVG(
+                        CASE t.stage
+                            WHEN 'new' THEN 0
+                            WHEN 'in_progress' THEN 20
+                            WHEN 'testing' THEN 40
+                            WHEN 'staging' THEN 60
+                            WHEN 'validated' THEN 80
+                            WHEN 'completed' THEN 100
+                            WHEN 'on_hold' THEN 20
+                            WHEN 'stopped' THEN 0
+                            ELSE 0
+                        END
+                    )
                 , 0) AS overall_progress_pct,
                 COUNT(DISTINCT s.id) AS total_sprints,
                 COUNT(DISTINCT CASE WHEN sprint_stats.progress_pct = 100 THEN s.id END) AS completed_sprints,
@@ -258,9 +268,19 @@ class Customersportal_model extends CI_Model
                 SELECT
                     t2.sprint_id,
                     ROUND(
-                        CASE WHEN COUNT(t2.id) > 0
-                        THEN (SUM(CASE WHEN t2.stage = 'completed' THEN 1 ELSE 0 END) / COUNT(t2.id)) * 100
-                        ELSE 0 END
+                        AVG(
+                            CASE t2.stage
+                                WHEN 'new' THEN 0
+                                WHEN 'in_progress' THEN 20
+                                WHEN 'testing' THEN 40
+                                WHEN 'staging' THEN 60
+                                WHEN 'validated' THEN 80
+                                WHEN 'completed' THEN 100
+                                WHEN 'on_hold' THEN 20
+                                WHEN 'stopped' THEN 0
+                                ELSE 0
+                            END
+                        )
                     , 0) AS progress_pct
                 FROM tasks t2
                 WHERE t2.status = 1 AND t2.closed = 0
@@ -314,9 +334,19 @@ class Customersportal_model extends CI_Model
                 COUNT(t.id) AS tasks_count,
                 SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) AS completed_tasks,
                 ROUND(
-                    CASE WHEN COUNT(t.id) > 0
-                    THEN (SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) / COUNT(t.id)) * 100
-                    ELSE 0 END
+                    AVG(
+                        CASE t.stage
+                            WHEN 'new' THEN 0
+                            WHEN 'in_progress' THEN 20
+                            WHEN 'testing' THEN 40
+                            WHEN 'staging' THEN 60
+                            WHEN 'validated' THEN 80
+                            WHEN 'completed' THEN 100
+                            WHEN 'on_hold' THEN 20
+                            WHEN 'stopped' THEN 0
+                            ELSE 0
+                        END
+                    )
                 , 0) AS progress_pct
             FROM sprints s
             JOIN projects p ON p.id = s.project_id
