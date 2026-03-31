@@ -582,8 +582,11 @@ class Customers extends CI_Controller
         $admin = $this->input->post("admin", true);
         $password = trim($this->input->post("password")); // optional; if empty, keep current
 
-        if ($access_id <= 0 || strlen($name) < 4 || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen(trim((string)$job_description)) < 5) {
-            echo json_encode(['result' => false, 'reason' => 'Invalid access id, name (4 chars min), email, or job description (5 chars min).']);
+        // job_description is optional for back-office updates; validate only when provided.
+        $job_description_trimmed = trim((string) $job_description);
+        $has_job_description = ($job_description !== null && $job_description_trimmed !== '');
+        if ($access_id <= 0 || strlen($name) < 4 || !filter_var($email, FILTER_VALIDATE_EMAIL) || ($has_job_description && strlen($job_description_trimmed) < 5)) {
+            echo json_encode(['result' => false, 'reason' => 'Invalid access id, name (4 chars min), email, or job description (5 chars min when provided).']);
             exit;
         }
 
