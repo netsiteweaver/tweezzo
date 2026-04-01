@@ -108,6 +108,7 @@
 											<option value="development" <?php echo (isset($task->work_type) && $task->work_type == 'development') ? 'selected' : '';?>>Development</option>
 											<option value="maintenance" <?php echo (isset($task->work_type) && $task->work_type == 'maintenance') ? 'selected' : '';?>>Maintenance</option>
 											<option value="support" <?php echo (isset($task->work_type) && $task->work_type == 'support') ? 'selected' : '';?>>Support</option>
+											<option value="bugfix" <?php echo (isset($task->work_type) && $task->work_type == 'bugfix') ? 'selected' : '';?>>Bugfix</option>
 											<option value="other" <?php echo (isset($task->work_type) && $task->work_type == 'other') ? 'selected' : '';?>>Other</option>
 										</select>
 									</div>

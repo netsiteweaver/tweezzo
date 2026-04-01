@@ -327,6 +327,7 @@
 									<option value="development" selected>Development</option>
 									<option value="maintenance">Maintenance</option>
 									<option value="support">Support</option>
+									<option value="bugfix">Bugfix</option>
 									<option value="other">Other</option>
 								</select>
 							</div>

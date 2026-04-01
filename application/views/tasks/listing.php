@@ -139,6 +139,7 @@ $cleanQuery = http_build_query($queryArray);
             <option value="development" <?php echo $this->input->get("work_type") == "development" ? "selected" : ""; ?>>Development</option>
             <option value="maintenance" <?php echo $this->input->get("work_type") == "maintenance" ? "selected" : ""; ?>>Maintenance</option>
             <option value="support" <?php echo $this->input->get("work_type") == "support" ? "selected" : ""; ?>>Support</option>
+            <option value="bugfix" <?php echo $this->input->get("work_type") == "bugfix" ? "selected" : ""; ?>>Bugfix</option>
             <option value="other" <?php echo $this->input->get("work_type") == "other" ? "selected" : ""; ?>>Other</option>
         </select>
     </div>
