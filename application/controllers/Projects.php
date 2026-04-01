@@ -93,11 +93,16 @@ class Projects extends MY_Controller {
         $stage = $this->input->get('stage');
         $order_by = $this->input->get('order_by');
         $order_dir = $this->input->get('order_dir');
+        $active_filter = $this->input->get('active_filter');
+        if (!in_array($active_filter, ['active', 'inactive', 'all'], true)) {
+            $active_filter = 'active';
+        }
+        $this->data['active_filter'] = $active_filter;
 
         $page = $this->uri->segment(3);
         $per_page = (!empty($this->input->get("display"))) ? $this->input->get("display") : $this->system_model->getParam("rows_per_page");
-        $this->data['projects'] = $this->Projects_model->fetchAll($customer_id,$stage,$order_by,$order_dir,$page,$per_page);
-        $total_rows = $this->Projects_model->totalRows($customer_id,$stage);
+        $this->data['projects'] = $this->Projects_model->fetchAll($customer_id,$stage,$order_by,$order_dir,$page,$per_page,$active_filter);
+        $total_rows = $this->Projects_model->totalRows($customer_id,$stage,$active_filter);
         $this->data['pagination'] = getPagination("projects/listing",$total_rows,$per_page);
 // debug($this->data['pagination']);
         $this->load->model('Customers_model');
@@ -149,6 +154,23 @@ class Projects extends MY_Controller {
             "result"    =>  true,
             "affected_rows" =>  $affected_rows
         ));
+    }
+
+    public function toggle_active()
+    {
+        if ($this->accesscontrol_model->authorised("projects", "edit") == 0) {
+            echo json_encode(['result' => false, 'reason' => 'Permission denied']);
+            return;
+        }
+
+        $uuid = $this->input->post('uuid');
+        if (empty($uuid)) {
+            echo json_encode(['result' => false, 'reason' => 'Missing project']);
+            return;
+        }
+
+        $out = $this->Projects_model->toggleActive($uuid);
+        echo json_encode($out);
     }
 
     public function index()

@@ -100,6 +100,74 @@ class Tasks_model extends CI_Model{
 
     }
 
+    /**
+     * Sum estimated_hours for all tasks matching the same filters as tasks/listing (full result set, not current page).
+     * Mirrors fetchAll() listing logic including notes filter (with/without).
+     */
+    public function sumEstimatedHoursForListing($customer_id = "", $project_id = "", $sprint_id = "", $stage = [], $assigned_to = "", $notes_only = "", $search_text = "", $work_type = "", $billable = "")
+    {
+        $this->db->select('t.id, COALESCE(t.estimated_hours, 0) AS est_hours, COUNT(tn.id) AS notes', false);
+        $this->db->from('tasks t');
+        $this->db->join('sprints s', 's.id=t.sprint_id', 'left');
+        $this->db->join('projects p', 'p.id=s.project_id', 'left');
+        $this->db->join('customers c', 'c.customer_id=p.customer_id', 'left');
+        $this->db->join('users u', 'u.id=t.created_by', 'left');
+        $this->db->join('task_notes tn', 'tn.task_id=t.id', 'left');
+        if (!empty($assigned_to)) {
+            $this->db->join('task_user tu', 'tu.task_id=t.id', 'left');
+            $this->db->where("tu.user_id", $assigned_to);
+        }
+
+        $this->db->where(['t.status' => '1', 't.closed' => '0', 's.active' => '1', 'p.active' => '1', 'c.active' => '1']);
+        if (!empty($customer_id)) {
+            $this->db->where('c.customer_id', $customer_id);
+        }
+        if (!empty($project_id)) {
+            $this->db->where('p.id', $project_id);
+        }
+        if (!empty($sprint_id)) {
+            $this->db->where('s.id', $sprint_id);
+        }
+        if (!empty($stage)) {
+            $this->db->where_in('t.stage', $stage);
+        }
+        if (!empty($search_text)) {
+            $this->db->group_start();
+            $this->db->like("t.name", $search_text);
+            $this->db->or_like("t.description", $search_text);
+            $this->db->or_like("t.stage", $search_text);
+            $this->db->or_like("t.task_number", $search_text);
+            $this->db->or_like("t.section", $search_text);
+            $this->db->or_like("s.name", $search_text);
+            $this->db->or_like("p.name", $search_text);
+            $this->db->or_like("c.company_name", $search_text);
+            $this->db->or_like("t.stage", $search_text);
+            $like_val = '%' . $this->db->escape_like_str($search_text) . '%';
+            $this->db->or_where("CONCAT(IFNULL(p.code,''), '-', IFNULL(s.code,''), '-', IFNULL(t.task_number,'')) LIKE " . $this->db->escape($like_val), null, false);
+            $this->db->group_end();
+        }
+        if (!empty($work_type)) {
+            $this->db->where('t.work_type', $work_type);
+        }
+        if ($billable !== '' && $billable !== null) {
+            $this->db->where('t.billable', $billable);
+        }
+
+        $this->db->group_by('t.id');
+        if ($notes_only == "without") {
+            $this->db->having("notes = 0");
+        } elseif ($notes_only == "with") {
+            $this->db->having("notes > 0");
+        }
+
+        $inner_sql = $this->db->get_compiled_select();
+        $row = $this->db->query(
+            "SELECT COALESCE(SUM(est_hours), 0) AS total_estimated_hours FROM (" . $inner_sql . ") AS task_sums"
+        )->row();
+
+        return $row ? (float) $row->total_estimated_hours : 0.0;
+    }
+
     public function loadNotes($task_id)
     {
         $this->db->select('tn.*,u.name, c.company_name customer')

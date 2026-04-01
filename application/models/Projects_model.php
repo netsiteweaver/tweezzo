@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Projects_model extends CI_Model{
 
-    public function fetchAll($customer_id="",$stage="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10)
+    public function fetchAll($customer_id="",$stage="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$active_filter="active")
     {
         if( (empty($page)) || ($page <= 0) ) $page =1;
         $offset = ( ($page-1)*$rows_per_page);  
@@ -13,8 +13,12 @@ class Projects_model extends CI_Model{
         $this->db->from('projects p');
         $this->db->join('customers c','c.customer_id=p.customer_id','left');
         $this->db->where('p.status',1);
-        $this->db->where('p.active',1);
         $this->db->where('c.active',1);
+        if ($active_filter === 'active') {
+            $this->db->where('p.active', 1);
+        } elseif ($active_filter === 'inactive') {
+            $this->db->where('p.active', 0);
+        }
         if(!empty($customer_id)) $this->db->where('p.customer_id',$customer_id);
         if(!empty($stage)) $this->db->where('p.stage',$stage);
         if(!empty($order_by)) {
@@ -28,14 +32,18 @@ class Projects_model extends CI_Model{
         return $users;
     }
 
-    public function totalRows($customer_id="",$stage="")
+    public function totalRows($customer_id="",$stage="",$active_filter="active")
     {
         $this->db->select('count(1) as ct');
         $this->db->from('projects p');
         $this->db->join('customers c','c.customer_id=p.customer_id','left');
         $this->db->where('p.status',1);
-        $this->db->where('p.active',1);
         $this->db->where('c.active',1);
+        if ($active_filter === 'active') {
+            $this->db->where('p.active', 1);
+        } elseif ($active_filter === 'inactive') {
+            $this->db->where('p.active', 0);
+        }
         if(!empty($customer_id)) $this->db->where('p.customer_id',$customer_id);
         if(!empty($stage)) $this->db->where('p.stage',$stage);
         return $this->db->get()->row('ct');
@@ -126,6 +134,22 @@ class Projects_model extends CI_Model{
         $this->db->set('created_on',date('Y-m-d H:i:s'));
         $this->db->insert('task_notes');
         return array('result'=>true,'data'=>$data);
+    }
+
+    public function toggleActive($uuid)
+    {
+        $row = $this->db->select('id, active')
+            ->from('projects')
+            ->where('uuid', $uuid)
+            ->where('status', 1)
+            ->get()
+            ->row();
+        if (empty($row)) {
+            return ['result' => false, 'reason' => 'Project not found'];
+        }
+        $new = ((string)$row->active === '1') ? '0' : '1';
+        $this->db->set('active', $new)->where('uuid', $uuid)->update('projects');
+        return ['result' => true, 'active' => $new];
     }
 
     public function delete($uuid)

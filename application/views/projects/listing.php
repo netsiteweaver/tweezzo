@@ -4,6 +4,13 @@
         <a href="<?php echo base_url("projects/add/"); ?>"><button class="btn btn-flat btn-success"><i class="fa fa-plus"></i> Add</button></a>
     </div>
     <div class="col-md-2">
+        <select class="form-control monitor" id="active_filter" title="Project active status">
+            <option value="active" <?php echo (isset($active_filter) && $active_filter === 'active') ? 'selected' : ''; ?>>Active only</option>
+            <option value="inactive" <?php echo (isset($active_filter) && $active_filter === 'inactive') ? 'selected' : ''; ?>>Inactive only</option>
+            <option value="all" <?php echo (isset($active_filter) && $active_filter === 'all') ? 'selected' : ''; ?>>All</option>
+        </select>
+    </div>
+    <div class="col-md-2">
         <select name="" id="order_by" class="form-control monitor">
             <option value="">Order By</option>
             <option value="name" <?php echo ( (empty($this->input->get("order_by"))) || ($this->input->get("order_by") == "name") ) ? "selected" : ""; ?>>Project Name</option>
@@ -42,7 +49,7 @@
                             <th>Customer <?php echo ($this->input->get("order_by") == "company_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>Start Date <?php echo ($this->input->get("order_by") == "start_date") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>End Date <?php echo ($this->input->get("order_by") == "end_date") ? "<i class='fa fa-sort'></i>" : '';?></th>
-                            <th>&nbsp;</th>
+                            <th>Active</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -54,7 +61,13 @@
                             <td><?php echo "{$project->company_name}"; ?></td>
                             <td><?php echo (!empty($project->start_date)) ? date_format(date_create($project->start_date),'d-m-Y') : '';?></td>
                             <td><?php echo (!empty($project->end_date)) ? date_format(date_create($project->end_date),'d-m-Y') : '';?></td>
-                            <td class='text-center activeOrNot'><div class="btn btn-block btn-<?php echo ($project->active=='1')?'info':'danger';?>"><i class='fa fa-<?php echo ($project->active=='1')?'check':'times';?>'></i></div></td>
+                            <td class='text-center activeOrNot'>
+                            <?php if (!empty($perms['edit'])): ?>
+                                <button type="button" class="btn btn-block btn-<?php echo ($project->active=='1')?'info':'danger';?> project-toggle-active" data-url="<?php echo base_url('projects/toggle_active'); ?>" data-uuid="<?php echo htmlspecialchars($project->uuid); ?>" title="Click to toggle active / inactive"><i class="fa fa-<?php echo ($project->active=='1')?'check':'times';?>"></i></button>
+                            <?php else: ?>
+                                <div class="btn btn-block btn-<?php echo ($project->active=='1')?'info':'danger';?>"><i class="fa fa-<?php echo ($project->active=='1')?'check':'times';?>"></i></div>
+                            <?php endif; ?>
+                            </td>
                             <td>
                             <?php if($perms['view']): ?>
                                 <a href="<?php echo base_url('projects/view/' . $project->uuid); ?>"><div class="btn btn-flat btn-default"><i class='fas fa-eye'></i><span class='ButtonLabel'> View</span></div></a>
