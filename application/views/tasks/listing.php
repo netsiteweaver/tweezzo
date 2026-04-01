@@ -295,6 +295,9 @@ $cleanQuery = http_build_query($queryArray);
 <div class="row">
     <div class="col-md-12 text-right font-italic text-italic" style='font-size:0.8em;color:#999'>
         <?php echo "Displaying " . count($tasks) . " of " . $total_rows . " tasks";?>
+        <?php if (isset($total_estimated_hours)): ?>
+            <span class="ml-3"><strong>Total est. hours (filtered):</strong> <?php echo number_format((float) $total_estimated_hours, 2); ?></span>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -401,7 +404,15 @@ $cleanQuery = http_build_query($queryArray);
                                 <?php endif; ?>
                             </td>
                             <td class='no-print'><?php echo !empty($task->work_type) ? ucfirst($task->work_type) : '—';?></td>
-                            <td class='no-print'><?php echo isset($task->billable) && $task->billable == 1 ? 'Yes' : (isset($task->billable) && $task->billable == 0 ? 'No' : '—');?></td>
+                            <td class='no-print text-center'><?php
+                                $__bill = isset($task->billable) ? (int) $task->billable : null;
+                                if ($__bill === 1) {
+                                    echo '<i class="fa fa-check text-success" title="Billable" aria-label="Billable"></i>';
+                                } else {
+                                    $__bill_title = ($__bill === 0) ? 'Not billable' : 'Not specified';
+                                    echo '<i class="fa fa-times text-danger" title="' . htmlspecialchars($__bill_title) . '" aria-label="' . htmlspecialchars($__bill_title) . '"></i>';
+                                }
+                            ?></td>
                             <td class='no-print'><?php echo isset($task->settled) && $task->settled == 1 ? 'Yes' : (isset($task->settled) && $task->settled == 0 ? 'No' : '—');?></td>
                             <td class='no-print'><?php echo isset($task->settled_on) && $task->settled_on ? date('Y-m-d', strtotime($task->settled_on)) : '—';?></td>
                             <td class='no-print'><?php echo isset($task->ref) && $task->ref !== '' ? htmlspecialchars($task->ref) : '—';?></td>

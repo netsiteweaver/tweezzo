@@ -207,6 +207,17 @@ class Tasks extends MY_Controller {
         $this->data['tasks'] = $this->Tasks_model->fetchAll($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$page,$per_page,"",$notes_only,$search_text,false,$work_type,$billable);
         $total_rows = $this->Tasks_model->totalRows($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$notes_only,$search_text,$work_type,$billable);
         $this->data['total_rows'] = $total_rows;
+        $this->data['total_estimated_hours'] = $this->Tasks_model->sumEstimatedHoursForListing(
+            $customer_id,
+            $project_id,
+            $sprint_id,
+            $stage,
+            $assigned_to,
+            $notes_only,
+            $search_text,
+            $work_type,
+            $billable
+        );
         $this->data['pagination'] = getPagination("tasks/listing",$total_rows,$per_page);
 
         if(!empty($customer_id)){
