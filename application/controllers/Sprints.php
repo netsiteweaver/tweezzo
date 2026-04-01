@@ -91,11 +91,16 @@ class Sprints extends MY_Controller {
         $customer_id = $this->input->get('customer_id');
         $order_by = $this->input->get('order_by');
         $order_dir = $this->input->get('order_dir');
+        $active_filter = $this->input->get('active_filter');
+        if (!in_array($active_filter, ['active', 'inactive', 'all'], true)) {
+            $active_filter = 'active';
+        }
+        $this->data['active_filter'] = $active_filter;
 
         $page = $this->uri->segment(3);
         $per_page = (!empty($this->input->get("display"))) ? $this->input->get("display") : $this->system_model->getParam("rows_per_page");
-        $this->data['sprints'] = $this->Sprints_model->fetchAll($customer_id,$order_by,$order_dir,$page,$per_page);
-        $total_rows = $this->Sprints_model->totalRows($customer_id);
+        $this->data['sprints'] = $this->Sprints_model->fetchAll($customer_id,$order_by,$order_dir,$page,$per_page,$active_filter);
+        $total_rows = $this->Sprints_model->totalRows($customer_id,$active_filter);
         $this->data['pagination'] = getPagination("sprints/listing",$total_rows,$per_page);
 
         $this->load->model('Customers_model');
@@ -132,6 +137,23 @@ class Sprints extends MY_Controller {
             "result"    =>  true,
             "affected_rows" =>  $affected_rows
         ));
+    }
+
+    public function toggle_active()
+    {
+        if ($this->accesscontrol_model->authorised("sprints", "edit") == 0) {
+            echo json_encode(['result' => false, 'reason' => 'Permission denied']);
+            return;
+        }
+
+        $uuid = $this->input->post('uuid');
+        if (empty($uuid)) {
+            echo json_encode(['result' => false, 'reason' => 'Missing sprint']);
+            return;
+        }
+
+        $out = $this->Sprints_model->toggleActive($uuid);
+        echo json_encode($out);
     }
 
     public function index()

@@ -4,19 +4,28 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Sprints_model extends CI_Model{
 
-    public function fetchAll($customer_id="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10)
+    public function fetchAll($customer_id="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$active_filter="active")
     {
         if( (empty($page)) || ($page <= 0) ) $page =1;
         $offset = ( ($page-1)*$rows_per_page);  
 
-        $this->db->select('s.*,p.name project_name, c.company_name,c.full_name');
+        $task_count_sql = '(SELECT COUNT(t.id) FROM tasks t '
+            . 'INNER JOIN sprints ss ON ss.id = t.sprint_id AND ss.active = \'1\' '
+            . 'INNER JOIN projects pp ON pp.id = ss.project_id AND pp.active = \'1\' '
+            . 'INNER JOIN customers cc ON cc.customer_id = pp.customer_id AND cc.active = \'1\' '
+            . 'WHERE t.sprint_id = s.id AND t.status = \'1\' AND t.closed = \'0\') AS task_count';
+        $this->db->select('s.*, p.name AS project_name, c.company_name, c.full_name, c.customer_id AS customer_id, ' . $task_count_sql, false);
         $this->db->from('sprints s');
         $this->db->join('projects p','p.id=s.project_id','left');
         $this->db->join('customers c','c.customer_id=p.customer_id','left');
         $this->db->where('s.status',1);
-        $this->db->where('s.active',1);
         $this->db->where('p.active',1);
         $this->db->where('c.active',1);
+        if ($active_filter === 'active') {
+            $this->db->where('s.active', 1);
+        } elseif ($active_filter === 'inactive') {
+            $this->db->where('s.active', 0);
+        }
         if(!empty($customer_id)) $this->db->where('c.customer_id',$customer_id);
         if(!empty($order_by)) {
             $this->db->order_by($order_by,$order_dir);
@@ -28,16 +37,20 @@ class Sprints_model extends CI_Model{
         return $users;
     }
 
-    public function totalRows($customer_id="")
+    public function totalRows($customer_id="",$active_filter="active")
     {
         $this->db->select('count(1) as ct');
         $this->db->from('sprints s');
         $this->db->join('projects p','p.id=s.project_id','left');
         $this->db->join('customers c','c.customer_id=p.customer_id','left');
         $this->db->where('s.status',1);
-        $this->db->where('s.active',1);
         $this->db->where('p.active',1);
         $this->db->where('c.active',1);
+        if ($active_filter === 'active') {
+            $this->db->where('s.active', 1);
+        } elseif ($active_filter === 'inactive') {
+            $this->db->where('s.active', 0);
+        }
         if(!empty($customer_id)) $this->db->where('c.customer_id',$customer_id);
         return $this->db->get()->row('ct');
     }
@@ -62,7 +75,16 @@ class Sprints_model extends CI_Model{
 
     public function getAttachedTasks($uuid)
     {
-        return $this->db->query("select count(1) as ct from sprints s join tasks t on	 t.sprint_id = s.id where s.uuid = '$uuid'")->row()->ct;
+        // Match tasks/listing: only active, non-closed tasks (exclude deleted/closed rows).
+        $this->db->select('COUNT(t.id) AS ct', false);
+        $this->db->from('sprints s');
+        $this->db->join('tasks t', 't.sprint_id = s.id', 'inner');
+        $this->db->where('s.uuid', $uuid);
+        $this->db->where('t.status', '1');
+        $this->db->where('t.closed', '0');
+        $row = $this->db->get()->row();
+
+        return $row ? (int) $row->ct : 0;
     }
 
     public function save($data)
@@ -175,6 +197,22 @@ class Sprints_model extends CI_Model{
         $this->db->where("sprint_id", $sprint_id);
         $this->db->update("sprint_validation_reminders");
         return $this->db->affected_rows() >= 0;
+    }
+
+    public function toggleActive($uuid)
+    {
+        $row = $this->db->select('id, active')
+            ->from('sprints')
+            ->where('uuid', $uuid)
+            ->where('status', 1)
+            ->get()
+            ->row();
+        if (empty($row)) {
+            return ['result' => false, 'reason' => 'Sprint not found'];
+        }
+        $new = ((string)$row->active === '1') ? '0' : '1';
+        $this->db->set('active', $new)->where('uuid', $uuid)->update('sprints');
+        return ['result' => true, 'active' => $new];
     }
 
     public function delete($uuid)

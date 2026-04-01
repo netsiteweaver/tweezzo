@@ -4,6 +4,13 @@
         <a href="<?php echo base_url("sprints/add/"); ?>"><button class="btn btn-flat btn-success"><i class="fa fa-plus"></i> Add</button></a>
     </div>
     
+    <div class="col-md-2">
+        <select class="form-control monitor" id="active_filter" title="Sprint active status">
+            <option value="active" <?php echo (isset($active_filter) && $active_filter === 'active') ? 'selected' : ''; ?>>Active only</option>
+            <option value="inactive" <?php echo (isset($active_filter) && $active_filter === 'inactive') ? 'selected' : ''; ?>>Inactive only</option>
+            <option value="all" <?php echo (isset($active_filter) && $active_filter === 'all') ? 'selected' : ''; ?>>All</option>
+        </select>
+    </div>
     <div class="col-md-3">
         <!-- <label for="">Customer</label> -->
         <select class="form-control monitor" id="customer_id">
@@ -54,7 +61,7 @@
                             <th>Code</th>
                             <th>Project <?php echo ($this->input->get("order_by") == "project_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>Customer <?php echo ($this->input->get("order_by") == "company_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
-                            <th>&nbsp;</th>
+                            <th>Active</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -65,10 +72,26 @@
                             <td><?php echo !empty($task->code) ? htmlspecialchars($task->code) : '—';?></td>
                             <td><?php echo $task->project_name;?></td>
                             <td><?php echo "<b>{$task->company_name}</b><br>{$task->full_name}";?></td>
-                            <td class='text-center activeOrNot'><div class="btn btn-block btn-<?php echo ($task->active=='1')?'info':'danger';?>"><i class='fa fa-<?php echo ($task->active=='1')?'check':'times';?>'></i></div></td>
+                            <td class='text-center activeOrNot'>
+                            <?php if (!empty($perms['edit'])): ?>
+                                <button type="button" class="btn btn-block btn-<?php echo ($task->active=='1')?'info':'danger';?> sprint-toggle-active" data-url="<?php echo base_url('sprints/toggle_active'); ?>" data-uuid="<?php echo htmlspecialchars($task->uuid); ?>" title="Click to toggle active / inactive"><i class="fa fa-<?php echo ($task->active=='1')?'check':'times';?>"></i></button>
+                            <?php else: ?>
+                                <div class="btn btn-block btn-<?php echo ($task->active=='1')?'info':'danger';?>"><i class="fa fa-<?php echo ($task->active=='1')?'check':'times';?>"></i></div>
+                            <?php endif; ?>
+                            </td>
                             <td>
                             <?php if($perms['view']): ?>
-                                <a href="<?php echo base_url('sprints/view/' . $task->uuid."?customer_id=".$this->input->get("customer_id")."&stage=".$this->input->get("stage")); ?>"><div class="btn btn-flat btn-default"><i class='fas fa-eye'></i><span class='ButtonLabel'> View</span></div></a>
+                                <!-- <a href="<?php echo base_url('sprints/view/' . $task->uuid."?customer_id=".$this->input->get("customer_id")."&stage=".$this->input->get("stage")); ?>"><div class="btn btn-flat btn-default"><i class='fas fa-eye'></i><span class='ButtonLabel'> View</span></div></a> -->
+                                <?php
+                                $view_tasks_qs = ['sprint_id' => (int) $task->id];
+                                if (!empty($task->project_id)) {
+                                    $view_tasks_qs['project_id'] = (int) $task->project_id;
+                                }
+                                if (!empty($task->customer_id)) {
+                                    $view_tasks_qs['customer_id'] = (int) $task->customer_id;
+                                }
+                                ?>
+                                <a href="<?php echo base_url('tasks/listing?' . http_build_query($view_tasks_qs)); ?>"><div class="btn btn-flat btn-default"><i class='fas fa-list'></i><span class='ButtonLabel'> Tasks (<?php echo (int) (isset($task->task_count) ? $task->task_count : 0); ?>)</span></div></a>
                             <?php endif; ?>
                             <?php if($perms['edit']): ?>
                                 <a href="<?php echo base_url('sprints/edit/' . $task->uuid."?customer_id=".$this->input->get("customer_id")."&stage=".$this->input->get("stage")); ?>"><div class="btn btn-flat btn-primary"><i class='fas fa-edit'></i><span class='ButtonLabel'> Edit</span></div></a>
