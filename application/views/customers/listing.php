@@ -27,8 +27,8 @@
     <div class="col-3 col-md-2">
         <label for="">Active Status</label>
         <select class="form-control" name="active_filter" id="active_filter">
-            <option value="all" <?php echo (empty($active_filter) || $active_filter == 'all') ? 'selected':'';?>>All</option>
-            <option value="active" <?php echo ($active_filter == 'active') ? 'selected':'';?>>Only Active</option>
+            <option value="active" <?php echo (empty($active_filter) || $active_filter == 'active') ? 'selected':'';?>>Only Active</option>
+            <option value="all" <?php echo ($active_filter == 'all') ? 'selected':'';?>>All</option>
             <option value="inactive" <?php echo ($active_filter == 'inactive') ? 'selected':'';?>>Only Inactive</option>
         </select>
     </div>

@@ -4,32 +4,8 @@ function isValidEmail(email) {
 }
 
 jQuery(function(){
-    // Load saved active filter preference from localStorage on page load
-    const urlParams = new URLSearchParams(window.location.search);
-    const savedActiveFilter = localStorage.getItem('customers_listing_active_filter');
-    
-    if(savedActiveFilter && $('#active_filter').length > 0) {
-        if(!urlParams.has('active_filter')) {
-            // No URL parameter, apply the saved filter by redirecting with it
-            const newUrlParams = new URLSearchParams(window.location.search);
-            newUrlParams.set('active_filter', savedActiveFilter);
-            const newUrl = window.location.pathname + (newUrlParams.toString() ? '?' + newUrlParams.toString() : '');
-            window.location.href = newUrl;
-            return; // Stop execution, page will reload
-        } else {
-            // URL parameter exists, save it to localStorage for next time
-            localStorage.setItem('customers_listing_active_filter', urlParams.get('active_filter'));
-        }
-    } else if(urlParams.has('active_filter')) {
-        // No saved preference but URL has parameter, save it
-        localStorage.setItem('customers_listing_active_filter', urlParams.get('active_filter'));
-    }
-
-    // Save active filter preference to localStorage when changed and auto-submit
+    // Auto-submit form when active filter changes
     $('#active_filter').on("change", function(){
-        const selectedFilter = $(this).val();
-        localStorage.setItem('customers_listing_active_filter', selectedFilter);
-        // Auto-submit form when active filter changes
         $(this).closest('form').submit();
     });
 

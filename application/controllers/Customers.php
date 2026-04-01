@@ -246,7 +246,7 @@ class Customers extends MY_Controller
         $hide_completed = ($this->input->get('hide_completed') == '1') ? true : false;
         $active_filter = $this->input->get('active_filter');
         if(empty($active_filter)) {
-            $active_filter = 'all';
+            $active_filter = 'active';
         }
 
         $this->data['customers'] = $this->customers_model->get(null,$page,$this->data['rows_per_page'],$this->input->get('search_text'),$hide_completed,$active_filter);

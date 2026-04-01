@@ -5,7 +5,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 class Customers_model extends CI_Model
 {
 
-    public function get($uuid="",$page="",$rows_per_page="",$search_text="",$hide_completed=false,$active_filter="all")
+    public function get($uuid="",$page="",$rows_per_page="",$search_text="",$hide_completed=false,$active_filter="active")
     {
         if(empty($uuid)){
             $this->db->select("c.*,u.name agent");
@@ -70,7 +70,7 @@ class Customers_model extends CI_Model
 
     }
 
-    public function total_records($search_text="",$hide_completed=false,$active_filter="all")
+    public function total_records($search_text="",$hide_completed=false,$active_filter="active")
     {
         $this->db->select("count(c.customer_id) as ct")
                 ->from("customers c")
