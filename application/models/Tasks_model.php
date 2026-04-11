@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Tasks_model extends CI_Model{
 
-    public function fetchAll($customer_id="",$project_id="",$sprint_id="",$stage=[],$assigned_to="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$output="",$notes_only="",$search_text="",$totalRows=false,$work_type="",$billable="")
+    public function fetchAll($customer_id="",$project_id="",$sprint_id="",$stage=[],$assigned_to="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$output="",$notes_only="",$search_text="",$totalRows=false,$work_type="",$billable="",$closed_filter="")
     {
         if(!$totalRows){
             if( (empty($page)) || ($page <= 0) ) $page =1;
@@ -33,7 +33,8 @@ class Tasks_model extends CI_Model{
             }
         }
         
-        $this->db->where(['t.status'=>'1','t.closed'=>'0','s.active'=>'1','p.active'=>'1','c.active'=>'1']);
+        $this->db->where(['t.status'=>'1','s.active'=>'1','p.active'=>'1','c.active'=>'1']);
+        $this->apply_listing_closed_filter($closed_filter);
         if(!empty($customer_id)) $this->db->where('c.customer_id',$customer_id);
         if(!empty($project_id)) $this->db->where('p.id',$project_id);
         if(!empty($sprint_id)) $this->db->where('s.id',$sprint_id);
@@ -93,9 +94,9 @@ class Tasks_model extends CI_Model{
         
     }
 
-    public function totalRows($customer_id="",$project_id="",$sprint_id="",$stage="",$assigned_to="",$order_by="",$order_dir="asc",$notes_only="",$search_text="",$work_type="",$billable="")
+    public function totalRows($customer_id="",$project_id="",$sprint_id="",$stage="",$assigned_to="",$order_by="",$order_dir="asc",$notes_only="",$search_text="",$work_type="",$billable="",$closed_filter="")
     {
-        $rows = $this->fetchAll($customer_id, $project_id, $sprint_id, $stage, $assigned_to, $order_by, $order_dir, 1, 10, '', $notes_only, $search_text, true, $work_type, $billable);
+        $rows = $this->fetchAll($customer_id, $project_id, $sprint_id, $stage, $assigned_to, $order_by, $order_dir, 1, 10, '', $notes_only, $search_text, true, $work_type, $billable, $closed_filter);
         return $rows;
 
     }
@@ -104,7 +105,7 @@ class Tasks_model extends CI_Model{
      * Sum estimated_hours for all tasks matching the same filters as tasks/listing (full result set, not current page).
      * Mirrors fetchAll() listing logic including notes filter (with/without).
      */
-    public function sumEstimatedHoursForListing($customer_id = "", $project_id = "", $sprint_id = "", $stage = [], $assigned_to = "", $notes_only = "", $search_text = "", $work_type = "", $billable = "")
+    public function sumEstimatedHoursForListing($customer_id = "", $project_id = "", $sprint_id = "", $stage = [], $assigned_to = "", $notes_only = "", $search_text = "", $work_type = "", $billable = "", $closed_filter = "")
     {
         $this->db->select('t.id, COALESCE(t.estimated_hours, 0) AS est_hours, COUNT(tn.id) AS notes', false);
         $this->db->from('tasks t');
@@ -118,7 +119,8 @@ class Tasks_model extends CI_Model{
             $this->db->where("tu.user_id", $assigned_to);
         }
 
-        $this->db->where(['t.status' => '1', 't.closed' => '0', 's.active' => '1', 'p.active' => '1', 'c.active' => '1']);
+        $this->db->where(['t.status' => '1', 's.active' => '1', 'p.active' => '1', 'c.active' => '1']);
+        $this->apply_listing_closed_filter($closed_filter);
         if (!empty($customer_id)) {
             $this->db->where('c.customer_id', $customer_id);
         }
@@ -572,9 +574,21 @@ class Tasks_model extends CI_Model{
 
     public function deleteMultiple($taskIds)
     {
-        $this->db->set("status","0");
-        $this->db->where_in("id",$taskIds);
+        $ids = array_values(array_filter(array_map('intval', (array) $taskIds)));
+        if (empty($ids)) {
+            return;
+        }
+        $this->db->set("status", "0");
+        $this->db->where_in("id", $ids);
         $this->db->update("tasks");
+
+        $this->notify_bulk_task_recipients(
+            $ids,
+            "notification_delete_tasks",
+            "Tasks deleted (bulk)",
+            "The following tasks were removed (soft-deleted) in a bulk action:",
+            ""
+        );
     }
 
     public function closeMultiple($taskIds)
@@ -606,13 +620,15 @@ class Tasks_model extends CI_Model{
         $content .= $this->load->view("_email/footer",[], true);
 
         $notification_delete_tasks = $this->system_model->getParam("notification_delete_tasks",true);
-        foreach($notification_delete_tasks as $user_id){
-            $user = $this->db->select("email")->from("users")->where(["status"=>"1","id"=>$user_id])->get()->row();
-            if(!empty($user)){
-                $this->Email_model3->save($user->email,"Tasks Closed",$content);
+        if (is_array($notification_delete_tasks)) {
+            foreach ($notification_delete_tasks as $user_id) {
+                $user = $this->db->select("email")->from("users")->where(["status" => "1", "id" => $user_id])->get()->row();
+                if (!empty($user)) {
+                    $this->Email_model3->save($user->email, "Tasks Closed", $content);
+                }
             }
         }
-        
+
     }
 
     public function bulkChangeStage($taskIds, $stage)
@@ -627,12 +643,225 @@ class Tasks_model extends CI_Model{
             // Clear completed_date when changing from completed to another stage, or set stage normally
             $this->db->query("UPDATE tasks SET stage = '$stage', completed_date = CASE WHEN stage = 'completed' THEN NULL ELSE completed_date END WHERE id IN ($taskids)");
         }
+
+        $stageLabel = strtoupper(str_replace("_", " ", $stage));
+        $this->notify_bulk_task_recipients(
+            $taskIds,
+            "notification_update_tasks",
+            "Tasks stage changed (bulk)",
+            "Bulk stage change",
+            "<p>New stage: <strong>" . htmlspecialchars($stageLabel) . "</strong></p>"
+        );
     }
     
     public function bulkChangeSprint($taskIds, $sprintId)
     {
         $taskids = implode(',',$taskIds);
         $this->db->query("UPDATE tasks SET sprint_id = '$sprintId' WHERE id IN ($taskids)");
+
+        $sprintRow = $this->db->select("name")->from("sprints")->where("id", (int) $sprintId)->get()->row();
+        $sprintLabel = $sprintRow && !empty($sprintRow->name) ? $sprintRow->name : ("#" . (int) $sprintId);
+        $this->notify_bulk_task_recipients(
+            $taskIds,
+            "notification_update_tasks",
+            "Tasks moved to sprint (bulk)",
+            "Bulk sprint change",
+            "<p>Tasks were moved to sprint: <strong>" . htmlspecialchars($sprintLabel) . "</strong></p>"
+        );
+    }
+
+    public function reopenMultiple($taskIds)
+    {
+        $ids = array_values(array_filter(array_map('intval', (array) $taskIds)));
+        if (empty($ids)) {
+            return;
+        }
+        $this->db->where_in('id', $ids);
+        $this->db->update('tasks', array(
+            'closed' => '0',
+            'mark_closed_by' => null,
+            'mark_closed_on' => null,
+        ));
+
+        $this->notify_bulk_task_recipients(
+            $ids,
+            "notification_update_tasks",
+            "Tasks reopened (bulk)",
+            "The following tasks were reopened (closed flag cleared).",
+            ""
+        );
+    }
+
+    public function bulkSetWorkType($taskIds, $workType)
+    {
+        $ids = array_values(array_filter(array_map('intval', (array) $taskIds)));
+        if (empty($ids)) {
+            return;
+        }
+        $allowed = array('development', 'maintenance', 'support', 'bugfix', 'other');
+        if ($workType === null || $workType === '') {
+            $this->db->set('work_type', null);
+        } elseif (in_array($workType, $allowed, true)) {
+            $this->db->set('work_type', $workType);
+        } else {
+            return;
+        }
+        $this->db->where_in('id', $ids);
+        $this->db->update('tasks');
+
+        $wtLabel = ($workType === null || $workType === "") ? "cleared (not set)" : $workType;
+        $this->notify_bulk_task_recipients(
+            $ids,
+            "notification_update_tasks",
+            "Tasks work type updated (bulk)",
+            "Bulk work type change",
+            "<p>Work type set to: <strong>" . htmlspecialchars($wtLabel) . "</strong></p>"
+        );
+    }
+
+    public function bulkSetBillable($taskIds, $billable)
+    {
+        $ids = array_values(array_filter(array_map('intval', (array) $taskIds)));
+        if (empty($ids)) {
+            return;
+        }
+        if ($billable === null) {
+            $this->db->set('billable', null);
+        } else {
+            $this->db->set('billable', (int) (bool) $billable);
+        }
+        $this->db->where_in('id', $ids);
+        $this->db->update('tasks');
+
+        if ($billable === null) {
+            $blLabel = "cleared (not set)";
+        } else {
+            $blLabel = ((int) (bool) $billable) === 1 ? "Billable" : "Not billable";
+        }
+        $this->notify_bulk_task_recipients(
+            $ids,
+            "notification_update_tasks",
+            "Tasks billable flag updated (bulk)",
+            "Bulk billable change",
+            "<p>Billable: <strong>" . htmlspecialchars($blLabel) . "</strong></p>"
+        );
+    }
+
+    public function bulkSetEstimatedHours($taskIds, $mode, $hours)
+    {
+        $ids = array_values(array_filter(array_map('intval', (array) $taskIds)));
+        if (empty($ids)) {
+            return;
+        }
+        if ($mode === 'set') {
+            if ($hours === null || $hours === '') {
+                $this->db->set('estimated_hours', null);
+            } else {
+                $this->db->set('estimated_hours', (float) $hours);
+            }
+            $this->db->where_in('id', $ids);
+            $this->db->update('tasks');
+        } elseif ($mode === 'add') {
+            $h = (float) $hours;
+            $this->db->set('estimated_hours', 'COALESCE(estimated_hours, 0) + (' . $h . ')', false);
+            $this->db->where_in('id', $ids);
+            $this->db->update('tasks');
+        }
+
+        $hoursLabel = ($hours === null || $hours === "") ? "—" : (string) $hours;
+        $this->notify_bulk_task_recipients(
+            $ids,
+            "notification_update_tasks",
+            "Tasks estimated hours updated (bulk)",
+            "Bulk estimated hours change",
+            "<p>Mode: <strong>" . htmlspecialchars($mode) . "</strong></p><p>Hours: <strong>" . htmlspecialchars($hoursLabel) . "</strong></p>"
+        );
+    }
+
+    public function bulkClearDueDate($taskIds)
+    {
+        $ids = array_values(array_filter(array_map('intval', (array) $taskIds)));
+        if (empty($ids)) {
+            return;
+        }
+        $this->db->set('due_date', null);
+        $this->db->where_in('id', $ids);
+        $this->db->update('tasks');
+
+        $this->notify_bulk_task_recipients(
+            $ids,
+            "notification_update_tasks",
+            "Tasks due date cleared (bulk)",
+            "Bulk due date clear",
+            "<p>The due date was cleared on the selected tasks.</p>"
+        );
+    }
+
+    public function bulkRemoveAssignees($taskIds, $removeAll, $userIds = array())
+    {
+        $ids = array_values(array_filter(array_map('intval', (array) $taskIds)));
+        if (empty($ids)) {
+            return;
+        }
+        if ($removeAll) {
+            $this->db->where_in('task_id', $ids);
+            $this->db->delete('task_user');
+            $this->notify_bulk_task_recipients(
+                $ids,
+                "notification_update_tasks",
+                "Task assignees removed (bulk)",
+                "Bulk remove assignees",
+                "<p>All assignees were removed from each selected task.</p>"
+            );
+            return;
+        }
+        $uids = array_values(array_filter(array_map('intval', (array) $userIds)));
+        if (empty($uids)) {
+            return;
+        }
+        $this->db->where_in('task_id', $ids);
+        $this->db->where_in('user_id', $uids);
+        $this->db->delete('task_user');
+
+        $nameParts = array();
+        foreach ($uids as $uid) {
+            $u = $this->db->select("name, email")->from("users")->where("id", (int) $uid)->get()->row();
+            if ($u) {
+                $nameParts[] = trim($u->name . (!empty($u->email) ? " (" . $u->email . ")" : ""));
+            }
+        }
+        $detail = "<p>Removed assignees: <strong>" . htmlspecialchars(implode(", ", $nameParts)) . "</strong></p>";
+        $this->notify_bulk_task_recipients(
+            $ids,
+            "notification_update_tasks",
+            "Task assignees removed (bulk)",
+            "Bulk remove assignees",
+            $detail
+        );
+    }
+
+    public function bulkSetSection($taskIds, $section)
+    {
+        $ids = array_values(array_filter(array_map('intval', (array) $taskIds)));
+        if (empty($ids)) {
+            return;
+        }
+        $section = is_string($section) ? trim($section) : '';
+        if (strlen($section) > 255) {
+            $section = substr($section, 0, 255);
+        }
+        $this->db->set('section', $section === '' ? null : $section);
+        $this->db->where_in('id', $ids);
+        $this->db->update('tasks');
+
+        $secLabel = ($section === "") ? "cleared" : $section;
+        $this->notify_bulk_task_recipients(
+            $ids,
+            "notification_update_tasks",
+            "Tasks section updated (bulk)",
+            "Bulk section change",
+            "<p>Section: <strong>" . htmlspecialchars($secLabel) . "</strong></p>"
+        );
     }
 
     public function bulkSetDueDate($taskIds, $dueDate)
@@ -673,7 +902,15 @@ class Tasks_model extends CI_Model{
             $content .= $this->load->view("_email/footer",[], true);
             $this->Email_model3->save($developer->email,"Tasks Due Date",$content);
         }
-        
+
+        $this->notify_bulk_task_recipients(
+            $taskIds,
+            "notification_update_tasks",
+            "Tasks due date set (bulk)",
+            "Bulk due date change",
+            "<p>New due date: <strong>" . htmlspecialchars($dueDate) . "</strong></p><p>Assigned developers were also notified separately where applicable.</p>"
+        );
+
     }
 
     public function upload_file($sprint_id)
@@ -897,6 +1134,103 @@ class Tasks_model extends CI_Model{
                 $content .= $this->load->view("_email/footer",[], true);
                 // echo $content;
                 $this->Email_model3->save($user->email,"You have been assigned some tasks",$content);
+        }
+
+        if (!empty($userIds)) {
+            $nameParts = array();
+            foreach ($userIds as $uid) {
+                $u = $this->db->select("name, email")->from("users")->where("id", (int) $uid)->get()->row();
+                if ($u) {
+                    $nameParts[] = trim($u->name . (!empty($u->email) ? " (" . $u->email . ")" : ""));
+                }
+            }
+            $detail = "<p>Assigned to: <strong>" . htmlspecialchars(implode(", ", $nameParts)) . "</strong></p><p>Previous assignees were replaced on each task. Developers may have received separate assignment emails.</p>";
+        } else {
+            $detail = "<p>All assignees were removed from the selected tasks (no new users chosen).</p>";
+        }
+        $this->notify_bulk_task_recipients(
+            $taskIds,
+            "notification_update_tasks",
+            "Tasks bulk-assigned to users",
+            "Bulk user assignment",
+            $detail
+        );
+    }
+
+    /**
+     * Notify users configured in Settings for task create/update/delete lists.
+     *
+     * @param string $settingsKey notification_update_tasks | notification_delete_tasks
+     */
+    private function notify_bulk_task_recipients($taskIds, $settingsKey, $subject, $heading, $detailHtml = "")
+    {
+        $ids = array_values(array_filter(array_map('intval', (array) $taskIds)));
+        if (empty($ids)) {
+            return;
+        }
+
+        $this->load->model("system_model");
+        $recipients = $this->system_model->getParam($settingsKey, true);
+        if (!is_array($recipients) || count($recipients) === 0) {
+            return;
+        }
+
+        $this->db->select('t.id, t.uuid, t.name, t.section, t.task_number, s.name as sprint_name, p.name as project_name, c.company_name');
+        $this->db->from('tasks t');
+        $this->db->join('sprints s', 's.id = t.sprint_id', 'left');
+        $this->db->join('projects p', 'p.id = s.project_id', 'left');
+        $this->db->join('customers c', 'c.customer_id = p.customer_id', 'left');
+        $this->db->where_in('t.id', $ids);
+        $tasks = $this->db->get()->result();
+        if (empty($tasks)) {
+            return;
+        }
+
+        $actor = "";
+        if (!empty($_SESSION['user_id'])) {
+            $r = $this->db->select("name, email")->from("users")->where("id", (int) $_SESSION['user_id'])->get()->row();
+            if ($r) {
+                $actor = $r->name;
+                if (!empty($r->email)) {
+                    $actor .= " (" . $r->email . ")";
+                }
+            }
+        }
+
+        $this->load->model("Email_model3");
+        $emailData = array(
+            'tasks' => $tasks,
+            'logo' => $this->system_model->getParam("logo"),
+            'action_heading' => $heading,
+            'action_detail' => $detailHtml,
+            'performed_by' => $actor,
+        );
+        $content = $this->load->view("_email/header", $emailData, true);
+        $content .= $this->load->view("_email/tasksBulkAdminNotification", $emailData, true);
+        $content .= $this->load->view("_email/footer", array(), true);
+
+        foreach ($recipients as $user_id) {
+            $user = $this->db->select("email")->from("users")->where(array("status" => "1", "id" => (int) $user_id))->get()->row();
+            if (!empty($user) && !empty($user->email)) {
+                $this->Email_model3->save($user->email, $subject, $content);
+            }
+        }
+    }
+
+    /**
+     * Listing filter: open only (default), closed only, or both.
+     *
+     * @param string $closed_filter open | closed | all
+     */
+    private function apply_listing_closed_filter($closed_filter)
+    {
+        $closed_filter = is_string($closed_filter) ? strtolower(trim($closed_filter)) : '';
+        if ($closed_filter === 'closed') {
+            $this->db->where('t.closed', '1');
+        } elseif ($closed_filter === 'all') {
+            // no extra filter
+        } else {
+            $this->db->where('t.closed', '0');
         }
     }
 

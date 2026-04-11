@@ -201,11 +201,16 @@ class Tasks extends MY_Controller {
         $search_text = $this->input->get('search_text');
         $work_type = $this->input->get('work_type');
         $billable = $this->input->get('billable');
+        $closed_filter = $this->input->get('closed_filter');
+        if (!in_array($closed_filter, array('open', 'closed', 'all'), true)) {
+            $closed_filter = 'open';
+        }
+        $this->data['closed_filter'] = $closed_filter;
 
         $page = $this->uri->segment(3);
         $per_page = (!empty($this->input->get("display"))) ? $this->input->get("display") : $this->system_model->getParam("rows_per_page");
-        $this->data['tasks'] = $this->Tasks_model->fetchAll($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$page,$per_page,"",$notes_only,$search_text,false,$work_type,$billable);
-        $total_rows = $this->Tasks_model->totalRows($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$notes_only,$search_text,$work_type,$billable);
+        $this->data['tasks'] = $this->Tasks_model->fetchAll($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$page,$per_page,"",$notes_only,$search_text,false,$work_type,$billable,$closed_filter);
+        $total_rows = $this->Tasks_model->totalRows($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$notes_only,$search_text,$work_type,$billable,$closed_filter);
         $this->data['total_rows'] = $total_rows;
         $this->data['total_estimated_hours'] = $this->Tasks_model->sumEstimatedHoursForListing(
             $customer_id,
@@ -216,7 +221,8 @@ class Tasks extends MY_Controller {
             $notes_only,
             $search_text,
             $work_type,
-            $billable
+            $billable,
+            $closed_filter
         );
         $this->data['pagination'] = getPagination("tasks/listing",$total_rows,$per_page);
 
@@ -263,6 +269,10 @@ class Tasks extends MY_Controller {
         $order_dir = $this->input->get('order_dir');
         $output = $this->input->get('output');
         $type = $this->input->get('type');
+        $closed_filter = $this->input->get('closed_filter');
+        if (!in_array($closed_filter, array('open', 'closed', 'all'), true)) {
+            $closed_filter = 'open';
+        }
 
         //since we allow to override email when submitting, let us check if email is for customer, developer or other
         $isCustomer = $this->db->select("count(1) as ct")->from("customers")->where(["email"=>$customer_email,"status"=>"1"])->get()->row("ct");
@@ -303,7 +313,7 @@ class Tasks extends MY_Controller {
         //                     join customers c on c.customer_id = p.customer_id 
         //                     where c.customer_id = $customer_id")->result();
 
-        $tasks = $this->Tasks_model->fetchAll($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,1,1,$output);
+        $tasks = $this->Tasks_model->fetchAll($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,1,1,$output,'','',false,'','',$closed_filter);
         // debug($tasks);
         // debug($this->data['tasks']);
 
@@ -675,6 +685,234 @@ class Tasks extends MY_Controller {
         exit;
 
 
+    }
+
+    public function reopenMultiple()
+    {
+        if (!isAuthorised(get_class(), "edit")) {
+            return false;
+        }
+
+        $taskIds = $this->input->post("taskIds");
+        if (empty($taskIds)) {
+            echo json_encode(array(
+                "result" => false,
+                "reason" => "No Task(s) Selected",
+            ));
+            exit;
+        }
+
+        $this->Tasks_model->reopenMultiple($taskIds);
+
+        echo json_encode(array(
+            "result" => true,
+        ));
+        exit;
+    }
+
+    public function bulkSetWorkType()
+    {
+        if (!isAuthorised(get_class(), "edit")) {
+            return false;
+        }
+
+        $taskIds = $this->input->post("taskIds");
+        $workType = $this->input->post("work_type");
+
+        if (empty($taskIds)) {
+            echo json_encode(array(
+                "result" => false,
+                "reason" => "No Task(s) Selected",
+            ));
+            exit;
+        }
+
+        $allowed = array("", "development", "maintenance", "support", "bugfix", "other");
+        if (!in_array((string) $workType, $allowed, true)) {
+            echo json_encode(array(
+                "result" => false,
+                "reason" => "Invalid work type",
+            ));
+            exit;
+        }
+
+        $this->Tasks_model->bulkSetWorkType($taskIds, $workType === "" ? null : $workType);
+
+        echo json_encode(array(
+            "result" => true,
+        ));
+        exit;
+    }
+
+    public function bulkSetBillable()
+    {
+        if (!isAuthorised(get_class(), "edit")) {
+            return false;
+        }
+
+        $taskIds = $this->input->post("taskIds");
+        $mode = $this->input->post("billable_mode");
+
+        if (empty($taskIds)) {
+            echo json_encode(array(
+                "result" => false,
+                "reason" => "No Task(s) Selected",
+            ));
+            exit;
+        }
+
+        if (!in_array($mode, array("0", "1", "unset"), true)) {
+            echo json_encode(array(
+                "result" => false,
+                "reason" => "Invalid billable option",
+            ));
+            exit;
+        }
+
+        $billable = ($mode === "unset") ? null : (bool) (int) $mode;
+        $this->Tasks_model->bulkSetBillable($taskIds, $billable);
+
+        echo json_encode(array(
+            "result" => true,
+        ));
+        exit;
+    }
+
+    public function bulkEstimatedHours()
+    {
+        if (!isAuthorised(get_class(), "edit")) {
+            return false;
+        }
+
+        $taskIds = $this->input->post("taskIds");
+        $mode = $this->input->post("mode");
+        $hours = $this->input->post("hours");
+
+        if (empty($taskIds)) {
+            echo json_encode(array(
+                "result" => false,
+                "reason" => "No Task(s) Selected",
+            ));
+            exit;
+        }
+
+        if (!in_array($mode, array("set", "add"), true)) {
+            echo json_encode(array(
+                "result" => false,
+                "reason" => "Invalid mode",
+            ));
+            exit;
+        }
+
+        if ($mode === "add") {
+            if ($hours === null || $hours === "" || !is_numeric($hours) || (float) $hours < 0) {
+                echo json_encode(array(
+                    "result" => false,
+                    "reason" => "Enter a valid number of hours to add",
+                ));
+                exit;
+            }
+        }
+
+        if ($mode === "set" && $hours !== null && $hours !== "" && (!is_numeric($hours) || (float) $hours < 0)) {
+            echo json_encode(array(
+                "result" => false,
+                "reason" => "Enter a valid number of hours, or leave empty to clear",
+            ));
+            exit;
+        }
+
+        $this->Tasks_model->bulkSetEstimatedHours($taskIds, $mode, $hours);
+
+        echo json_encode(array(
+            "result" => true,
+        ));
+        exit;
+    }
+
+    public function bulkClearDueDate()
+    {
+        if (!isAuthorised(get_class(), "edit")) {
+            return false;
+        }
+
+        $taskIds = $this->input->post("taskIds");
+        if (empty($taskIds)) {
+            echo json_encode(array(
+                "result" => false,
+                "reason" => "No Task(s) Selected",
+            ));
+            exit;
+        }
+
+        $this->Tasks_model->bulkClearDueDate($taskIds);
+
+        echo json_encode(array(
+            "result" => true,
+        ));
+        exit;
+    }
+
+    public function bulkRemoveAssignees()
+    {
+        if (!isAuthorised(get_class(), "edit")) {
+            return false;
+        }
+
+        $taskIds = $this->input->post("taskIds");
+        $removeAll = ($this->input->post("removeAll") === "1" || $this->input->post("removeAll") === 1
+            || $this->input->post("removeAll") === true);
+        $userIds = $this->input->post("userIds");
+
+        if (empty($taskIds)) {
+            echo json_encode(array(
+                "result" => false,
+                "reason" => "No Task(s) Selected",
+            ));
+            exit;
+        }
+
+        if (!$removeAll) {
+            if (empty($userIds) || !is_array($userIds)) {
+                echo json_encode(array(
+                    "result" => false,
+                    "reason" => "Select at least one user to remove, or choose remove all",
+                ));
+                exit;
+            }
+        }
+
+        $this->Tasks_model->bulkRemoveAssignees($taskIds, $removeAll, is_array($userIds) ? $userIds : array());
+
+        echo json_encode(array(
+            "result" => true,
+        ));
+        exit;
+    }
+
+    public function bulkSetSection()
+    {
+        if (!isAuthorised(get_class(), "edit")) {
+            return false;
+        }
+
+        $taskIds = $this->input->post("taskIds");
+        $section = $this->input->post("section");
+
+        if (empty($taskIds)) {
+            echo json_encode(array(
+                "result" => false,
+                "reason" => "No Task(s) Selected",
+            ));
+            exit;
+        }
+
+        $this->Tasks_model->bulkSetSection($taskIds, $section !== null ? (string) $section : "");
+
+        echo json_encode(array(
+            "result" => true,
+        ));
+        exit;
     }
 
     public function index()

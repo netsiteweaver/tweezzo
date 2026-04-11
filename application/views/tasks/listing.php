@@ -40,6 +40,12 @@
     .task-ref-cell .copy-task-ref:hover { opacity: 1; }
     .task-ref-cell .copy-task-ref.copied { opacity: 1; color: #28a745; }
 
+    #users-list-remove li.select-user-remove { cursor: pointer; }
+    #users-list-remove li.select-user-remove.assigned {
+        background-color: rgb(255, 236, 210);
+        border: 2px solid #f0ad4e;
+    }
+
 </style>
 <?php 
 // Parse the query string into an array
@@ -151,6 +157,14 @@ $cleanQuery = http_build_query($queryArray);
             <option value="0" <?php echo $this->input->get("billable") === "0" ? "selected" : ""; ?>>No</option>
         </select>
     </div>
+    <div class="col-md-2">
+        <label for="closed_filter">Closed tasks</label>
+        <select name="closed_filter" class="form-control monitor" id="closed_filter">
+            <option value="open" <?php echo (isset($closed_filter) ? $closed_filter : 'open') === 'open' ? 'selected' : ''; ?>>Open only</option>
+            <option value="closed" <?php echo (isset($closed_filter) ? $closed_filter : 'open') === 'closed' ? 'selected' : ''; ?>>Closed only</option>
+            <option value="all" <?php echo (isset($closed_filter) ? $closed_filter : 'open') === 'all' ? 'selected' : ''; ?>>Open and closed</option>
+        </select>
+    </div>
     <input type="password" name="fake-password" autocomplete="new-password" style="position:absolute; top:-1000px; left:-1000px;">
     <div class="col-md-2">
         <label for="search">Search</label>
@@ -258,9 +272,19 @@ $cleanQuery = http_build_query($queryArray);
                 <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
                     <?php if($perms['edit']):?>
                     <a class="dropdown-item assign-multiple"><i class="fa fa-user"></i> Assign Users</a>
-                    <a class="dropdown-item due-date-multiple"><i class="fa fa-user"></i> Set Due Date</a>
+                    <a class="dropdown-item remove-assignees-multiple"><i class="fa fa-user-times"></i> Remove assignees</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item due-date-multiple"><i class="fa fa-calendar"></i> Set Due Date</a>
+                    <a class="dropdown-item clear-due-date-multiple"><i class="fa fa-calendar-times-o"></i> Clear Due Date</a>
                     <a class="dropdown-item stage-multiple"><i class="fa fa-truck"></i> Change Stage</a>
                     <a class="dropdown-item move-sprint-multiple"><i class="fa fa-arrow-right"></i> Move Sprint</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item work-type-multiple"><i class="fa fa-tag"></i> Set work type</a>
+                    <a class="dropdown-item billable-multiple"><i class="fa fa-money"></i> Set billable</a>
+                    <a class="dropdown-item estimated-hours-multiple"><i class="fa fa-clock-o"></i> Set estimated hours</a>
+                    <a class="dropdown-item section-multiple"><i class="fa fa-folder-open"></i> Set section</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item reopen-multiple"><i class="fa fa-undo"></i> Reopen</a>
                     <a class="dropdown-item close-multiple"><i class="fa fa-window-close"></i> Close</a>
                     <?php endif;?>
                     <?php if($perms['delete']):?>
@@ -372,6 +396,9 @@ $cleanQuery = http_build_query($queryArray);
                             </td>
                             <td class='task-section'><?php echo $task->section; ?></td>
                             <td class='task-name'>
+                                <?php if (isset($task->closed) && (string) $task->closed === '1'): ?>
+                                <span class="badge badge-secondary font-weight-normal mr-1">Closed</span>
+                                <?php endif; ?>
                                 <div style='border-bottom:1px dashed #ccc;padding-bottom:3px;margin-bottom:-5px;'><?php echo $task->name; ?></div>
                                 <?php echo ( (!empty($task->description)) && ($task->description != $task->name) )? "<br><i class='delius-regular'><span>" . nl2br($task->description) . "</span></i>": '<span></span>';?>
                             </td>
@@ -654,6 +681,195 @@ $cleanQuery = http_build_query($queryArray);
                 <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i>
                     Cancel</button>
                 <button type="button" class="btn btn-primary setDueDate"><i class="fa fa-check"></i> Proceed</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalRemoveAssignees" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove assignees from selected tasks</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">Remove developers from the <b>selected tasks only</b>. Assignments on other tasks are unchanged.</p>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="remove_all_assignees" name="remove_all_assignees" value="1">
+                    <label class="form-check-label" for="remove_all_assignees">Remove <b>all</b> assignees from these tasks</label>
+                </div>
+                <p class="small mb-2">Or pick specific users to remove (ignored if “remove all” is checked):</p>
+                <ul id="users-list-remove" class="list-group">
+                    <?php foreach($users as $user):?>
+                    <?php if($user->user_type != 'developer') continue;?>
+                    <li data-id="<?php echo $user->id;?>" class="list-group-item select-user-remove cursor-pointer">
+                        <img style='width:50px;padding:2px;background-color:#eee;border:1px solid #ccc;border-radius: 50%;'
+                            src="uploads/users/<?php echo $user->photo;?>" alt="">
+                        <?php echo "{$user->email} ({$user->name})";?>
+                    </li>
+                    <?php endforeach;?>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
+                <button type="button" class="btn btn-warning proceedRemoveAssignees"><i class="fa fa-user-times"></i> Remove</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalBulkWorkType" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Set work type</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Work type</label>
+                    <select class="form-control" id="bulk_work_type" name="bulk_work_type">
+                        <option value="">Clear (not set)</option>
+                        <option value="development">Development</option>
+                        <option value="maintenance">Maintenance</option>
+                        <option value="support">Support</option>
+                        <option value="bugfix">Bugfix</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
+                <button type="button" class="btn btn-primary applyBulkWorkType"><i class="fa fa-check"></i> Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalBulkBillable" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Set billable</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Billable</label>
+                    <select class="form-control" id="bulk_billable_mode" name="bulk_billable_mode">
+                        <option value="1">Billable</option>
+                        <option value="0">Not billable</option>
+                        <option value="unset">Clear (not set)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
+                <button type="button" class="btn btn-primary applyBulkBillable"><i class="fa fa-check"></i> Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalBulkEstimatedHours" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Set estimated hours</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Mode</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="bulk_est_hours_mode" id="bulk_est_mode_set" value="set" checked>
+                        <label class="form-check-label" for="bulk_est_mode_set">Set to a value (leave hours empty to clear)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="bulk_est_hours_mode" id="bulk_est_mode_add" value="add">
+                        <label class="form-check-label" for="bulk_est_mode_add">Add to current estimate</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="bulk_est_hours_value">Hours</label>
+                    <input type="number" step="0.25" min="0" class="form-control" id="bulk_est_hours_value" name="bulk_est_hours_value" placeholder="">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
+                <button type="button" class="btn btn-primary applyBulkEstimatedHours"><i class="fa fa-check"></i> Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalBulkSection" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Set section</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">The same section text is applied to every selected task. Leave empty to clear the section.</p>
+                <div class="form-group">
+                    <label for="bulk_section_value">Section</label>
+                    <input type="text" class="form-control" id="bulk_section_value" name="bulk_section_value" maxlength="255" placeholder="">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
+                <button type="button" class="btn btn-primary applyBulkSection"><i class="fa fa-check"></i> Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalClearDueDateConfirmation" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Clear due date for selected tasks</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
+                <button type="button" class="btn btn-warning proceedWithClearDueDate"><i class="fa fa-calendar-times-o"></i> Clear due dates</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalReopenConfirmation" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reopen selected tasks</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">This clears the closed flag on the tasks you select. Use this if they were closed by mistake or need to appear as open again.</p>
+                <div class="bulk-reopen-task-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
+                <button type="button" class="btn btn-primary proceedWithReopen"><i class="fa fa-undo"></i> Reopen</button>
             </div>
         </div>
     </div>

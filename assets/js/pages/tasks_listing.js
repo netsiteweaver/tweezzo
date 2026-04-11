@@ -91,8 +91,9 @@ jQuery(function(){
                 let order_by = $('#order_by').val();
                 let order_dir = $('#order_dir').val();
                 let display = $('#display').val();
+                let closed_filter = $('#closed_filter').val() || 'open';
 
-                params = '?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&assigned_to="+assigned_to+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&customer_email="+email+"&type=customer&output=email";
+                params = '?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&assigned_to="+assigned_to+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&customer_email="+email+"&type=customer&output=email&closed_filter="+encodeURIComponent(closed_filter);
                 // console.log(params, customerEmail, email)
                 $.ajax({
                     url: 'tasks/email'+params,
@@ -137,8 +138,9 @@ jQuery(function(){
                 let order_by = $('#order_by').val();
                 let order_dir = $('#order_dir').val();
                 let display = $('#display').val();
+                let closed_filter = $('#closed_filter').val() || 'open';
 
-                params = '?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&assigned_to="+assigned_to+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&customer_email="+email+"&output=email&type=developer";
+                params = '?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&assigned_to="+assigned_to+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&customer_email="+email+"&output=email&type=developer&closed_filter="+encodeURIComponent(closed_filter);
                 console.log(params, email)
                 $.ajax({
                     url: 'tasks/email'+params,
@@ -315,6 +317,148 @@ jQuery(function(){
         $('#modalChangeSprint').modal("show")
     })
 
+    $('.remove-assignees-multiple').on("click", function(){
+        $('#remove_all_assignees').prop("checked", false);
+        $('#users-list-remove li').removeClass("assigned");
+        $('#modalRemoveAssignees').modal("show");
+    })
+
+    $(document).on("click", "#users-list-remove li.select-user-remove", function(){
+        $(this).toggleClass("assigned");
+    })
+
+    $('#remove_all_assignees').on("change", function(){
+        if($(this).is(":checked")) {
+            $('#users-list-remove li').removeClass("assigned");
+        }
+    })
+
+    $('#modalRemoveAssignees').on("hidden.bs.modal", function(){
+        $('#remove_all_assignees').prop("checked", false);
+        $('#users-list-remove li').removeClass("assigned");
+    })
+
+    $('.proceedRemoveAssignees').on("click", function(){
+        let removeAll = $('#remove_all_assignees').is(":checked");
+        let userIds = [];
+        if(!removeAll) {
+            $('#users-list-remove li.select-user-remove.assigned').each(function(){
+                userIds.push($(this).data("id"));
+            })
+            if(userIds.length === 0) {
+                toastr.error("Select at least one user to remove, or check remove all.");
+                return;
+            }
+        }
+        let taskIds = [];
+        $(":checkbox.select_task:checked").each(function(){
+            taskIds.push($(this).closest("tr").data("id"));
+        })
+        bulkRemoveAssignees(taskIds, removeAll ? "1" : "0", userIds);
+    })
+
+    $('.work-type-multiple').on("click", function(){
+        $('#bulk_work_type').val("");
+        $('#modalBulkWorkType').modal("show");
+    })
+
+    $('.applyBulkWorkType').on("click", function(){
+        let taskIds = [];
+        $(":checkbox.select_task:checked").each(function(){
+            taskIds.push($(this).closest("tr").data("id"));
+        })
+        bulkSetWorkType(taskIds, $('#bulk_work_type').val());
+    })
+
+    $('.billable-multiple').on("click", function(){
+        $('#bulk_billable_mode').val("1");
+        $('#modalBulkBillable').modal("show");
+    })
+
+    $('.applyBulkBillable').on("click", function(){
+        let taskIds = [];
+        $(":checkbox.select_task:checked").each(function(){
+            taskIds.push($(this).closest("tr").data("id"));
+        })
+        bulkSetBillable(taskIds, $('#bulk_billable_mode').val());
+    })
+
+    $('.estimated-hours-multiple').on("click", function(){
+        $('#bulk_est_mode_set').prop("checked", true);
+        $('#bulk_est_hours_value').val("");
+        $('#modalBulkEstimatedHours').modal("show");
+    })
+
+    $('.applyBulkEstimatedHours').on("click", function(){
+        let taskIds = [];
+        $(":checkbox.select_task:checked").each(function(){
+            taskIds.push($(this).closest("tr").data("id"));
+        })
+        let mode = $('input[name="bulk_est_hours_mode"]:checked').val();
+        let hours = $('#bulk_est_hours_value').val();
+        bulkEstimatedHours(taskIds, mode, hours);
+    })
+
+    $('.section-multiple').on("click", function(){
+        $('#bulk_section_value').val("");
+        $('#modalBulkSection').modal("show");
+    })
+
+    $('.applyBulkSection').on("click", function(){
+        let taskIds = [];
+        $(":checkbox.select_task:checked").each(function(){
+            taskIds.push($(this).closest("tr").data("id"));
+        })
+        bulkSetSection(taskIds, $('#bulk_section_value').val());
+    })
+
+    $('.clear-due-date-multiple').on("click", function(){
+        $('#modalClearDueDateConfirmation .modal-body').empty();
+        let html = "<p>The due date will be cleared for:</p><ul class='list-group'>"
+        $(":checkbox.select_task:checked").each(function(){
+            let taskNumber = $(this).closest("tr").find("td.task-number").html();
+            let taskSection = $(this).closest("tr").find("td.task-section").html();
+            let taskName = $(this).closest("tr").find("td.task-name span").length
+                ? $(this).closest("tr").find("td.task-name span").html()
+                : $(this).closest("tr").find("td.task-name").html();
+            html += `<li class='list-group-item'>[${taskNumber}] <b>${taskSection}</b>: ${taskName}</li>`
+        })
+        html += "</ul>"
+        $('#modalClearDueDateConfirmation .modal-body').html(html);
+        $('#modalClearDueDateConfirmation').modal("show");
+    })
+
+    $('.proceedWithClearDueDate').on("click", function(){
+        let taskIds = [];
+        $(":checkbox.select_task:checked").each(function(){
+            taskIds.push($(this).closest("tr").data("id"));
+        })
+        bulkClearDueDate(taskIds);
+    })
+
+    $('.reopen-multiple').on("click", function(){
+        let html = "<ul class='list-group'>"
+        $(":checkbox.select_task:checked").each(function(){
+            let taskNumber = $(this).closest("tr").find("td.task-number").html();
+            let taskSection = $(this).closest("tr").find("td.task-section").html();
+            let taskName = $(this).closest("tr").find("td.task-name span").length
+                ? $(this).closest("tr").find("td.task-name span").html()
+                : $(this).closest("tr").find("td.task-name").html();
+            html += `<li class='list-group-item'>[${taskNumber}] <b>${taskSection}</b>: ${taskName}</li>`
+        })
+        html += "</ul>"
+        $('#modalReopenConfirmation .bulk-reopen-task-list').html(html);
+        $('#modalReopenConfirmation').modal("show");
+    })
+
+    $('.proceedWithReopen').on("click", function(){
+        let taskIds = [];
+        $(":checkbox.select_task:checked").each(function(){
+            taskIds.push($(this).closest("tr").data("id"));
+        })
+        reopenTasks(taskIds);
+    })
+
     $('#modalChangeSprint .changeSprint').on("click", function(){
         let taskIds = [];
         let sprint = $('#modalChangeSprint .select-sprint.assigned').data("sprint");
@@ -393,6 +537,7 @@ jQuery(function(){
         let search_text = $('#search_text').val();
         let work_type = $('#work_type').val();
         let billable = $('#billable').val();
+        let closed_filter = $('#closed_filter').val();
 
         if(customer_id!=='') {
             localStorage.setItem('LastSelectedCustomer',customer_id);
@@ -417,7 +562,7 @@ jQuery(function(){
         
         Overlay("on");
         setTimeout(function(){
-            window.location.href = base_url + 'tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+search_text+"&work_type="+work_type+"&billable="+billable;
+            window.location.href = base_url + 'tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+encodeURIComponent(search_text)+"&work_type="+work_type+"&billable="+billable+"&closed_filter="+encodeURIComponent(closed_filter);
         },100)
     })
 
@@ -471,6 +616,7 @@ jQuery(function(){
         let search_text = $('#search_text').val();
         let work_type = $('#work_type').val();
         let billable = $('#billable').val();
+        let closed_filter = $('#closed_filter').val();
 
         let selectedStages = [];
         $('#stages-list li.selected').each(function(i,j){
@@ -483,7 +629,7 @@ jQuery(function(){
 
         Overlay("on");
         setTimeout(function(){
-            window.location.href = '/tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+JSON.stringify(selectedStages)+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+search_text+"&work_type="+work_type+"&billable="+billable;
+            window.location.href = '/tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+JSON.stringify(selectedStages)+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+encodeURIComponent(search_text)+"&work_type="+work_type+"&billable="+billable+"&closed_filter="+encodeURIComponent(closed_filter);
 
             // $('.monitor').trigger("change")
         },100)
@@ -625,6 +771,146 @@ function setDueDate(taskIds, dueDate)
             }else{
                 Overlay("off")
                 alertify.alert('Error',response.reason)
+            }
+        }
+    })
+}
+
+function reopenTasks(taskIds)
+{
+    Overlay("on")
+    $.ajax({
+        url: base_url + "tasks/reopenMultiple",
+        method: "POST",
+        dataType: "JSON",
+        data: {taskIds: taskIds},
+        success: function(response)
+        {
+            if(response.result){
+                window.location.reload();
+            }else{
+                Overlay("off")
+                alertify.alert('Error', response.reason)
+            }
+        }
+    })
+}
+
+function bulkClearDueDate(taskIds)
+{
+    Overlay("on")
+    $.ajax({
+        url: base_url + "tasks/bulkClearDueDate",
+        method: "POST",
+        dataType: "JSON",
+        data: {taskIds: taskIds},
+        success: function(response)
+        {
+            if(response.result){
+                window.location.reload();
+            }else{
+                Overlay("off")
+                alertify.alert('Error', response.reason)
+            }
+        }
+    })
+}
+
+function bulkSetWorkType(taskIds, workType)
+{
+    Overlay("on")
+    $.ajax({
+        url: base_url + "tasks/bulkSetWorkType",
+        method: "POST",
+        dataType: "JSON",
+        data: {taskIds: taskIds, work_type: workType},
+        success: function(response)
+        {
+            if(response.result){
+                window.location.reload();
+            }else{
+                Overlay("off")
+                alertify.alert('Error', response.reason)
+            }
+        }
+    })
+}
+
+function bulkSetBillable(taskIds, billableMode)
+{
+    Overlay("on")
+    $.ajax({
+        url: base_url + "tasks/bulkSetBillable",
+        method: "POST",
+        dataType: "JSON",
+        data: {taskIds: taskIds, billable_mode: billableMode},
+        success: function(response)
+        {
+            if(response.result){
+                window.location.reload();
+            }else{
+                Overlay("off")
+                alertify.alert('Error', response.reason)
+            }
+        }
+    })
+}
+
+function bulkEstimatedHours(taskIds, mode, hours)
+{
+    Overlay("on")
+    $.ajax({
+        url: base_url + "tasks/bulkEstimatedHours",
+        method: "POST",
+        dataType: "JSON",
+        data: {taskIds: taskIds, mode: mode, hours: hours},
+        success: function(response)
+        {
+            if(response.result){
+                window.location.reload();
+            }else{
+                Overlay("off")
+                alertify.alert('Error', response.reason)
+            }
+        }
+    })
+}
+
+function bulkRemoveAssignees(taskIds, removeAll, userIds)
+{
+    Overlay("on")
+    $.ajax({
+        url: base_url + "tasks/bulkRemoveAssignees",
+        method: "POST",
+        dataType: "JSON",
+        data: {taskIds: taskIds, removeAll: removeAll, userIds: userIds},
+        success: function(response)
+        {
+            if(response.result){
+                window.location.reload();
+            }else{
+                Overlay("off")
+                alertify.alert('Error', response.reason)
+            }
+        }
+    })
+}
+
+function bulkSetSection(taskIds, section)
+{
+    Overlay("on")
+    $.ajax({
+        url: base_url + "tasks/bulkSetSection",
+        method: "POST",
+        dataType: "JSON",
+        data: {taskIds: taskIds, section: section},
+        success: function(response)
+        {
+            if(response.result){
+                window.location.reload();
+            }else{
+                Overlay("off")
+                alertify.alert('Error', response.reason)
             }
         }
     })
