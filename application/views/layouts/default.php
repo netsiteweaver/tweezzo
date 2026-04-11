@@ -66,6 +66,8 @@
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
   <meta name="theme-color" content="#ffffff">
 
+  <link rel="stylesheet" href="<?php echo base_url('assets/css/admin-dark-theme.css?').date('YmdHis');?>">
+
   <script>
     var base_url = "<?php echo base_url();?>";
     var front_url = base_url.substring(0,(base_url.length-6));
@@ -75,11 +77,31 @@
     var flashInfo = "<?php echo $flashInfo; ?>"
   </script>
 </head>
-<?php if($_SESSION['user_level'] == 'Normal'):?>
-<body id="<?php echo ((isset($pageType)) && (!empty($pageType)) ) ? $pageType : '';?>" class="hold-transition sidebar-mini layout-fixed sidebar-collapse'">
-<?php else:?>
-<body id="<?php echo ((isset($pageType)) && (!empty($pageType)) ) ? $pageType : '';?>" class="hold-transition sidebar-mini layout-fixed <?php echo ((isset($sidebar_collapse))&&($sidebar_collapse==1))?"sidebar-collapse":"";?>">
-<?php endif;?>
+<?php
+  $_body_id = ((isset($pageType)) && (!empty($pageType))) ? $pageType : '';
+  $_body_class = 'hold-transition sidebar-mini layout-fixed';
+  if ($_SESSION['user_level'] == 'Normal') {
+    $_body_class .= ' sidebar-collapse';
+  } elseif ((isset($sidebar_collapse)) && ($sidebar_collapse == 1)) {
+    $_body_class .= ' sidebar-collapse';
+  }
+?>
+<body id="<?php echo $_body_id;?>" class="<?php echo $_body_class;?>">
+<script>
+(function(){
+  try {
+    var k = 'tweezzo-admin-theme';
+    var v = localStorage.getItem(k);
+    var dark = (v === 'dark') || (v !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (dark) {
+      document.body.classList.add('dark-mode');
+      document.documentElement.classList.add('admin-dark');
+    }
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', dark ? '#343a40' : '#ffffff');
+  } catch (e) {}
+})();
+</script>
 <div id="overlay">
 	<div class="loader">
 		<div class="loader-inner"></div>
@@ -155,6 +177,7 @@
 <script src="<?php echo base_url("assets/AdminLTE-3.2.0/");?>/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
 <script src="<?php echo base_url("assets/AdminLTE-3.2.0/");?>/dist/js/adminlte.min.js"></script>
+<script src="<?php echo base_url('assets/js/admin-theme-toggle.js?').date('YmdHis');?>"></script>
 <script>
     // $(document).ready(function() {
     //   $('.summernote').summernote({

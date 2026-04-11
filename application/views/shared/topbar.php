@@ -34,6 +34,11 @@
           </div>
         </div>
       </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" id="admin-theme-toggle" role="button" aria-pressed="false" title="Switch theme">
+          <i class="fas fa-moon" aria-hidden="true"></i><span class="sr-only">Toggle dark theme</span>
+        </a>
+      </li>
     </ul>
     <ul class="navbar-nav ml-auto d-none">
       <!-- Messages Dropdown Menu -->

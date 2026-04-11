@@ -1,0 +1,15 @@
+/**
+ * Admin dark theme: AdminLTE handles most surfaces via body.dark-mode.
+ * This file adds tweaks for Tweezzo-specific UI and browser chrome hints.
+ */
+html.admin-dark {
+  color-scheme: dark;
+}
+
+.dark-mode #global-search-results .dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark-mode .loader-text {
+  color: #c2c7d0;
+}
