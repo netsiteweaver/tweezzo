@@ -29,12 +29,20 @@ function isLoggedIn()
 	})
 }
 
-// Show loader during AJAX requests (except background requests)
+function portalDeveloperAjaxShowsLoader(settings) {
+	if (!settings || settings.showLoader === false) {
+		return false;
+	}
+	var u = String(settings.url || '');
+	return u.indexOf('ajax/ping') === -1
+		&& u.indexOf('isLoggedIn') === -1
+		&& u.indexOf('developers/taskPoll') === -1
+		&& u.indexOf('taskPoll') === -1;
+}
+
+// Show loader during AJAX requests (except background / silent polls)
 $(document).ajaxSend(function(event, jqxhr, settings) {
-	// Exclude background requests from showing loader
-	if (settings.showLoader !== false && 
-		!settings.url.includes('ajax/ping') && 
-		!settings.url.includes('isLoggedIn')) {
+	if (portalDeveloperAjaxShowsLoader(settings)) {
 		activeLoaderRequests++;
 		if (activeLoaderRequests > 0) {
 			Overlay('on');
@@ -43,10 +51,7 @@ $(document).ajaxSend(function(event, jqxhr, settings) {
 });
 
 $(document).ajaxComplete(function(event, jqxhr, settings) {
-	// Only hide loader if this was a request that showed it
-	if (settings.showLoader !== false && 
-		!settings.url.includes('ajax/ping') && 
-		!settings.url.includes('isLoggedIn')) {
+	if (portalDeveloperAjaxShowsLoader(settings)) {
 		activeLoaderRequests--;
 		if (activeLoaderRequests <= 0) {
 			activeLoaderRequests = 0;
@@ -54,6 +59,12 @@ $(document).ajaxComplete(function(event, jqxhr, settings) {
 		}
 	}
 });
+
+var developerTaskPollSuppressUntil = 0;
+window.developerTaskPollSuppress = function(ms) {
+	var d = typeof ms === 'number' ? ms : 50000;
+	developerTaskPollSuppressUntil = Date.now() + d;
+};
 
 jQuery(function(){
 
@@ -678,6 +689,143 @@ jQuery(function(){
           });
         });
       });
+
+    $(document).on('click', '.delete-task-attachment', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var btn = $(this);
+        var id = btn.data('task-image-id');
+        var col = btn.closest('div.col-md-4');
+        alertify.confirm('Delete attachment', 'Remove this file from the task?',
+            function() {
+                Overlay('on');
+                $.ajax({
+                    url: base_url + 'portal/developers/deleteTaskImage',
+                    method: 'POST',
+                    data: { task_image_id: id },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.result) {
+                            col.remove();
+                            var $att = $('#attachments');
+                            if ($att.length && $att.find('.col-md-4').length === 0) {
+                                $att.closest('.card').remove();
+                            }
+                            alertify.success('Attachment removed');
+                            if (typeof window.developerTaskPollSuppress === 'function') {
+                                window.developerTaskPollSuppress(50000);
+                            }
+                            var $pr = $('#developer-task-view-root');
+                            if ($pr.length) {
+                                $.ajax({
+                                    url: base_url + 'portal/developers/taskPoll',
+                                    type: 'GET',
+                                    data: { task_uuid: $pr.data('taskUuid') },
+                                    dataType: 'json',
+                                    showLoader: false,
+                                    success: function(pr) {
+                                        if (pr && pr.result && pr.snapshot) {
+                                            $pr.attr('data-task-poll-snapshot', JSON.stringify(pr.snapshot));
+                                        }
+                                    }
+                                });
+                            }
+                        } else {
+                            alertify.error(response.reason || 'Could not delete attachment');
+                        }
+                    },
+                    complete: function() {
+                        Overlay('off');
+                    }
+                });
+            },
+            function() {}
+        );
+    });
+
+    ;(function initDeveloperTaskViewPoll() {
+        var $root = $('#developer-task-view-root');
+        if (!$root.length) {
+            return;
+        }
+        var uuid = $root.data('taskUuid');
+        if (!uuid) {
+            return;
+        }
+        function canonicalSnapshot(s) {
+            try {
+                if (s === null || s === undefined || s === '') {
+                    return '';
+                }
+                var o = typeof s === 'string' ? JSON.parse(s) : s;
+                return JSON.stringify(o);
+            } catch (e) {
+                return String(s);
+            }
+        }
+        var snapAttr = $root.attr('data-task-poll-snapshot') || '';
+        var lastCanon = canonicalSnapshot(snapAttr);
+        var needsBaseline = !String(snapAttr).trim();
+        var pollMs = 5000;
+        setInterval(function() {
+            if (Date.now() < developerTaskPollSuppressUntil) {
+                return;
+            }
+            $.ajax({
+                url: base_url + 'portal/developers/taskPoll',
+                type: 'GET',
+                data: { task_uuid: uuid },
+                dataType: 'json',
+                showLoader: false,
+                success: function(res) {
+                    if (!res || !res.result || !res.snapshot) {
+                        return;
+                    }
+                    var nextCanon = canonicalSnapshot(JSON.stringify(res.snapshot));
+                    if (needsBaseline) {
+                        needsBaseline = false;
+                        lastCanon = nextCanon;
+                        $root.attr('data-task-poll-snapshot', JSON.stringify(res.snapshot));
+                        return;
+                    }
+                    if (nextCanon === lastCanon) {
+                        return;
+                    }
+                    if (window.__developerTaskPollReloading) {
+                        return;
+                    }
+                    window.__developerTaskPollReloading = true;
+                    var nextSnap = JSON.stringify(res.snapshot);
+                    var onDecline = function() {
+                        lastCanon = nextCanon;
+                        $root.attr('data-task-poll-snapshot', nextSnap);
+                        window.__developerTaskPollReloading = false;
+                    };
+                    var showPrompt = function() {
+                        try {
+                            if (typeof alertify !== 'undefined') {
+                                alertify.confirm(
+                                    'Task updated',
+                                    'This task has been changed (for example stage, notes, or attachments). Reload the page to see the latest? If you are writing a note or have other unsaved work on this page, it will be lost if you reload.',
+                                    function() {
+                                        window.location.reload();
+                                    },
+                                    onDecline
+                                );
+                            } else if (window.confirm('This task has been updated. Reload to see the latest? Unsaved changes will be lost.')) {
+                                window.location.reload();
+                            } else {
+                                onDecline();
+                            }
+                        } catch (e) {
+                            window.__developerTaskPollReloading = false;
+                        }
+                    };
+                    setTimeout(showPrompt, 0);
+                }
+            });
+        }, pollMs);
+    })();
 
 })
 

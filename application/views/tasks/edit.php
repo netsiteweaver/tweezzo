@@ -17,6 +17,14 @@
 		background-color:#eee;
 	}
 </style>
+<?php
+$task_poll_json = (!empty($task_poll_snapshot) && is_array($task_poll_snapshot))
+	? json_encode($task_poll_snapshot)
+	: '{}';
+?>
+<div id="admin-task-view-root"
+	data-task-uuid="<?php echo htmlspecialchars($task->uuid, ENT_QUOTES, 'UTF-8'); ?>"
+	data-task-poll-snapshot="<?php echo htmlspecialchars($task_poll_json, ENT_QUOTES, 'UTF-8'); ?>">
 
 <div class="row">
     <div class="col-md-6">
@@ -262,6 +270,7 @@
 						<tr>
 							<th>DATE</th>
 							<th>USER</th>
+							<th>TYPE</th>
 							<th>STAGE CHANGE</th>
 						</tr>
 					</thead>
@@ -269,7 +278,8 @@
 						<?php foreach($task->stage_history as $history):?>
 						<tr>
 							<td><?php echo date('d-M-Y h:i A',strtotime($history->created_on));?></td>
-							<td><?php echo "{$history->created_by_email}<span class='pull-right float-right'>[{$history->user_type}]</span>";?></td>
+							<td><?php echo htmlspecialchars($history->created_by_email); ?></td>
+							<td><?php echo htmlspecialchars(ucfirst(!empty($history->user_type) ? $history->user_type : 'user')); ?></td>
 							<td><?php echo "From <b>" . strtoupper(str_replace("_"," ",$history->old_stage)) . "</b> to <b>" . strtoupper(str_replace("_"," ",$history->new_stage))."</b>";?></td>
 						</tr>
 						<?php endforeach;?>
@@ -333,6 +343,7 @@
 		<a href="tasks/listing?customer_id=<?php echo $this->input->get("customer_id");?>"><div class="btn btn-warning"><i class="fa fa-chevron-left"></i> Back</div></a>
 	</div>
 </div>
+</div><!-- #admin-task-view-root -->
 <script>
 (function(){
     var cb = document.querySelector('.task-billable-cb');

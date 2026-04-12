@@ -34,7 +34,8 @@ $(document).ajaxSend(function(event, jqxhr, settings) {
 	// Exclude background requests from showing loader
 	if (settings.showLoader !== false && 
 		!settings.url.includes('ajax/ping') && 
-		!settings.url.includes('isLoggedIn')) {
+		!settings.url.includes('isLoggedIn') &&
+		!settings.url.includes('taskPoll')) {
 		activeLoaderRequests++;
 		if (activeLoaderRequests > 0) {
 			Overlay('on');
@@ -46,7 +47,8 @@ $(document).ajaxComplete(function(event, jqxhr, settings) {
 	// Only hide loader if this was a request that showed it
 	if (settings.showLoader !== false && 
 		!settings.url.includes('ajax/ping') && 
-		!settings.url.includes('isLoggedIn')) {
+		!settings.url.includes('isLoggedIn') &&
+		!settings.url.includes('taskPoll')) {
 		activeLoaderRequests--;
 		if (activeLoaderRequests <= 0) {
 			activeLoaderRequests = 0;

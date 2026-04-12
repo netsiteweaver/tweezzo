@@ -121,6 +121,8 @@ class Tasks extends MY_Controller {
         $task_uuid = $this->input->get("task_uuid");
         $this->data['task'] = $this->Tasks_model->fetchSIngle($task_uuid);
 
+        $this->data['task_poll_snapshot'] = $this->Tasks_model->getAdminTaskPollSnapshot($task_uuid);
+
         $this->data['progress'] = ($this->data['task']->progress == 0) ? "bg-danger" : (($this->data['task']->progress == 100) ? "bg-success" : "bg-warning");
 
         //Breadcrumbs
@@ -157,6 +159,8 @@ class Tasks extends MY_Controller {
 
         $task_uuid = $this->input->get("task_uuid");
         $this->data['task'] = $this->Tasks_model->fetchSIngle($task_uuid);
+
+        $this->data['task_poll_snapshot'] = $this->Tasks_model->getAdminTaskPollSnapshot($task_uuid);
 
         //Breadcrumbs
         $this->mybreadcrumb->add('Tasks', base_url('tasks/listing'));
@@ -398,6 +402,34 @@ class Tasks extends MY_Controller {
         flashSuccess("Task ".$data['task_number']." stage has been updated successfully");
         redirect(base_url("tasks/listing?".$this->input->post('qs')));
         
+    }
+
+    /**
+     * JSON snapshot for live updates while admin has task edit/view open.
+     */
+    public function taskPoll()
+    {
+        $this->load->model('accesscontrol_model');
+        $can = $this->accesscontrol_model->authorised('tasks', 'view');
+        if ($can == 0) {
+            $can = $this->accesscontrol_model->authorised('tasks', 'edit');
+        }
+        if ($can == 0) {
+            $this->output->set_content_type('application/json')->set_output(json_encode(['result' => false, 'reason' => 'Forbidden']));
+            return;
+        }
+        $uuid = $this->input->get('task_uuid');
+        if ($uuid === null || $uuid === '') {
+            echo json_encode(['result' => false, 'reason' => 'Missing task_uuid']);
+            exit;
+        }
+        $snap = $this->Tasks_model->getAdminTaskPollSnapshot($uuid);
+        if ($snap === false) {
+            echo json_encode(['result' => false, 'reason' => 'Not found']);
+            exit;
+        }
+        echo json_encode(['result' => true, 'snapshot' => $snap]);
+        exit;
     }
 
     public function saveNote()

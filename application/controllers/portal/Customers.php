@@ -301,6 +301,14 @@ class Customers extends CI_Controller
         if(empty($this->data['task'])){
             redirect(base_url("portal/customers/tasks?error=Task not found"));
         }
+        $pc = $this->db->select('customer_id')->from('customer_access')->where('id', (int) $_SESSION['customer_access_id'])->get()->row();
+        $this->data['portal_customer_id'] = $pc ? (int) $pc->customer_id : 0;
+        $this->data['task_poll_snapshot'] = $this->Customersportal_model->getTaskPollSnapshot($task_uuid);
+        if (!empty($this->data['task']->files)) {
+            foreach ($this->data['task']->files as $f) {
+                $f->lightbox_caption = $this->Customersportal_model->task_image_lightbox_caption($f);
+            }
+        }
         // debug($this->data['task']);
         $this->data['content'][] = $this->load->view("/portal/customers/view",$this->data,true);
         $this->load->view("/portal/customers/shared/layout",$this->data);
@@ -334,6 +342,33 @@ class Customers extends CI_Controller
             "result"    =>  true,
             "affected_rows" =>  $affected_rows
         ));
+        exit;
+    }
+
+    public function deleteTaskImage()
+    {
+        $id = (int) $this->input->post('task_image_id');
+        $out = $this->Customersportal_model->deleteCustomerTaskImage($id);
+        echo json_encode($out);
+        exit;
+    }
+
+    /**
+     * JSON snapshot for live task updates while customer has task view open.
+     */
+    public function taskPoll()
+    {
+        $uuid = $this->input->get('task_uuid');
+        if ($uuid === null || $uuid === '') {
+            echo json_encode(['result' => false, 'reason' => 'Missing task_uuid']);
+            exit;
+        }
+        $snap = $this->Customersportal_model->getTaskPollSnapshot($uuid);
+        if ($snap === false) {
+            echo json_encode(['result' => false, 'reason' => 'Not found']);
+            exit;
+        }
+        echo json_encode(['result' => true, 'snapshot' => $snap]);
         exit;
     }
 

@@ -209,18 +209,56 @@ class Tasks_model extends CI_Model{
                                         ->where('tu.task_id',$task->id)
                                         ->get()->row()->users;
         $task->assigned_users = explode(',',$t);
-        //fetch stage history
-        $task->stage_history = $this->db->select('sh.*,u.name')
-                                        ->from('stage_change_history sh')
-                                        ->join('users u','u.id=sh.created_by','left')
-                                        ->where('sh.task_id',$task->id)
-                                        ->order_by('sh.created_on','desc')
-                                        ->get()->result();
+        $task->stage_history = $this->get_stage_history_rows($task->id);
         $task->files = $this->db->select('ti.*')
                                         ->from('task_images ti')
                                         ->where('ti.task_id',$task->id)
+                                        ->order_by('ti.created_on', 'desc')
                                         ->get()->result();                                        
         return $task;
+    }
+
+    /**
+     * Snapshot for admin task edit/view polling (stage, notes, files, stage history).
+     *
+     * @return array<string,mixed>|false
+     */
+    public function getAdminTaskPollSnapshot($uuid)
+    {
+        $task = $this->db->select('t.id, t.stage')
+            ->from('tasks t')
+            ->where('t.uuid', $uuid)
+            ->where('t.status', '1')
+            ->where('t.closed', '0')
+            ->get()
+            ->row();
+        if (empty($task)) {
+            return false;
+        }
+        $tid = (int) $task->id;
+
+        $notes_sql = "SELECT MD5(IFNULL((SELECT GROUP_CONCAT(id ORDER BY id) FROM task_notes WHERE task_id = ?";
+        if ($this->db->field_exists('status', 'task_notes')) {
+            $notes_sql .= " AND status = 1";
+        }
+        $notes_sql .= "), '')) AS fp";
+        $notes_row = $this->db->query($notes_sql, [$tid])->row();
+
+        $files_row = $this->db->query(
+            "SELECT MD5(IFNULL((SELECT GROUP_CONCAT(id ORDER BY id) FROM task_images WHERE task_id = ?), '')) AS fp",
+            [$tid]
+        )->row();
+        $hist_row = $this->db->query(
+            "SELECT MD5(IFNULL((SELECT GROUP_CONCAT(id ORDER BY id) FROM stage_change_history WHERE task_id = ?), '')) AS fp",
+            [$tid]
+        )->row();
+
+        return [
+            'stage'   => $task->stage,
+            'notes'   => $notes_row && isset($notes_row->fp) ? $notes_row->fp : md5(''),
+            'files'   => $files_row && isset($files_row->fp) ? $files_row->fp : md5(''),
+            'history' => $hist_row && isset($hist_row->fp) ? $hist_row->fp : md5(''),
+        ];
     }
 
     public function getSingleById($id)
@@ -243,21 +281,77 @@ class Tasks_model extends CI_Model{
         return $tasks;
     }
 
+    /**
+     * Stage history: created_by is users.id for user/developer, customer_access.id for customer (see user_type).
+     */
+    public function get_stage_history_rows($task_id)
+    {
+        return $this->db->select('sh.*, COALESCE(u.name, ca.name) AS name', false)
+            ->from('stage_change_history sh')
+            ->join('users u', "u.id = sh.created_by AND sh.user_type IN ('user', 'developer')", 'left')
+            ->join('customer_access ca', "ca.id = sh.created_by AND sh.user_type = 'customer'", 'left')
+            ->where('sh.task_id', (int) $task_id)
+            ->order_by('sh.created_on', 'desc')
+            ->get()
+            ->result();
+    }
+
+    /**
+     * Sets MySQL user variables for the legacy `stage_change` trigger on `tasks` (until migration 057 drops it).
+     * Without these, AFTER UPDATE inserts into stage_change_history with NULL user_type and fails (Error 1048).
+     * Strings are escaped for SQL safety (email / user agent may contain quotes).
+     */
+    public function set_stage_change_trigger_session_vars($user_type, $user_id, $email = '')
+    {
+        $this->db->query("SET @@session.time_zone = '+04:00'");
+        $this->db->query('SET @current_user_id = ' . (int) $user_id);
+        $this->db->query('SET @current_user_type = ' . $this->db->escape((string) $user_type));
+        $this->db->query('SET @current_user_email = ' . $this->db->escape((string) $email));
+        $this->db->query('SET @current_user_ip = ' . $this->db->escape($this->input->ip_address()));
+        $this->db->query('SET @current_user_agent = ' . $this->db->escape(substr((string) $this->input->user_agent(), 0, 255)));
+    }
+
+    /**
+     * Insert a stage transition row (used together with migration 057 dropping the trigger; safe to keep either way).
+     *
+     * @param int         $task_id
+     * @param string      $old_stage
+     * @param string      $new_stage
+     * @param string      $user_type user|developer|customer
+     * @param int|null    $created_by users.id, or customer_access.id for customers
+     * @param string|null $email
+     */
+    public function record_stage_change_history($task_id, $old_stage, $new_stage, $user_type, $created_by, $email = null)
+    {
+        if ((int) $task_id <= 0 || $old_stage === null || (string) $old_stage === (string) $new_stage) {
+            return;
+        }
+        $this->db->insert('stage_change_history', array(
+            'task_id'               => (int) $task_id,
+            'old_stage'             => $old_stage,
+            'new_stage'             => $new_stage,
+            'created_by'            => $created_by !== null ? (int) $created_by : null,
+            'created_by_email'      => $email,
+            'created_by_ip'         => $this->input->ip_address(),
+            'created_by_user_agent' => substr((string) $this->input->user_agent(), 0, 255),
+            'user_type'             => $user_type,
+        ));
+    }
+
     public function move_stage($data)
     {
         $this->load->model("System_model");
         $this->load->model("email_model2");
         
         // Get current stage before updating
-        $current_task = $this->db->select('stage')->from('tasks')->where('uuid', $data['task_uuid'])->get()->row();
+        $current_task = $this->db->select('id, stage')->from('tasks')->where('uuid', $data['task_uuid'])->get()->row();
         $old_stage = $current_task ? $current_task->stage : null;
-        
-        $this->db->query("SET @current_user_email = '{$_SESSION['authenticated_user']->email}'");
-        $this->db->query("SET @current_user_ip = '{$_SERVER['REMOTE_ADDR']}'");
-        $this->db->query("SET @current_user_agent = '{$_SERVER['HTTP_USER_AGENT']}'");
-        $this->db->query("SET @current_user_id = " . (int) $_SESSION['user_id']);
-        $this->db->query("SET @current_user_type = 'user'");
-        $this->db->query("SET @@session.time_zone = '+04:00'");
+
+        $this->set_stage_change_trigger_session_vars(
+            'user',
+            (int) $_SESSION['user_id'],
+            isset($_SESSION['authenticated_user']->email) ? $_SESSION['authenticated_user']->email : ''
+        );
 
         $this->db->set('stage',$data['stage']);
         $this->db->set('progress',$data['progress']);
@@ -274,9 +368,20 @@ class Tasks_model extends CI_Model{
         $this->db->where('uuid',$data['task_uuid']);
         $this->db->update('tasks');
 
-        $rows = $this->db->affected_rows();
+        $rows = (int) $this->db->affected_rows();
 
-        if($this->db->affected_rows() == 0)
+        if ($current_task && (string) $old_stage !== (string) $data['stage'] && $rows > 0) {
+            $this->record_stage_change_history(
+                $current_task->id,
+                $old_stage,
+                $data['stage'],
+                'user',
+                (int) $_SESSION['user_id'],
+                isset($_SESSION['authenticated_user']->email) ? $_SESSION['authenticated_user']->email : null
+            );
+        }
+
+        if ($rows === 0)
         {
             return ['result'=>false,'reason'=>'Stage submitted was same as previous'];
         }
@@ -328,13 +433,6 @@ class Tasks_model extends CI_Model{
     {
         $this->load->model("System_model");
         $this->load->model("email_model2");
-        
-        $this->db->query("SET @current_user_email = '{$_SESSION['authenticated_user']->email}'");
-        $this->db->query("SET @current_user_ip = '{$_SERVER['REMOTE_ADDR']}'");
-        $this->db->query("SET @current_user_agent = '{$_SERVER['HTTP_USER_AGENT']}'");
-        $this->db->query("SET @current_user_id = " . (int) $_SESSION['user_id']);
-        $this->db->query("SET @current_user_type = 'user'");
-        $this->db->query("SET @@session.time_zone = '+04:00'");
 
         $this->db->set('name',$data['name']);
         $this->db->set('description',$data['description']);
@@ -634,7 +732,17 @@ class Tasks_model extends CI_Model{
     public function bulkChangeStage($taskIds, $stage)
     {
         $taskids = implode(',',$taskIds);
-        
+        $ids = array_values(array_filter(array_map('intval', (array) $taskIds)));
+        $prevRows = !empty($ids)
+            ? $this->db->select('id, stage')->from('tasks')->where_in('id', $ids)->get()->result()
+            : array();
+
+        $this->set_stage_change_trigger_session_vars(
+            'user',
+            (int) $_SESSION['user_id'],
+            isset($_SESSION['authenticated_user']->email) ? $_SESSION['authenticated_user']->email : ''
+        );
+
         // Handle completed_date
         if($stage == 'completed') {
             // Set completed_date when stage changes to completed
@@ -642,6 +750,20 @@ class Tasks_model extends CI_Model{
         } else {
             // Clear completed_date when changing from completed to another stage, or set stage normally
             $this->db->query("UPDATE tasks SET stage = '$stage', completed_date = CASE WHEN stage = 'completed' THEN NULL ELSE completed_date END WHERE id IN ($taskids)");
+        }
+
+        $adminEmail = isset($_SESSION['authenticated_user']->email) ? $_SESSION['authenticated_user']->email : null;
+        foreach ($prevRows as $pr) {
+            if ((string) $pr->stage !== (string) $stage) {
+                $this->record_stage_change_history(
+                    $pr->id,
+                    $pr->stage,
+                    $stage,
+                    'user',
+                    (int) $_SESSION['user_id'],
+                    $adminEmail
+                );
+            }
         }
 
         $stageLabel = strtoupper(str_replace("_", " ", $stage));

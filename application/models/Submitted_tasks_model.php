@@ -117,6 +117,7 @@ class Submitted_tasks_model extends CI_Model{
             ->from('submitted_tasks_images si')
             ->where('si.submitted_task_id', $task->id)
             ->where('si.status', 1)
+            ->order_by('si.created_on', 'desc')
             ->get()
             ->result();
         $task->stage_history = []; // submitted_tasks do not use stage_change_history (that table is for tasks)

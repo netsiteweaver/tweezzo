@@ -13,7 +13,14 @@
 	} */
 </style>
 <div class="row justify-content-center mb-5">
-	<div class="col-lg-8 col-md-10">
+	<?php
+	$task_poll_json = (!empty($task_poll_snapshot) && is_array($task_poll_snapshot))
+		? json_encode($task_poll_snapshot)
+		: '{}';
+	?>
+	<div class="col-lg-8 col-md-10" id="customer-task-view-root"
+		data-task-uuid="<?php echo htmlspecialchars($task->uuid, ENT_QUOTES, 'UTF-8'); ?>"
+		data-task-poll-snapshot="<?php echo htmlspecialchars($task_poll_json, ENT_QUOTES, 'UTF-8'); ?>">
 		<div class="card card-secondary shadow-lg animate__animated animate__fadeIn">
 			<div class="card-header bg-primary text-white">
 				<div>
@@ -59,6 +66,8 @@
 				$stage_label = strtoupper(str_replace("_"," ",$task->stage));
 				$progress_class = isset($stage_bar_class[$task->stage]) ? $stage_bar_class[$task->stage] : 'bg-secondary';
 				$progress_style = isset($stage_bar_style[$task->stage]) ? $stage_bar_style[$task->stage] : '';
+				$tab_attachment_count = isset($task->files) && is_array($task->files) ? count($task->files) : 0;
+				$tab_history_count = isset($task->stage_history) && is_array($task->stage_history) ? count($task->stage_history) : 0;
 				?>
 				<div class="d-flex align-items-center mb-3">
 					<div class="me-2"><strong>Progress:</strong></div>
@@ -79,29 +88,47 @@
 										<button class="nav-link" id="scope-tab" data-bs-toggle="tab" data-bs-target="#scope" type="button" role="tab">Scope</button>
 									</li>
 									<li class="nav-item" role="presentation">
-										<button class="nav-link" id="attachments-tab" data-bs-toggle="tab" data-bs-target="#attachments" type="button" role="tab">Attachments</button>
+										<button class="nav-link" id="attachments-tab" data-bs-toggle="tab" data-bs-target="#attachments" type="button" role="tab">Attachments<span class="badge rounded-pill bg-secondary ms-1"><?php echo (int) $tab_attachment_count; ?></span></button>
 									</li>
 									<li class="nav-item" role="presentation">
-										<button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">History</button>
+										<button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">History<span class="badge rounded-pill bg-secondary ms-1"><?php echo (int) $tab_history_count; ?></span></button>
 									</li>
 								</ul>
 				<div class="tab-content" id="taskTabContent">
 									   <!-- Details Tab -->
 									   <div class="tab-pane fade show active" id="details" role="tabpanel">
 										   <input type="hidden" name="id" value="<?php echo $task->id;?>">
-										   <div class="mb-3">
-											   <strong>Work type:</strong> <?php echo !empty($task->work_type) ? ucfirst($task->work_type) : '—';?>
-											   &nbsp;|&nbsp; <strong>Billable:</strong> <?php echo isset($task->billable) && $task->billable == 1 ? 'Yes' : (isset($task->billable) && $task->billable == 0 ? 'No' : '—');?>
-											   <?php if (isset($task->billable) && $task->billable == 1): ?>
-											   &nbsp;|&nbsp; <strong>Settled:</strong> <?php echo isset($task->settled) && $task->settled == 1 ? 'Yes' : (isset($task->settled) && $task->settled == 0 ? 'No' : '—');?>
-											   <?php if (isset($task->settled_on) && $task->settled_on): ?>
-											   &nbsp;|&nbsp; <strong>Date settled:</strong> <?php echo date('d M Y', strtotime($task->settled_on));?>
-											   <?php endif; ?>
-											   <?php endif; ?>
-											   <?php if (isset($task->ref) && $task->ref !== ''): ?>
-											   &nbsp;|&nbsp; <strong>Ref:</strong> <?php echo htmlspecialchars($task->ref);?>
-											   <?php endif; ?>
-										   </div>
+										   <?php
+											   $wt = !empty($task->work_type) ? ucfirst($task->work_type) : '—';
+											   $bill = isset($task->billable) && (string) $task->billable === '1' ? 'Yes' : (isset($task->billable) && (string) $task->billable === '0' ? 'No' : '—');
+											   if (isset($task->billable) && (string) $task->billable === '1') {
+												   $settled = isset($task->settled) && (string) $task->settled === '1' ? 'Yes' : (isset($task->settled) && (string) $task->settled === '0' ? 'No' : '—');
+												   if (!empty($task->settled_on)) {
+													   $settled .= ' <span class="text-muted">(' . date('d M Y', strtotime($task->settled_on)) . ')</span>';
+												   }
+											   } else {
+												   $settled = '—';
+											   }
+											   $ref = (isset($task->ref) && $task->ref !== '') ? htmlspecialchars($task->ref) : '—';
+											   ?>
+										   <table class="table table-sm table-bordered mb-3" style="max-width: 100%;">
+											   <thead class="table-light">
+												   <tr>
+													   <th scope="col">Work type</th>
+													   <th scope="col">Billable</th>
+													   <th scope="col">Settled</th>
+													   <th scope="col">Ref</th>
+												   </tr>
+											   </thead>
+											   <tbody>
+												   <tr>
+													   <td><?php echo htmlspecialchars($wt);?></td>
+													   <td><?php echo htmlspecialchars($bill);?></td>
+													   <td><?php echo $settled;?></td>
+													   <td><?php echo $ref;?></td>
+												   </tr>
+											   </tbody>
+										   </table>
 										   <div class="mb-3"><strong>Description:</strong><br><?php echo $task->description;?></div>
 										   
 										   <!-- Validation Section for Staging Tasks -->
@@ -149,7 +176,7 @@
 													   </div>
 												   </div>
 												   <div class="form-group mt-2">
-													   <button type="submit" class="btn btn-info" id=""><img class='ionicon' src='assets/ionicons/save-outline.svg'></i> Save Note</button>
+													   <button type="submit" class="btn btn-info" id="saveNote"><img class='ionicon' src='assets/ionicons/save-outline.svg'></i> Save Note</button>
 												   </div>
 											   </form>
 											   <hr class='mt-4'>
@@ -162,9 +189,6 @@
 															   <!-- <td><?php echo $i+1;?></td> -->
 															   <td>
 															   <?php echo nl2br($notes->notes);?>
-															   <?php if (!empty($notes->file)): ?>
-																   <br><a href="<?php echo base_url('uploads/notes/' . $notes->file); ?>" target="_blank" class="badge bg-secondary"><i class="bi bi-paperclip"></i> Download Attachment</a>
-															   <?php endif; ?>
 															   <div class="float-end developer" style='' title="<?php echo $notes->country_code;?>">
 															   <?php echo "by {$notes->developer}{$notes->customer} <i class='flag flag-".$notes->country_code."'></i> on " . date_format(date_create($notes->created_on),'Y m d @ H:i');?>
 															   </div>
@@ -201,11 +225,25 @@
 						<div class="card-body">
 							<div id="attachments">
 								<div class="row">
-									<?php foreach($task->files as $file):?>    
-										<div class="col-md-2">
-											<a href="<?php echo base_url("uploads/tasks/{$file->file_name}");?>" data-lightbox="test">
+									<?php foreach($task->files as $file):?>
+										<?php
+										// Show delete only when company matches (created_by_customer) AND portal uploader matches (uploaded_by_customer_access_id).
+										$my_ca_id = isset($_SESSION['customer_access_id']) ? (int) $_SESSION['customer_access_id'] : 0;
+										$uploader_ca = isset($file->uploaded_by_customer_access_id) ? (int) $file->uploaded_by_customer_access_id : 0;
+										$can_delete_attachment = !empty($portal_customer_id)
+											&& $my_ca_id > 0
+											&& isset($file->uploaded_by_user_type) && $file->uploaded_by_user_type === 'customer'
+											&& isset($file->created_by_customer) && (int) $file->created_by_customer === (int) $portal_customer_id
+											&& $uploader_ca > 0
+											&& $uploader_ca === $my_ca_id;
+										?>
+										<div class="col-md-2 position-relative pb-4">
+											<a href="<?php echo base_url("uploads/tasks/{$file->file_name}");?>" data-lightbox="task-attachments" data-title="<?php echo htmlspecialchars(isset($file->lightbox_caption) ? $file->lightbox_caption : 'Attachment', ENT_QUOTES, 'UTF-8'); ?>">
 												<img class='img-thumbnail img-responsize' src="<?php echo base_url("uploads/tasks/{$file->thumb_name}");?>" alt="image missing">
 											</a>
+											<?php if ($can_delete_attachment): ?>
+											<button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 py-0 px-1 delete-task-attachment" data-task-image-id="<?php echo (int) $file->id; ?>" title="Delete attachment"><i class="bi bi-trash"></i></button>
+											<?php endif; ?>
 										</div>
 									<?php endforeach;?>
 								</div>
@@ -226,6 +264,7 @@
 									<tr>
 										<th>DATE</th>
 										<th>USER</th>
+										<th>TYPE</th>
 										<th>STAGE CHANGE</th>
 									</tr>
 								</thead>
@@ -235,8 +274,8 @@
 										<td><?php echo date('d-M-Y h:i A',strtotime($history->created_on));?></td>
 										<td>
 											<?php echo !empty($history->name) ? htmlspecialchars($history->name) : '—'; ?>
-											<span class='text-muted'> [<?php echo !empty($history->user_type) ? htmlspecialchars($history->user_type) : 'user'; ?>]</span>
 										</td>
+										<td><?php echo htmlspecialchars(ucfirst(!empty($history->user_type) ? $history->user_type : 'user')); ?></td>
 										<td><?php echo "From <b>" . strtoupper(str_replace("_"," ",$history->old_stage)) . "</b> to <b>" . strtoupper(str_replace("_"," ",$history->new_stage))."</b>";?></td>
 									</tr>
 									<?php endforeach;?>

@@ -1,5 +1,30 @@
 jQuery(function(){
 
+    var adminTaskPollSuppressUntil = 0;
+    window.adminTaskPollSuppress = function(ms) {
+        var d = typeof ms === 'number' ? ms : 50000;
+        adminTaskPollSuppressUntil = Date.now() + d;
+    };
+
+    function syncAdminTaskPollSnapshot() {
+        var $pr = $('#admin-task-view-root');
+        if (!$pr.length) {
+            return;
+        }
+        $.ajax({
+            url: base_url + 'tasks/taskPoll',
+            type: 'GET',
+            data: { task_uuid: $pr.data('taskUuid') },
+            dataType: 'json',
+            showLoader: false,
+            success: function(pr) {
+                if (pr && pr.result && pr.snapshot) {
+                    $pr.attr('data-task-poll-snapshot', JSON.stringify(pr.snapshot));
+                }
+            }
+        });
+    }
+
     if($('select[name=sprint_id]').val() != null){
         if($("input[name='task_number']").val().length==0){
             getMaxTaskNumberBySprintId($('select[name=sprint_id]').val());
@@ -27,6 +52,9 @@ jQuery(function(){
                     $('.summernote').summernote('code', '');
                     $('#task_notes textarea[name=notes]').val('');
                     alertify.success('Note saved successfully');
+                    if (typeof window.adminTaskPollSuppress === 'function') {
+                        window.adminTaskPollSuppress(50000);
+                    }
                     loadNotes(task_id);
                 }else{
                     $('.summernote').summernote('code', '');
@@ -59,6 +87,9 @@ jQuery(function(){
                     if(response.result){
                         Overlay("off")
                         alertify.success('Note deleted successfully');
+                        if (typeof window.adminTaskPollSuppress === 'function') {
+                            window.adminTaskPollSuppress(50000);
+                        }
                         loadNotes(task_id);
                     }
                 },
@@ -89,6 +120,9 @@ jQuery(function(){
                     if(response.result){
                         Overlay("off")
                         alertify.success('Note marked out of scope');
+                        if (typeof window.adminTaskPollSuppress === 'function') {
+                            window.adminTaskPollSuppress(50000);
+                        }
                         loadNotes(task_id);
                     }
                 },
@@ -275,7 +309,91 @@ jQuery(function(){
             }
         });
     });
-    
+
+    ;(function initAdminTaskViewPoll() {
+        var $root = $('#admin-task-view-root');
+        if (!$root.length) {
+            return;
+        }
+        var uuid = $root.data('taskUuid');
+        if (!uuid) {
+            return;
+        }
+        function canonicalSnapshot(s) {
+            try {
+                if (s === null || s === undefined || s === '') {
+                    return '';
+                }
+                var o = typeof s === 'string' ? JSON.parse(s) : s;
+                return JSON.stringify(o);
+            } catch (e) {
+                return String(s);
+            }
+        }
+        var snapAttr = $root.attr('data-task-poll-snapshot') || '';
+        var lastCanon = canonicalSnapshot(snapAttr);
+        var needsBaseline = !String(snapAttr).trim();
+        var pollMs = 5000;
+        setInterval(function() {
+            if (Date.now() < adminTaskPollSuppressUntil) {
+                return;
+            }
+            $.ajax({
+                url: base_url + 'tasks/taskPoll',
+                type: 'GET',
+                data: { task_uuid: uuid },
+                dataType: 'json',
+                showLoader: false,
+                success: function(res) {
+                    if (!res || !res.result || !res.snapshot) {
+                        return;
+                    }
+                    var nextCanon = canonicalSnapshot(JSON.stringify(res.snapshot));
+                    if (needsBaseline) {
+                        needsBaseline = false;
+                        lastCanon = nextCanon;
+                        $root.attr('data-task-poll-snapshot', JSON.stringify(res.snapshot));
+                        return;
+                    }
+                    if (nextCanon === lastCanon) {
+                        return;
+                    }
+                    if (window.__adminTaskPollReloading) {
+                        return;
+                    }
+                    window.__adminTaskPollReloading = true;
+                    var nextSnap = JSON.stringify(res.snapshot);
+                    var onDecline = function() {
+                        lastCanon = nextCanon;
+                        $root.attr('data-task-poll-snapshot', nextSnap);
+                        window.__adminTaskPollReloading = false;
+                    };
+                    var showPrompt = function() {
+                        try {
+                            if (typeof alertify !== 'undefined') {
+                                alertify.confirm(
+                                    'Task updated',
+                                    'This task has been changed (for example stage, notes, or attachments). Reload the page to see the latest? If you are editing the task or have other unsaved work on this page, it will be lost if you reload.',
+                                    function() {
+                                        window.location.reload();
+                                    },
+                                    onDecline
+                                );
+                            } else if (window.confirm('This task has been updated. Reload to see the latest? Unsaved changes will be lost.')) {
+                                window.location.reload();
+                            } else {
+                                onDecline();
+                            }
+                        } catch (e) {
+                            window.__adminTaskPollReloading = false;
+                        }
+                    };
+                    setTimeout(showPrompt, 0);
+                }
+            });
+        }, pollMs);
+    })();
+
 })
 
 function loadNotes(task_id)
@@ -308,6 +426,20 @@ function loadNotes(task_id)
                     row += `</tr>`
                     $('#previousNotes').append(row);
                 })
+            }
+            if ($('#admin-task-view-root').length) {
+                $.ajax({
+                    url: base_url + 'tasks/taskPoll',
+                    type: 'GET',
+                    data: { task_uuid: $('#admin-task-view-root').data('taskUuid') },
+                    dataType: 'json',
+                    showLoader: false,
+                    success: function(pr) {
+                        if (pr && pr.result && pr.snapshot) {
+                            $('#admin-task-view-root').attr('data-task-poll-snapshot', JSON.stringify(pr.snapshot));
+                        }
+                    }
+                });
             }
         },
         complete: function(){

@@ -6,33 +6,51 @@ $(window).on('load', function() {
 // Track active AJAX requests that should show loader
 var activeLoaderRequests = 0;
 
+// Skip task-view poll toasts briefly after the customer’s own actions (note save, etc.)
+var customerTaskPollSuppressUntil = 0;
+window.customerTaskPollSuppress = function(ms) {
+	customerTaskPollSuppressUntil = Date.now() + (ms || 45000);
+};
+
+function portalEscapeHtmlAttr(s) {
+	return String(s == null ? '' : s)
+		.replace(/&/g, '&amp;')
+		.replace(/"/g, '&quot;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;');
+}
+
 // Session ping functionality for portal users
 var pingActive;
 
 function isLoggedIn()
 {
-	$.ajax({
-		url: base_url + "ajax/ping",
-		method: "get",
-		dataType:"json",
-        data:{type:"customer"},
-		success: function(response)
-		{
-			console.log(response)
-			if( (response.result==false) && (response.reason == 'login') )
-			{
-				clearInterval(pingActive);
-				// Redirect to portal login
-				window.location.href = base_url + "portal/customers/signin";
-			}
-		}
-	})
+	// $.ajax({
+	// 	url: base_url + "ajax/ping",
+	// 	method: "get",
+	// 	dataType:"json",
+    //     data:{type:"customer"},
+	// 	success: function(response)
+	// 	{
+	// 		console.log(response)
+	// 		if( (response.result==false) && (response.reason == 'login') )
+	// 		{
+	// 			clearInterval(pingActive);
+	// 			// Redirect to portal login
+	// 			window.location.href = base_url + "portal/customers/signin";
+	// 		}
+	// 	}
+	// })
 }
 
 $('#task_notes').off('submit').on('submit', function(e) {
     e.preventDefault();
     var form = this;
     var notesField = $(form).find('[name="notes"]');
+    var $summer = $(form).find('.summernote');
+    if ($summer.length && typeof $summer.summernote === 'function') {
+        notesField.val($summer.summernote('code'));
+    }
     var notesValue = notesField.val() || '';
     if (notesValue.trim() === '' || notesValue.replace(/<[^>]*>/g, '').trim() === '') {
         alert('Please enter a note before submitting.');
@@ -52,21 +70,70 @@ $('#task_notes').off('submit').on('submit', function(e) {
         success: function(response) {
             if(response.result && response.note) {
                 var note = response.note;
-                var fileLink = note.file ? '<br><a href="/uploads/notes/' + note.file + '" target="_blank" class="badge bg-secondary"><i class="bi bi-paperclip"></i> Download Attachment</a>' : '';
+                var bu = (typeof base_url !== 'undefined' ? base_url : '/');
+                if (bu && bu.slice(-1) !== '/') {
+                    bu += '/';
+                }
                 var outOfScope = note.out_of_scope == '1' ? 'out-of-scope' : '';
                 var deleteBtn = "<div class='btn btn-sm btn-danger deleteNote' data-note-id='" + note.id + "'><i class='bi bi-trash'></i></div>";
-                var outOfScopeImg = note.out_of_scope == '1' ? "<img style='width:24px; height:24px;' src='/assets/images/OUT-OF-SCOPE-36PX.png' alt=''>" : '';
-                var devInfo = "<div class='float-end developer' title='" + (note.country_code || '') + "'>by " + (note.developer || '') + (note.customer || '') + " <i class='flag flag-" + (note.country_code || '') + "'></i> on " + (note.created_on_fmt || note.created_on) + "</div>";
+                var outOfScopeImg = note.out_of_scope == '1' ? "<img style='width:24px; height:24px;' src='" + bu + "assets/images/OUT-OF-SCOPE-36PX.png' alt=''>" : '';
+                var createdStr = note.created_on_fmt || note.created_on || '';
+                var devInfo = "<div class='float-end developer' title='" + (note.country_code || '') + "'>by " + (note.developer || '') + (note.customer || '') + " <i class='flag flag-" + (note.country_code || '') + "'></i> on " + createdStr + "</div>";
+                var noteHtml = note.notes ? note.notes.replace(/\n/g, '<br>') : '';
                 var row = "<tr class='" + outOfScope + "'>" +
-                    // "<td>NEW</td>" +
-                    "<td>" + (note.notes ? note.notes.replace(/\n/g, '<br>') : '') + fileLink + devInfo + "</td>" +
+                    "<td>" + noteHtml + devInfo + "</td>" +
                     "<td>" + deleteBtn + outOfScopeImg + "</td>" +
                     "</tr>";
                 $('#previous_notes tbody').prepend(row);
+                if (note.attachment_file) {
+                    var $badge = $('#attachments-tab .badge');
+                    if ($badge.length) {
+                        var n = parseInt($badge.text(), 10);
+                        $badge.text((isNaN(n) ? 0 : n) + 1);
+                    }
+                    var $pane = $('div.tab-pane#attachments');
+                    var thumbUrl = bu + 'uploads/tasks/' + encodeURIComponent(note.attachment_thumb || note.attachment_file);
+                    var fullUrl = bu + 'uploads/tasks/' + encodeURIComponent(note.attachment_file);
+                    var delBtn = '';
+                    if (note.attachment_task_image_id) {
+                        delBtn = '<button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 py-0 px-1 delete-task-attachment" data-task-image-id="' + parseInt(note.attachment_task_image_id, 10) + '" title="Delete attachment"><i class="bi bi-trash"></i></button>';
+                    }
+                    var lbTitle = note.attachment_lightbox_caption ? ' data-title="' + portalEscapeHtmlAttr(note.attachment_lightbox_caption) + '"' : '';
+                    var col = '<div class="col-md-2 position-relative pb-4"><a href="' + fullUrl + '" data-lightbox="task-attachments"' + lbTitle + '><img class="img-thumbnail img-responsize" src="' + thumbUrl + '" alt=""></a>' + delBtn + '</div>';
+                    var $gridRow = $pane.find('.card .card-body .row').first();
+                    if ($gridRow.length) {
+                        $gridRow.prepend(col);
+                    } else {
+                        $pane.find('> .text-muted').first().replaceWith(
+                            '<div class="card card-secondary">' +
+                            '<div class="card-header">ATTACHMENTS</div>' +
+                            '<div class="card-body"><div class="row">' + col + '</div></div></div>'
+                        );
+                    }
+                }
                 // Clear the form
                 form.reset();
+                $('#note_file_preview').hide();
                 if(window.jQuery && $('.summernote').length) {
                   $('.summernote').summernote('reset');
+                }
+                if (typeof window.customerTaskPollSuppress === 'function') {
+                    window.customerTaskPollSuppress(50000);
+                }
+                var $pollRoot = $('#customer-task-view-root');
+                if ($pollRoot.length) {
+                    $.ajax({
+                        url: base_url + 'portal/customers/taskPoll',
+                        type: 'GET',
+                        data: { task_uuid: $pollRoot.data('taskUuid') },
+                        dataType: 'json',
+                        showLoader: false,
+                        success: function(pr) {
+                            if (pr && pr.result && pr.snapshot) {
+                                $pollRoot.attr('data-task-poll-snapshot', JSON.stringify(pr.snapshot));
+                            }
+                        }
+                    });
                 }
             } else {
                 alert(response.reason || 'Failed to save note.');
@@ -81,12 +148,20 @@ $('#task_notes').off('submit').on('submit', function(e) {
     });
 });
 
-// Show loader during AJAX requests (except background requests)
+function portalAjaxShowsLoader(settings) {
+	if (!settings || settings.showLoader === false) {
+		return false;
+	}
+	var u = String(settings.url || '');
+	return u.indexOf('ajax/ping') === -1
+		&& u.indexOf('isLoggedIn') === -1
+		&& u.indexOf('customers/taskPoll') === -1
+		&& u.indexOf('taskPoll') === -1;
+}
+
+// Show loader during AJAX requests (except background / silent polls)
 $(document).ajaxSend(function(event, jqxhr, settings) {
-	// Exclude background requests from showing loader
-	if (settings.showLoader !== false && 
-		!settings.url.includes('ajax/ping') && 
-		!settings.url.includes('isLoggedIn')) {
+	if (portalAjaxShowsLoader(settings)) {
 		activeLoaderRequests++;
 		if (activeLoaderRequests > 0) {
 			Overlay('on');
@@ -95,10 +170,7 @@ $(document).ajaxSend(function(event, jqxhr, settings) {
 });
 
 $(document).ajaxComplete(function(event, jqxhr, settings) {
-	// Only hide loader if this was a request that showed it
-	if (settings.showLoader !== false && 
-		!settings.url.includes('ajax/ping') && 
-		!settings.url.includes('isLoggedIn')) {
+	if (portalAjaxShowsLoader(settings)) {
 		activeLoaderRequests--;
 		if (activeLoaderRequests <= 0) {
 			activeLoaderRequests = 0;
@@ -613,8 +685,8 @@ jQuery(function(){
 
     $('.view-notes').on("click", function() {
         let taskId = $(this).closest("tr").data("id");
-        let taskNumber = $(this).closest("tr").find("td.task-number").html();
-        let taskSection = $(this).closest("tr").find("td.task-section").html();
+        let taskRef = $(this).closest("tr").find("td.task-ref-cell .task-ref-text").first().text().trim();
+        let taskSection = $(this).closest("tr").find("td.task-section").text();
         let taskName = $(this).closest("tr").find("td.task-name").text();
 
         Overlay("on");
@@ -631,7 +703,7 @@ jQuery(function(){
                         alertify.error("No notes found for this task.")
                     }else{
                         $('#modalNotes .modal-body tbody').empty();
-                        $('#modalNotes .modal-title').html(`<b>Notes for</b>: ${taskNumber} / ${taskSection} / ${taskName}`);
+                        $('#modalNotes .modal-title').html(`<b>Notes for</b>: ${taskRef} / ${taskSection} / ${taskName}`);
                         $(response.notes).each(function(i,j){
                             let html = `<tr><td style='font-size:10px; color:#ccc; '>${i+1}</td><td>${nl2br(j.notes)}<br><div style='text-align:right; font-size:12px; color:#999;'>by `
                             if(j.customer !== null){
@@ -697,29 +769,33 @@ jQuery(function(){
         $("#addUserAccessModal .update-user-access").addClass("d-none");
     })
 
+    // Legacy handler for pages that use #saveNote without #task_notes (AJAX + redirect).
+    // Task view uses #task_notes submit (FormData, correct "notes" field); this click runs first
+    // and wrongly posted "note" vs "notes", causing a spurious "2 Notes cannot be empty" alert.
     $("#saveNote").on("click", function() {
+        if ($(this).closest("#task_notes").length) {
+            return;
+        }
         let taskUuid = $('input[name=uuid]').val();
         let taskId = $('input[name=id]').val();
         let sprintId = $('input[name=sprint_id]').val();
-        // let notes = $('textarea[name=notes]').val();
         let notes = $('.summernote').summernote('code').replace(/^\s*<p>(.*?)<\/p>/i, '$1');
         Overlay("on");
         $.ajax({
             url: "portal/customers/saveNote",
-            data: {task_id:taskId, note:notes},
+            data: {task_id: taskId, notes: notes},
             method: "POST",
             dataType: "JSON",
             success: function(response) {
                 if(response.result) {
-                    // window.location.href = "portal/customers/tasks?sprint_id="+sprintId;
                     window.location.href = "portal/customers/view?task_uuid="+taskUuid;
-                }else{
-                    alert(response.reason)
+                } else {
+                    alert(response.reason);
                 }
                 Overlay("off");
             }
-        })
-    })
+        });
+    });
 
     $('.apply').on("click", function(){
         let sortBy = $('select[name=sort_by]').val();
@@ -835,6 +911,24 @@ jQuery(function(){
                         // if(response.affected_rows==1){
                             $(row).remove();
                             alertify.success("Note deleted");
+                            if (typeof window.customerTaskPollSuppress === 'function') {
+                                window.customerTaskPollSuppress(50000);
+                            }
+                            var $pr = $('#customer-task-view-root');
+                            if ($pr.length) {
+                                $.ajax({
+                                    url: base_url + 'portal/customers/taskPoll',
+                                    type: 'GET',
+                                    data: { task_uuid: $pr.data('taskUuid') },
+                                    dataType: 'json',
+                                    showLoader: false,
+                                    success: function(pr) {
+                                        if (pr && pr.result && pr.snapshot) {
+                                            $pr.attr('data-task-poll-snapshot', JSON.stringify(pr.snapshot));
+                                        }
+                                    }
+                                });
+                            }
                             // $('#previous_notes tbody tr').each(function(i,j){
                             //     $(this).find("td").eq(0).text(i+1)
                             // })
@@ -854,6 +948,69 @@ jQuery(function(){
         )
        
     })
+
+    $(document).on('click', '.delete-task-attachment', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var btn = $(this);
+        var id = btn.data('task-image-id');
+        var col = btn.closest('.col-md-2');
+        alertify.confirm('Delete attachment', 'Remove this file from the task?',
+            function() {
+                Overlay('on');
+                $.ajax({
+                    url: 'portal/customers/deleteTaskImage',
+                    method: 'POST',
+                    data: { task_image_id: id },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.result) {
+                            col.remove();
+                            var $badge = $('#attachments-tab .badge');
+                            if ($badge.length) {
+                                var n = parseInt($badge.text(), 10);
+                                n = (isNaN(n) ? 0 : n) - 1;
+                                if (n < 0) { n = 0; }
+                                $badge.text(n);
+                            }
+                            var $pane = $('div.tab-pane#attachments');
+                            if ($pane.find('.col-md-2').length === 0) {
+                                $pane.find('.card').remove();
+                                if (!$pane.children('.text-muted').length) {
+                                    $pane.append('<div class="text-muted">No attachments for this task.</div>');
+                                }
+                            }
+                            alertify.success('Attachment removed');
+                            if (typeof window.customerTaskPollSuppress === 'function') {
+                                window.customerTaskPollSuppress(50000);
+                            }
+                            var $pr = $('#customer-task-view-root');
+                            if ($pr.length) {
+                                $.ajax({
+                                    url: base_url + 'portal/customers/taskPoll',
+                                    type: 'GET',
+                                    data: { task_uuid: $pr.data('taskUuid') },
+                                    dataType: 'json',
+                                    showLoader: false,
+                                    success: function(pr) {
+                                        if (pr && pr.result && pr.snapshot) {
+                                            $pr.attr('data-task-poll-snapshot', JSON.stringify(pr.snapshot));
+                                        }
+                                    }
+                                });
+                            }
+                        } else {
+                            alertify.error(response.reason || 'Could not delete attachment');
+                        }
+                    },
+                    complete: function() {
+                        Overlay('off');
+                    }
+                });
+            },
+            function() {}
+        );
+    });
 
     $('.submit-task').on('click',function(){
         $(this).addClass("d-none");
@@ -927,6 +1084,91 @@ jQuery(function(){
         $('#task_images_preview').empty();
         revokeTaskImagePreviews();
     })
+
+    ;(function initCustomerTaskViewPoll() {
+        var $root = $('#customer-task-view-root');
+        if (!$root.length) {
+            return;
+        }
+        var uuid = $root.data('taskUuid');
+        if (!uuid) {
+            return;
+        }
+        function canonicalSnapshot(s) {
+            try {
+                if (s === null || s === undefined || s === '') {
+                    return '';
+                }
+                var o = typeof s === 'string' ? JSON.parse(s) : s;
+                return JSON.stringify(o);
+            } catch (e) {
+                return String(s);
+            }
+        }
+        var snapAttr = $root.attr('data-task-poll-snapshot') || '';
+        var lastCanon = canonicalSnapshot(snapAttr);
+        var needsBaseline = !String(snapAttr).trim();
+        // Task live-update poll interval (ms). Use ~20000 in production; shorter while testing.
+        var pollMs = 5000;
+        setInterval(function() {
+            if (Date.now() < customerTaskPollSuppressUntil) {
+                return;
+            }
+            $.ajax({
+                url: base_url + 'portal/customers/taskPoll',
+                type: 'GET',
+                data: { task_uuid: uuid },
+                dataType: 'json',
+                showLoader: false,
+                success: function(res) {
+                    if (!res || !res.result || !res.snapshot) {
+                        return;
+                    }
+                    var nextCanon = canonicalSnapshot(JSON.stringify(res.snapshot));
+                    if (needsBaseline) {
+                        needsBaseline = false;
+                        lastCanon = nextCanon;
+                        $root.attr('data-task-poll-snapshot', JSON.stringify(res.snapshot));
+                        return;
+                    }
+                    if (nextCanon === lastCanon) {
+                        return;
+                    }
+                    if (window.__customerTaskPollReloading) {
+                        return;
+                    }
+                    window.__customerTaskPollReloading = true;
+                    var nextSnap = JSON.stringify(res.snapshot);
+                    var onDecline = function() {
+                        lastCanon = nextCanon;
+                        $root.attr('data-task-poll-snapshot', nextSnap);
+                        window.__customerTaskPollReloading = false;
+                    };
+                    var showPrompt = function() {
+                        try {
+                            if (typeof alertify !== 'undefined') {
+                                alertify.confirm(
+                                    'Task updated',
+                                    'This task has been changed (for example stage, notes, or attachments). Reload the page to see the latest? If you are writing a note or have other unsaved work on this page, it will be lost if you reload.',
+                                    function() {
+                                        window.location.reload();
+                                    },
+                                    onDecline
+                                );
+                            } else if (window.confirm('This task has been updated. Reload to see the latest? Unsaved changes will be lost.')) {
+                                window.location.reload();
+                            } else {
+                                onDecline();
+                            }
+                        } catch (e) {
+                            window.__customerTaskPollReloading = false;
+                        }
+                    };
+                    setTimeout(showPrompt, 0);
+                }
+            });
+        }, pollMs);
+    })();
 
 })
 

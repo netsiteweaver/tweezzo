@@ -201,6 +201,15 @@ class Developers extends CI_Controller
             redirect(base_url("portal/developers/tasks?error=Task not found"));
         }
 
+        $this->data['portal_developer_id'] = (int) $_SESSION['developer_id'];
+        $this->data['task_poll_snapshot'] = $this->Developersportal_model->getDeveloperTaskPollSnapshot($task_uuid);
+        $this->load->model('Customersportal_model');
+        if (!empty($this->data['task']->files)) {
+            foreach ($this->data['task']->files as $f) {
+                $f->lightbox_caption = $this->Customersportal_model->task_image_lightbox_caption($f);
+            }
+        }
+
         $this->data['content'][] = $this->load->view("/portal/developers/view_partials/timer",$this->data,true);
         $this->data['content'][] = $this->load->view("/portal/developers/view1",$this->data,true);
         $this->load->view("/portal/developers/shared/layout",$this->data);
@@ -342,10 +351,58 @@ class Developers extends CI_Controller
         exit;
     }
 
+    /**
+     * JSON snapshot for live task updates on developer task view.
+     */
+    public function taskPoll()
+    {
+        if (empty($_SESSION['developer_id'])) {
+            $this->output->set_content_type('application/json')->set_output(json_encode(['result' => false, 'reason' => 'Not signed in']));
+            return;
+        }
+        $uuid = $this->input->get('task_uuid');
+        if ($uuid === null || $uuid === '') {
+            echo json_encode(['result' => false, 'reason' => 'Missing task_uuid']);
+            exit;
+        }
+        $snap = $this->Developersportal_model->getDeveloperTaskPollSnapshot($uuid);
+        if ($snap === false) {
+            echo json_encode(['result' => false, 'reason' => 'Not found']);
+            exit;
+        }
+        echo json_encode(['result' => true, 'snapshot' => $snap]);
+        exit;
+    }
+
+    public function deleteTaskImage()
+    {
+        if (empty($_SESSION['developer_id'])) {
+            $this->output->set_content_type('application/json')->set_output(json_encode(['result' => false, 'reason' => 'Not signed in']));
+            return;
+        }
+        $id = (int) $this->input->post('task_image_id');
+        $out = $this->Developersportal_model->deleteDeveloperTaskImage($id);
+        echo json_encode($out);
+        exit;
+    }
+
     public function uploadFiles()
     {
         $uuid = $this->input->post("uuid");
-        $task_id = $this->db->select("id")->from("tasks")->where("uuid",$uuid)->get()->row()->id;
+        $dev_id = (int) $_SESSION['developer_id'];
+        $task_row = $this->db->select('t.id')
+            ->from('tasks t')
+            ->join('task_user tu', 'tu.task_id = t.id AND tu.user_id = ' . $dev_id, 'inner')
+            ->where('t.uuid', $uuid)
+            ->where('t.status', '1')
+            ->where('t.closed', '0')
+            ->get()->row();
+        if (empty($task_row)) {
+            flashDanger('Task not found or you are not assigned to it.');
+            redirect(base_url('portal/developers/tasks'));
+            return;
+        }
+        $task_id = (int) $task_row->id;
         $this->load->model("files_model");
         $uploadedFiles = [];
         if($_FILES['file1']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file1","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);

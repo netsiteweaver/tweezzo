@@ -106,6 +106,7 @@
             <thead>
                 <tr>
                     <th># <img src="assets/images/sort.png" alt="" class='<?php echo ( (empty($this->input->get('sort_by'))) || ($this->input->get('sort_by') == 'task_number') ) ? '' :'d-none';?>'></th>
+                    <th>Task ID</th>
                     <th>PROJECT NAME <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('sort_by') == 'project_name') ? '' :'d-none';?>'></th>
                     <th>SPRINT NAME <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('sort_by') == 'sprint_name') ? '' :'d-none';?>'></th>
                     <th>SECTION <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('sort_by') == 'section') ? '' :'d-none';?>'></th>
@@ -114,6 +115,7 @@
                     <th>STAGE <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('sort_by') == 'stage') ? '' :'d-none';?>'></th>
                     <th>WORK TYPE</th>
                     <th>BILLABLE</th>
+                    <th>Ref</th>
                     <th><i class="bi bi-chat-dots"></i></th>
                     <th></th>
                 </tr>
@@ -131,7 +133,8 @@
                 <?php foreach($tasks as $task):?>
                 <?php $totals[$task->stage]++; ?>
                 <tr data-id="<?php echo $task->id;?>">
-                    <td class='task-number task-ref-cell'>
+                    <td class="task-number"><?php echo isset($task->task_number) ? htmlspecialchars($task->task_number) : '';?></td>
+                    <td class="task-ref-cell">
                                 <?php
                                 $display_ref = (isset($task->task_ref) && $task->task_ref !== '') ? $task->task_ref : (isset($task->task_number) ? $task->task_number : '');
                                 if ($display_ref === '' && function_exists('task_ref')) {
@@ -140,12 +143,12 @@
                                 $display_ref = $display_ref !== '' ? $display_ref : (isset($task->task_number) ? $task->task_number : '');
                                 ?>
                                 <span class="task-ref-text"><?php echo htmlspecialchars($display_ref); ?></span>
-                                <button type="button" class="copy-task-ref" data-ref="<?php echo htmlspecialchars($display_ref); ?>" title="Copy reference"><i class="bi bi-clipboard"></i></button>
+                                <button type="button" class="copy-task-ref" data-ref="<?php echo htmlspecialchars($display_ref); ?>" title="Copy task ID"><i class="bi bi-clipboard"></i></button>
                             </td>
                     <td><?php echo $task->project_name;?></td>
                     <td><?php echo $task->sprint_name;?></td>
-                    <td><?php echo $task->section;?></td>
-                    <td><?php echo $task->name;?></td>
+                    <td class="task-section"><?php echo $task->section;?></td>
+                    <td class="task-name"><?php echo $task->name;?></td>
                     <td><?php echo $task->due_date;?></td>
                     <td class="text-center">
                         <button type="button"
@@ -156,6 +159,7 @@
                     </td>
                     <td><?php echo !empty($task->work_type) ? ucfirst($task->work_type) : '—';?></td>
                     <td><?php echo isset($task->billable) && $task->billable == 1 ? 'Yes' : (isset($task->billable) && $task->billable == 0 ? 'No' : '—');?></td>
+                    <td><?php echo isset($task->ref) && $task->ref !== '' ? htmlspecialchars($task->ref) : '—';?></td>
                     <td class=''><?php echo $task->notes_count;?><br><i class="bi bi-eye view-notes cursor-pointer"></i></td>
                     <td>
                         <a href="portal/customers/view?task_uuid=<?php echo $task->uuid;?>">
@@ -167,7 +171,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <th colspan='9' class='text-center'>
+                    <th colspan='13' class='text-center'>
                         TOTAL:
                         <?php echo count($tasks) . " | NEW: " . $totals['new'] . " | IN PROGRESS: " . $totals['in_progress'] . " | TESTING: " . $totals['testing'] . " | STAGING: " . $totals['staging'] . " | VALIDATED: " . $totals['validated'] . " | COMPLETED: " . $totals['completed'] . " | ON HOLD: " . $totals['on_hold'];?>
                     </th>

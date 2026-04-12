@@ -57,6 +57,14 @@
 
 
         </style>
+        <?php
+        $task_poll_json = (!empty($task_poll_snapshot) && is_array($task_poll_snapshot))
+            ? json_encode($task_poll_snapshot)
+            : '{}';
+        ?>
+        <div id="developer-task-view-root"
+            data-task-uuid="<?php echo htmlspecialchars($task->uuid, ENT_QUOTES, 'UTF-8'); ?>"
+            data-task-poll-snapshot="<?php echo htmlspecialchars($task_poll_json, ENT_QUOTES, 'UTF-8'); ?>">
         <div class="row">
             <div class="col-md-2">
                 <div class="btn btn-sm btn-warning mt-2 mb-2 js-back"><i class="fa fa-chevron-left"></i> Back</div>
@@ -232,13 +240,22 @@
                         <div id="attachments">
                             <div class="row">
                                 <?php foreach($task->files as $file):?>
-                                <div class="col-md-4">
+                                <?php
+                                $can_delete_attachment = !empty($portal_developer_id)
+                                    && isset($file->uploaded_by_user_type) && $file->uploaded_by_user_type === 'developer'
+                                    && isset($file->created_by) && (int) $file->created_by === (int) $portal_developer_id;
+                                ?>
+                                <div class="col-md-4 position-relative pb-2">
                                     <a href="<?php echo base_url("uploads/tasks/{$file->file_name}");?>"
-                                        data-lightbox="test">
+                                        data-lightbox="task-attachments"
+                                        data-title="<?php echo htmlspecialchars(isset($file->lightbox_caption) ? $file->lightbox_caption : 'Attachment', ENT_QUOTES, 'UTF-8'); ?>">
                                         <img style='width:100%;' class='img-thumbnail img-responsize'
                                             src="<?php echo base_url("uploads/tasks/{$file->thumb_name}");?>"
                                             alt="image missing">
                                     </a>
+                                    <?php if ($can_delete_attachment): ?>
+                                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 py-0 px-1 delete-task-attachment" data-task-image-id="<?php echo (int) $file->id; ?>" title="Delete attachment"><i class="bi bi-trash"></i></button>
+                                    <?php endif; ?>
                                 </div>
                                 <?php endforeach;?>
                             </div>
@@ -282,6 +299,7 @@
                                 <tr>
                                     <th>DATE</th>
                                     <th>USER</th>
+                                    <th>TYPE</th>
                                     <th>STAGE CHANGE</th>
                                 </tr>
                             </thead>
@@ -289,8 +307,8 @@
                                 <?php foreach($task->stage_history as $history):?>
                                 <tr>
                                     <td><?php echo date('d-M-Y h:i A',strtotime($history->created_on));?></td>
-                                    <td><?php echo "{$history->created_by_email}<span class='text-muted'> [{$history->user_type}]</span>";?>
-                                    </td>
+                                    <td><?php echo htmlspecialchars($history->created_by_email); ?></td>
+                                    <td><?php echo htmlspecialchars(ucfirst(!empty($history->user_type) ? $history->user_type : 'user')); ?></td>
                                     <td><?php echo "From <b>" . strtoupper(str_replace("_"," ",$history->old_stage)) . "</b> to <b>" . strtoupper(str_replace("_"," ",$history->new_stage))."</b>";?>
                                     </td>
                                 </tr>
@@ -313,6 +331,7 @@
                 </a>
             </div>
         </div>
+        </div><!-- /#developer-task-view-root -->
 
 <script>
 const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];

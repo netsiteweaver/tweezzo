@@ -476,17 +476,131 @@ class Customersportal_model extends CI_Model
                                 ->order_by("created_on","desc")
                                 ->get()
                                 ->result();
-        $task->stage_history = $this->db->select('sh.*,u.name')
-                                ->from('stage_change_history sh')
-                                ->join('users u','u.id=sh.created_by','left')
-                                ->where('sh.task_id',$task->id)
-                                ->order_by('sh.created_on','desc')
-                                ->get()->result();                                
-        $task->files = $this->db->select('ti.*')
+        $this->load->model('tasks_model');
+        $task->stage_history = $this->tasks_model->get_stage_history_rows($task->id);
+        $task->files = $this->db->select('ti.*, u.name AS uploader_user_name, uca.name AS uploader_customer_access_name, c.full_name AS uploader_customer_full, c.company_name AS uploader_customer_company', false)
                                 ->from('task_images ti')
-                                ->where('ti.task_id',$task->id)
-                                ->get()->result();                                     
+                                ->join('users u', 'u.id = ti.created_by', 'left')
+                                ->join('customer_access uca', 'uca.id = ti.uploaded_by_customer_access_id', 'left')
+                                ->join('customers c', 'c.customer_id = ti.created_by_customer', 'left')
+                                ->where('ti.task_id', $task->id)
+                                ->order_by('ti.created_on', 'desc')
+                                ->get()->result();
         return $task;
+    }
+
+    /**
+     * Lightweight snapshot for live polling on customer task view (stage + counts).
+     *
+     * @return array<string,mixed>|false
+     */
+    public function getTaskPollSnapshot($uuid)
+    {
+        $access_id = (int) $_SESSION['customer_access_id'];
+        $task = $this->db->select('t.id, t.stage')
+            ->from('tasks t')
+            ->join('sprints s', 's.id = t.sprint_id', 'left')
+            ->join('projects p', 'p.id = s.project_id', 'left')
+            ->join('customers c', 'c.customer_id = p.customer_id', 'left')
+            ->where('t.status', '1')
+            ->where('t.closed', '0')
+            ->where('t.uuid', $uuid)
+            ->where('s.status', 1)
+            ->where('s.active', 1)
+            ->where('p.active', 1)
+            ->where('c.status', 1)
+            ->where('c.active', 1)
+            ->where('c.customer_id = (SELECT customer_id FROM customer_access WHERE id = ' . $access_id . ')', null, false)
+            ->get()
+            ->row();
+        if (empty($task)) {
+            return false;
+        }
+        $tid = (int) $task->id;
+
+        // Fingerprints of which rows exist (MD5 of sorted ids): add/delete always changes the hash.
+        // Notes = public only, same as customer getTask().
+        $notes_row = $this->db->query(
+            "SELECT MD5(IFNULL((SELECT GROUP_CONCAT(id ORDER BY id) FROM task_notes WHERE task_id = ? AND display_type = 'public'), '')) AS fp",
+            [$tid]
+        )->row();
+        $files_row = $this->db->query(
+            "SELECT MD5(IFNULL((SELECT GROUP_CONCAT(id ORDER BY id) FROM task_images WHERE task_id = ?), '')) AS fp",
+            [$tid]
+        )->row();
+        $hist_row = $this->db->query(
+            "SELECT MD5(IFNULL((SELECT GROUP_CONCAT(id ORDER BY id) FROM stage_change_history WHERE task_id = ?), '')) AS fp",
+            [$tid]
+        )->row();
+
+        return [
+            'stage'   => $task->stage,
+            'notes'   => $notes_row && isset($notes_row->fp) ? $notes_row->fp : md5(''),
+            'files'   => $files_row && isset($files_row->fp) ? $files_row->fp : md5(''),
+            'history' => $hist_row && isset($hist_row->fp) ? $hist_row->fp : md5(''),
+        ];
+    }
+
+    /**
+     * Lightbox2 caption: upload time, uploader name (or company), and role (customer portal).
+     *
+     * @param object|array $file Row from task_images (+ uploader_user_name, uploader_customer_access_name, uploader_customer_* from joins)
+     */
+    public function task_image_lightbox_caption($file)
+    {
+        $labels = ['customer' => 'Customer', 'developer' => 'Developer', 'admin' => 'Team'];
+        $created = is_object($file) ? (isset($file->created_on) ? $file->created_on : '') : (isset($file['created_on']) ? $file['created_on'] : '');
+        $when = $created !== '' ? date('d M Y \a\t h:i A', strtotime($created)) : '';
+        $t = is_object($file) ? (isset($file->uploaded_by_user_type) ? $file->uploaded_by_user_type : '') : (isset($file['uploaded_by_user_type']) ? $file['uploaded_by_user_type'] : '');
+        $role = isset($labels[$t]) ? $labels[$t] : ($t !== '' ? ucfirst($t) : '');
+
+        $displayName = '';
+        if ($t === 'customer') {
+            $caName = is_object($file)
+                ? (isset($file->uploader_customer_access_name) ? trim((string) $file->uploader_customer_access_name) : '')
+                : (isset($file['uploader_customer_access_name']) ? trim((string) $file['uploader_customer_access_name']) : '');
+            if ($caName !== '') {
+                $displayName = $caName;
+            } else {
+                $full = is_object($file) ? (isset($file->uploader_customer_full) ? trim((string) $file->uploader_customer_full) : '') : (isset($file['uploader_customer_full']) ? trim((string) $file['uploader_customer_full']) : '');
+                $comp = is_object($file) ? (isset($file->uploader_customer_company) ? trim((string) $file->uploader_customer_company) : '') : (isset($file['uploader_customer_company']) ? trim((string) $file['uploader_customer_company']) : '');
+                $displayName = $full !== '' ? $full : ($comp !== '' ? $comp : '');
+            }
+        } else {
+            $uname = is_object($file) ? (isset($file->uploader_user_name) ? trim((string) $file->uploader_user_name) : '') : (isset($file['uploader_user_name']) ? trim((string) $file['uploader_user_name']) : '');
+            $displayName = $uname;
+        }
+        if ($displayName === '' && $role !== '') {
+            $displayName = $role;
+        }
+
+        $parts = [];
+        if ($when !== '') {
+            $parts[] = 'Uploaded ' . $when;
+        }
+        if ($displayName !== '') {
+            $parts[] = $displayName;
+        }
+        if ($role !== '' && strcasecmp($displayName, $role) !== 0) {
+            $parts[] = $role;
+        }
+
+        return !empty($parts) ? implode(' · ', $parts) : 'Attachment';
+    }
+
+    /**
+     * task_images row with uploader joins for captions (after insert).
+     */
+    private function task_image_row_for_caption($task_image_id)
+    {
+        return $this->db->select('ti.created_on, ti.uploaded_by_user_type, u.name AS uploader_user_name, uca.name AS uploader_customer_access_name, c.full_name AS uploader_customer_full, c.company_name AS uploader_customer_company', false)
+            ->from('task_images ti')
+            ->join('users u', 'u.id = ti.created_by', 'left')
+            ->join('customer_access uca', 'uca.id = ti.uploaded_by_customer_access_id', 'left')
+            ->join('customers c', 'c.customer_id = ti.created_by_customer', 'left')
+            ->where('ti.id', (int) $task_image_id)
+            ->get()
+            ->row();
     }
 
     public function saveNote($task_id, $note)
@@ -498,27 +612,44 @@ class Customersportal_model extends CI_Model
             return false;
         }
 
-        if(isset($_FILES['note_file']) && $_FILES['note_file']['error'] === UPLOAD_ERR_OK) {
-            $this->load->model("Files_model");
-            $image = $this->Files_model->uploadImage("note_file",'uploads/tasks/',['width'=>200,'height'=>200]);
+        $attachment_file = null;
+        $attachment_thumb = null;
+        $attachment_task_image_id = null;
 
-            $this->db->insert("task_images",[
-                'uuid'                      =>  gen_uuid(),
-                'task_id'                   =>  $task_id,
-                'created_on'                =>  date("Y-m-d H:i:s"),
-                'created_by'                =>  null,
-                'file_name'                 =>  $image['file_name'],
-                'thumb_name'                =>  $image['image_resized'],
-                'file_ext'                  =>  '',
-                'file_size'                 =>  0,
-                'image_height'              =>  0,
-                'image_width'               =>  0,
-                'image_type'                =>  '',
-                'status'                    =>  1,
-                'created_by_customer'       =>  $_SESSION['customer_access_id'],
-                'uploaded_by_user_type'     =>  'customer'
-            ]);
-
+        if (isset($_FILES['note_file']) && $_FILES['note_file']['error'] === UPLOAD_ERR_OK) {
+            $this->load->model('Files_model');
+            $image = $this->Files_model->uploadImage('note_file', 'uploads/tasks/', ['width' => 200, 'height' => 200]);
+            if (is_array($image) && !empty($image['file_name'])) {
+                $cid_row = $this->db->select('customer_id')
+                    ->from('customer_access')
+                    ->where('id', (int) $_SESSION['customer_access_id'])
+                    ->get()->row();
+                $customer_id_fk = $cid_row ? (int) $cid_row->customer_id : null;
+                $thumb = !empty($image['image_resized']) ? $image['image_resized'] : $image['file_name'];
+                $attachment_file = $image['file_name'];
+                $attachment_thumb = $thumb;
+                $insertImage = [
+                    'uuid'                  => gen_uuid(),
+                    'task_id'               => $task_id,
+                    'created_on'            => date('Y-m-d H:i:s'),
+                    'created_by'            => null,
+                    'file_name'             => $image['file_name'],
+                    'thumb_name'            => $thumb,
+                    'file_ext'              => isset($image['file_ext']) ? $image['file_ext'] : '',
+                    'file_size'             => isset($image['file_size']) ? $image['file_size'] : 0,
+                    'image_height'          => isset($image['image_height']) ? $image['image_height'] : 0,
+                    'image_width'           => isset($image['image_width']) ? $image['image_width'] : 0,
+                    'image_type'            => isset($image['image_type']) ? $image['image_type'] : '',
+                    'status'                => 1,
+                    'created_by_customer'   => $customer_id_fk,
+                    'uploaded_by_user_type' => 'customer',
+                ];
+                if ($this->db->field_exists('uploaded_by_customer_access_id', 'task_images')) {
+                    $insertImage['uploaded_by_customer_access_id'] = (int) $_SESSION['customer_access_id'];
+                }
+                $this->db->insert('task_images', $insertImage);
+                $attachment_task_image_id = (int) $this->db->insert_id();
+            }
         }
         $this->db->set("task_id",$task_id);
         $this->db->set("notes",$note);
@@ -538,6 +669,20 @@ class Customersportal_model extends CI_Model
         $note_row = $this->db->select('tn.*, ca.name customer, ca.country_code')->from('task_notes tn')
         ->join("customer_access ca","ca.id=tn.created_by_customer","left")
         ->where('tn.id', $note_id)->get()->row_array();
+        if ($attachment_file) {
+            $note_row['attachment_file'] = $attachment_file;
+            $note_row['attachment_thumb'] = $attachment_thumb;
+        }
+        if ($attachment_task_image_id) {
+            $note_row['attachment_task_image_id'] = $attachment_task_image_id;
+            $ti = $this->task_image_row_for_caption($attachment_task_image_id);
+            if ($ti) {
+                $note_row['attachment_lightbox_caption'] = $this->task_image_lightbox_caption($ti);
+            }
+        }
+        if (!empty($note_row['created_on'])) {
+            $note_row['created_on_fmt'] = date('Y m d @ H:i', strtotime($note_row['created_on']));
+        }
         return $note_row;
 
         // $this->load->model("Tasks_model");
@@ -554,18 +699,68 @@ class Customersportal_model extends CI_Model
         // return $this->db->affected_rows();
     }
 
+    /**
+     * Delete a task_images row uploaded by this portal customer (same company + customer uploader only).
+     *
+     * @return array{result:bool, reason?:string}
+     */
+    public function deleteCustomerTaskImage($task_image_id)
+    {
+        $task_image_id = (int) $task_image_id;
+        if ($task_image_id < 1) {
+            return ['result' => false, 'reason' => 'Invalid attachment'];
+        }
+        $ca = $this->db->select('customer_id')
+            ->from('customer_access')
+            ->where('id', (int) $_SESSION['customer_access_id'])
+            ->get()->row();
+        if (empty($ca)) {
+            return ['result' => false, 'reason' => 'Unauthorized'];
+        }
+        $my_customer_id = (int) $ca->customer_id;
+
+        $row = $this->db->select('ti.id, ti.uploaded_by_user_type, ti.created_by_customer, ti.uploaded_by_customer_access_id')
+            ->from('task_images ti')
+            ->join('tasks t', 't.id = ti.task_id')
+            ->join('sprints s', 's.id = t.sprint_id')
+            ->join('projects p', 'p.id = s.project_id')
+            ->where('ti.id', $task_image_id)
+            ->where('p.customer_id', $my_customer_id)
+            ->get()->row();
+
+        if (empty($row)) {
+            return ['result' => false, 'reason' => 'Attachment not found'];
+        }
+        if ($row->uploaded_by_user_type !== 'customer' || (int) $row->created_by_customer !== $my_customer_id) {
+            return ['result' => false, 'reason' => 'You can only delete your own uploads'];
+        }
+        $myAccessId = (int) $_SESSION['customer_access_id'];
+        if ($this->db->field_exists('uploaded_by_customer_access_id', 'task_images')) {
+            $uploaderAccessId = isset($row->uploaded_by_customer_access_id) ? (int) $row->uploaded_by_customer_access_id : 0;
+            if ($uploaderAccessId < 1 || $uploaderAccessId !== $myAccessId) {
+                return ['result' => false, 'reason' => 'You can only delete your own uploads'];
+            }
+        }
+
+        $this->load->model('Files_model');
+        $this->Files_model->deleteFile($task_image_id);
+        $this->db->where('id', $task_image_id)->delete('task_images');
+
+        return ['result' => true];
+    }
+
     public function validateTask($task_id)
     {
         $stage = $this->db->select("stage")->from("tasks")->where("id",$task_id)->get()->row()->stage;
         if( in_array($stage, ['completed','validated']) ){
             return false;
         }elseif($stage == 'staging'){
-            $this->db->query("SET @current_user_email = '{$_SESSION['customer_email']}'");
-            $this->db->query("SET @current_user_ip = '{$_SERVER['REMOTE_ADDR']}'");
-            $this->db->query("SET @current_user_agent = '{$_SERVER['HTTP_USER_AGENT']}'");
-            $this->db->query("SET @current_user_id = " . (int) $_SESSION['customer_access_id']);
-            $this->db->query("SET @current_user_type = 'customer'");
-            $this->db->query("SET @@session.time_zone = '+04:00'");
+            $this->load->model('tasks_model');
+            $this->tasks_model->set_stage_change_trigger_session_vars(
+                'customer',
+                (int) $_SESSION['customer_access_id'],
+                isset($_SESSION['customer_email']) ? $_SESSION['customer_email'] : ''
+            );
 
             $this->db->set("stage","validated");
 
@@ -574,6 +769,17 @@ class Customersportal_model extends CI_Model
 
             $this->db->where("id",$task_id);
             $this->db->update("tasks");
+
+            if ((int) $this->db->affected_rows() > 0) {
+                $this->tasks_model->record_stage_change_history(
+                    (int) $task_id,
+                    $stage,
+                    'validated',
+                    'customer',
+                    (int) $_SESSION['customer_access_id'],
+                    isset($_SESSION['customer_email']) ? $_SESSION['customer_email'] : null
+                );
+            }
 
             $this->emailForTaskValidationOrRejection($task_id,"validated");
 
@@ -587,12 +793,12 @@ class Customersportal_model extends CI_Model
         if( in_array($stage, ['completed','validated']) ){
             return false;
         }elseif($stage == 'staging'){
-            $this->db->query("SET @current_user_email = '{$_SESSION['customer_email']}'");
-            $this->db->query("SET @current_user_ip = '{$_SERVER['REMOTE_ADDR']}'");
-            $this->db->query("SET @current_user_agent = '{$_SERVER['HTTP_USER_AGENT']}'");
-            $this->db->query("SET @current_user_id = " . (int) $_SESSION['customer_access_id']);
-            $this->db->query("SET @current_user_type = 'customer'");
-            $this->db->query("SET @@session.time_zone = '+04:00'");
+            $this->load->model('tasks_model');
+            $this->tasks_model->set_stage_change_trigger_session_vars(
+                'customer',
+                (int) $_SESSION['customer_access_id'],
+                isset($_SESSION['customer_email']) ? $_SESSION['customer_email'] : ''
+            );
 
             $this->db->set("stage","on_hold");
 
@@ -602,6 +808,17 @@ class Customersportal_model extends CI_Model
 
             $this->db->where("id",$task_id);
             $this->db->update("tasks");
+
+            if ((int) $this->db->affected_rows() > 0) {
+                $this->tasks_model->record_stage_change_history(
+                    (int) $task_id,
+                    $stage,
+                    'on_hold',
+                    'customer',
+                    (int) $_SESSION['customer_access_id'],
+                    isset($_SESSION['customer_email']) ? $_SESSION['customer_email'] : null
+                );
+            }
 
             $this->emailForTaskValidationOrRejection($task_id,"rejected");
             return true;

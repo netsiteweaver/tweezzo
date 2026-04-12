@@ -219,6 +219,7 @@
                                 <tr>
                                     <th>DATE</th>
                                     <th>USER</th>
+                                    <th>TYPE</th>
                                     <th>STAGE CHANGE</th>
                                 </tr>
                             </thead>
@@ -228,8 +229,8 @@
                                     <td><?php echo date('d-M-Y h:i A',strtotime($history->created_on));?></td>
                                     <td>
                                         <?php echo !empty($history->name) ? htmlspecialchars($history->name) : '—'; ?>
-                                        <span class='text-muted'> [<?php echo !empty($history->user_type) ? htmlspecialchars($history->user_type) : 'user'; ?>]</span>
                                     </td>
+                                    <td><?php echo htmlspecialchars(ucfirst(!empty($history->user_type) ? $history->user_type : 'user')); ?></td>
                                     <td><?php echo "From <b>" . strtoupper(str_replace("_"," ",$history->old_stage)) . "</b> to <b>" . strtoupper(str_replace("_"," ",$history->new_stage))."</b>";?>
                                     </td>
                                 </tr>

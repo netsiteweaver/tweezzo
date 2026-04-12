@@ -145,6 +145,11 @@ class Developersportal_model extends CI_Model{
 
     public function getSingleTask($uuid)
     {
+        $developer_id = isset($_SESSION['developer_id']) ? (int) $_SESSION['developer_id'] : 0;
+        if ($developer_id < 1) {
+            return false;
+        }
+        $uuid_esc = $this->db->escape((string) $uuid);
         $query = "SELECT t.*, 
                     s.name sprint_name, 
                     s.code sprint_code,
@@ -155,7 +160,10 @@ class Developersportal_model extends CI_Model{
                     LEFT JOIN sprints s ON s.id = t.sprint_id
                     LEFT JOIN projects p ON p.id = s.project_id
                     LEFT JOIN customers c ON c.customer_id = p.customer_id
-                    WHERE t.uuid = '$uuid'";
+                    WHERE t.uuid = $uuid_esc
+                    AND t.status = '1'
+                    AND t.closed = '0'
+                    AND EXISTS (SELECT 1 FROM task_user tu WHERE tu.task_id = t.id AND tu.user_id = " . $developer_id . ")";
         $task = $this->db->query($query)->row();
         if(empty($task)) {
             return false;
@@ -182,19 +190,96 @@ class Developersportal_model extends CI_Model{
                                 ->where("n.status",'1')
                                 ->order_by("created_on","desc")
                                 ->get()->result();
-        $task->stage_history = $this->db->select('sh.*,u.name')
-                                ->from('stage_change_history sh')
-                                ->join('users u','u.id=sh.created_by','left')
-                                ->where('sh.task_id',$task->id)
-                                ->order_by('sh.created_on','desc')
-                                ->get()->result();                                
-        $task->files = $this->db->select('ti.*')
+        $this->load->model('tasks_model');
+        $task->stage_history = $this->tasks_model->get_stage_history_rows($task->id);
+        $task->files = $this->db->select('ti.*, u.name AS uploader_user_name, uca.name AS uploader_customer_access_name, c.full_name AS uploader_customer_full, c.company_name AS uploader_customer_company', false)
                                 ->from('task_images ti')
+                                ->join('users u', 'u.id = ti.created_by', 'left')
+                                ->join('customer_access uca', 'uca.id = ti.uploaded_by_customer_access_id', 'left')
+                                ->join('customers c', 'c.customer_id = ti.created_by_customer', 'left')
                                 ->where('ti.task_id',$task->id)
+                                ->order_by('ti.created_on', 'desc')
                                 ->get()->result();                                       
 
         return $task;
 
+    }
+
+    /**
+     * Snapshot for developer portal task polling (assigned tasks only).
+     *
+     * @return array<string,mixed>|false
+     */
+    public function getDeveloperTaskPollSnapshot($uuid)
+    {
+        $developer_id = isset($_SESSION['developer_id']) ? (int) $_SESSION['developer_id'] : 0;
+        if ($developer_id < 1) {
+            return false;
+        }
+        $uuid_esc = $this->db->escape((string) $uuid);
+        $task = $this->db->query(
+            "SELECT t.id, t.stage FROM tasks t
+            INNER JOIN task_user tu ON tu.task_id = t.id AND tu.user_id = " . $developer_id . "
+            WHERE t.uuid = $uuid_esc AND t.status = '1' AND t.closed = '0'"
+        )->row();
+        if (empty($task)) {
+            return false;
+        }
+        $tid = (int) $task->id;
+
+        $notes_row = $this->db->query(
+            "SELECT MD5(IFNULL((SELECT GROUP_CONCAT(id ORDER BY id) FROM task_notes WHERE task_id = ? AND status = 1), '')) AS fp",
+            [$tid]
+        )->row();
+        $files_row = $this->db->query(
+            "SELECT MD5(IFNULL((SELECT GROUP_CONCAT(id ORDER BY id) FROM task_images WHERE task_id = ?), '')) AS fp",
+            [$tid]
+        )->row();
+        $hist_row = $this->db->query(
+            "SELECT MD5(IFNULL((SELECT GROUP_CONCAT(id ORDER BY id) FROM stage_change_history WHERE task_id = ?), '')) AS fp",
+            [$tid]
+        )->row();
+
+        return [
+            'stage'   => $task->stage,
+            'notes'   => $notes_row && isset($notes_row->fp) ? $notes_row->fp : md5(''),
+            'files'   => $files_row && isset($files_row->fp) ? $files_row->fp : md5(''),
+            'history' => $hist_row && isset($hist_row->fp) ? $hist_row->fp : md5(''),
+        ];
+    }
+
+    /**
+     * Delete a task_images row uploaded by this developer on the portal (assigned task only).
+     *
+     * @return array{result:bool, reason?:string}
+     */
+    public function deleteDeveloperTaskImage($task_image_id)
+    {
+        $task_image_id = (int) $task_image_id;
+        $developer_id = isset($_SESSION['developer_id']) ? (int) $_SESSION['developer_id'] : 0;
+        if ($task_image_id < 1 || $developer_id < 1) {
+            return ['result' => false, 'reason' => 'Invalid request'];
+        }
+
+        $row = $this->db->select('ti.id, ti.uploaded_by_user_type, ti.created_by')
+            ->from('task_images ti')
+            ->join('tasks t', 't.id = ti.task_id')
+            ->join('task_user tu', 'tu.task_id = t.id AND tu.user_id = ' . $developer_id, 'inner')
+            ->where('ti.id', $task_image_id)
+            ->get()->row();
+
+        if (empty($row)) {
+            return ['result' => false, 'reason' => 'Attachment not found'];
+        }
+        if ($row->uploaded_by_user_type !== 'developer' || (int) $row->created_by !== $developer_id) {
+            return ['result' => false, 'reason' => 'You can only delete your own uploads'];
+        }
+
+        $this->load->model('Files_model');
+        $this->Files_model->deleteFile($task_image_id);
+        $this->db->where('id', $task_image_id)->delete('task_images');
+
+        return ['result' => true];
     }
 
     public function getMyProjects($developer_id)
@@ -434,13 +519,13 @@ class Developersportal_model extends CI_Model{
         // Get current stage before updating
         $current_task = $this->db->select('stage')->from('tasks')->where('id', $task_id)->get()->row();
         $old_stage = $current_task ? $current_task->stage : null;
-        
-        $this->db->query("SET @current_user_email = '{$_SESSION['developer_email']}'");
-        $this->db->query("SET @current_user_ip = '{$_SERVER['REMOTE_ADDR']}'");
-        $this->db->query("SET @current_user_agent = '{$_SERVER['HTTP_USER_AGENT']}'");
-        $this->db->query("SET @current_user_id = " . (int) $_SESSION['developer_id']);
-        $this->db->query("SET @current_user_type = 'developer'");
-        $this->db->query("SET @@session.time_zone = '+04:00'");
+
+        $this->load->model('tasks_model');
+        $this->tasks_model->set_stage_change_trigger_session_vars(
+            'developer',
+            (int) $_SESSION['developer_id'],
+            isset($_SESSION['developer_email']) ? $_SESSION['developer_email'] : ''
+        );
 
         $this->db->set("stage",$stage);
         
@@ -455,6 +540,18 @@ class Developersportal_model extends CI_Model{
         
         $this->db->where("id",$task_id)->update("tasks");
 
+        $stageUpdateRows = (int) $this->db->affected_rows();
+        if ($current_task && (string) $current_task->stage !== (string) $stage && $stageUpdateRows > 0) {
+            $this->tasks_model->record_stage_change_history(
+                (int) $task_id,
+                $current_task->stage,
+                $stage,
+                'developer',
+                (int) $_SESSION['developer_id'],
+                isset($_SESSION['developer_email']) ? $_SESSION['developer_email'] : null
+            );
+        }
+
         $result = $this->db->select("c.customer_id,c.company_name, c.email customer_email, 
                                     s.id sprint_id, s.name sprint_name, 
                                     p.id project_id, p.name project_name,
@@ -467,10 +564,11 @@ class Developersportal_model extends CI_Model{
                         ->get()
                         ->row();
 
+        $this->load->model('system_model');
+
         if(!empty($result->customer_email)) {
             $email = $result->customer_email;
             $this->load->model("Email_model3");
-            $this->load->model("system_model");
             $emailData = [
                 'task'      =>  $result,
                 'logo'      =>  $this->system_model->getParam("logo"),

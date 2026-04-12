@@ -223,6 +223,7 @@
 						<tr>
 							<th>DATE</th>
 							<th>USER</th>
+							<th>TYPE</th>
 							<th>STAGE CHANGE</th>
 						</tr>
 					</thead>
@@ -230,11 +231,12 @@
 						<?php if (!empty($task->stage_history)): foreach($task->stage_history as $history):?>
 						<tr>
 							<td><?php echo date('d-M-Y h:i A',strtotime($history->created_on));?></td>
-							<td><?php echo "{$history->created_by_email}<span class='pull-right float-right'>[{$history->user_type}]</span>";?></td>
+							<td><?php echo htmlspecialchars($history->created_by_email); ?></td>
+							<td><?php echo htmlspecialchars(ucfirst(!empty($history->user_type) ? $history->user_type : 'user')); ?></td>
 							<td><?php echo "From <b>" . strtoupper(str_replace("_"," ",$history->old_stage)) . "</b> to <b>" . strtoupper(str_replace("_"," ",$history->new_stage))."</b>";?></td>
 						</tr>
 						<?php endforeach; else: ?>
-						<tr><td colspan="3" class="text-muted">No stage history</td></tr>
+						<tr><td colspan="4" class="text-muted">No stage history</td></tr>
 						<?php endif; ?>
 					</tbody>
 				</table>
