@@ -597,8 +597,10 @@ class Customers extends CI_Controller
 
     public function updateUserAccess()
     {
-        // Allow either back-office users (with user_id) or portal customer admins
-        if (isset($_SESSION['customer_access_id'])) {
+        // Allow back-office users (user_id) first; otherwise require portal customer admin.
+        if (isset($_SESSION['user_id'])) {
+            // Authorized from back-office context.
+        } elseif (isset($_SESSION['customer_access_id'])) {
             $adminRow = $this->db->select('admin')
                 ->from('customer_access')
                 ->where([
@@ -611,7 +613,7 @@ class Customers extends CI_Controller
                 echo json_encode(['result' => false, 'reason' => 'You do not have permission to update user access.']);
                 exit;
             }
-        } elseif (!isset($_SESSION['user_id'])) {
+        } else {
             echo json_encode(['result' => false, 'reason' => 'Not authorized.']);
             exit;
         }
