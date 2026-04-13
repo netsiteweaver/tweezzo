@@ -86,6 +86,13 @@
                                             </div>
                                         <?php endif; ?>
                                         <?php if ($perms['edit']) : ?>
+                                            <a href="<?php echo base_url("customers/portal_access/" . $customer->uuid . "?referer=customers/listing/" . $this->uri->segment(3,1)); ?>">
+                                                <div class="btn btn-secondary" title="Customer Access">
+                                                    <i class="fa fa-user"></i>
+                                                </div>
+                                            </a>
+                                        <?php endif; ?>
+                                        <?php if ($perms['edit']) : ?>
                                             <div class="btn btn-info managePortalPassword" title="Manage Portal Passwords">
                                                 <i class="fa fa-key"></i>
                                             </div>
