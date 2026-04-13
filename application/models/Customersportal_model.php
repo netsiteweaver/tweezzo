@@ -82,62 +82,61 @@ class Customersportal_model extends CI_Model
                         ->result();
     }
 
-    public function getSprints($project_id="")
+    public function getSprints($project_id = '')
     {
-        //get master customer id
-        $customer_id = $this->db->select()->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row()->customer_id;
-
-        $query = "SELECT
-                        s.id,
-                        s.name,
-                        u.name AS createdBy,
-                        p.name AS project_name,
-                        COUNT(t.id) AS tasks_count,
-                        SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) AS completed_tasks,
-                        ROUND(
-                            SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) / COUNT(t.id) * 100,
-                            0
-                        ) AS progress_pct
-                    FROM
-                        sprints s
-                        JOIN projects p ON p.id = s.project_id
-                        JOIN customers c ON c.customer_id = p.customer_id
-                        JOIN tasks t ON t.sprint_id = s.id
-                        JOIN users u ON u.id = s.created_by 
-                    WHERE
-                        t.status = 1 AND t.closed = 0 
-                        AND s.status = 1 AND s.active = 1
-                        AND p.active = 1
-                        AND c.status = 1 AND c.active = 1 ";
-        if(empty($project_id)){
-            $query .= "AND c.customer_id = $customer_id ";
-        }else{
-            $query .= "AND s.project_id = $project_id ";
+        $ca = $this->db->select('customer_id')
+            ->from('customer_access')
+            ->where('id', (int) $_SESSION['customer_access_id'])
+            ->get()->row();
+        if (empty($ca)) {
+            return [];
         }
-        $query .= "     AND c.status = 1
-                        AND s.name != 'Roadmap'
-                    GROUP BY
-                        s.id";
-        return $this->db->query($query)->result();
+        $customer_id = (int) $ca->customer_id;
+        $project_id = (int) $project_id;
 
-        $this->db->select("s.*,u.name createdBy, p.name project_name, count(t.id) tasks_count")
-                        ->from("sprints s")
-                        ->join("projects p","p.id=s.project_id")
-                        ->join("customers c","c.customer_id=p.customer_id")
-                        ->join("tasks t","t.sprint_id=s.id","left")
-                        ->group_by("s.id")                        
-                        ->join("users u","u.id=s.created_by","");
+        $projectSql = $project_id > 0 ? ' AND s.project_id = ' . $project_id : '';
 
-        $this->db->where(["s.status"=>'1']);
-        if(empty($project_id)){
-            $this->db->where(["c.customer_id"=>$customer_id]);
-        }else{
-            $this->db->where(["s.project_id"=>$project_id]);
-        }
+        // Match customer dashboard: weighted stage progress (not only stage = completed).
+        // LEFT JOIN so sprints with zero tasks still appear at 0%.
+        $sql = "
+            SELECT
+                s.id,
+                s.name,
+                u.name AS createdBy,
+                p.name AS project_name,
+                COUNT(t.id) AS tasks_count,
+                SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) AS completed_tasks,
+                ROUND(COALESCE(AVG(
+                    CASE t.stage
+                        WHEN 'new' THEN 0
+                        WHEN 'in_progress' THEN 20
+                        WHEN 'testing' THEN 40
+                        WHEN 'staging' THEN 60
+                        WHEN 'validated' THEN 80
+                        WHEN 'completed' THEN 100
+                        WHEN 'on_hold' THEN 20
+                        WHEN 'stopped' THEN 0
+                        ELSE 0
+                    END
+                ), 0), 0) AS progress_pct
+            FROM sprints s
+            JOIN projects p ON p.id = s.project_id
+            JOIN customers c ON c.customer_id = p.customer_id
+            JOIN users u ON u.id = s.created_by
+            LEFT JOIN tasks t ON t.sprint_id = s.id AND t.status = 1 AND t.closed = 0
+            WHERE s.status = 1
+              AND s.active = 1
+              AND p.active = 1
+              AND c.status = 1
+              AND c.active = 1
+              AND c.customer_id = {$customer_id}
+              AND s.name <> 'Roadmap'
+              {$projectSql}
+            GROUP BY s.id, s.name, u.name, p.name
+            ORDER BY s.name ASC
+        ";
 
-        $this->db->order_by("s.name");
-        
-        return $this->db->get()->result();
+        return $this->db->query($sql)->result();
     }
 
     public function getTasks($sprint_id,$sort_by="task_number",$sort_dir="asc",$stages,$notes_only="")
@@ -281,10 +280,10 @@ class Customersportal_model extends CI_Model
                     THEN AVG(COALESCE(sprint_stats.progress_pct, 0))
                     ELSE 0 END
                 , 0) AS sprint_progress_pct
-            FROM tasks t
-            JOIN sprints s ON s.id = t.sprint_id
+            FROM sprints s
             JOIN projects p ON p.id = s.project_id
             JOIN customers c ON c.customer_id = p.customer_id
+            LEFT JOIN tasks t ON t.sprint_id = s.id AND t.status = 1 AND t.closed = 0
             LEFT JOIN (
                 SELECT
                     t2.sprint_id,
@@ -307,14 +306,13 @@ class Customersportal_model extends CI_Model
                 WHERE t2.status = 1 AND t2.closed = 0
                 GROUP BY t2.sprint_id
             ) sprint_stats ON sprint_stats.sprint_id = s.id
-            WHERE t.status = 1
-              AND t.closed = 0
-              AND s.status = 1
+            WHERE s.status = 1
               AND s.active = 1
               AND p.active = 1
               AND c.status = 1
               AND c.active = 1
               AND c.customer_id = {$customer_id}
+              AND s.name <> 'Roadmap'
         ")->row();
 
         return $stats ?: (object) [

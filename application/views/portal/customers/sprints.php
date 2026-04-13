@@ -38,7 +38,18 @@
   /* height:200px;; width:100%; padding:5px; border:1px solid #ccc; border-radius:5px; */
 }
 </style>
-<?php if($sprints[0]->progress_pct == 100):?>
+<?php
+$all_sprints_complete = !empty($sprints);
+if ($all_sprints_complete) {
+    foreach ($sprints as $_sp) {
+        if ((int) $_sp->progress_pct < 100) {
+            $all_sprints_complete = false;
+            break;
+        }
+    }
+}
+?>
+<?php if ($all_sprints_complete):?>
 <div class="row mb-3">
     <div class="col-md-6 progressive-image" style='position:relative;'>
         <img style='' src="./assets/images/tasks complete - 600x188px.jpg" class="placeholder" alt="loading image">
@@ -56,17 +67,23 @@
                     <th>SPRINT NAME</th>
                     <th>PROJECT NAME</th>
                     <th># of TASKS</th>
-                    <th># COMPLETED</th>
+                    <th>DONE (tasks)</th>
+                    <th>% COMPLETE</th>
                     <th style='width:150px'></th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach($sprints as $sprint):?>
-                <tr class='alert <?php echo ((($sprint->completed_tasks / $sprint->tasks_count) * 100) == 100) ? 'alert-success' : ( ((($sprint->completed_tasks / $sprint->tasks_count) * 100) >= 50) ? 'alert-warning' : 'alert-danger' );?>'>
+                <?php
+                    $pct = isset($sprint->progress_pct) ? (int) $sprint->progress_pct : 0;
+                    $row_class = $pct >= 100 ? 'alert-success' : ($pct >= 50 ? 'alert-warning' : 'alert-danger');
+                ?>
+                <tr class='alert <?php echo $row_class;?>'>
                     <td><?php echo $sprint->name;?></td>
                     <td><?php echo $sprint->project_name;?></td>
-                    <td class='text-center'><?php echo $sprint->tasks_count;?></td>
-                    <td class='text-center'><?php echo intval (($sprint->completed_tasks / $sprint->tasks_count) * 100) ;?> %</td>
+                    <td class='text-center'><?php echo (int) $sprint->tasks_count;?></td>
+                    <td class='text-center'><?php echo (int) $sprint->completed_tasks;?> / <?php echo (int) $sprint->tasks_count;?></td>
+                    <td class='text-center'><?php echo $pct;?> %</td>
                     <td>
                         <a href="portal/customers/tasks?sprint_id=<?php echo $sprint->id;?>"><div class="btn btn-outline-secondary"style="color:#fff; background-color: var(--customersPortalBackground)"><i class="bi bi-eye"></i> View Tasks</div></a>
                     </td>

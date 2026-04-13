@@ -44,6 +44,16 @@
     .stage-validated { background-color: #c44866; }
     .stage-completed { background-color: #4e67c7; }
     .stage-on-hold { background-color: #ff0000; }
+    .stage-chip {
+        color: #fff;
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        min-width: 92px;
+        text-align: center;
+    }
 </style>
 
 <div class="row justify-content-center mb-4 mt-2">
@@ -233,6 +243,66 @@
                             <?php endif; ?>
                         </tbody>
                     </table>
+                </div>
+
+                <div class="mt-4">
+                    <h6 class="mb-2">How Task Progress Is Calculated</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 220px;">Stage</th>
+                                    <th style="width: 140px;" class="text-center">Weight</th>
+                                    <th>Meaning</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="stage-chip stage-new">New</span></td>
+                                    <td class="text-center">0%</td>
+                                    <td>Task is created and not started.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="stage-chip stage-in-progress">In Progress</span></td>
+                                    <td class="text-center">20%</td>
+                                    <td>Work has started.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="stage-chip stage-testing">Testing</span></td>
+                                    <td class="text-center">40%</td>
+                                    <td>Implementation is under testing.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="stage-chip stage-staging">Staging</span></td>
+                                    <td class="text-center">60%</td>
+                                    <td>Ready on staging environment for review.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="stage-chip stage-validated">Validated</span></td>
+                                    <td class="text-center">80%</td>
+                                    <td>Accepted by customer but not fully closed.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="stage-chip stage-completed">Completed</span></td>
+                                    <td class="text-center">100%</td>
+                                    <td>Finished and completed.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="stage-chip stage-on-hold">On Hold</span></td>
+                                    <td class="text-center">20%</td>
+                                    <td>Paused temporarily.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="stage-chip" style="background-color:#6c757d;">Stopped</span></td>
+                                    <td class="text-center">0%</td>
+                                    <td>Stopped/cancelled and not progressing.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <small class="text-muted d-block mt-2">
+                        Task Progress is calculated as the average of these stage weights across open tasks.
+                    </small>
                 </div>
             </div>
         </div>
