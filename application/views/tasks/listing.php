@@ -237,7 +237,18 @@ $cleanQuery = http_build_query($queryArray);
             <div class="dropdown-menu">
                 <a class="dropdown-item email-developer"><i class="fa fa-user"></i> To Developer</a>
                 <?php if ( (isset($tasks[0])) && (!empty($this->input->get("customer_id"))) ) :?>
-                <a data-email="<?php echo (isset($tasks[0])) ? $tasks[0]->email : '';?>" class="dropdown-item email"><i class="fa fa-user"></i> To Client</a>
+                <?php
+                    $notifyMode = isset($sprint_client_notify['mode']) ? $sprint_client_notify['mode'] : 'none';
+                    $clientLabel = 'To Client';
+                    if ($notifyMode === 'staging_validation') {
+                        $clientLabel = 'Inform Client (Ask Validation)';
+                    } elseif ($notifyMode === 'completed_update') {
+                        $clientLabel = 'Inform Client (Completed)';
+                    }
+                ?>
+                <a data-email="<?php echo (isset($tasks[0])) ? $tasks[0]->email : '';?>"
+                   data-notify-mode="<?php echo $notifyMode;?>"
+                   class="dropdown-item email"><i class="fa fa-user"></i> <?php echo $clientLabel;?></a>
                 <?php endif;?>
             </div>
         </div>

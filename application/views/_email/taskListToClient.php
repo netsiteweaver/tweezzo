@@ -3,6 +3,15 @@
     <!-- <h4><?php //echo "Project: {$tasks[0]->project_name} - Sprint: {$tasks[0]->sprint_name}";?></h4> -->
     <!-- <h4><?php //echo "Project: {$tasks[0]->company_name} | {$tasks[0]->project_name}";?></h4> -->
 </div>
+<?php if (!empty($notify_mode) && $notify_mode === 'staging_validation'): ?>
+<div style="margin:10px auto;max-width:800px;padding:12px;border:1px solid #f4d03f;background:#fff8db;color:#7d6608;">
+    All tasks for this sprint are now in <b>STAGING</b>. Please validate and share your feedback.
+</div>
+<?php elseif (!empty($notify_mode) && $notify_mode === 'completed_update'): ?>
+<div style="margin:10px auto;max-width:800px;padding:12px;border:1px solid #b5dfb8;background:#eaf8ec;color:#1e6b2e;">
+    All tasks for this sprint are now <b>COMPLETED</b>.
+</div>
+<?php endif; ?>
 <div style="margin:0px auto;max-width:800px;">
     <table align="center" border="1" cellpadding="10" cellspacing="0" role="presentation" style="width:100%;">
         <tbody>

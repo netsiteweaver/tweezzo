@@ -228,6 +228,10 @@ class Tasks extends MY_Controller {
             $billable,
             $closed_filter
         );
+        $this->data['sprint_client_notify'] = ['mode' => 'none', 'total' => 0];
+        if (!empty($sprint_id)) {
+            $this->data['sprint_client_notify'] = $this->Tasks_model->getSprintClientNotifyState($sprint_id);
+        }
         $this->data['pagination'] = getPagination("tasks/listing",$total_rows,$per_page);
 
         if(!empty($customer_id)){
@@ -273,9 +277,13 @@ class Tasks extends MY_Controller {
         $order_dir = $this->input->get('order_dir');
         $output = $this->input->get('output');
         $type = $this->input->get('type');
+        $notify_mode = trim((string)$this->input->get('notify_mode'));
         $closed_filter = $this->input->get('closed_filter');
         if (!in_array($closed_filter, array('open', 'closed', 'all'), true)) {
             $closed_filter = 'open';
+        }
+        if (!in_array($notify_mode, array('staging_validation', 'completed_update'), true)) {
+            $notify_mode = '';
         }
 
         //since we allow to override email when submitting, let us check if email is for customer, developer or other
@@ -325,11 +333,26 @@ class Tasks extends MY_Controller {
             $email = $customer_email;
             $this->load->model("Email_model3");
             $this->load->model("system_model");
+
+            $subject = "Task List Progress";
+            $sprintName = (isset($tasks[0]) && isset($tasks[0]->sprint_name)) ? trim((string)$tasks[0]->sprint_name) : '';
+            $projectName = (isset($tasks[0]) && isset($tasks[0]->project_name)) ? trim((string)$tasks[0]->project_name) : '';
+            $scopeParts = [];
+            if ($projectName !== '') $scopeParts[] = $projectName;
+            if ($sprintName !== '') $scopeParts[] = $sprintName;
+            $scope = empty($scopeParts) ? '' : ' [' . implode(' / ', $scopeParts) . ']';
+            if ($notify_mode === 'staging_validation') {
+                $subject = "Validation Requested: Sprint tasks at staging" . $scope;
+            } elseif ($notify_mode === 'completed_update') {
+                $subject = "Sprint update: All tasks completed" . $scope;
+            }
+
             $emailData = [
                 'tasks'     =>  $tasks,
                 'logo'      =>  $this->system_model->getParam("logo"),
                 'link'      =>  base_url($link)."?email=".$email,
-                'link_label'=>  $linkLabel
+                'link_label'=>  $linkLabel,
+                'notify_mode' => $notify_mode
             ];
             $content = $this->load->view("_email/header",$emailData, true);
             $content .= $this->load->view("_email/taskListToClient",$emailData, true);
@@ -342,7 +365,7 @@ class Tasks extends MY_Controller {
             // }else{
             //     die('cannot create file');
             // }
-            $this->Email_model3->save($email,"Task List Progress",$content);
+            $this->Email_model3->save($email,$subject,$content);
         }
     }
 

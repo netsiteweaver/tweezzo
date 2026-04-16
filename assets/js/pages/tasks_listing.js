@@ -74,13 +74,20 @@ jQuery(function(){
     $('.email').on("click",function(){
         let btn = $(this);
         let customerEmail = $(this).data("email");
+        let notifyMode = $(this).data("notify-mode") || '';
+        let promptMessage = 'Do you want to email this task list to the customer? <br>Below is the email we have for the selected customer, but it may happen that want to send it to an alternate email.';
+        if (notifyMode === 'staging_validation') {
+            promptMessage = 'All tasks in this sprint are at STAGING. Do you want to inform the client and ask for validation? <br>Below is the email we have for the selected customer, but it may happen that want to send it to an alternate email.';
+        } else if (notifyMode === 'completed_update') {
+            promptMessage = 'All tasks in this sprint are COMPLETED. Do you want to inform the client? <br>Below is the email we have for the selected customer, but it may happen that want to send it to an alternate email.';
+        }
 
         if($(this).hasClass("disabled")) return false;
         if($(this).hasClass("running")) return false;
         
         $(this).addClass("running");
 
-        alertify.prompt('Email','Do you want to email this task list to the customer? <br>Below is the email we have for the selected customer, but it may happen that want to send it to an alternate email.', customerEmail,
+        alertify.prompt('Email', promptMessage, customerEmail,
             function(evt, email){
 
                 let customer_id = $('#customer_id').val();
@@ -93,7 +100,7 @@ jQuery(function(){
                 let display = $('#display').val();
                 let closed_filter = $('#closed_filter').val() || 'open';
 
-                params = '?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&assigned_to="+assigned_to+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&customer_email="+email+"&type=customer&output=email&closed_filter="+encodeURIComponent(closed_filter);
+                params = '?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&assigned_to="+assigned_to+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&customer_email="+email+"&type=customer&output=email&notify_mode="+encodeURIComponent(notifyMode)+"&closed_filter="+encodeURIComponent(closed_filter);
                 // console.log(params, customerEmail, email)
                 $.ajax({
                     url: 'tasks/email'+params,

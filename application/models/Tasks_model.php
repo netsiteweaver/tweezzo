@@ -101,6 +101,53 @@ class Tasks_model extends CI_Model{
 
     }
 
+    public function getSprintClientNotifyState($sprint_id)
+    {
+        $sprint_id = (int)$sprint_id;
+        if ($sprint_id <= 0) {
+            return [
+                'mode' => 'none',
+                'total' => 0
+            ];
+        }
+
+        $rows = $this->db->select('t.stage, COUNT(1) AS ct', false)
+            ->from('tasks t')
+            ->join('sprints s', 's.id=t.sprint_id', 'inner')
+            ->join('projects p', 'p.id=s.project_id', 'inner')
+            ->join('customers c', 'c.customer_id=p.customer_id', 'inner')
+            ->where(['t.status' => '1', 't.closed' => '0', 's.active' => '1', 'p.active' => '1', 'c.active' => '1'])
+            ->where('t.sprint_id', $sprint_id)
+            ->group_by('t.stage')
+            ->get()
+            ->result();
+
+        $total = 0;
+        $stagingCount = 0;
+        $completedCount = 0;
+        foreach ($rows as $row) {
+            $ct = (int)$row->ct;
+            $total += $ct;
+            if ($row->stage === 'staging') {
+                $stagingCount += $ct;
+            } elseif ($row->stage === 'completed') {
+                $completedCount += $ct;
+            }
+        }
+
+        $mode = 'none';
+        if ($total > 0 && $stagingCount === $total) {
+            $mode = 'staging_validation';
+        } elseif ($total > 0 && $completedCount === $total) {
+            $mode = 'completed_update';
+        }
+
+        return [
+            'mode' => $mode,
+            'total' => $total
+        ];
+    }
+
     /**
      * Sum estimated_hours for all tasks matching the same filters as tasks/listing (full result set, not current page).
      * Mirrors fetchAll() listing logic including notes filter (with/without).
