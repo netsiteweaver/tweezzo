@@ -240,13 +240,19 @@ $cleanQuery = http_build_query($queryArray);
                 <?php
                     $notifyMode = isset($sprint_client_notify['mode']) ? $sprint_client_notify['mode'] : 'none';
                     $clientLabel = 'To Client';
+                    $clientEmails = [];
+                    if (!empty($client_recipient_emails) && is_array($client_recipient_emails)) {
+                        $clientEmails = $client_recipient_emails;
+                    } elseif (isset($tasks[0]) && !empty($tasks[0]->email)) {
+                        $clientEmails = [$tasks[0]->email];
+                    }
                     if ($notifyMode === 'staging_validation') {
                         $clientLabel = 'Inform Client (Ask Validation)';
                     } elseif ($notifyMode === 'completed_update') {
                         $clientLabel = 'Inform Client (Completed)';
                     }
                 ?>
-                <a data-email="<?php echo (isset($tasks[0])) ? $tasks[0]->email : '';?>"
+                <a data-email="<?php echo htmlspecialchars(implode(', ', $clientEmails));?>"
                    data-notify-mode="<?php echo $notifyMode;?>"
                    class="dropdown-item email"><i class="fa fa-user"></i> <?php echo $clientLabel;?></a>
                 <?php endif;?>

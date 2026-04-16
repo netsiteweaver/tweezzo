@@ -232,6 +232,10 @@ class Tasks extends MY_Controller {
         if (!empty($sprint_id)) {
             $this->data['sprint_client_notify'] = $this->Tasks_model->getSprintClientNotifyState($sprint_id);
         }
+        $this->data['client_recipient_emails'] = [];
+        if (!empty($customer_id)) {
+            $this->data['client_recipient_emails'] = $this->Tasks_model->getCustomerAccessEmails($customer_id);
+        }
         $this->data['pagination'] = getPagination("tasks/listing",$total_rows,$per_page);
 
         if(!empty($customer_id)){
@@ -270,7 +274,7 @@ class Tasks extends MY_Controller {
         $customer_id = $this->input->get('customer_id');
         $project_id = $this->input->get('project_id');
         $sprint_id = $this->input->get('sprint_id');
-        $customer_email = $this->input->get('customer_email');
+        $customer_email = trim((string)$this->input->get('customer_email'));
         $stage = json_decode($this->input->get('stage'));
         $assigned_to = $this->input->get('assigned_to');
         $order_by = $this->input->get('order_by');
@@ -286,10 +290,6 @@ class Tasks extends MY_Controller {
             $notify_mode = '';
         }
 
-        //since we allow to override email when submitting, let us check if email is for customer, developer or other
-        $isCustomer = $this->db->select("count(1) as ct")->from("customers")->where(["email"=>$customer_email,"status"=>"1"])->get()->row("ct");
-        $isDeveloper = $this->db->select("count(1) as ct")->from("users")->where(["email"=>$customer_email,"user_type"=>"developer","status"=>"1"])->get()->row("ct");
-        $isUser = $this->db->select("count(1) as ct")->from("users")->where(["email"=>$customer_email,"user_type !="=>"developer","status"=>"1"])->get()->row("ct");
         $link = "";
         $linkLabel = "";
         // if( ($isCustomer == 0) && ($isDeveloper == 0) && ($isUser == 0) ){
@@ -330,7 +330,16 @@ class Tasks extends MY_Controller {
         // debug($this->data['tasks']);
 
         if(!empty($output)){
-            $email = $customer_email;
+            $emails = [];
+            foreach (preg_split('/[\s,;]+/', $customer_email) as $item) {
+                $item = trim((string)$item);
+                if ($item !== '' && filter_var($item, FILTER_VALIDATE_EMAIL)) {
+                    $emails[strtolower($item)] = $item;
+                }
+            }
+            if (empty($emails)) {
+                return;
+            }
             $this->load->model("Email_model3");
             $this->load->model("system_model");
 
@@ -350,13 +359,15 @@ class Tasks extends MY_Controller {
             $emailData = [
                 'tasks'     =>  $tasks,
                 'logo'      =>  $this->system_model->getParam("logo"),
-                'link'      =>  base_url($link)."?email=".$email,
+                'link'      =>  base_url($link)."?email=",
                 'link_label'=>  $linkLabel,
                 'notify_mode' => $notify_mode
             ];
-            $content = $this->load->view("_email/header",$emailData, true);
-            $content .= $this->load->view("_email/taskListToClient",$emailData, true);
-            $content .= $this->load->view("_email/footer",[], true);
+            foreach ($emails as $email) {
+                $emailData['link'] = base_url($link) . "?email=" . rawurlencode($email);
+                $content = $this->load->view("_email/header",$emailData, true);
+                $content .= $this->load->view("_email/taskListToClient",$emailData, true);
+                $content .= $this->load->view("_email/footer",[], true);
             // $path = realpath(".");
             // $h = fopen($path . "/data/taskListSent_".date('YmdHis').".html",'w');
             // if($h){
@@ -365,7 +376,8 @@ class Tasks extends MY_Controller {
             // }else{
             //     die('cannot create file');
             // }
-            $this->Email_model3->save($email,$subject,$content);
+                $this->Email_model3->save($email,$subject,$content);
+            }
         }
     }
 

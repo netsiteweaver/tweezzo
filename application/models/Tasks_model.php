@@ -148,6 +148,33 @@ class Tasks_model extends CI_Model{
         ];
     }
 
+    public function getCustomerAccessEmails($customer_id)
+    {
+        $customer_id = (int)$customer_id;
+        if ($customer_id <= 0) {
+            return [];
+        }
+
+        $rows = $this->db->select('email')
+            ->from('customer_access')
+            ->where(['customer_id' => $customer_id, 'status' => '1'])
+            ->order_by('email', 'ASC')
+            ->get()
+            ->result();
+
+        $emails = [];
+        foreach ($rows as $row) {
+            $email = trim((string)$row->email);
+            if ($email === '') {
+                continue;
+            }
+            $key = strtolower($email);
+            $emails[$key] = $email;
+        }
+
+        return array_values($emails);
+    }
+
     /**
      * Sum estimated_hours for all tasks matching the same filters as tasks/listing (full result set, not current page).
      * Mirrors fetchAll() listing logic including notes filter (with/without).

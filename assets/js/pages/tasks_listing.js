@@ -75,20 +75,34 @@ jQuery(function(){
         let btn = $(this);
         let customerEmail = $(this).data("email");
         let notifyMode = $(this).data("notify-mode") || '';
-        let promptMessage = 'Do you want to email this task list to the customer? <br>Below is the email we have for the selected customer, but it may happen that want to send it to an alternate email.';
+        let promptMessage = 'Do you want to email this task list to the customer? <br>You can keep one email or multiple emails separated by comma.';
         if (notifyMode === 'staging_validation') {
-            promptMessage = 'All tasks in this sprint are at STAGING. Do you want to inform the client and ask for validation? <br>Below is the email we have for the selected customer, but it may happen that want to send it to an alternate email.';
+            promptMessage = 'All tasks in this sprint are at STAGING. Do you want to inform the client and ask for validation? <br>You can keep one email or multiple emails separated by comma.';
         } else if (notifyMode === 'completed_update') {
-            promptMessage = 'All tasks in this sprint are COMPLETED. Do you want to inform the client? <br>Below is the email we have for the selected customer, but it may happen that want to send it to an alternate email.';
+            promptMessage = 'All tasks in this sprint are COMPLETED. Do you want to inform the client? <br>You can keep one email or multiple emails separated by comma.';
         }
+        let initialEmails = String(customerEmail || '').split(/[\s,;]+/).filter(function(v){ return v && v.trim() !== ''; }).join('\n');
 
         if($(this).hasClass("disabled")) return false;
         if($(this).hasClass("running")) return false;
         
         $(this).addClass("running");
 
-        alertify.prompt('Email', promptMessage, customerEmail,
-            function(evt, email){
+        let messageHtml = ''
+            + '<div>' + promptMessage + '</div>'
+            + '<div class="mt-2">'
+            + '<textarea id="client-email-list-input" class="form-control" rows="8" '
+            + 'placeholder="email1@example.com&#10;email2@example.com">' + $('<div>').text(initialEmails).html() + '</textarea>'
+            + '</div>';
+
+        alertify.confirm('Email', messageHtml,
+            function(){
+                let email = ($('#client-email-list-input').val() || '').trim();
+                if(email === ''){
+                    toastr.error("Please enter at least one email");
+                    $(btn).removeClass('running');
+                    return;
+                }
 
                 let customer_id = $('#customer_id').val();
                 let project_id = $('#project_id').val();
@@ -100,7 +114,7 @@ jQuery(function(){
                 let display = $('#display').val();
                 let closed_filter = $('#closed_filter').val() || 'open';
 
-                params = '?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&assigned_to="+assigned_to+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&customer_email="+email+"&type=customer&output=email&notify_mode="+encodeURIComponent(notifyMode)+"&closed_filter="+encodeURIComponent(closed_filter);
+                params = '?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&assigned_to="+assigned_to+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&customer_email="+encodeURIComponent(email)+"&type=customer&output=email&notify_mode="+encodeURIComponent(notifyMode)+"&closed_filter="+encodeURIComponent(closed_filter);
                 // console.log(params, customerEmail, email)
                 $.ajax({
                     url: 'tasks/email'+params,
@@ -116,7 +130,7 @@ jQuery(function(){
                 $(btn).removeClass('running');
                 // alertify.error("Cancelled.")
             }
-        )
+        );
     })
 
     $('.email-developer').on("click",function(){

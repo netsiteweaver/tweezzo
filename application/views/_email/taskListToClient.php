@@ -3,13 +3,20 @@
     <!-- <h4><?php //echo "Project: {$tasks[0]->project_name} - Sprint: {$tasks[0]->sprint_name}";?></h4> -->
     <!-- <h4><?php //echo "Project: {$tasks[0]->company_name} | {$tasks[0]->project_name}";?></h4> -->
 </div>
+<?php $sprintLabel = (isset($tasks[0]) && !empty($tasks[0]->sprint_name)) ? (' "' . $tasks[0]->sprint_name . '"') : ''; ?>
 <?php if (!empty($notify_mode) && $notify_mode === 'staging_validation'): ?>
 <div style="margin:10px auto;max-width:800px;padding:12px;border:1px solid #f4d03f;background:#fff8db;color:#7d6608;">
-    All tasks for this sprint are now in <b>STAGING</b>. Please validate and share your feedback.
+    <span style="display:inline-block;font-size:18px;line-height:1;margin-right:8px;vertical-align:middle;">&#9203;</span>
+    <span style="vertical-align:middle;">
+        All tasks for sprint<?php echo $sprintLabel; ?> are now in <b>STAGING</b> and waiting for validation.
+    </span>
 </div>
 <?php elseif (!empty($notify_mode) && $notify_mode === 'completed_update'): ?>
 <div style="margin:10px auto;max-width:800px;padding:12px;border:1px solid #b5dfb8;background:#eaf8ec;color:#1e6b2e;">
-    All tasks for this sprint are now <b>COMPLETED</b>.
+    <span style="display:inline-block;font-size:18px;line-height:1;margin-right:8px;vertical-align:middle;">&#10004;</span>
+    <span style="vertical-align:middle;">
+        All tasks for sprint<?php echo $sprintLabel; ?> are now <b>COMPLETED</b>.
+    </span>
 </div>
 <?php endif; ?>
 <div style="margin:0px auto;max-width:800px;">
