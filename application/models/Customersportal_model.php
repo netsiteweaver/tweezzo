@@ -771,8 +771,8 @@ class Customersportal_model extends CI_Model
 
             $this->db->where("id",$task_id);
             $this->db->update("tasks");
-
-            if ((int) $this->db->affected_rows() > 0) {
+            $updatedTask = $this->db->select('stage')->from('tasks')->where('id', (int) $task_id)->get()->row();
+            if (!empty($updatedTask) && (string) $updatedTask->stage === 'validated') {
                 $this->tasks_model->record_stage_change_history(
                     (int) $task_id,
                     $stage,
@@ -817,8 +817,8 @@ class Customersportal_model extends CI_Model
 
             $this->db->where("id",$task_id);
             $this->db->update("tasks");
-
-            if ((int) $this->db->affected_rows() > 0) {
+            $updatedTask = $this->db->select('stage')->from('tasks')->where('id', (int) $task_id)->get()->row();
+            if (!empty($updatedTask) && (string) $updatedTask->stage === 'on_hold') {
                 $this->tasks_model->record_stage_change_history(
                     (int) $task_id,
                     $stage,
