@@ -1,4 +1,21 @@
 jQuery(function(){
+    function toggleManualPasswordField() {
+        var $m = $('#addUserAccessModal');
+        var useGenerated = $m.find('.generate_password').is(':checked');
+        var $passwordGroup = $m.find('.password-group');
+        var $passwordInput = $passwordGroup.find('.password');
+        var $requiredAsterisk = $passwordGroup.find('.password-required-asterisk');
+        if (useGenerated) {
+            $passwordInput.val('').prop('disabled', true).prop('required', false);
+            $requiredAsterisk.hide();
+            $passwordGroup.hide();
+        } else {
+            $passwordInput.prop('disabled', false).prop('required', true);
+            $requiredAsterisk.show();
+            $passwordGroup.show();
+        }
+    }
+
     function isValidEmail(email) {
         var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regex.test(email);
@@ -11,16 +28,20 @@ jQuery(function(){
             $m.find('.name, .email, .phone, .password').val('');
             $m.find('.country_code').val('mu');
             $m.find('.admin').prop('checked', false);
-            $m.find('.generate_password').prop('checked', false);
+            $m.find('.generate_password').prop('checked', true);
             $('#addUserAccessModalTitle').html('<i class="fa fa-unlock"></i> Grant User Access');
             $m.find('.password-group .form-control').attr('placeholder', 'Enter password');
             $m.find('.add-mode-hint').show();
             $m.find('.add-mode-only').show();
+            toggleManualPasswordField();
         } else {
             $('#addUserAccessModalTitle').html('<i class="fa fa-edit"></i> Edit User Access');
             $m.find('.password-group .form-control').attr('placeholder', 'Leave blank to keep current password');
             $m.find('.add-mode-hint').hide();
             $m.find('.add-mode-only').hide();
+            $m.find('.password-group').show();
+            $m.find('.password').prop('disabled', false).prop('required', false);
+            $m.find('.password-required-asterisk').hide();
         }
     }
 
@@ -78,6 +99,9 @@ jQuery(function(){
 
     $('#addUserAccessModal').on("hidden.bs.modal", function(){
         $('#addUserAccessModal .access_id').val('');
+    });
+    $('#addUserAccessModal').on('change', '.generate_password', function(){
+        toggleManualPasswordField();
     });
 
     $('#existing_users').on("click", ".editUser", function(){
