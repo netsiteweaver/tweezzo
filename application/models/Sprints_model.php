@@ -199,6 +199,49 @@ class Sprints_model extends CI_Model{
         return $this->db->affected_rows() >= 0;
     }
 
+    /**
+     * Disable "ready for validation" when nothing is left in staging for this sprint,
+     * so automated reminders cannot target an empty queue (same filters as the cron).
+     */
+    public function clearValidationReadinessIfNoStagingTasks($sprint_id)
+    {
+        $sprint_id = (int) $sprint_id;
+        if ($sprint_id <= 0) {
+            return;
+        }
+
+        $reminder = $this->db->select("svr.id")
+            ->from("sprint_validation_reminders svr")
+            ->join("sprints s", "s.id = svr.sprint_id")
+            ->join("projects p", "p.id = s.project_id")
+            ->join("customers c", "c.customer_id = p.customer_id")
+            ->where("svr.sprint_id", $sprint_id)
+            ->where("svr.ready_for_validation", 1)
+            ->where("s.status", "1")
+            ->where("s.active", "1")
+            ->where("p.active", "1")
+            ->where("c.active", "1")
+            ->get()
+            ->row();
+
+        if (empty($reminder)) {
+            return;
+        }
+
+        $stagingCount = (int) $this->db->select("COUNT(t.id) AS c", false)
+            ->from("tasks t")
+            ->where("t.sprint_id", $sprint_id)
+            ->where("t.status", "1")
+            ->where("t.closed", "0")
+            ->where("t.stage", "staging")
+            ->get()
+            ->row()->c;
+
+        if ($stagingCount === 0) {
+            $this->setValidationReadiness($sprint_id, 0, null);
+        }
+    }
+
     public function toggleActive($uuid)
     {
         $row = $this->db->select('id, active')

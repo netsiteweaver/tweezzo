@@ -749,7 +749,11 @@ class Customersportal_model extends CI_Model
 
     public function validateTask($task_id)
     {
-        $stage = $this->db->select("stage")->from("tasks")->where("id",$task_id)->get()->row()->stage;
+        $taskRow = $this->db->select("stage, sprint_id")->from("tasks")->where("id", $task_id)->get()->row();
+        if (empty($taskRow)) {
+            return false;
+        }
+        $stage = $taskRow->stage;
         if( in_array($stage, ['completed','validated']) ){
             return false;
         }elseif($stage == 'staging'){
@@ -781,13 +785,20 @@ class Customersportal_model extends CI_Model
 
             $this->emailForTaskValidationOrRejection($task_id,"validated");
 
+            $this->load->model("Sprints_model");
+            $this->Sprints_model->clearValidationReadinessIfNoStagingTasks((int) $taskRow->sprint_id);
+
             return true;
         }
     }
 
     public function rejectTask($task_id,$reject_reason)
     {
-        $stage = $this->db->select("stage")->from("tasks")->where("id",$task_id)->get()->row()->stage;
+        $taskRow = $this->db->select("stage, sprint_id")->from("tasks")->where("id", $task_id)->get()->row();
+        if (empty($taskRow)) {
+            return false;
+        }
+        $stage = $taskRow->stage;
         if( in_array($stage, ['completed','validated']) ){
             return false;
         }elseif($stage == 'staging'){
@@ -819,6 +830,10 @@ class Customersportal_model extends CI_Model
             }
 
             $this->emailForTaskValidationOrRejection($task_id,"rejected");
+
+            $this->load->model("Sprints_model");
+            $this->Sprints_model->clearValidationReadinessIfNoStagingTasks((int) $taskRow->sprint_id);
+
             return true;
         }
     }

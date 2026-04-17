@@ -418,7 +418,7 @@ class Tasks_model extends CI_Model{
         $this->load->model("email_model2");
         
         // Get current stage before updating
-        $current_task = $this->db->select('id, stage')->from('tasks')->where('uuid', $data['task_uuid'])->get()->row();
+        $current_task = $this->db->select('id, stage, sprint_id')->from('tasks')->where('uuid', $data['task_uuid'])->get()->row();
         $old_stage = $current_task ? $current_task->stage : null;
 
         $this->set_stage_change_trigger_session_vars(
@@ -499,6 +499,12 @@ class Tasks_model extends CI_Model{
             $this->Email_model3->save($user->email,$subject,$content);
 
         }
+
+        if ($rows > 0 && !empty($current_task) && !empty($current_task->sprint_id)) {
+            $this->load->model("Sprints_model");
+            $this->Sprints_model->clearValidationReadinessIfNoStagingTasks((int) $current_task->sprint_id);
+        }
+
         return ['result'=>true];
 
     }
@@ -848,6 +854,21 @@ class Tasks_model extends CI_Model{
             "Bulk stage change",
             "<p>New stage: <strong>" . htmlspecialchars($stageLabel) . "</strong></p>"
         );
+
+        if (!empty($ids)) {
+            $sprintRows = $this->db->select("sprint_id")
+                ->from("tasks")
+                ->where_in("id", $ids)
+                ->group_by("sprint_id")
+                ->get()
+                ->result();
+            $this->load->model("Sprints_model");
+            foreach ($sprintRows as $sr) {
+                if (!empty($sr->sprint_id)) {
+                    $this->Sprints_model->clearValidationReadinessIfNoStagingTasks((int) $sr->sprint_id);
+                }
+            }
+        }
     }
     
     public function bulkChangeSprint($taskIds, $sprintId)

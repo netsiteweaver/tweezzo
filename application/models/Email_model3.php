@@ -22,10 +22,10 @@ class Email_model3 extends CI_Model{
     {
         if(ENVIRONMENT == "development")
         {
-            $subject = "**" . $subject;
+            $subject = "[TESTING MODE] " . $subject;
         }elseif(ENVIRONMENT == "staging")
         {
-            $subject = "##" . $subject;
+            $subject = "[STAGING MODE] " . $subject;
         }
         $httpcode = 0;
         $var = array(

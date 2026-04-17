@@ -256,23 +256,29 @@ class Cron extends CI_Controller {
                         p.id AS project_id,
                         c.customer_id,
                         c.company_name,
-                        COUNT(t.id) AS staging_count
+                        (SELECT COUNT(t.id)
+                           FROM tasks t
+                          WHERE t.sprint_id = s.id
+                            AND t.status = '1'
+                            AND t.closed = '0'
+                            AND t.stage = 'staging') AS staging_count
                     FROM sprint_validation_reminders svr
                     JOIN sprints s ON s.id = svr.sprint_id
                     JOIN projects p ON p.id = s.project_id
                     JOIN customers c ON c.customer_id = p.customer_id
-                    JOIN tasks t ON t.sprint_id = s.id
                     WHERE svr.ready_for_validation = 1
                       AND s.status = '1'
                       AND s.active = '1'
                       AND p.active = '1'
                       AND c.active = '1'
-                      AND t.status = '1'
-                      AND t.closed = '0'
-                      AND t.stage = 'staging'
-                    GROUP BY svr.sprint_id, svr.last_sent_on, s.name, p.name, p.id, c.customer_id, c.company_name
-                    HAVING svr.last_sent_on IS NULL
-                        OR svr.last_sent_on <= (NOW() - INTERVAL 7 DAY)";
+                      AND (svr.last_sent_on IS NULL
+                           OR svr.last_sent_on <= (NOW() - INTERVAL 7 DAY))
+                      AND (SELECT COUNT(t2.id)
+                             FROM tasks t2
+                            WHERE t2.sprint_id = s.id
+                              AND t2.status = '1'
+                              AND t2.closed = '0'
+                              AND t2.stage = 'staging') > 0";
         $candidates = $this->db->query($query)->result();
 
         if(empty($candidates)) return;
@@ -281,6 +287,9 @@ class Cron extends CI_Controller {
         $this->load->model("system_model");
 
         foreach($candidates as $item){
+            if ((int) $item->staging_count <= 0) {
+                continue;
+            }
             $recipients = $this->db->select("name,email")
                                 ->from("customer_access")
                                 ->where("customer_id", $item->customer_id)

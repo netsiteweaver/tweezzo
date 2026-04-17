@@ -604,6 +604,11 @@ class Developersportal_model extends CI_Model{
             
         }
 
+        if ($stageUpdateRows > 0 && !empty($result) && !empty($result->sprint_id)) {
+            $this->load->model("Sprints_model");
+            $this->Sprints_model->clearValidationReadinessIfNoStagingTasks((int) $result->sprint_id);
+        }
+
     }
 
     public function get_login_history($records=10)
