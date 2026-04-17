@@ -1255,10 +1255,11 @@ class Customersportal_model extends CI_Model
      * addUserAccess is called from the back office or from the portal (portal always passes admin=0).
      * @param int $admin 1 = portal admin (can add/remove other users), 0 = normal user
      */
-    public function addUserAccess($uuid, $name,$email,$phone,$password, $country_code, $admin = 0)
+    public function addUserAccess($uuid, $name,$email,$phone,$password, $country_code, $admin = 0, $generate_password = 0)
     {
         $author = $this->db->select("name,email")->from("users")->where("id",$_SESSION['user_id'])->get()->row();
         $customer = $this->db->select("customer_id, email, full_name, company_name")->from("customers")->where("uuid",$uuid)->get()->row();
+        $final_password = ($generate_password == 1 || strlen(trim((string) $password)) < 4) ? genPassword(12) : $password;
 
         $existing_users = $this->db->select("count(id) as ct")->from("customer_access")->where(array("customer_id"=>$customer->customer_id,"status"=>"1"))->get()->row()->ct;
 
@@ -1272,7 +1273,7 @@ class Customersportal_model extends CI_Model
         $this->db->set("email",$email);
         $this->db->set("phone_number1",$phone);
         $this->db->set("country_code",$country_code);
-        $this->db->set("password",md5($password),true);
+        $this->db->set("password",md5($final_password),true);
         $this->db->set("created_by",$_SESSION['user_id']);
         $this->db->set("customer_id",$customer->customer_id);
         $this->db->set("created_on",'NOW()',true);
@@ -1281,7 +1282,7 @@ class Customersportal_model extends CI_Model
         $this->db->insert("customer_access");
         $newUserId = $this->db->insert_id();
 
-        $this->emailForUserCreated($author,$name,$email,$password,$customer);
+        $this->emailForUserCreated($author,$name,$email,$final_password,$customer, (int) $generate_password === 1);
 
         return [
             'result'    =>  true,
@@ -1374,7 +1375,7 @@ class Customersportal_model extends CI_Model
         return true;
     }
 
-    private function emailForUserCreated($author,$name,$email,$password,$customer)
+    private function emailForUserCreated($author,$name,$email,$password,$customer, $is_generated_password = false)
     {
         $this->load->model("Email_model3");
         $this->load->model("System_model");
@@ -1384,7 +1385,8 @@ class Customersportal_model extends CI_Model
             'customer'      =>  $customer,
             'logo'          =>  $this->System_model->getParam("logo"),
             'link'          =>  base_url('portal/customers/'),
-            'link_label'    =>  'Sign In'
+            'link_label'    =>  'Sign In',
+            'is_generated_password' => (bool) $is_generated_password
         ];
         $content = $this->load->view("_email/header",$emailData, true);
         $content .= $this->load->view("_email/userAdded",$emailData, true);

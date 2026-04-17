@@ -28,6 +28,11 @@
     </table>
 </div>
 <div style='margin:30px auto; max-width:800px;'>
+    <?php if (!empty($is_generated_password)): ?>
+    <div style="margin-bottom:15px; padding:12px; border:1px solid #ffe58f; background:#fffbe6; color:#614700;">
+        This password was generated automatically. For security, please sign in and change it immediately from <strong>My Profile</strong>, located in the top right corner of the screen.
+    </div>
+    <?php endif; ?>
     <a class='btn' href="<?php echo $link;?>">
         <div class="label"><?php echo $link_label;?></div>
     </a>

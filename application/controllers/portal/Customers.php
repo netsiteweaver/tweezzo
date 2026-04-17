@@ -380,14 +380,99 @@ class Customers extends CI_Controller
 
     public function myaccount()
     {
-        
+        $this->data['page_title'] = "My Profile";
+        $this->data['profile'] = $this->db->select('name, email, phone_number1, country_code')
+            ->from('customer_access')
+            ->where('id', (int) $_SESSION['customer_access_id'])
+            ->where('status', 1)
+            ->get()
+            ->row();
+        $this->data['content'][] = $this->load->view("/portal/customers/myaccount", $this->data, true);
+        $this->load->view("/portal/customers/shared/layout", $this->data);
+    }
 
-        //Breadcrumbs
-        $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
-        $this->data['page_title'] = "Departments";
+    public function updateMyPassword()
+    {
+        if (empty($_SESSION['customer_access_id'])) {
+            setFlashMessage("danger", "Session expired. Please sign in again.");
+            redirect(base_url("portal/customers/signin"));
+        }
 
-        $this->load->view("/portal/customers/myaccount",$this->data);
-         
+        $current_password = trim((string) $this->input->post("current_password"));
+        $new_password = trim((string) $this->input->post("new_password"));
+        $confirm_password = trim((string) $this->input->post("confirm_password"));
+
+        if (strlen($current_password) < 4 || strlen($new_password) < 6 || strlen($confirm_password) < 6) {
+            setFlashMessage("danger", "Please enter valid passwords. New password must be at least 6 characters.");
+            redirect(base_url("portal/customers/myaccount"));
+        }
+        if ($new_password !== $confirm_password) {
+            setFlashMessage("danger", "New password and confirmation do not match.");
+            redirect(base_url("portal/customers/myaccount"));
+        }
+        if ($current_password === $new_password) {
+            setFlashMessage("warning", "New password must be different from current password.");
+            redirect(base_url("portal/customers/myaccount"));
+        }
+
+        $access_id = (int) $_SESSION['customer_access_id'];
+        $row = $this->db->select("id")
+            ->from("customer_access")
+            ->where([
+                "id" => $access_id,
+                "status" => 1,
+                "password" => md5($current_password)
+            ])
+            ->get()
+            ->row();
+        if (empty($row)) {
+            setFlashMessage("danger", "Current password is incorrect.");
+            redirect(base_url("portal/customers/myaccount"));
+        }
+
+        $this->db->set("password", md5($new_password), true)
+            ->where("id", $access_id)
+            ->update("customer_access");
+
+        setFlashMessage("success", "Password updated successfully.");
+        redirect(base_url("portal/customers/myaccount"));
+    }
+
+    public function updateMyProfile()
+    {
+        if (empty($_SESSION['customer_access_id'])) {
+            setFlashMessage("danger", "Session expired. Please sign in again.");
+            redirect(base_url("portal/customers/signin"));
+        }
+
+        $name = trim((string) $this->input->post("name"));
+        $phone = trim((string) $this->input->post("phone"));
+        $country_code = strtolower(trim((string) $this->input->post("country_code")));
+        if (strlen($name) < 4) {
+            setFlashMessage("danger", "Please enter a valid name (minimum 4 characters).");
+            redirect(base_url("portal/customers/myaccount"));
+        }
+        if (strlen($country_code) < 2) {
+            setFlashMessage("danger", "Please select a valid country.");
+            redirect(base_url("portal/customers/myaccount"));
+        }
+
+        $access_id = (int) $_SESSION['customer_access_id'];
+        $this->db->set("name", $name)
+            ->set("phone_number1", $phone)
+            ->set("country_code", $country_code)
+            ->where("id", $access_id)
+            ->where("status", 1)
+            ->update("customer_access");
+
+        if ((int) $this->db->affected_rows() > 0) {
+            $_SESSION['customer_name'] = $name;
+            setFlashMessage("success", "Profile updated successfully.");
+        } else {
+            $_SESSION['customer_name'] = $name;
+            setFlashMessage("info", "No profile changes detected.");
+        }
+        redirect(base_url("portal/customers/myaccount"));
     }
 
     public function validateTask()
@@ -547,6 +632,7 @@ class Customers extends CI_Controller
         $password = trim($this->input->post("password"));
         $country_code = trim($this->input->post("country_code"));
         $admin = $this->input->post("admin") ? 1 : 0; // from back-office Add User; portal users get 0
+        $generate_password = $this->input->post("generate_password") ? 1 : 0;
         // $confirm_password = trim($this->input->post("confirm_password"));
         $valid = true;
         $php_errormsg = "";
@@ -559,11 +645,11 @@ class Customers extends CI_Controller
             $php_errormsg .= "Please enter a valid email<br>";
             $valid = false;
         }
-        if(strlen($password)<4){
+        if($generate_password !== 1 && strlen($password)<4){
             $php_errormsg .= "Please enter a password (4 chars min)<br>";
             $valid = false;
         }
-        if(strlen($password)<2){
+        if(strlen($country_code)<2){
             $php_errormsg .= "Please enter a valid country code<br>";
             $valid = false;
         }
@@ -588,7 +674,7 @@ class Customers extends CI_Controller
             exit;
         }
 
-        $result = $this->Customersportal_model->addUserAccess($uuid, $name, $email, $phone, $password, $country_code, $admin);
+        $result = $this->Customersportal_model->addUserAccess($uuid, $name, $email, $phone, $password, $country_code, $admin, $generate_password);
 
         echo json_encode($result);
 

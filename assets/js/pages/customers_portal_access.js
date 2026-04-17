@@ -11,13 +11,16 @@ jQuery(function(){
             $m.find('.name, .email, .phone, .password').val('');
             $m.find('.country_code').val('mu');
             $m.find('.admin').prop('checked', false);
+            $m.find('.generate_password').prop('checked', false);
             $('#addUserAccessModalTitle').html('<i class="fa fa-unlock"></i> Grant User Access');
             $m.find('.password-group .form-control').attr('placeholder', 'Enter password');
             $m.find('.add-mode-hint').show();
+            $m.find('.add-mode-only').show();
         } else {
             $('#addUserAccessModalTitle').html('<i class="fa fa-edit"></i> Edit User Access');
             $m.find('.password-group .form-control').attr('placeholder', 'Leave blank to keep current password');
             $m.find('.add-mode-hint').hide();
+            $m.find('.add-mode-only').hide();
         }
     }
 
@@ -109,6 +112,7 @@ jQuery(function(){
         var password = $('#addUserAccessModal .password').val();
         var countryCode = $('#addUserAccessModal .country_code').val();
         var admin = $('#addUserAccessModal .admin').is(':checked') ? 1 : 0;
+        var generatePassword = $('#addUserAccessModal .generate_password').is(':checked') ? 1 : 0;
         var errorMessage = "";
 
         if (name.length < 4) {
@@ -117,7 +121,7 @@ jQuery(function(){
         if (!isValidEmail(email)) {
             errorMessage += "- a valid email\r\n";
         }
-        if (!accessId && password.length < 4) {
+        if (!accessId && !generatePassword && password.length < 4) {
             errorMessage += "- a valid password of at least 4 chars (required for new user)\r\n";
         }
         if (errorMessage.length > 0) {
@@ -154,7 +158,7 @@ jQuery(function(){
                 url: base_url + "portal/customers/addUserAccess",
                 method: "POST",
                 dataType: "JSON",
-                data: { uuid: uuid, name: name, email: email, phone: phone, password: password, country_code: countryCode, admin: admin },
+                data: { uuid: uuid, name: name, email: email, phone: phone, password: password, country_code: countryCode, admin: admin, generate_password: generatePassword },
                 success: function(response){
                     if (response.result === false) {
                         alertify.alert(response.reason);

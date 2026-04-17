@@ -144,6 +144,13 @@
             <input type="text" class="password form-control" placeholder="Enter password (leave blank when editing to keep current)">
             <small class="form-text text-muted add-mode-hint">Required for new user</small>
         </div>
+        <div class="form-group generated-password-option add-mode-only">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input generate_password" id="generateUserPassword" value="1">
+                <label class="form-check-label" for="generateUserPassword">Generate password and send it by email</label>
+            </div>
+            <small class="form-text text-muted">When enabled, password field is optional.</small>
+        </div>
         <div class="form-group">
             <label for="">Admin</label>
             <div class="form-check">

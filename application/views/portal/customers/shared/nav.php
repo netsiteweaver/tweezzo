@@ -88,6 +88,11 @@
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
+                            <a class="dropdown-item <?php echo ($this->uri->segment(3)=='myaccount')?'active':'';?>" href="portal/customers/myaccount">
+                                <i class="bi bi-person-gear me-2"></i>My Profile
+                            </a>
+                        </li>
+                        <li>
                             <a class="dropdown-item text-danger" href="portal/customers/signout">
                                 <i class="bi bi-box-arrow-right me-2"></i>Sign out
                             </a>
