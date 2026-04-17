@@ -29,6 +29,23 @@ class Customers extends CI_Controller
         $this->data['random_quote'] = $this->Quotes_model->getRandomQuote();
 
         if(isset($_SESSION['customer_access_id'])){
+            $activeAccess = $this->db->select('id')
+                ->from('customer_access')
+                ->where([
+                    'id' => (int) $_SESSION['customer_access_id'],
+                    'status' => 1
+                ])
+                ->get()
+                ->row();
+            if (empty($activeAccess)) {
+                unset($_SESSION['customer_access_id']);
+                unset($_SESSION['customer_email']);
+                unset($_SESSION['customer_company_name']);
+                unset($_SESSION['customer_name']);
+                setFlashMessage("danger", "Your portal access has been removed. Please contact your administrator.");
+                redirect('portal/customers/signin');
+            }
+
             $adminRow = $this->db->select("admin")->from("customer_access")->where(array(
                 "status"        =>  "1",
                 "id"            =>  $_SESSION['customer_access_id']
