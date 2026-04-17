@@ -7,10 +7,13 @@
             <tr>
                 <td>
                     <?php if($type == 'validated'):?>
-                        This is to inform you that <?php echo $task->validatedBy;?> validated task <?php echo "{$task->taskName} / {$task->taskNumber}.";?>
+                        This is to inform you that <strong><?php echo $task->validatedBy;?></strong> validated task <strong><?php echo "{$task->taskName} / {$task->taskNumber}.";?></strong>
+                        <br><br>
                         Please proceed with the production push request for this validated task.
                     <?php else:?>
-                        This is to inform you that <?php echo $task->rejectedBy;?> rejected task <?php echo "{$task->taskName} / {$task->taskNumber} because {$task->rejectedReason}.";?>
+                        This is to inform you that <strong><?php echo $task->rejectedBy;?></strong> rejected task <strong><?php echo "{$task->taskName} / {$task->taskNumber} because {$task->rejectedReason}.";?></strong>
+                        <br><br>
+                        Please review the rejected task and proceed with necessary amendments if needed.
                     <?php endif;?>
                 </td>
             </tr>
