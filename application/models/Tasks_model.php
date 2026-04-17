@@ -400,7 +400,7 @@ class Tasks_model extends CI_Model{
         if ((int) $task_id <= 0 || $old_stage === null || (string) $old_stage === (string) $new_stage) {
             return;
         }
-        $row = array(
+        $this->db->insert('stage_change_history', array(
             'task_id'               => (int) $task_id,
             'old_stage'             => $old_stage,
             'new_stage'             => $new_stage,
@@ -409,16 +409,7 @@ class Tasks_model extends CI_Model{
             'created_by_ip'         => $this->input->ip_address(),
             'created_by_user_agent' => substr((string) $this->input->user_agent(), 0, 255),
             'user_type'             => $user_type,
-        );
-        $ok = $this->db->insert('stage_change_history', $row);
-        if ($ok) {
-            return;
-        }
-        // Legacy production schemas may still enforce FK(created_by -> users.id),
-        // which breaks customer history writes (customer_access id is not a users.id).
-        // Retry without created_by so the stage transition is not lost.
-        $row['created_by'] = null;
-        $this->db->insert('stage_change_history', $row);
+        ));
     }
 
     public function move_stage($data)
