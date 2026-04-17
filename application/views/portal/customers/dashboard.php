@@ -216,6 +216,7 @@
                                 <th class="text-center">Tasks</th>
                                 <th class="text-center">Completed</th>
                                 <th style="width: 220px;">Progress</th>
+                                <th class="text-center" style="width: 130px;">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -234,11 +235,16 @@
                                                 </div>
                                             </div>
                                         </td>
+                                        <td class="text-center">
+                                            <a href="<?php echo base_url('portal/customers/tasks?sprint_id=' . (int) $sprint->id); ?>" class="btn btn-sm btn-outline-primary">
+                                                View Tasks
+                                            </a>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="5" class="text-muted">No sprint data available yet.</td>
+                                    <td colspan="6" class="text-muted">No sprint data available yet.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
