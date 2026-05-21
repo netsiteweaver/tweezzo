@@ -205,13 +205,35 @@ jQuery(function(){
     })
 
     $('#sprint_id').on('change', function(){
-        let sprint_id = $(this).val();
-        if( sprint_id.length > 0){
-            $('.ready').removeClass('d-none');
-        }else{
-            $('.ready').addClass('d-none');   
+        var $selected = $(this).find('option:selected');
+        if ($selected.length && $selected.prop('disabled')) {
+            $(this).val('');
+            $('.ready').addClass('d-none');
+            if (typeof toastr !== 'undefined') {
+                toastr.warning('That sprint has ended. Choose another sprint.');
+            }
+            return;
         }
-    })
+        syncTaskFormReadyForSprint();
+    });
+
+    if ($('#sprint_id').length) {
+        $('#sprint_id option').each(function() {
+            var endDate = $(this).data('endDate') || $(this).attr('data-end-date');
+            if (endDate && endDate < new Date().toISOString().slice(0, 10)) {
+                $(this).prop('disabled', true);
+                if ($(this).text().indexOf('(ended)') === -1) {
+                    $(this).text($(this).text() + ' (ended)');
+                }
+            }
+        });
+        if ($('#sprint_id option:selected').prop('disabled')) {
+            $('#sprint_id').val('');
+        }
+        syncTaskFormReadyForSprint();
+    } else {
+        syncTaskDueDateMaxFromSprint();
+    }
 
     $(".select-user").on("click", function(){
         let taskId = $('input[name=id]').val();
@@ -252,9 +274,20 @@ jQuery(function(){
 
     $("#sprint_id").on("change",function(){
         let sprint_id = $(this).val();
-        // alert(sprint_id);
+        syncTaskDueDateMaxFromSprint();
+        if (!sprint_id || $(this).find('option:selected').prop('disabled')) {
+            return;
+        }
         getMaxTaskNumberBySprintId(sprint_id);
-    })
+    });
+
+    $('input[name="due_date"]').on("change", syncTaskDueDateMaxFromSprint);
+
+    $('#add_user').on('submit', function(e){
+        if (!validateTaskDueDateAgainstSprint()) {
+            e.preventDefault();
+        }
+    });
 
 
     $('#customer_id').on('change', function(){
@@ -484,7 +517,103 @@ function getByCustomerId(customer_id)
     })
 }
 
-function getByProjectId(project_id)
+function appendSprintOptions(sprints, preselectId) {
+    $('#sprint_id').empty();
+    $('#sprint_id').append('<option value="">Select Sprint</option>');
+    var firstOpenId = null;
+
+    $(sprints).each(function(index, item) {
+        var label = item.name;
+        var $opt = $('<option></option>')
+            .val(item.id)
+            .addClass('select-project')
+            .text(label);
+
+        if (item.end_date) {
+            $opt.attr('data-end-date', item.end_date);
+        }
+
+        if (item.past_end) {
+            $opt.prop('disabled', true);
+            $opt.text(label + ' (ended)');
+            if (item.end_date) {
+                $opt.attr('title', 'Sprint ended on ' + item.end_date);
+            }
+        } else if (firstOpenId === null) {
+            firstOpenId = String(item.id);
+        }
+
+        $('#sprint_id').append($opt);
+    });
+
+    var selectId = preselectId ? String(preselectId) : null;
+    if (selectId) {
+        var $target = $('#sprint_id option[value="' + selectId + '"]');
+        if ($target.length && !$target.prop('disabled')) {
+            $('#sprint_id').val(selectId);
+        } else {
+            $('#sprint_id').val('');
+        }
+    } else if (sprints.length === 1 && firstOpenId !== null) {
+        $('#sprint_id').val(firstOpenId);
+    }
+
+    syncTaskFormReadyForSprint();
+}
+
+function syncTaskFormReadyForSprint() {
+    var sprintId = $('#sprint_id').val();
+    var $selected = $('#sprint_id option:selected');
+    if (!sprintId || $selected.prop('disabled')) {
+        $('#sprint_id').val('');
+        $('.ready').addClass('d-none');
+        syncTaskDueDateMaxFromSprint();
+        return;
+    }
+    $('.ready').removeClass('d-none');
+    syncTaskDueDateMaxFromSprint();
+}
+
+function syncTaskDueDateMaxFromSprint() {
+    var $due = $('input[name="due_date"]');
+    if (!$due.length) {
+        return;
+    }
+
+    var endDate = $('#sprint_id option:selected').attr('data-end-date') || '';
+    var $hint = $('#task_due_date_hint');
+
+    if (endDate) {
+        $due.attr('max', endDate);
+        if ($due.val() && $due.val() > endDate) {
+            $due.val(endDate);
+        }
+        if ($hint.length) {
+            $hint.text('Must be on or before sprint end date (' + endDate + ').');
+        }
+    } else {
+        $due.removeAttr('max');
+        if ($hint.length) {
+            $hint.text('');
+        }
+    }
+}
+
+function validateTaskDueDateAgainstSprint() {
+    var endDate = $('#sprint_id option:selected').attr('data-end-date') || '';
+    var dueVal = $('input[name="due_date"]').val();
+    if (endDate && dueVal && dueVal > endDate) {
+        if (typeof toastr !== 'undefined') {
+            toastr.error('Due date cannot be later than the sprint end date (' + endDate + ').');
+        } else {
+            alert('Due date cannot be later than the sprint end date (' + endDate + ').');
+        }
+        return false;
+    }
+    return true;
+}
+
+function getByProjectId(project_id, preselectSprintId)
 {
     Overlay("on")
     $.ajax({
@@ -493,22 +622,10 @@ function getByProjectId(project_id)
         data: {project_id: project_id},
         dataType: 'json',
         success: function(response){
-            console.log(response)
-            $('#sprint_id').empty();
             if(response.result) {
-                $('#sprint_id').append('<option value="">Select Sprint</option>');
-                $(response.data).each(function(index, item){    
-                    $('#sprint_id').append('<option class="select-project" value="'+item.id+'">'+item.name+'</option>');
-                });
-                // if(response.rows == 1){
-                //     window.setTimeout(function(){
-                //         $('#sprint_id').val(response.data[0].id);
-                //         $('.ready').removeClass('d-none');
-                //         $('input[name=section]').trigger('focus');
-                //     }
-                //     , 100);
-                    $("input[name='section']").trigger('focus');
-                // }
+                var preselect = preselectSprintId || $('input[name=_sprint_id]').val() || null;
+                appendSprintOptions(response.data, preselect);
+                $("input[name='section']").trigger('focus');
                 Overlay("off")
             }else{
                 $("#sprint_id").empty();

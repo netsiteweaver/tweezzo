@@ -94,6 +94,50 @@ class Sprints_model extends CI_Model{
         return $days > 0 ? $days : 14;
     }
 
+    public function isPastEndDate($end_date)
+    {
+        $end_date = trim((string) $end_date);
+        return $end_date !== '' && $end_date < date('Y-m-d');
+    }
+
+    /**
+     * Task due date must not be after the sprint end date (when sprint has an end date).
+     */
+    public function validateTaskDueDate($sprint_id, $due_date)
+    {
+        $due_date = trim((string) $due_date);
+        if ($due_date === '') {
+            return ['valid' => true];
+        }
+
+        $sprint_id = (int) $sprint_id;
+        if ($sprint_id <= 0) {
+            return ['valid' => true];
+        }
+
+        $sprint = $this->db->select('end_date, name')
+            ->from('sprints')
+            ->where('id', $sprint_id)
+            ->where('status', '1')
+            ->get()
+            ->row();
+
+        if (empty($sprint) || empty($sprint->end_date)) {
+            return ['valid' => true];
+        }
+
+        if ($due_date > $sprint->end_date) {
+            return [
+                'valid' => false,
+                'reason' => 'Due date cannot be later than the sprint end date ('
+                    . date('d M Y', strtotime($sprint->end_date))
+                    . ').',
+            ];
+        }
+
+        return ['valid' => true];
+    }
+
     public function canOverrideSprintDateRestriction()
     {
         if (empty($_SESSION['user_id'])) {

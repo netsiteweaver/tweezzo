@@ -65,8 +65,16 @@ $task_poll_json = (!empty($task_poll_snapshot) && is_array($task_poll_snapshot))
 						<div class="form-group">
 							<label for="sprint_id">Sprint</label>
 							<select name="sprint_id" id="sprint_id" class="form-control" required>
-								<?php foreach($sprints as $sprint):?>
-								<option value="<?php echo $sprint->id;?>" <?php echo ($task->sprint_id == $sprint->id) ? 'selected' : '';?>><?php echo $sprint->name;?></option>
+								<?php foreach($sprints as $sprint):
+									$sprint_past_end = !empty($sprint->end_date) && $sprint->end_date < date('Y-m-d');
+									$sprint_selected = ($task->sprint_id == $sprint->id);
+								?>
+								<option value="<?php echo $sprint->id;?>"
+									data-end-date="<?php echo !empty($sprint->end_date) ? htmlspecialchars($sprint->end_date) : ''; ?>"
+									<?php echo $sprint_selected ? 'selected' : ''; ?>
+									<?php echo ($sprint_past_end && $task->sprint_id != $sprint->id) ? 'disabled' : ''; ?>>
+									<?php echo htmlspecialchars($sprint->name) . ($sprint_past_end ? ' (ended)' : ''); ?>
+								</option>
 								<?php endforeach;?>
 							</select>
 						</div>
@@ -97,7 +105,8 @@ $task_poll_json = (!empty($task_poll_snapshot) && is_array($task_poll_snapshot))
 								<div class="col-md-6">
 									<div class="form-group">
 										<label>Due Date</label>
-										<input type="date" class="form-control" name="due_date" placeholder="" value="<?php echo $task->due_date;?>">
+										<input type="date" class="form-control" name="due_date" id="task_due_date" placeholder="" value="<?php echo $task->due_date;?>">
+										<small class="form-text text-muted" id="task_due_date_hint"></small>
 									</div>
 								</div>
 								<div class="col-md-6">

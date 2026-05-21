@@ -106,6 +106,8 @@ class Sprints extends MY_Controller {
         $this->load->model('Customers_model');
         $this->data['customers'] = $this->Customers_model->lookup();
 
+        $this->data['task_perms']['add'] = $this->accesscontrol_model->authorised('tasks', 'add');
+
         $this->data["content"]=$this->load->view("/sprints/listing",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   
     }
@@ -178,6 +180,10 @@ class Sprints extends MY_Controller {
     {
         $project_id = $this->input->post("project_id");
         $sprints = $this->Sprints_model->getByProjectId($project_id);
+
+        foreach ($sprints as $sprint) {
+            $sprint->past_end = $this->Sprints_model->isPastEndDate($sprint->end_date ?? '');
+        }
 
         echo json_encode(array(
             "result"    =>  (count($sprints)==0)?false:true,

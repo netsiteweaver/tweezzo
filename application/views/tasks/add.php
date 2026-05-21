@@ -51,10 +51,16 @@
                     <div class="form-group">
                         <label for="sprint_id">Sprint</label>
                         <select name="sprint_id" id="sprint_id" class="form-control" required>
-                            <?php if(!empty($sprints)) foreach($sprints as $sprint):?>
+                            <?php if(!empty($sprints)) foreach($sprints as $sprint):
+                                $sprint_past_end = !empty($sprint->end_date) && $sprint->end_date < date('Y-m-d');
+                                $sprint_selected = !$sprint_past_end && ($sprint->id == $this->input->get('sprint_id'));
+                            ?>
                             <option value="<?php echo $sprint->id;?>"
-                                <?php echo ($sprint->id == $this->input->get('sprint_id')) ? 'selected' : '';?>>
-                                <?php echo $sprint->name;?></option>
+                                data-end-date="<?php echo !empty($sprint->end_date) ? htmlspecialchars($sprint->end_date) : ''; ?>"
+                                <?php echo $sprint_selected ? 'selected' : ''; ?>
+                                <?php echo $sprint_past_end ? 'disabled' : ''; ?>>
+                                <?php echo htmlspecialchars($sprint->name) . ($sprint_past_end ? ' (ended)' : ''); ?>
+                            </option>
                             <?php endforeach;?>
                         </select>
                     </div>
@@ -96,7 +102,8 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Due Date</label>
-                                    <input type="date" class="form-control" name="due_date" placeholder="" value="<?= date('Y-m-d', strtotime('+5 days')); ?>">
+                                    <input type="date" class="form-control" name="due_date" id="task_due_date" placeholder="" value="<?= date('Y-m-d', strtotime('+5 days')); ?>">
+                                    <small class="form-text text-muted" id="task_due_date_hint"></small>
                                 </div>
                             </div>
                             <div class="col-md-6">

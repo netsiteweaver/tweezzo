@@ -528,6 +528,14 @@ class Tasks_model extends CI_Model{
                     return ['result' => false, 'reason' => $sprintCheck['reason']];
                 }
             }
+
+            $dueCheck = $this->Sprints_model->validateTaskDueDate(
+                $data['sprint_id'],
+                $data['due_date'] ?? ''
+            );
+            if (!$dueCheck['valid']) {
+                return ['result' => false, 'reason' => $dueCheck['reason']];
+            }
         }
 
         $this->db->set('name',$data['name']);

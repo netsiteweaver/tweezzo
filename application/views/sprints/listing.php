@@ -84,18 +84,29 @@
                             <?php endif; ?>
                             </td>
                             <td>
+                            <?php
+                            $sprint_task_qs = ['sprint_id' => (int) $task->id];
+                            if (!empty($task->project_id)) {
+                                $sprint_task_qs['project_id'] = (int) $task->project_id;
+                            }
+                            if (!empty($task->customer_id)) {
+                                $sprint_task_qs['customer_id'] = (int) $task->customer_id;
+                            }
+                            ?>
+                            <?php if (!empty($task_perms['add'])): ?>
+                                <?php
+                                $sprint_past_end = !empty($task->end_date) && $task->end_date < date('Y-m-d');
+                                $sprint_end_label = $sprint_past_end ? date_format(date_create($task->end_date), 'd-m-Y') : '';
+                                ?>
+                                <?php if ($sprint_past_end): ?>
+                                    <button type="button" class="btn btn-flat btn-success" disabled title="Sprint ended on <?php echo htmlspecialchars($sprint_end_label); ?>. Extend dates in Edit or add tasks to a newer sprint."><i class="fa fa-plus"></i><span class="ButtonLabel"> Add Task</span></button>
+                                <?php else: ?>
+                                    <a href="<?php echo base_url('tasks/add?' . http_build_query($sprint_task_qs)); ?>" title="Add a task to this sprint"><div class="btn btn-flat btn-success"><i class="fa fa-plus"></i><span class="ButtonLabel"> Add Task</span></div></a>
+                                <?php endif; ?>
+                            <?php endif; ?>
                             <?php if($perms['view']): ?>
                                 <!-- <a href="<?php echo base_url('sprints/view/' . $task->uuid."?customer_id=".$this->input->get("customer_id")."&stage=".$this->input->get("stage")); ?>"><div class="btn btn-flat btn-default"><i class='fas fa-eye'></i><span class='ButtonLabel'> View</span></div></a> -->
-                                <?php
-                                $view_tasks_qs = ['sprint_id' => (int) $task->id];
-                                if (!empty($task->project_id)) {
-                                    $view_tasks_qs['project_id'] = (int) $task->project_id;
-                                }
-                                if (!empty($task->customer_id)) {
-                                    $view_tasks_qs['customer_id'] = (int) $task->customer_id;
-                                }
-                                ?>
-                                <a href="<?php echo base_url('tasks/listing?' . http_build_query($view_tasks_qs)); ?>"><div class="btn btn-flat btn-default"><i class='fas fa-list'></i><span class='ButtonLabel'> Tasks (<?php echo (int) (isset($task->task_count) ? $task->task_count : 0); ?>)</span></div></a>
+                                <a href="<?php echo base_url('tasks/listing?' . http_build_query($sprint_task_qs)); ?>"><div class="btn btn-flat btn-default"><i class='fas fa-list'></i><span class='ButtonLabel'> Tasks (<?php echo (int) (isset($task->task_count) ? $task->task_count : 0); ?>)</span></div></a>
                             <?php endif; ?>
                             <?php if($perms['edit']): ?>
                                 <a href="<?php echo base_url('sprints/edit/' . $task->uuid."?customer_id=".$this->input->get("customer_id")."&stage=".$this->input->get("stage")); ?>"><div class="btn btn-flat btn-primary"><i class='fas fa-edit'></i><span class='ButtonLabel'> Edit</span></div></a>
