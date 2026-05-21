@@ -63,6 +63,22 @@
                 required><?= set_value('notes', $note->notes) ?></textarea>
         </div>
 
+        <div class="form-group">
+            <div class="row">
+                <div class="col-md-8">
+                    <label for="next_meeting_date" class="form-label">Next Meeting Date <span class="text-muted">(optional)</span></label>
+                    <input type="date" name="next_meeting_date" id="next_meeting_date" class="form-control"
+                        value="<?= set_value('next_meeting_date', !empty($note->next_meeting_date) ? substr($note->next_meeting_date, 0, 10) : '') ?>">
+                </div>
+                <div class="col-md-4">
+                    <label for="next_meeting_time" class="form-label">Next Meeting Time</label>
+                    <input type="time" name="next_meeting_time" id="next_meeting_time" class="form-control"
+                        value="<?= set_value('next_meeting_time', !empty($note->next_meeting_date) ? substr($note->next_meeting_date, 11, 5) : '') ?>">
+                </div>
+            </div>
+            <small class="form-text text-muted">Schedule the follow-up meeting, if known. Time is required when a date is set.</small>
+        </div>
+
         <?php if (!empty($attachments)): ?>
             <h4>Attachments:</h4>
             <div class="row g-3">

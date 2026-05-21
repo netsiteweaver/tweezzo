@@ -33,7 +33,20 @@ class Meeting_notes extends MY_Controller
         // page title
         $this->data['page_title'] = "Meeting Notes";
 
-        $this->data['notes'] = $this->Meeting_note_model->get_all_notes();
+        $customer_id = $this->input->get('customer_id');
+        $start_date = $this->input->get('start_date');
+        $end_date = $this->input->get('end_date');
+
+        if (empty($start_date) && empty($end_date)) {
+            $end_date = date('Y-m-d');
+            $start_date = date('Y-m-d', strtotime('-29 days'));
+        }
+
+        $this->data['customers'] = $this->Customers_model->lookup();
+        $this->data['customer_id'] = $customer_id;
+        $this->data['start_date'] = $start_date;
+        $this->data['end_date'] = $end_date;
+        $this->data['notes'] = $this->Meeting_note_model->get_all_notes($customer_id, $start_date, $end_date);
 
         $this->data["content"]=$this->load->view("meeting_notes/index",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   
@@ -95,8 +108,7 @@ class Meeting_notes extends MY_Controller
         $this->form_validation->set_rules('meeting_date', 'Meeting Date', 'required');
         $this->form_validation->set_rules('meeting_time', 'Meeting Time', 'required');
         $this->form_validation->set_rules('notes', 'Notes', 'required');
-
-        
+        $this->form_validation->set_rules('next_meeting_date', 'Next Meeting Date', 'callback_validate_next_meeting_date');
 
         if ($this->form_validation->run() === FALSE) {
             $this->data["content"]=$this->load->view("meeting_notes/create",$this->data,true);
@@ -106,6 +118,10 @@ class Meeting_notes extends MY_Controller
                 'customer_id' => $this->input->post('customer_id'),
                 'customer_name' => $this->input->post('customer_name'),
                 'meeting_datetime' => $this->input->post('meeting_date') . ' ' . $this->input->post('meeting_time'),
+                'next_meeting_date' => $this->Meeting_note_model->parseNextMeetingDate(
+                    $this->input->post('next_meeting_date'),
+                    $this->input->post('next_meeting_time')
+                ),
                 'notes' => $this->input->post('notes'),
                 'attendees' => $this->input->post('attendees', true),
                 'lieu' => $this->input->post('lieu', true),
@@ -151,18 +167,11 @@ class Meeting_notes extends MY_Controller
         $this->form_validation->set_rules('meeting_date', 'Meeting DateTime', 'required');
         $this->form_validation->set_rules('meeting_time', 'Meeting DateTime', 'required');
         $this->form_validation->set_rules('notes', 'Notes', 'required');
+        $this->form_validation->set_rules('next_meeting_date', 'Next Meeting Date', 'callback_validate_next_meeting_date');
 
         if ($this->form_validation->run() === FALSE) {
             $this->edit($id);
         } else {
-            $data = [
-                'customer_id' => $this->input->post('customer_id'),
-                'customer_name' => $this->input->post('customer_name'),
-                'meeting_datetime' => $this->input->post('meeting_date') . ' ' . $this->input->post('meeting_time'),
-                'notes' => $this->input->post('notes'),
-                'attendees' => $this->input->post('attendees', true),
-                'lieu' => $this->input->post('lieu', true),
-            ];
             $this->Meeting_note_model->update_note($id);
             redirect("meeting_notes/index");
         }
@@ -481,5 +490,38 @@ class Meeting_notes extends MY_Controller
             ]);
         }
         exit;
+    }
+
+    public function validate_next_meeting_date($next_date)
+    {
+        $next_date = trim((string) $next_date);
+        if ($next_date === '') {
+            return true;
+        }
+
+        $next_time = trim((string) $this->input->post('next_meeting_time'));
+        if ($next_time === '') {
+            $this->form_validation->set_message(
+                'validate_next_meeting_date',
+                'Next meeting time is required when a next meeting date is set.'
+            );
+            return false;
+        }
+
+        $next_dt = $next_date . ' ' . $next_time;
+        $meeting_date = trim((string) $this->input->post('meeting_date'));
+        $meeting_time = trim((string) $this->input->post('meeting_time'));
+        if ($meeting_date !== '') {
+            $meeting_dt = $meeting_date . ' ' . ($meeting_time !== '' ? $meeting_time : '00:00');
+            if (strtotime($next_dt) !== false && strtotime($meeting_dt) !== false && strtotime($next_dt) < strtotime($meeting_dt)) {
+                $this->form_validation->set_message(
+                    'validate_next_meeting_date',
+                    'The next meeting cannot be before the current meeting date and time.'
+                );
+                return false;
+            }
+        }
+
+        return true;
     }
 }

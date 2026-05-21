@@ -62,6 +62,22 @@
         </div>
 
         <div class="form-group">
+            <div class="row">
+                <div class="col-md-8">
+                    <label for="next_meeting_date" class="form-label">Next Meeting Date <span class="text-muted">(optional)</span></label>
+                    <input type="date" name="next_meeting_date" id="next_meeting_date" class="form-control"
+                        value="<?= set_value('next_meeting_date') ?>">
+                </div>
+                <div class="col-md-4">
+                    <label for="next_meeting_time" class="form-label">Next Meeting Time</label>
+                    <input type="time" name="next_meeting_time" id="next_meeting_time" class="form-control"
+                        value="<?= set_value('next_meeting_time') ?>">
+                </div>
+            </div>
+            <small class="form-text text-muted">Schedule the follow-up meeting, if known. Time is required when a date is set.</small>
+        </div>
+
+        <div class="form-group">
             <label for="attachments" class="form-label">Attach Files</label>
             <input type="file" name="attachments[]" id="attachments" class="form-control" multiple
                 accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.zip,.rar">

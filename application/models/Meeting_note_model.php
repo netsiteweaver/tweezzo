@@ -1,13 +1,65 @@
 <?php
 class Meeting_note_model extends CI_Model
 {
-    public function get_all_notes()
+    public function parseNextMeetingDate($dateRaw, $timeRaw = null)
     {
-        return $this->db
+        $date = trim((string) $dateRaw);
+        if ($date === '') {
+            return null;
+        }
+        $time = trim((string) ($timeRaw ?? $this->input->post('next_meeting_time')));
+        if ($time === '') {
+            return null;
+        }
+        if (strlen($time) === 5) {
+            $time .= ':00';
+        }
+        return $date . ' ' . $time;
+    }
+
+    public function formatMeetingDatetime($value)
+    {
+        if (empty($value)) {
+            return '';
+        }
+        $dt = date_create($value);
+        if (!$dt) {
+            return htmlspecialchars((string) $value);
+        }
+        return date_format($dt, 'Y-m-d H:i');
+    }
+
+    public function formatNextMeeting($value)
+    {
+        if (empty($value)) {
+            return '';
+        }
+        $dt = date_create($value);
+        if (!$dt) {
+            return htmlspecialchars((string) $value);
+        }
+        $format = date_format($dt, 'H:i:s') === '00:00:00' ? 'd M Y' : 'd M Y H:i';
+        return date_format($dt, $format);
+    }
+
+    public function get_all_notes($customer_id = '', $start_date = '', $end_date = '')
+    {
+        $this->db
             ->select('mn.*, u.name updatedBy')
             ->from('meeting_notes mn')
-            ->join('users u','u.id = mn.last_updated_by','left')
-            ->order_by('last_updated', 'DESC')->get()->result();
+            ->join('users u', 'u.id = mn.last_updated_by', 'left');
+
+        if ($customer_id !== '' && $customer_id !== null) {
+            $this->db->where('mn.customer_id', (int) $customer_id);
+        }
+        if (!empty($start_date)) {
+            $this->db->where('DATE(mn.meeting_datetime) >=', $start_date);
+        }
+        if (!empty($end_date)) {
+            $this->db->where('DATE(mn.meeting_datetime) <=', $end_date);
+        }
+
+        return $this->db->order_by('mn.meeting_datetime', 'DESC')->get()->result();
     }
 
     public function get_note($id)
@@ -118,6 +170,10 @@ class Meeting_note_model extends CI_Model
             'notes' => $this->input->post('notes'),
             'attendees' => $this->input->post('attendees', true),
             'lieu' => $this->input->post('lieu', true),
+            'next_meeting_date' => $this->parseNextMeetingDate(
+                $this->input->post('next_meeting_date'),
+                $this->input->post('next_meeting_time')
+            ),
             'last_updated'  =>  date("Y-m-d H:i:s"),
             'last_updated_by'   =>  $_SESSION['user_id']
         ];

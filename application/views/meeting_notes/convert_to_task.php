@@ -1,7 +1,7 @@
 <div class="card">
     <div class="card-header">
         <h2>Convert Meeting Notes to Tasks</h2>
-        <p class="text-muted mb-0">Meeting: <?= htmlspecialchars($note->customer_name) ?> - <?= htmlspecialchars($note->meeting_datetime) ?></p>
+        <p class="text-muted mb-0">Meeting: <?= htmlspecialchars($note->customer_name) ?> - <?= htmlspecialchars($note->meeting_datetime) ?><?php if (!empty($note->next_meeting_date)): ?> · Next: <?= $this->Meeting_note_model->formatNextMeeting($note->next_meeting_date) ?><?php endif; ?></p>
     </div>
     <div class="card-body">
         <form id="convertToTaskForm" method="post">

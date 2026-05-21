@@ -18,6 +18,9 @@
 
             <p class="text-bold">Notes:</p>
             <?= $note->notes ?>
+            <?php if (!empty($note->next_meeting_date)): ?>
+            <p class="mt-3"><strong>Next Meeting:</strong> <?= $this->Meeting_note_model->formatNextMeeting($note->next_meeting_date) ?></p>
+            <?php endif; ?>
         </div>
    <!-- </div> -->
 <!-- </div> -->

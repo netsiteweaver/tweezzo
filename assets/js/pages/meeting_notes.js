@@ -74,6 +74,25 @@ function downloadPDF() {
 }
 
 jQuery(function(){
+    if ($('#meeting_notes_start_date').length) {
+        $('.monitor-index').on('change', function () {
+            const params = new URLSearchParams();
+            const customerId = $('#customer_id_filter').val();
+            const startDate = $('#meeting_notes_start_date').val();
+            const endDate = $('#meeting_notes_end_date').val();
+            if (customerId) {
+                params.set('customer_id', customerId);
+            }
+            if (startDate) {
+                params.set('start_date', startDate);
+            }
+            if (endDate) {
+                params.set('end_date', endDate);
+            }
+            window.location.href = base_url + 'meeting_notes/index?' + params.toString();
+        });
+    }
+
     $('select[name=customer_id]').on("change",function(){
         let elemName = $('select[name=customer_id] option:selected').text();
         let customerId = $(this).val();

@@ -8,6 +8,9 @@
             <div class="col-md-9">
                 <p class='text-bold border-bottom'>Notes</p>
                 <p><?= $note->notes ?></p>
+                <?php if (!empty($note->next_meeting_date)): ?>
+                <p class="mt-3 mb-0"><b>Next meeting:</b> <?= $this->Meeting_note_model->formatNextMeeting($note->next_meeting_date) ?></p>
+                <?php endif; ?>
             </div>
             <div class="col-md-3 border-left">
                 <p class='text-bold border-bottom'>Attendees</p>

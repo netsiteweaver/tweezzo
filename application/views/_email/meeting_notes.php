@@ -25,6 +25,12 @@
                 <th style='text-align:left; width: 150px;'>MEETING NOTES</th>
                 <td><?php echo $meeting->notes;?></td>
             </tr>
+            <?php if (!empty($meeting->next_meeting_date)): ?>
+            <tr>
+                <th style='text-align:left; width: 150px;'>NEXT MEETING</th>
+                <td><?php echo $this->Meeting_note_model->formatNextMeeting($meeting->next_meeting_date);?></td>
+            </tr>
+            <?php endif; ?>
         </tbody>
     </table>
 </div>
