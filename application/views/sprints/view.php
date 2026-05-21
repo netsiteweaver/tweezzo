@@ -28,6 +28,20 @@
                         <label for="">Contains No. of Tasks</label>
                         <input type="text" class="text-right form-control" value="<?php echo $tasks;?>" disabled>
                     </div>
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="">Start Date</label>
+								<input type="text" class="form-control" value="<?php echo !empty($sprint->start_date) ? date_format(date_create($sprint->start_date),'d-m-Y') : '—'; ?>" disabled>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="">End Date</label>
+								<input type="text" class="form-control" value="<?php echo !empty($sprint->end_date) ? date_format(date_create($sprint->end_date),'d-m-Y') : '—'; ?>" disabled>
+							</div>
+						</div>
+					</div>
                 </div>
                 <!-- /.card-body -->
 

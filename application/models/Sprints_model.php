@@ -87,13 +87,151 @@ class Sprints_model extends CI_Model{
         return $row ? (int) $row->ct : 0;
     }
 
+    public function getMaxDurationDays()
+    {
+        $this->load->model('System_model');
+        $days = (int) $this->System_model->getParam('sprint_max_days', false);
+        return $days > 0 ? $days : 14;
+    }
+
+    public function canOverrideSprintDateRestriction()
+    {
+        if (empty($_SESSION['user_id'])) {
+            return false;
+        }
+
+        $this->load->model('accesscontrol_model');
+        return $this->accesscontrol_model->authorised('sprints', 'add') > 0
+            || $this->accesscontrol_model->authorised('sprints', 'edit') > 0;
+    }
+
+    /**
+     * @return array{open:bool,reason?:string}
+     */
+    public function isOpenForNewTasks($sprint_id, $allowInternalOverride = false)
+    {
+        $sprint_id = (int) $sprint_id;
+        if ($sprint_id <= 0) {
+            return ['open' => false, 'reason' => 'Invalid sprint.'];
+        }
+
+        $sprint = $this->db->select('id, active, status, start_date, end_date, name')
+            ->from('sprints')
+            ->where('id', $sprint_id)
+            ->where('status', '1')
+            ->get()
+            ->row();
+
+        if (empty($sprint)) {
+            return ['open' => false, 'reason' => 'Sprint not found.'];
+        }
+
+        if ((string) $sprint->active !== '1') {
+            return ['open' => false, 'reason' => 'Sprint "' . $sprint->name . '" is inactive.'];
+        }
+
+        if (empty($sprint->end_date)) {
+            return ['open' => true];
+        }
+
+        $today = date('Y-m-d');
+        if ($today <= $sprint->end_date) {
+            return ['open' => true];
+        }
+
+        if ($allowInternalOverride) {
+            return ['open' => true];
+        }
+
+        $endLabel = date('d M Y', strtotime($sprint->end_date));
+        return [
+            'open' => false,
+            'reason' => 'Sprint "' . $sprint->name . '" ended on ' . $endLabel . '. Add tasks to a newer sprint.',
+        ];
+    }
+
+    public function assertCanAddTaskToSprint($sprint_id, $allowInternalOverride = null)
+    {
+        if ($allowInternalOverride === null) {
+            $allowInternalOverride = $this->canOverrideSprintDateRestriction();
+        }
+
+        $state = $this->isOpenForNewTasks($sprint_id, $allowInternalOverride);
+        if (!empty($state['open'])) {
+            return ['result' => true];
+        }
+
+        return [
+            'result' => false,
+            'reason' => $state['reason'] ?? 'This sprint is not open for new tasks.',
+        ];
+    }
+
+    public function validateSprintDateRange($start_date, $end_date, $isNew = false)
+    {
+        $start_date = trim((string) $start_date);
+        $end_date = trim((string) $end_date);
+
+        if ($start_date === '' && $end_date === '') {
+            if ($isNew) {
+                $start_date = date('Y-m-d');
+                $end_date = date('Y-m-d', strtotime('+' . $this->getMaxDurationDays() . ' days'));
+            } else {
+                return ['valid' => true, 'start_date' => null, 'end_date' => null];
+            }
+        }
+
+        if ($start_date === '' || $end_date === '') {
+            return [
+                'valid' => false,
+                'reason' => 'Both sprint start and end dates are required when setting a date range.',
+            ];
+        }
+
+        $startTs = strtotime($start_date);
+        $endTs = strtotime($end_date);
+        if ($startTs === false || $endTs === false) {
+            return ['valid' => false, 'reason' => 'Invalid sprint date format.'];
+        }
+
+        if ($endTs < $startTs) {
+            return ['valid' => false, 'reason' => 'Sprint end date must be on or after the start date.'];
+        }
+
+        $maxEndTs = strtotime($start_date . ' +' . $this->getMaxDurationDays() . ' days');
+        if ($endTs > $maxEndTs) {
+            return [
+                'valid' => false,
+                'reason' => 'Sprint duration cannot exceed ' . $this->getMaxDurationDays() . ' days.',
+            ];
+        }
+
+        return [
+            'valid' => true,
+            'start_date' => date('Y-m-d', $startTs),
+            'end_date' => date('Y-m-d', $endTs),
+        ];
+    }
+
     public function save($data)
     {
         $this->load->model("System_model");
 
+        $isNew = empty($data['uuid']);
+        $dateCheck = $this->validateSprintDateRange(
+            $data['start_date'] ?? '',
+            $data['end_date'] ?? '',
+            $isNew
+        );
+        if (!$dateCheck['valid']) {
+            return ['result' => false, 'reason' => $dateCheck['reason']];
+        }
+
         $this->db->set('name',$data['name']);
         $this->db->set('code',!empty($data['code']) ? trim($data['code']) : null);
         $this->db->set('project_id',$data['project_id']);
+        $this->db->set('start_date', $dateCheck['start_date']);
+        $this->db->set('end_date', $dateCheck['end_date']);
 
         if(empty($data['uuid'])){
             $uuid = gen_uuid();
@@ -137,6 +275,7 @@ class Sprints_model extends CI_Model{
         }else{
             $this->db->set("active",isset($_POST['active'])?'1':'0');
             $this->db->set('code',!empty($data['code']) ? trim($data['code']) : null);
+            $this->db->set('name', $data['name']);
             $this->db->where('uuid',$data['uuid']);
             $this->db->update('sprints');
 

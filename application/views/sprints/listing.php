@@ -59,6 +59,8 @@
                         <tr class='text-center' style='text-transform:uppercase;'>
                             <th>Name <?php echo ( (empty($this->input->get("order_by"))) || ($this->input->get("order_by") == "name") ) ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>Code</th>
+                            <th>Start</th>
+                            <th>End</th>
                             <th>Project <?php echo ($this->input->get("order_by") == "project_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>Customer <?php echo ($this->input->get("order_by") == "company_name") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th>Active</th>
@@ -70,6 +72,8 @@
                         <tr>
                             <td><?php echo $task->name;?></td>
                             <td><?php echo !empty($task->code) ? htmlspecialchars($task->code) : '—';?></td>
+                            <td><?php echo (!empty($task->start_date)) ? date_format(date_create($task->start_date),'d-m-Y') : '—';?></td>
+                            <td><?php echo (!empty($task->end_date)) ? date_format(date_create($task->end_date),'d-m-Y') : '—';?></td>
                             <td><?php echo $task->project_name;?></td>
                             <td><?php echo "<b>{$task->company_name}</b><br>{$task->full_name}";?></td>
                             <td class='text-center activeOrNot'>

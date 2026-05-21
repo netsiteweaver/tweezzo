@@ -513,6 +513,22 @@ class Tasks_model extends CI_Model{
     {
         $this->load->model("System_model");
         $this->load->model("email_model2");
+        $this->load->model("Sprints_model");
+
+        if (!empty($data['sprint_id'])) {
+            $isNewTask = empty($data['uuid']);
+            $existingSprintId = null;
+            if (!$isNewTask && !empty($data['uuid'])) {
+                $row = $this->db->select('sprint_id')->from('tasks')->where('uuid', $data['uuid'])->get()->row();
+                $existingSprintId = $row ? (int) $row->sprint_id : null;
+            }
+            if ($isNewTask || (int) $data['sprint_id'] !== (int) $existingSprintId) {
+                $sprintCheck = $this->Sprints_model->assertCanAddTaskToSprint($data['sprint_id']);
+                if (!$sprintCheck['result']) {
+                    return ['result' => false, 'reason' => $sprintCheck['reason']];
+                }
+            }
+        }
 
         $this->db->set('name',$data['name']);
         $this->db->set('description',$data['description']);
@@ -873,6 +889,12 @@ class Tasks_model extends CI_Model{
     
     public function bulkChangeSprint($taskIds, $sprintId)
     {
+        $this->load->model('Sprints_model');
+        $sprintCheck = $this->Sprints_model->assertCanAddTaskToSprint($sprintId);
+        if (!$sprintCheck['result']) {
+            return ['result' => false, 'reason' => $sprintCheck['reason']];
+        }
+
         $taskids = implode(',',$taskIds);
         $this->db->query("UPDATE tasks SET sprint_id = '$sprintId' WHERE id IN ($taskids)");
 

@@ -35,6 +35,21 @@
 						<label for="">Sprint Name</label>
 						<input type="text" class="form-control required" name="name" placeholder="Enter Sprint Name" value="<?php echo $sprint->name;?>" required autofocus>
                     </div>
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="">Start Date</label>
+								<input type="date" class="form-control sprint-date" name="start_date" data-initial="<?php echo !empty($sprint->start_date) ? htmlspecialchars($sprint->start_date) : ''; ?>" value="<?php echo !empty($sprint->start_date) ? htmlspecialchars($sprint->start_date) : ''; ?>">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="">End Date</label>
+								<input type="date" class="form-control sprint-date" name="end_date" data-initial="<?php echo !empty($sprint->end_date) ? htmlspecialchars($sprint->end_date) : ''; ?>" value="<?php echo !empty($sprint->end_date) ? htmlspecialchars($sprint->end_date) : ''; ?>">
+							</div>
+						</div>
+					</div>
+					<small class="form-text text-muted">Maximum duration: 14 days. Clear both dates to keep this sprint without a time box (legacy).</small>
 
                     <div class="form-group">
 						<label for="">Active</label>

@@ -1,9 +1,74 @@
 jQuery(function(){
     var sprintNamePattern = /^Sprint\s+\d+$/i;
+    var sprintMaxDays = 14;
+
+    function toDateInputValue(dateObj) {
+        var y = dateObj.getFullYear();
+        var m = String(dateObj.getMonth() + 1).padStart(2, "0");
+        var d = String(dateObj.getDate()).padStart(2, "0");
+        return y + "-" + m + "-" + d;
+    }
+
+    function addDaysToDateString(dateStr, days) {
+        var parts = dateStr.split("-");
+        var dt = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        dt.setDate(dt.getDate() + days);
+        return toDateInputValue(dt);
+    }
+
+    function defaultSprintDates() {
+        var start = new Date();
+        return {
+            start: toDateInputValue(start),
+            end: addDaysToDateString(toDateInputValue(start), sprintMaxDays)
+        };
+    }
+
+    function maxEndDateForStart(startStr) {
+        if (!startStr) {
+            return "";
+        }
+        return addDaysToDateString(startStr, sprintMaxDays);
+    }
+
+    function setSprintDatesActive(isActive) {
+        var $start = $('input[name="start_date"]');
+        var $end = $('input[name="end_date"]');
+        $start.prop("disabled", !isActive);
+        $end.prop("disabled", !isActive);
+        if (!isActive) {
+            $start.val("");
+            $end.val("");
+            $end.removeAttr("min max");
+            return;
+        }
+        if (!$start.val()) {
+            var defaults = defaultSprintDates();
+            $start.val(defaults.start);
+            $end.val(defaults.end);
+        }
+        syncSprintEndConstraints();
+    }
+
+    function syncSprintEndConstraints() {
+        var startVal = $('input[name="start_date"]').val();
+        var $end = $('input[name="end_date"]');
+        if (!startVal) {
+            $end.removeAttr("min max");
+            return;
+        }
+        var maxEnd = maxEndDateForStart(startVal);
+        $end.attr("min", startVal);
+        $end.attr("max", maxEnd);
+        if ($end.val() && ($end.val() < startVal || $end.val() > maxEnd)) {
+            $end.val(maxEnd);
+        }
+    }
 
     function setSprintNameActive(isActive) {
         var $nameInput = $('input[name="name"]');
         $nameInput.prop("disabled", !isActive);
+        setSprintDatesActive(isActive);
         if (!isActive) {
             $nameInput.val("");
             $("#sprint_name_hint").text("");
@@ -226,6 +291,17 @@ jQuery(function(){
             // ignore
         }
     });
+
+    $('input[name="start_date"]').on("change", function(){
+        syncSprintEndConstraints();
+        var startVal = $(this).val();
+        var $end = $('input[name="end_date"]');
+        if (startVal && (!$end.val() || $end.val() < startVal)) {
+            $end.val(startVal);
+        }
+    });
+
+    $('input[name="end_date"]').on("change", syncSprintEndConstraints);
 
     setSprintNameActive(false);
     $('select[name="project_id"]').trigger("focus");

@@ -128,7 +128,11 @@ class Sprints extends MY_Controller {
         $response = $this->Sprints_model->save($data);
         if($response['result']== false){
             flashDanger($response['reason']);
-            redirect(base_url("sprints"));
+            if (!empty($data['uuid'])) {
+                redirect(base_url('sprints/edit/' . $data['uuid']));
+            } else {
+                redirect(base_url('sprints/add'));
+            }
             return;
         }
         redirect(base_url("sprints/listing"));
@@ -339,7 +343,9 @@ class Sprints extends MY_Controller {
 
         $data = [
             'project_id' => $project_id,
-            'name' => $name
+            'name' => $name,
+            'start_date' => $this->input->post('start_date'),
+            'end_date' => $this->input->post('end_date'),
         ];
 
         $response = $this->Sprints_model->save($data);

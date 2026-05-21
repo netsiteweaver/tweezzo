@@ -1,4 +1,77 @@
 jQuery(function(){
+    var sprintMaxDays = 14;
+
+    function toDateInputValue(dateObj) {
+        var y = dateObj.getFullYear();
+        var m = String(dateObj.getMonth() + 1).padStart(2, "0");
+        var d = String(dateObj.getDate()).padStart(2, "0");
+        return y + "-" + m + "-" + d;
+    }
+
+    function addDaysToDateString(dateStr, days) {
+        if (!dateStr) {
+            return "";
+        }
+        var parts = dateStr.split("-");
+        var dt = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        dt.setDate(dt.getDate() + days);
+        return toDateInputValue(dt);
+    }
+
+    function maxEndDateForStart(startStr) {
+        if (!startStr) {
+            return "";
+        }
+        return addDaysToDateString(startStr, sprintMaxDays);
+    }
+
+    function syncSprintEndConstraints() {
+        var startVal = $('input[name="start_date"]').val();
+        var $end = $('input[name="end_date"]');
+        if (!startVal) {
+            $end.removeAttr("min max");
+            return;
+        }
+        var maxEnd = maxEndDateForStart(startVal);
+        $end.attr("min", startVal);
+        $end.attr("max", maxEnd);
+        if ($end.val() && ($end.val() < startVal || $end.val() > maxEnd)) {
+            $end.val(maxEnd);
+        }
+    }
+
+    $('input[name="start_date"]').on("change", function(){
+        syncSprintEndConstraints();
+        var startVal = $(this).val();
+        var $end = $('input[name="end_date"]');
+        if (!startVal) {
+            return;
+        }
+        if (!$end.val() || $end.val() < startVal) {
+            $end.val(startVal);
+        }
+    });
+
+    $('input[name="end_date"]').on("change", syncSprintEndConstraints);
+    syncSprintEndConstraints();
+
+    $("#add_user").on("submit", function(e){
+        var startVal = $('input[name="start_date"]').val();
+        var endVal = $('input[name="end_date"]').val();
+        if ((startVal && !endVal) || (!startVal && endVal)) {
+            e.preventDefault();
+            alert("Set both sprint start and end dates, or clear both.");
+            return;
+        }
+        if (startVal && endVal) {
+            var maxEnd = maxEndDateForStart(startVal);
+            if (endVal < startVal || endVal > maxEnd) {
+                e.preventDefault();
+                alert("Sprint duration cannot exceed " + sprintMaxDays + " days.");
+            }
+        }
+    });
+
     function updateValidationHelp() {
         var enabled = $("#ready_for_validation").is(":checked");
         var $help = $("#ready_for_validation_help");

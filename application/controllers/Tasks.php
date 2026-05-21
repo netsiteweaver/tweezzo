@@ -713,7 +713,14 @@ class Tasks extends MY_Controller {
             exit;
         }
 
-        $this->Tasks_model->bulkChangeSprint($taskIds,$sprintId);
+        $out = $this->Tasks_model->bulkChangeSprint($taskIds,$sprintId);
+        if (is_array($out) && empty($out['result'])) {
+            echo json_encode([
+                'result' => false,
+                'reason' => $out['reason'] ?? 'Could not move tasks to this sprint.',
+            ]);
+            exit;
+        }
 
         echo json_encode(array(
             "result"    =>  true

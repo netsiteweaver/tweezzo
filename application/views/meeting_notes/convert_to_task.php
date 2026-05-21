@@ -173,6 +173,21 @@
                                 <input type="text" class="form-control" name="name" id="sprint_name" required>
                                 <small class="form-text text-muted">Format: yyyymmdd (e.g., <?= date('Ymd') ?>)</small>
                             </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="sprint_start_date">Start Date</label>
+                                        <input type="date" class="form-control" name="start_date" id="sprint_start_date" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="sprint_end_date">End Date</label>
+                                        <input type="date" class="form-control" name="end_date" id="sprint_end_date" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted">Maximum sprint length: 14 days.</small>
                         </form>
                     </div>
                     <div class="modal-footer">
@@ -386,11 +401,49 @@
             }
             <?php endif; ?>
 
+            function ymdToIsoDate(ymd) {
+                if (!ymd || String(ymd).length !== 8) {
+                    return '';
+                }
+                var s = String(ymd);
+                return s.substring(0, 4) + '-' + s.substring(4, 6) + '-' + s.substring(6, 8);
+            }
+
+            function addDaysIso(dateStr, days) {
+                if (!dateStr) {
+                    return '';
+                }
+                var p = dateStr.split('-');
+                var dt = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+                dt.setDate(dt.getDate() + days);
+                var y = dt.getFullYear();
+                var m = String(dt.getMonth() + 1).padStart(2, '0');
+                var d = String(dt.getDate()).padStart(2, '0');
+                return y + '-' + m + '-' + d;
+            }
+
             function openCreateSprintModal(project_id, meetingDate) {
                 $('#modal_project_id').val(project_id);
                 $('#sprint_name').val(meetingDate);
+                var startIso = ymdToIsoDate(meetingDate) || '<?= date('Y-m-d') ?>';
+                var endIso = addDaysIso(startIso, 14);
+                $('#sprint_start_date').val(startIso).attr('min', startIso).attr('max', endIso);
+                $('#sprint_end_date').val(endIso).attr('min', startIso).attr('max', endIso);
                 $('#createSprintModal').modal('show');
             }
+
+            $('#sprint_start_date').on('change', function(){
+                var startVal = $(this).val();
+                if (!startVal) {
+                    return;
+                }
+                var maxEnd = addDaysIso(startVal, 14);
+                $('#sprint_end_date').attr('min', startVal).attr('max', maxEnd);
+                var endVal = $('#sprint_end_date').val();
+                if (!endVal || endVal < startVal || endVal > maxEnd) {
+                    $('#sprint_end_date').val(maxEnd);
+                }
+            });
 
             function promptEmptySprintsListing(emptyResponse) {
                 var hasEmpty = emptyResponse && (

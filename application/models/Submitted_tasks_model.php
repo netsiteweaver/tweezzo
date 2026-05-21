@@ -174,6 +174,14 @@ class Submitted_tasks_model extends CI_Model{
         if(!empty($data['scope_when_done'])) $this->db->set('scope_when_done',$data['scope_when_done']);
 
         if(empty($data['uuid'])){
+            if (!empty($data['sprint_id'])) {
+                $this->load->model('Sprints_model');
+                $sprintCheck = $this->Sprints_model->assertCanAddTaskToSprint($data['sprint_id'], false);
+                if (!$sprintCheck['result']) {
+                    return ['result' => false, 'reason' => $sprintCheck['reason']];
+                }
+            }
+
             $uuid = gen_uuid();
             $this->db->set('uuid',$uuid);
             $this->db->set('created_by',$_SESSION['user_id']);
@@ -436,6 +444,12 @@ class Submitted_tasks_model extends CI_Model{
             return ['result' => false, 'reason' => 'Invalid sprint.'];
         }
 
+        $this->load->model('Sprints_model');
+        $sprintCheck = $this->Sprints_model->assertCanAddTaskToSprint((int) $sprint_id);
+        if (!$sprintCheck['result']) {
+            return $sprintCheck;
+        }
+
         $customer_id = !empty($st->created_by_customer) ? $st->created_by_customer : $sprint->customer_id;
         if (empty($customer_id)) {
             $customer_id = $sprint->customer_id;
@@ -571,8 +585,15 @@ class Submitted_tasks_model extends CI_Model{
     
     public function bulkChangeSprint($taskIds, $sprintId)
     {
+        $this->load->model('Sprints_model');
+        $sprintCheck = $this->Sprints_model->assertCanAddTaskToSprint($sprintId);
+        if (!$sprintCheck['result']) {
+            return $sprintCheck;
+        }
+
         $taskids = implode(',',$taskIds);
         $this->db->query("UPDATE submitted_tasks SET sprint_id = '$sprintId' WHERE id IN ($taskids)");
+        return ['result' => true];
     }
 
     public function bulkSetDueDate($taskIds, $dueDate)

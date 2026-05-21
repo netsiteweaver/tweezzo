@@ -8,6 +8,12 @@
                 <th class='text-left'>Sprint Name</th>
                 <td><?php echo $sprint->name;?></td>
             </tr>
+            <?php if (!empty($sprint->start_date) || !empty($sprint->end_date)): ?>
+            <tr>
+                <th class='text-left'>Period</th>
+                <td><?php echo !empty($sprint->start_date) ? htmlspecialchars($sprint->start_date) : '—'; ?> — <?php echo !empty($sprint->end_date) ? htmlspecialchars($sprint->end_date) : '—'; ?></td>
+            </tr>
+            <?php endif; ?>
             <tr>
                 <th class='text-left'>Project</th>
                 <td><?php echo $sprint->project_name;?></td>

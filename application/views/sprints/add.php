@@ -34,6 +34,21 @@
 						<input type="text" class="form-control required" name="name" placeholder="e.g. Sprint 1" value="" required disabled>
 						<small class="form-text text-muted" id="sprint_name_hint"></small>
                     </div>
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="">Start Date</label>
+								<input type="date" class="form-control" name="start_date" value="" disabled>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="">End Date</label>
+								<input type="date" class="form-control" name="end_date" value="" disabled>
+							</div>
+						</div>
+					</div>
+					<small class="form-text text-muted">Sprint duration is limited to 14 days (end date defaults to start + 14; you may choose a shorter period).</small>
                 </div>
                 <!-- /.card-body -->
 

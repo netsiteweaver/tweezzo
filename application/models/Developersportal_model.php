@@ -651,6 +651,12 @@ class Developersportal_model extends CI_Model{
             ];
         }
 
+        $this->load->model('Sprints_model');
+        $sprintCheck = $this->Sprints_model->assertCanAddTaskToSprint($sprint_id, false);
+        if (!$sprintCheck['result']) {
+            return $sprintCheck;
+        }
+
         $this->db->set("uuid",gen_uuid());
         $this->db->set("created_by",$_SESSION['developer_id']);
         $this->db->set("created_on",date("Y-m-d H:i:s"));
