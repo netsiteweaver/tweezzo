@@ -31,7 +31,8 @@
                     </div>
                     <div class="form-group">
 						<label for="">Sprint Name</label>
-						<input type="text" class="form-control required" name="name" placeholder="Enter Sprint Name" value="" required disabled>
+						<input type="text" class="form-control required" name="name" placeholder="e.g. Sprint 1" value="" required disabled>
+						<small class="form-text text-muted" id="sprint_name_hint"></small>
                     </div>
                 </div>
                 <!-- /.card-body -->

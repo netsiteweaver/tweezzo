@@ -116,6 +116,15 @@ class Sprints extends MY_Controller {
         if(!isAuthorised(get_class(),"add")) return false;
 
         $data = $this->input->post();
+        if (empty($data['uuid']) && !empty($data['project_id'])) {
+            $empty_sprints = $this->Sprints_model->getEmptySprints($data['project_id']);
+            if (!empty($empty_sprints)) {
+                flashDanger($this->Sprints_model->emptySprintsBlockReason($empty_sprints));
+                redirect(base_url('sprints/add'));
+                return;
+            }
+        }
+
         $response = $this->Sprints_model->save($data);
         if($response['result']== false){
             flashDanger($response['reason']);
@@ -194,20 +203,78 @@ class Sprints extends MY_Controller {
             ->row();
 
         if ($sprint) {
-            echo json_encode([
+            $payload = [
                 'result' => true,
                 'exists' => true,
                 'sprint' => [
                     'id' => $sprint->id,
                     'name' => $sprint->name
                 ]
-            ]);
+            ];
+            if (preg_match('/^Sprint\s+\d+$/i', trim((string) $name))) {
+                $payload['suggested_name'] = $this->Sprints_model->suggestSprintName($project_id);
+            }
+            echo json_encode($payload);
         } else {
             echo json_encode([
                 'result' => true,
                 'exists' => false
             ]);
         }
+        exit;
+    }
+
+    public function suggestName()
+    {
+        if (!isAuthorised(get_class(), 'add')) {
+            echo json_encode(['result' => false, 'reason' => 'Permission denied']);
+            exit;
+        }
+
+        $project_id = $this->input->post('project_id');
+        if (empty($project_id)) {
+            echo json_encode(['result' => false, 'reason' => 'Project is required']);
+            exit;
+        }
+
+        echo json_encode([
+            'result' => true,
+            'name' => $this->Sprints_model->suggestSprintName($project_id)
+        ]);
+        exit;
+    }
+
+    public function checkEmptySprints()
+    {
+        if (!isAuthorised(get_class(), 'add')) {
+            echo json_encode(['result' => false, 'reason' => 'Permission denied']);
+            exit;
+        }
+
+        $project_id = $this->input->post('project_id');
+        if (empty($project_id)) {
+            echo json_encode(['result' => false, 'has_empty' => false, 'empty_sprints' => []]);
+            exit;
+        }
+
+        $empty_sprints = $this->Sprints_model->getEmptySprints($project_id);
+        echo json_encode([
+            'result' => true,
+            'has_empty' => !empty($empty_sprints),
+            'reason' => !empty($empty_sprints)
+                ? $this->Sprints_model->emptySprintsBlockReason($empty_sprints)
+                : '',
+            'listing_url' => $this->Sprints_model->getListingUrlForProject($project_id),
+            'empty_sprints' => array_map(function ($s) {
+                return [
+                    'id' => (int) $s->id,
+                    'uuid' => $s->uuid,
+                    'name' => $s->name,
+                    'code' => $s->code,
+                    'view_url' => base_url('sprints/view/' . $s->uuid),
+                ];
+            }, $empty_sprints),
+        ]);
         exit;
     }
 
@@ -237,14 +304,35 @@ class Sprints extends MY_Controller {
             ->row();
 
         if ($existing) {
-            // Return existing sprint instead of creating duplicate
-            echo json_encode([
+            $payload = [
                 'result' => true,
                 'sprint' => [
                     'id' => $existing->id,
                     'name' => $existing->name
                 ],
                 'existing' => true
+            ];
+            if (preg_match('/^Sprint\s+\d+$/i', trim((string) $name))) {
+                $payload['suggested_name'] = $this->Sprints_model->suggestSprintName($project_id);
+            }
+            echo json_encode($payload);
+            exit;
+        }
+
+        $empty_sprints = $this->Sprints_model->getEmptySprints($project_id);
+        if (!empty($empty_sprints)) {
+            echo json_encode([
+                'result' => false,
+                'reason' => $this->Sprints_model->emptySprintsBlockReason($empty_sprints),
+                'listing_url' => $this->Sprints_model->getListingUrlForProject($project_id),
+                'empty_sprints' => array_map(function ($s) {
+                    return [
+                        'id' => (int) $s->id,
+                        'uuid' => $s->uuid,
+                        'name' => $s->name,
+                        'code' => $s->code,
+                    ];
+                }, $empty_sprints),
             ]);
             exit;
         }

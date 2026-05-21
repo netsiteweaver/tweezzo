@@ -362,4 +362,124 @@ class Sprints_model extends CI_Model{
         return (bool)$this->db->get()->row();
     }
 
+    /**
+     * Next available "Sprint N" name for a project (max existing N + 1).
+     */
+    public function suggestSprintName($project_id)
+    {
+        $project_id = (int) $project_id;
+        if ($project_id <= 0) {
+            return 'Sprint 1';
+        }
+
+        $rows = $this->db->select('name')
+            ->from('sprints')
+            ->where('project_id', $project_id)
+            ->where('status', 1)
+            ->like('name', 'Sprint ', 'after')
+            ->get()
+            ->result();
+
+        $max = 0;
+        foreach ($rows as $row) {
+            if (preg_match('/^Sprint\s+(\d+)$/i', trim((string) $row->name), $m)) {
+                $max = max($max, (int) $m[1]);
+            }
+        }
+
+        $n = $max + 1;
+        $candidate = 'Sprint ' . $n;
+        while ($this->sprintNameExists($project_id, $candidate)) {
+            $n++;
+            $candidate = 'Sprint ' . $n;
+        }
+
+        return $candidate;
+    }
+
+    public function sprintNameExists($project_id, $name, $exclude_uuid = '')
+    {
+        $project_id = (int) $project_id;
+        $name = trim((string) $name);
+        if ($project_id <= 0 || $name === '') {
+            return false;
+        }
+
+        $this->db->select('id')
+            ->from('sprints')
+            ->where('project_id', $project_id)
+            ->where('name', $name)
+            ->where('status', 1);
+
+        if ($exclude_uuid !== '') {
+            $this->db->where('uuid !=', $exclude_uuid);
+        }
+
+        return (bool) $this->db->get()->row();
+    }
+
+    /**
+     * Active sprints in a project with no non-deleted tasks (closed tasks still count).
+     */
+    public function getEmptySprints($project_id)
+    {
+        $project_id = (int) $project_id;
+        if ($project_id <= 0) {
+            return [];
+        }
+
+        $this->db->select('s.id, s.uuid, s.name, s.code');
+        $this->db->from('sprints s');
+        $this->db->where('s.project_id', $project_id);
+        $this->db->where('s.status', '1');
+        $this->db->where(
+            'NOT EXISTS (SELECT 1 FROM tasks t WHERE t.sprint_id = s.id AND t.status = \'1\')',
+            null,
+            false
+        );
+        $this->db->order_by('s.name');
+
+        return $this->db->get()->result();
+    }
+
+    public function emptySprintsBlockReason($empty_sprints)
+    {
+        if (empty($empty_sprints)) {
+            return '';
+        }
+
+        $names = [];
+        foreach ($empty_sprints as $sprint) {
+            $names[] = $sprint->name;
+        }
+
+        return 'Cannot create a new sprint: this project already has empty sprint(s) with no tasks: '
+            . implode(', ', $names)
+            . '. Add tasks to an existing sprint or remove the empty sprint first.';
+    }
+
+    public function getListingUrlForProject($project_id)
+    {
+        $project_id = (int) $project_id;
+        $customer_id = '';
+
+        if ($project_id > 0) {
+            $project = $this->db->select('customer_id')
+                ->from('projects')
+                ->where('id', $project_id)
+                ->get()
+                ->row();
+            if ($project && !empty($project->customer_id)) {
+                $customer_id = $project->customer_id;
+            }
+        }
+
+        return base_url('sprints/listing?' . http_build_query([
+            'customer_id' => $customer_id,
+            'active_filter' => 'active',
+            'order_by' => 'name',
+            'order_dir' => 'asc',
+        ]));
+    }
+
 }

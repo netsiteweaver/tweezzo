@@ -386,6 +386,30 @@
             }
             <?php endif; ?>
 
+            function openCreateSprintModal(project_id, meetingDate) {
+                $('#modal_project_id').val(project_id);
+                $('#sprint_name').val(meetingDate);
+                $('#createSprintModal').modal('show');
+            }
+
+            function promptEmptySprintsListing(emptyResponse) {
+                var hasEmpty = emptyResponse && (
+                    emptyResponse.has_empty
+                    || (emptyResponse.empty_sprints && emptyResponse.empty_sprints.length)
+                );
+                if (!hasEmpty) {
+                    return false;
+                }
+                var message = emptyResponse.reason || 'This project already has empty sprint(s) with no tasks.';
+                var confirmMessage = message + '\n\nView the sprint list now?';
+                if (emptyResponse.listing_url && window.confirm(confirmMessage)) {
+                    window.location.href = emptyResponse.listing_url;
+                    return true;
+                }
+                alert(message);
+                return true;
+            }
+
             // Create new sprint functionality
             $('#createSprintBtn').on('click', function(){
                 var project_id = $('#project_id').val();
@@ -397,9 +421,21 @@
                 // Get meeting date and format as yyyymmdd
                 var meetingDate = '<?= !empty($note->meeting_datetime) ? date("Ymd", strtotime($note->meeting_datetime)) : date("Ymd") ?>';
                 
-                // First check if sprint with this name already exists
                 if(typeof Overlay !== 'undefined') Overlay("on");
                 $.ajax({
+                    url: base_url + 'sprints/checkEmptySprints',
+                    type: 'POST',
+                    data: { project_id: project_id },
+                    dataType: 'json',
+                    success: function(emptyResponse){
+                        if(emptyResponse.result && emptyResponse.has_empty) {
+                            if(typeof Overlay !== 'undefined') Overlay("off");
+                            promptEmptySprintsListing(emptyResponse);
+                            return;
+                        }
+
+                        // Check if sprint with this name already exists
+                        $.ajax({
                     url: base_url + 'sprints/checkSprintExists',
                     type: 'POST',
                     data: {
@@ -430,18 +466,18 @@
                             
                             alert('Using existing sprint: ' + sprintName);
                         } else {
-                            // Sprint doesn't exist, show modal to create it
-                            $('#modal_project_id').val(project_id);
-                            $('#sprint_name').val(meetingDate);
-                            $('#createSprintModal').modal('show');
+                            openCreateSprintModal(project_id, meetingDate);
                         }
                     },
                     error: function(){
                         if(typeof Overlay !== 'undefined') Overlay("off");
-                        // On error, just show the modal
-                        $('#modal_project_id').val(project_id);
-                        $('#sprint_name').val(meetingDate);
-                        $('#createSprintModal').modal('show');
+                        openCreateSprintModal(project_id, meetingDate);
+                    }
+                });
+                    },
+                    error: function(){
+                        if(typeof Overlay !== 'undefined') Overlay("off");
+                        alert('Could not verify sprint status. Please try again.');
                     }
                 });
             });
@@ -487,7 +523,11 @@
                                 alert('Using existing sprint: ' + sprintName);
                             }
                         } else {
-                            alert('Error: ' + (response.reason || 'Failed to create sprint'));
+                            if (response.empty_sprints && response.empty_sprints.length && promptEmptySprintsListing(response)) {
+                                // redirect offered via confirm, or user declined
+                            } else {
+                                alert('Error: ' + (response.reason || 'Failed to create sprint'));
+                            }
                         }
                         $btn.prop('disabled', false).html('Create Sprint');
                     },
