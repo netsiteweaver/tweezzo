@@ -13,27 +13,19 @@ $addressLine = company_address_line($company);
                 <img src="<?php echo $logoUrl; ?>" alt="<?php echo htmlspecialchars(isset($company->name) ? $company->name : 'Logo'); ?>" class="document-header-logo">
                 <?php endif; ?>
                 <div class="document-header-company">
-                    <?php if (!empty($company->name)): ?>
-                    <div class="document-header-name"><?php echo htmlspecialchars($company->name); ?></div>
-                    <?php endif; ?>
-                    <?php if (!empty($company->legal_name) && $company->legal_name !== $company->name): ?>
-                    <div class="document-header-legal-name"><?php echo htmlspecialchars($company->legal_name); ?></div>
+                    <?php
+                        $legalName = '';
+                        if (!empty($company->legal_name)) {
+                            $legalName = $company->legal_name;
+                        } elseif (!empty($company->name)) {
+                            $legalName = $company->name;
+                        }
+                    ?>
+                    <?php if (!empty($legalName)): ?>
+                    <div class="document-header-legal-name"><?php echo htmlspecialchars($legalName); ?></div>
                     <?php endif; ?>
                     <?php if (!empty($addressLine)): ?>
                     <div class="document-header-address"><?php echo htmlspecialchars($addressLine); ?></div>
-                    <?php endif; ?>
-                    <?php if (!empty($company->phone) || !empty($company->email)): ?>
-                    <div class="document-header-contact">
-                        <?php if (!empty($company->phone)): ?>
-                        <span><?php echo htmlspecialchars($company->phone); ?></span>
-                        <?php endif; ?>
-                        <?php if (!empty($company->phone) && !empty($company->email)): ?>
-                        <span> · </span>
-                        <?php endif; ?>
-                        <?php if (!empty($company->email)): ?>
-                        <span><?php echo htmlspecialchars($company->email); ?></span>
-                        <?php endif; ?>
-                    </div>
                     <?php endif; ?>
                 </div>
             </div>

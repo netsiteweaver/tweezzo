@@ -1255,17 +1255,26 @@ img.img-24 {
 	.tweezzo-footer-container {
 		display: block;
 		position: fixed;
-		bottom: 50px;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		width: 100%;
 		border-top: 1px solid #ccc;
-		width:100%;
+		padding: 8px 25px 12px;
 	}
 	.tweezzo-footer {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
 		text-align: center;
 		font-size: .9em;
-		position: fixed;
-		bottom: 30px;
-		right: 25px;
-		color:#ccc;
+		color: #999;
+	}
+	.tweezzo-footer-logo {
+		height: 22px;
+		width: auto;
+		opacity: 0.85;
 	}
 
 	.document-header {
@@ -1293,13 +1302,11 @@ img.img-24 {
 		height: auto;
 		flex-shrink: 0;
 	}
-	.document-header-name {
+	.document-header-legal-name {
 		font-size: 1.2em;
 		font-weight: 700;
 	}
-	.document-header-legal-name,
-	.document-header-address,
-	.document-header-contact {
+	.document-header-address {
 		font-size: 0.95em;
 		line-height: 1.35;
 	}
