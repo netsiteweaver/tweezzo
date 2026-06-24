@@ -51,6 +51,20 @@
             white-space: nowrap;
             vertical-align: middle;
         }
+        .print-listing-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .print-listing-logo {
+            height: 48px;
+            width: auto;
+            flex-shrink: 0;
+        }
+        .print-listing-header .page-title {
+            margin: 0;
+        }
     }
 
     #users-list-remove li.select-user-remove { cursor: pointer; }
@@ -335,26 +349,34 @@ $cleanQuery = http_build_query($queryArray);
     <?php endif;?>
 </div>
 
-<?php if( (!empty($tasks)) && (!empty($this->input->get("customer_id"))) ):?>
+<?php if (!empty($tasks)): ?>
 <div class="row print-only listing">
-    <p class='page-title'>
-        <?php echo (!empty($this->input->get("customer_id"))) ? "<b>Customer</b>: {$tasks[0]->company_name}" : '';?>
-        <?php echo (!empty($this->input->get("project_id"))) ? " <b>Project</b>: {$tasks[0]->project_name}" : '';?>
-        <?php echo (!empty($this->input->get("sprint_id"))) ? " <b>Sprint</b>: {$tasks[0]->sprint_name}" : '';?>
+    <div class="col-md-12 print-listing-header">
         <?php
-            $st = json_decode($this->input->get("stage"), true);
-            if (is_array($st) && !empty($st)) {
-                echo " <b>Stages</b>: ";
-                $stStr = "";
-                foreach ($st as $stage) {
-                    $stStr .= strtoupper(str_replace("_", " ", $stage)) . ', ';
-                }
-                echo substr($stStr, 0, strlen($stStr) - 2);
-            }
+            $printLogo = !empty($logoLight) ? $logoLight : (isset($logo) ? $logo : '');
+            if (!empty($printLogo)):
         ?>
-    </p>
+        <img src="<?php echo base_url('assets/images/' . $printLogo); ?>" alt="<?php echo htmlspecialchars(isset($company->name) ? $company->name : 'Logo'); ?>" class="print-listing-logo">
+        <?php endif; ?>
+        <p class='page-title'>
+            <?php echo (!empty($this->input->get("customer_id"))) ? "<b>Customer</b>: {$tasks[0]->company_name}" : '';?>
+            <?php echo (!empty($this->input->get("project_id"))) ? " <b>Project</b>: {$tasks[0]->project_name}" : '';?>
+            <?php echo (!empty($this->input->get("sprint_id"))) ? " <b>Sprint</b>: {$tasks[0]->sprint_name}" : '';?>
+            <?php
+                $st = json_decode($this->input->get("stage"), true);
+                if (is_array($st) && !empty($st)) {
+                    echo " <b>Stages</b>: ";
+                    $stStr = "";
+                    foreach ($st as $stage) {
+                        $stStr .= strtoupper(str_replace("_", " ", $stage)) . ', ';
+                    }
+                    echo substr($stStr, 0, strlen($stStr) - 2);
+                }
+            ?>
+        </p>
+    </div>
 </div>
-<?php endif;?>
+<?php endif; ?>
 
 <div class="row">
     <div class="col-md-12 text-right font-italic text-italic" style='font-size:0.8em;color:#999'>
