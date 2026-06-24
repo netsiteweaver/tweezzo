@@ -37,8 +37,6 @@ class System_model extends CI_Model {
         $this->db->set('fax', $postedData['fax']);
         $this->db->set('email', $postedData['email']);
         $this->db->set('working_hours', $postedData['working_hours']);
-        
-        // //working hours
         // $working_hours_type = $postedData['working_hours_type'];
 
         // if($working_hours_type=='detailed'){
@@ -66,7 +64,94 @@ class System_model extends CI_Model {
         $this->db->set('skype', $postedData['skype']);
         $this->db->set('whatsapp', $postedData['whatsapp']);
 
+        if (!empty($postedData['remove_logo'])) {
+            $this->deleteCompanyLogoFile();
+            $this->db->set('logo', null);
+        } else {
+            $logoUpload = $this->uploadCompanyLogo();
+            if (is_array($logoUpload) && !empty($logoUpload['error'])) {
+                return $logoUpload;
+            }
+            if (is_array($logoUpload) && !empty($logoUpload['filename'])) {
+                $this->db->set('logo', $logoUpload['filename']);
+            }
+        }
+
         $this->db->update("company");
+        return true;
+    }
+
+    private function uploadCompanyLogo()
+    {
+        if (empty($_FILES['logo']['name'])) {
+            return false;
+        }
+
+        $uploadPath = $this->ensureCompanyLogoUploadDir();
+        if (is_array($uploadPath) && !empty($uploadPath['error'])) {
+            return $uploadPath;
+        }
+
+        $config = array(
+            'upload_path' => $uploadPath,
+            'allowed_types' => 'gif|jpg|jpeg|png|webp',
+            'max_size' => 2048,
+            'encrypt_name' => true,
+        );
+
+        $this->load->library('upload');
+        $this->upload->initialize($config);
+
+        if (!$this->upload->do_upload('logo')) {
+            return array('error' => strip_tags($this->upload->display_errors('', '')));
+        }
+
+        $data = $this->upload->data();
+        $this->deleteCompanyLogoFile();
+
+        return array('filename' => $data['file_name']);
+    }
+
+    private function ensureCompanyLogoUploadDir()
+    {
+        $uploadPath = './uploads/company/';
+
+        if (!is_dir($uploadPath)) {
+            if (!@mkdir($uploadPath, 0775, true) && !is_dir($uploadPath)) {
+                return array('error' => 'Could not create uploads/company folder. Check folder permissions on the server.');
+            }
+        }
+
+        if (!is_writable($uploadPath)) {
+            return array('error' => 'The uploads/company folder is not writable by the web server.');
+        }
+
+        return $uploadPath;
+    }
+
+    public function companyLogoFilePath($filename = '')
+    {
+        if (empty($filename)) {
+            return '';
+        }
+
+        $relativePath = 'uploads/company/' . $filename;
+        $absolutePath = FCPATH . $relativePath;
+
+        return is_file($absolutePath) ? $absolutePath : '';
+    }
+
+    private function deleteCompanyLogoFile()
+    {
+        $company = $this->getCompanyInfo();
+        if (empty($company->logo)) {
+            return;
+        }
+
+        $logoPath = $this->companyLogoFilePath($company->logo);
+        if ($logoPath !== '') {
+            @unlink($logoPath);
+        }
     }
 
     public function getParams($keys)

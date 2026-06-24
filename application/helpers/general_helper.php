@@ -612,3 +612,66 @@ function task_ref($project_code, $sprint_code, $task_number) {
     }
     return $task_number;
 }
+
+/**
+ * Resolve the company logo URL for document headers and emails.
+ * Prefers company.logo (uploads/company/), then app param logos.
+ *
+ * @param object|null $company
+ * @return string
+ */
+function company_logo_url($company = null) {
+    $CI =& get_instance();
+    $CI->load->model('system_model');
+
+    if ($company === null) {
+        $company = $CI->system_model->getCompanyInfo();
+    }
+
+    if (!empty($company->logo)) {
+        $companyLogoPath = FCPATH . 'uploads/company/' . $company->logo;
+        if (is_file($companyLogoPath)) {
+            return base_url('uploads/company/' . $company->logo);
+        }
+    }
+
+    $logoLight = $CI->system_model->getParam('logo-light');
+    if (!empty($logoLight) && is_file(FCPATH . 'assets/images/' . $logoLight)) {
+        return base_url('assets/images/' . $logoLight);
+    }
+
+    $logo = $CI->system_model->getParam('logo');
+    if (!empty($logo)) {
+        if (is_file(FCPATH . 'assets/images/' . $logo)) {
+            return base_url('assets/images/' . $logo);
+        }
+        if (is_file(FCPATH . 'uploads/logo/' . $logo)) {
+            return base_url('uploads/logo/' . $logo);
+        }
+    }
+
+    return '';
+}
+
+/**
+ * Build a single-line company address from the company row.
+ *
+ * @param object|null $company
+ * @return string
+ */
+function company_address_line($company = null) {
+    if ($company === null) {
+        $CI =& get_instance();
+        $CI->load->model('system_model');
+        $company = $CI->system_model->getCompanyInfo();
+    }
+
+    $parts = array_filter(array(
+        isset($company->address1) ? trim((string) $company->address1) : '',
+        isset($company->address2) ? trim((string) $company->address2) : '',
+        isset($company->city) ? trim((string) $company->city) : '',
+        isset($company->country) ? trim((string) $company->country) : '',
+    ));
+
+    return implode(', ', $parts);
+}

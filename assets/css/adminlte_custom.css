@@ -1267,6 +1267,56 @@ img.img-24 {
 		right: 25px;
 		color:#ccc;
 	}
+
+	.document-header {
+		margin-bottom: 16px;
+		padding-bottom: 12px;
+		border-bottom: 1px solid #ccc;
+	}
+	.document-header-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 24px;
+	}
+	.document-header-brand {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.document-header-logo {
+		max-height: 64px;
+		max-width: 220px;
+		width: auto;
+		height: auto;
+		flex-shrink: 0;
+	}
+	.document-header-name {
+		font-size: 1.2em;
+		font-weight: 700;
+	}
+	.document-header-legal-name,
+	.document-header-address,
+	.document-header-contact {
+		font-size: 0.95em;
+		line-height: 1.35;
+	}
+	.document-header-subtitle {
+		margin-top: 10px;
+		margin-bottom: 0;
+		text-align: center;
+	}
+	.document-header-title {
+		margin: 0;
+		font-size: 1.5em;
+		font-weight: 700;
+		line-height: 1.2;
+		text-align: right;
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
 }
 
 .random_quote {

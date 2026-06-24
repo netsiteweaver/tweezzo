@@ -51,20 +51,6 @@
             white-space: nowrap;
             vertical-align: middle;
         }
-        .print-listing-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 12px;
-        }
-        .print-listing-logo {
-            height: 48px;
-            width: auto;
-            flex-shrink: 0;
-        }
-        .print-listing-header .page-title {
-            margin: 0;
-        }
     }
 
     #users-list-remove li.select-user-remove { cursor: pointer; }
@@ -349,34 +335,27 @@ $cleanQuery = http_build_query($queryArray);
     <?php endif;?>
 </div>
 
-<?php if (!empty($tasks)): ?>
-<div class="row print-only listing">
-    <div class="col-md-12 print-listing-header">
-        <?php
-            $printLogo = !empty($logoLight) ? $logoLight : (isset($logo) ? $logo : '');
-            if (!empty($printLogo)):
-        ?>
-        <img src="<?php echo base_url('assets/images/' . $printLogo); ?>" alt="<?php echo htmlspecialchars(isset($company->name) ? $company->name : 'Logo'); ?>" class="print-listing-logo">
-        <?php endif; ?>
-        <p class='page-title'>
-            <?php echo (!empty($this->input->get("customer_id"))) ? "<b>Customer</b>: {$tasks[0]->company_name}" : '';?>
-            <?php echo (!empty($this->input->get("project_id"))) ? " <b>Project</b>: {$tasks[0]->project_name}" : '';?>
-            <?php echo (!empty($this->input->get("sprint_id"))) ? " <b>Sprint</b>: {$tasks[0]->sprint_name}" : '';?>
-            <?php
-                $st = json_decode($this->input->get("stage"), true);
-                if (is_array($st) && !empty($st)) {
-                    echo " <b>Stages</b>: ";
-                    $stStr = "";
-                    foreach ($st as $stage) {
-                        $stStr .= strtoupper(str_replace("_", " ", $stage)) . ', ';
-                    }
-                    echo substr($stStr, 0, strlen($stStr) - 2);
-                }
-            ?>
-        </p>
-    </div>
-</div>
-<?php endif; ?>
+<?php
+    ob_start();
+    echo (!empty($this->input->get("customer_id")) && !empty($tasks)) ? "<b>Customer</b>: {$tasks[0]->company_name}" : '';
+    echo (!empty($this->input->get("project_id")) && !empty($tasks)) ? " <b>Project</b>: {$tasks[0]->project_name}" : '';
+    echo (!empty($this->input->get("sprint_id")) && !empty($tasks)) ? " <b>Sprint</b>: {$tasks[0]->sprint_name}" : '';
+    $st = json_decode($this->input->get("stage"), true);
+    if (is_array($st) && !empty($st)) {
+        echo " <b>Stages</b>: ";
+        $stStr = "";
+        foreach ($st as $stage) {
+            $stStr .= strtoupper(str_replace("_", " ", $stage)) . ', ';
+        }
+        echo substr($stStr, 0, strlen($stStr) - 2);
+    }
+    $document_subtitle = trim(ob_get_clean());
+    $this->load->view('shared/document_header', array(
+        'company' => $company,
+        'document_title' => 'Tasks List',
+        'document_subtitle' => $document_subtitle,
+    ));
+?>
 
 <div class="row">
     <div class="col-md-12 text-right font-italic text-italic" style='font-size:0.8em;color:#999'>

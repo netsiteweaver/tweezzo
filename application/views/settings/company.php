@@ -1,50 +1,82 @@
 <!-- <div class="row">
     <div class="col-xs-12"> -->
+        <style>
+            .company-settings-hint {
+                display: block;
+                position: static;
+                font-size: 0.85em;
+                color: #6c757d;
+                margin: 8px 0 0;
+            }
+            #company-logo-preview-wrap {
+                margin-bottom: 10px;
+            }
+            #company-logo-preview {
+                display: block;
+                max-height: 80px;
+                max-width: 240px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 4px;
+                background: #fff;
+            }
+        </style>
         <div class="box box-primary">
-            <form role="form" action="<?php echo base_url('settings/updatecompany'); ?>" method="post">
+            <form role="form" action="<?php echo base_url('settings/updatecompany'); ?>" method="post" enctype="multipart/form-data">
                 <div class="box-body">
                     <div class="row">
                         <div class="col-md-4">
                             <h3><i class="fa fa-building"></i> Company Details</h3>
                             <div class="form-group">
+                                <label><i class="fa fa-image"></i> Company Logo</label>
+                                <?php
+                                    $hasCompanyLogo = !empty($company->logo) && is_file(FCPATH . 'uploads/company/' . $company->logo);
+                                    $companyLogoSrc = $hasCompanyLogo ? base_url('uploads/company/' . $company->logo) : '';
+                                ?>
+                                <div id="company-logo-preview-wrap" class="<?php echo $hasCompanyLogo ? '' : 'd-none'; ?>">
+                                    <img id="company-logo-preview" src="<?php echo $companyLogoSrc; ?>" alt="<?php echo htmlspecialchars($company->name); ?>">
+                                    <p class="company-settings-hint mb-0" id="company-logo-preview-label">Preview</p>
+                                </div>
+                                <input type="file" class="form-control" id="company-logo-input" name="logo" accept="image/png,image/jpeg,image/gif,image/webp">
+                                <p class="company-settings-hint <?php echo $hasCompanyLogo ? 'd-none' : ''; ?>" id="company-logo-empty-hint">No company logo uploaded yet. Printed documents will use the app logo until you upload one here.</p>
+                                <p class="company-settings-hint">Used on printed documents and PDF headers. PNG or JPG, max 2 MB.</p>
+                                <?php if (!empty($company->logo)): ?>
+                                <label class="checkbox-inline d-block mt-2">
+                                    <input type="checkbox" name="remove_logo" value="1"> Remove current logo
+                                </label>
+                                <?php endif; ?>
+                            </div>
+                            <div class="form-group">
                                 <label><i class="fa fa-info-circle"></i> Company Name</label>
                                 <input class="form-control" name="name" placeholder="" value="<?php echo $company->name; ?>">
-                                <p class="help-block"></p>
                             </div>
                             <div class="form-group">
                                 <label><i class="fa fa-info-circle"></i> Company Legal Name</label>
                                 <input class="form-control" name="legal_name" placeholder="" value="<?php echo $company->legal_name; ?>">
-                                <p class="help-block"></p>
                             </div>
                             <div class="form-group">
                                 <label><i class="fa fa-edit"></i> BRN</label>
                                 <input class="form-control" name="brn" placeholder="" value="<?php echo $company->brn; ?>">
-                                <p class="help-block"></p>
                             </div>
                             <div class="form-group">
                                 <label><i class="fa fa-edit"></i> VAT Reg No.</label>
                                 <input class="form-control" name="vat" placeholder="" value="<?php echo $company->vat; ?>">
-                                <p class="help-block"></p>
                             </div>  
                             <div class="form-group">
                                 <label><i class="fa fa-map-marker"></i> Address</label>
                                 <input class="form-control" name="address1" placeholder="" value="<?php echo $company->address1; ?>">
-                                <p class="help-block"></p>
                             </div>
                             <div class="form-group">
                                 <label><i class="fa fa-map-marker"></i> Address (contd)</label>
                                 <input class="form-control" name="address2" placeholder="" value="<?php echo $company->address2; ?>">
-                                <p class="help-block"></p>
                             </div>
                             <div class="form-group">
                                 <label><i class="fa fa-map-marker"></i> City</label>
                                 <input class="form-control" name="city" placeholder="" value="<?php echo $company->city; ?>">
-                                <p class="help-block"></p>
                             </div>
                             <div class="form-group">
                                 <label><i class="fa fa-map-marker"></i> Country</label>
                                 <input class="form-control" name="country" placeholder="" value="<?php echo $company->country; ?>">
-                                <p class="help-block"></p>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -53,22 +85,18 @@
                                 <div class="form-group">
                                     <label><i class="fa fa-phone"></i> Phone</label>
                                     <input class="form-control" name="phone" placeholder="Enter your Business Phone" value="<?php echo $company->phone; ?>">
-                                    <p class="help-block"></p>
                                 </div>
                                 <div class="form-group ">
                                     <label><i class="fa fa-mobile"></i> Mobile</label>
                                     <input class="form-control" name="mobile" placeholder="Enter a Professional mobile number" value="<?php echo $company->mobile; ?>">
-                                    <p class="help-block"></p>
                                 </div>
                                 <div class="form-group">
                                     <label><i class="fa fa-fax"></i> Fax</label>
                                     <input class="form-control" name="fax" placeholder="Enter your business fax number" value="<?php echo $company->fax; ?>">
-                                    <p class="help-block"></p>
                                 </div>
                                 <div class="form-group">
                                     <label><i class="fa fa-envelope-o"></i> Email</label>
                                     <input class="form-control" name="email" placeholder="Enter your business email address" value="<?php echo $company->email; ?>">
-                                    <p class="help-block"></p>
                                 </div>
                                 <h3 class=""><i class="fa fa-clock-o"></i> Working Hours</h3>
                                 <div class="form-group ">

@@ -91,7 +91,13 @@ class Settings extends MY_Controller {
         if(!isAuthorised(get_class(),"company")) return false;
 
         $this->load->model("system_model");
-        $this->system_model->updateCompany();
+        $result = $this->system_model->updateCompany();
+
+        if (is_array($result) && !empty($result['error'])) {
+            flashDanger("Company details were not saved: " . $result['error']);
+            redirect(base_url('settings/company'));
+            return;
+        }
 
         flashSuccess("Company details have been updated");
         redirect(base_url('settings/company'));
