@@ -107,7 +107,15 @@ $cleanQuery = http_build_query($queryArray);
     </div>
     <div class="col-md-2 mt-4">
         <input type="hidden" id="stage" name="stage" value='<?php echo (!empty($this->input->get("stage")))?$this->input->get("stage"):'[]';?>'>
-        <div class="btn btn-block btn-outline-info choose-stages">Select Stages <?php echo (!empty($this->input->get("stage")))? "[".count(json_decode($this->input->get("stage")))."]":'[0]';?></div>
+        <div class="btn btn-block btn-outline-info choose-stages">Select Stages <?php
+            $stageParam = $this->input->get("stage");
+            $stageCount = 0;
+            if (!empty($stageParam)) {
+                $decodedStages = json_decode($stageParam, true);
+                $stageCount = is_array($decodedStages) ? count($decodedStages) : 0;
+            }
+            echo '[' . $stageCount . ']';
+        ?></div>
     </div>
     <!-- <div class="col-md-2">
         <label for="">Stage</label>
@@ -320,15 +328,16 @@ $cleanQuery = http_build_query($queryArray);
         <?php echo (!empty($this->input->get("customer_id"))) ? "<b>Customer</b>: {$tasks[0]->company_name}" : '';?>
         <?php echo (!empty($this->input->get("project_id"))) ? " <b>Project</b>: {$tasks[0]->project_name}" : '';?>
         <?php echo (!empty($this->input->get("sprint_id"))) ? " <b>Sprint</b>: {$tasks[0]->sprint_name}" : '';?>
-        <?php if (($this->input->get("stage")!=='[]')) {
-            echo " <b>Stages</b>: ";
-            $st = json_decode($this->input->get("stage"));
-            $stStr = "";
-            foreach($st as $stage){
-                $stStr .= strtoupper(str_replace("_"," ",$stage)) . ', ';
+        <?php
+            $st = json_decode($this->input->get("stage"), true);
+            if (is_array($st) && !empty($st)) {
+                echo " <b>Stages</b>: ";
+                $stStr = "";
+                foreach ($st as $stage) {
+                    $stStr .= strtoupper(str_replace("_", " ", $stage)) . ', ';
+                }
+                echo substr($stStr, 0, strlen($stStr) - 2);
             }
-            echo substr($stStr,0,strlen($stStr)-2);
-        }
         ?>
     </p>
 </div>
