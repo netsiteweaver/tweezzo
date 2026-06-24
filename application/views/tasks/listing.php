@@ -40,6 +40,19 @@
     .task-ref-cell .copy-task-ref:hover { opacity: 1; }
     .task-ref-cell .copy-task-ref.copied { opacity: 1; color: #28a745; }
 
+    @media print {
+        #task-list tr th,
+        #task-list tr td {
+            height: auto !important;
+            line-height: 1.3 !important;
+        }
+        .task-ref-cell {
+            display: table-cell !important;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+    }
+
     #users-list-remove li.select-user-remove { cursor: pointer; }
     #users-list-remove li.select-user-remove.assigned {
         background-color: rgb(255, 236, 210);
@@ -418,7 +431,7 @@ $cleanQuery = http_build_query($queryArray);
                                 $display_ref = $display_ref !== '' ? $display_ref : (isset($task->task_number) ? $task->task_number : '');
                                 ?>
                                 <span class="task-ref-text"><?php echo htmlspecialchars($display_ref); ?></span>
-                                <button type="button" class="copy-task-ref" data-ref="<?php echo htmlspecialchars($display_ref); ?>" title="Copy reference"><i class="fa fa-copy"></i></button>
+                                <button type="button" class="copy-task-ref no-print" data-ref="<?php echo htmlspecialchars($display_ref); ?>" title="Copy reference"><i class="fa fa-copy"></i></button>
                             </td>
                             <td class='task-section'><?php echo $task->section; ?></td>
                             <td class='task-name'>
