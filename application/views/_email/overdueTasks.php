@@ -32,6 +32,7 @@
                     <th style="padding: 12px; text-align: left; font-weight: bold;">TASK #</th>
                     <th style="padding: 12px; text-align: left; font-weight: bold;">SPRINT</th>
                     <th style="padding: 12px; text-align: left; font-weight: bold;">TASK NAME</th>
+                    <th style="padding: 12px; text-align: left; font-weight: bold;">SOURCE</th>
                     <th style="padding: 12px; text-align: left; font-weight: bold;">STAGE</th>
                     <th style="padding: 12px; text-align: left; font-weight: bold;">DUE DATE</th>
                     <th style="padding: 12px; text-align: center; font-weight: bold;">DAYS OVERDUE</th>
@@ -51,6 +52,7 @@
                     <td style="padding: 10px; border: 1px solid #ddd;">
                         <strong><?php echo htmlspecialchars($task->name);?></strong>
                     </td>
+                    <td style="padding: 10px; border: 1px solid #ddd;"><?php echo task_source_email_display_html(isset($task->source) ? $task->source : ''); ?></td>
                     <td style="padding: 10px; border: 1px solid #ddd;">
                         <?php echo strtoupper(str_replace("_"," ",$task->stage));?>
                     </td>

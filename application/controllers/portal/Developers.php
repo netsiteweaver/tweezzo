@@ -428,6 +428,16 @@ class Developers extends CI_Controller
                 'uploaded_by_user_type' =>  'developer'
             ));
         }
+
+        if (!empty($uploadedFiles)) {
+            $this->load->model('Tasks_model');
+            $author = $this->db->select('email, name')->from('users')->where([
+                'id'        => (int) $_SESSION['developer_id'],
+                'user_type' => 'developer',
+            ])->get()->row();
+            $this->Tasks_model->notifyTaskFilesUploaded($task_id, $uploadedFiles, $author, 'developer');
+        }
+
         redirect(base_url("portal/developers/view?task_uuid=".$uuid));
 
     }

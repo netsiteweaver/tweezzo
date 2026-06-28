@@ -22,6 +22,7 @@
             <tr>
                 <th>#</th>
                 <th>TASK NAME</th>
+                <th>SOURCE</th>
                 <th>SPRINT</th>
                 <th>PROJECT</th>
                 <th>STAGE</th>
@@ -32,6 +33,7 @@
             <tr>
                 <td><?php echo $task->task_number;?></td>
                 <td><?php echo $task->name;?></td>
+                <td><?php echo task_source_email_display_html(isset($task->source) ? $task->source : ''); ?></td>
                 <td><?php echo $task->sprint_name;?></td>
                 <td><?php echo $task->project_name;?></td>
                 <td>

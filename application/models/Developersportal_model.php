@@ -24,6 +24,7 @@ class Developersportal_model extends CI_Model{
                     , t.description task_description
                     , t.due_date, t.estimated_hours
                     , t.work_type, t.billable
+                    , t.source
                     , t.created_on
                     , u.name created_by_name
                     , s.name sprint_name
@@ -261,7 +262,7 @@ class Developersportal_model extends CI_Model{
             return ['result' => false, 'reason' => 'Invalid request'];
         }
 
-        $row = $this->db->select('ti.id, ti.uploaded_by_user_type, ti.created_by')
+        $row = $this->db->select('ti.id, ti.task_id, ti.file_name, ti.thumb_name, ti.uploaded_by_user_type, ti.created_by')
             ->from('task_images ti')
             ->join('tasks t', 't.id = ti.task_id')
             ->join('task_user tu', 'tu.task_id = t.id AND tu.user_id = ' . $developer_id, 'inner')
@@ -275,9 +276,22 @@ class Developersportal_model extends CI_Model{
             return ['result' => false, 'reason' => 'You can only delete your own uploads'];
         }
 
+        $removedFiles = [[
+            'file_name'  => $row->file_name,
+            'thumb_name' => $row->thumb_name,
+        ]];
+        $taskId = (int) $row->task_id;
+
         $this->load->model('Files_model');
         $this->Files_model->deleteFile($task_image_id);
         $this->db->where('id', $task_image_id)->delete('task_images');
+
+        $this->load->model('Tasks_model');
+        $author = $this->db->select('email, name')->from('users')->where([
+            'id'        => $developer_id,
+            'user_type' => 'developer',
+        ])->get()->row();
+        $this->Tasks_model->notifyTaskFilesRemoved($taskId, $removedFiles, $author, 'developer');
 
         return ['result' => true];
     }
@@ -388,7 +402,9 @@ class Developersportal_model extends CI_Model{
         ))->get()->row();
 
         
-        $this->Tasks_model->notifyUsers($taskDetails, ['task_id'=>$task_id, 'notes'=>$notes], $author, $public);
+        $this->Tasks_model->notifyUsers($taskDetails, ['task_id'=>$task_id, 'notes'=>$notes], $author, $public, [
+            'exclude_author_email' => $author->email ?? '',
+        ]);
     }
 
     public function authenticate($user_info) {
@@ -552,10 +568,14 @@ class Developersportal_model extends CI_Model{
             );
         }
 
+        if (!$current_task || (string) $old_stage === (string) $stage || $stageUpdateRows === 0) {
+            return;
+        }
+
         $result = $this->db->select("c.customer_id,c.company_name, c.email customer_email, 
                                     s.id sprint_id, s.name sprint_name, 
                                     p.id project_id, p.name project_name,
-                                    t.uuid task_uuid, t.name task_name, t.description task_description, t.section task_section, t.task_number, t.stage task_stage")
+                                    t.uuid task_uuid, t.name task_name, t.description task_description, t.section task_section, t.task_number, t.stage task_stage, t.source")
                         ->from("tasks t")
                         ->join("sprints s","s.id = t.sprint_id","left")
                         ->join("projects p","p.id = s.project_id","left")
@@ -565,15 +585,20 @@ class Developersportal_model extends CI_Model{
                         ->row();
 
         $this->load->model('system_model');
+        $developer = $this->db->select('name')->from('users')->where('id', (int) $_SESSION['developer_id'])->get()->row();
+        $stageChanges = task_email_build_stage_change($old_stage, $stage);
 
         if(!empty($result->customer_email)) {
             $email = $result->customer_email;
             $this->load->model("Email_model3");
             $emailData = [
-                'task'      =>  $result,
-                'logo'      =>  $this->system_model->getParam("logo"),
-                'url'       =>  'portal/customers/view?task_uuid='.$result->task_uuid,
-                'label'     =>  'Open Customer Portal'
+                'task'       =>  $result,
+                'old_stage'  =>  $old_stage,
+                'changes'    =>  $stageChanges,
+                'actor_name' =>  $developer ? $developer->name : '',
+                'logo'       =>  $this->system_model->getParam("logo"),
+                'url'        =>  'portal/customers/view?task_uuid='.$result->task_uuid,
+                'label'      =>  'Open Customer Portal'
             ];
             $content = $this->load->view("_email/header",$emailData, true);
             $content .= $this->load->view("_email/taskStageChange",$emailData, true);
@@ -590,9 +615,12 @@ class Developersportal_model extends CI_Model{
                 $this->load->model("Email_model3");
                 $this->load->model("system_model");
                 $emailData = [
-                    'task'      =>  $result,
-                    'logo'      =>  $this->system_model->getParam("logo"),
-                    'url'       =>  'tasks/view?task_uuid='.$result->task_uuid,
+                    'task'       =>  $result,
+                    'old_stage'  =>  $old_stage,
+                    'changes'    =>  $stageChanges,
+                    'actor_name' =>  $developer ? $developer->name : '',
+                    'logo'       =>  $this->system_model->getParam("logo"),
+                    'url'        =>  'tasks/view?task_uuid='.$result->task_uuid,
                     'label'     =>  'View Task'
                 ];
                 $content = $this->load->view("_email/header",$emailData, true);

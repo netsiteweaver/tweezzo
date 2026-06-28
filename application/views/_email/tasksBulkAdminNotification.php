@@ -6,6 +6,16 @@
     <?php echo $action_detail; ?>
 </div>
 <?php endif; ?>
+<?php if (!empty($changes) && is_array($changes)) : ?>
+<div style="margin:10px auto;max-width:800px;">
+    <?php $this->load->view('_email/partials/taskChangeSummary', [
+        'changes' => $changes,
+        'files_added' => isset($files_added) ? $files_added : [],
+        'files_removed' => isset($files_removed) ? $files_removed : [],
+        'change_heading' => 'What changed',
+    ]); ?>
+</div>
+<?php endif; ?>
 <?php if (!empty($performed_by)) : ?>
 <p style="margin:10px auto;max-width:800px;color:#555;font-size:14px;">
     Performed by: <?php echo htmlspecialchars($performed_by); ?>
@@ -18,6 +28,7 @@
                 <th>#</th>
                 <th>SECTION</th>
                 <th>TASK NAME</th>
+                <th>SOURCE</th>
                 <th>SPRINT</th>
                 <th>PROJECT</th>
                 <th>CUSTOMER</th>
@@ -27,6 +38,7 @@
                 <td><?php echo htmlspecialchars(isset($task->task_number) ? $task->task_number : ''); ?></td>
                 <td><?php echo htmlspecialchars(isset($task->section) ? $task->section : ''); ?></td>
                 <td><?php echo htmlspecialchars(isset($task->name) ? $task->name : ''); ?></td>
+                <td><?php echo task_source_email_display_html(isset($task->source) ? $task->source : ''); ?></td>
                 <td><?php echo htmlspecialchars(isset($task->sprint_name) ? $task->sprint_name : ''); ?></td>
                 <td><?php echo htmlspecialchars(isset($task->project_name) ? $task->project_name : ''); ?></td>
                 <td><?php echo htmlspecialchars(isset($task->company_name) ? $task->company_name : ''); ?></td>

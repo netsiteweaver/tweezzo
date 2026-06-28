@@ -13,6 +13,7 @@
                 <th>PROJECT</th>
                 <th>SPRINT</th>
                 <th>TASK NAME</th>
+                <th>SOURCE</th>
                 <th>STAGE</th>
                 <th>DUE DATE</th>
                 <th></th>
@@ -27,6 +28,7 @@
                 <td><?php echo $task['tasks']->project_name;?></td>
                 <td><?php echo $task['tasks']->sprint_name;?></td>
                 <td><?php echo $task['tasks']->name;?></td>
+                <td><?php echo task_source_email_display_html(isset($task['tasks']->source) ? $task['tasks']->source : ''); ?></td>
                 <td><?php echo strtoupper(str_replace("_"," ",$task['tasks']->stage));?></td>
                 <td><?php echo $task['tasks']->due_date;?></td>
                 <td>

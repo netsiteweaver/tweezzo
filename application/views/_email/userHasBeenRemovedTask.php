@@ -9,6 +9,7 @@
     <p><b>Task</b>: <?php echo $task->name;?></p>
     <p><b>Section</b>: <?php echo $task->section;?></p>
     <p><b>Task #</b>: <?php echo $task->task_number;?></p>
+    <p><b>Source</b>: <?php echo task_source_email_display_html(isset($task->source) ? $task->source : ''); ?></p>
     <p><b>Task Description</b>: <?php echo $task->description;?></p>
     <p><b>Project</b>: <?php echo $task->project_name;?></p>
     <p><b>Sprint</b>: <?php echo $task->sprint_name;?></p>

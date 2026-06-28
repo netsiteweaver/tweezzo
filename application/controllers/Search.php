@@ -29,7 +29,7 @@ class Search extends MY_Controller {
         }
 
         $limit = 15;
-        $rows = $this->Tasks_model->fetchAll('', '', '', [], '', '', 'asc', 1, $limit, '', '', $q, false, '', '');
+        $rows = $this->Tasks_model->fetchAll('', '', '', [], '', '', 'asc', 1, $limit, '', '', $q, false, '', '', '');
 
         $tasks = [];
         foreach ($rows as $task) {

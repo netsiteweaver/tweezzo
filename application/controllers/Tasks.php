@@ -204,6 +204,7 @@ class Tasks extends MY_Controller {
         $notes_only = $this->input->get('notes_only');
         $search_text = $this->input->get('search_text');
         $work_type = $this->input->get('work_type');
+        $source = $this->input->get('source');
         $billable = $this->input->get('billable');
         $closed_filter = $this->input->get('closed_filter');
         if (!in_array($closed_filter, array('open', 'closed', 'all'), true)) {
@@ -213,8 +214,8 @@ class Tasks extends MY_Controller {
 
         $page = $this->uri->segment(3);
         $per_page = (!empty($this->input->get("display"))) ? $this->input->get("display") : $this->system_model->getParam("rows_per_page");
-        $this->data['tasks'] = $this->Tasks_model->fetchAll($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$page,$per_page,"",$notes_only,$search_text,false,$work_type,$billable,$closed_filter);
-        $total_rows = $this->Tasks_model->totalRows($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$notes_only,$search_text,$work_type,$billable,$closed_filter);
+        $this->data['tasks'] = $this->Tasks_model->fetchAll($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$page,$per_page,"",$notes_only,$search_text,false,$work_type,$source,$billable,$closed_filter);
+        $total_rows = $this->Tasks_model->totalRows($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,$notes_only,$search_text,$work_type,$source,$billable,$closed_filter);
         $this->data['total_rows'] = $total_rows;
         $this->data['total_estimated_hours'] = $this->Tasks_model->sumEstimatedHoursForListing(
             $customer_id,
@@ -225,6 +226,7 @@ class Tasks extends MY_Controller {
             $notes_only,
             $search_text,
             $work_type,
+            $source,
             $billable,
             $closed_filter
         );
@@ -325,7 +327,7 @@ class Tasks extends MY_Controller {
         //                     join customers c on c.customer_id = p.customer_id 
         //                     where c.customer_id = $customer_id")->result();
 
-        $tasks = $this->Tasks_model->fetchAll($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,1,1,$output,'','',false,'','',$closed_filter);
+        $tasks = $this->Tasks_model->fetchAll($customer_id,$project_id,$sprint_id,$stage,$assigned_to,$order_by,$order_dir,1,1,$output,'','',false,'','','',$closed_filter);
         // debug($tasks);
         // debug($this->data['tasks']);
 
@@ -391,8 +393,16 @@ class Tasks extends MY_Controller {
         //check for any file to delete
         $deleted_images_json = (empty($this->input->post('deleted_images'))) ? [] : $this->input->post('deleted_images');
         $deleted_images = json_decode($deleted_images_json);
+        $deleted_files_for_email = [];
         if(!empty($deleted_images)){
             foreach($deleted_images as $image){
+                $fileRow = $this->db->select('file_name, thumb_name')->from('task_images')->where('id', (int) $image)->get()->row();
+                if ($fileRow) {
+                    $deleted_files_for_email[] = [
+                        'file_name'  => $fileRow->file_name,
+                        'thumb_name' => $fileRow->thumb_name,
+                    ];
+                }
                 $this->files_model->deleteFile($image);
                 $this->db->where("id",$image)->delete("task_images");
             }
@@ -406,6 +416,7 @@ class Tasks extends MY_Controller {
         if($_FILES['file5']['error'] == 0) $uploadedFiles[] = $this->files_model->uploadImage("file5","uploads/tasks/",['width'=>200,'height'=>200,'thumb_name'=>'thumb']);
 
         $data = $this->input->post();
+        $data['_email_deleted_files'] = $deleted_files_for_email;
         $response = $this->Tasks_model->save($data,$uploadedFiles);
         if($response['result']== false){
             flashDanger($response['reason']);

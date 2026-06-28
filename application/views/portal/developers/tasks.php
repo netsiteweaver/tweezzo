@@ -222,6 +222,7 @@
                         <th>ESTIMATED HOURS <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'estimated_hours') ? '' :'d-none';?>'></th>
                         <th>STAGE <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'stage') ? '' :'d-none';?>'></th>
                         <th>WORK TYPE</th>
+                        <th class="text-center" title="Source"><i class="fas fa-sign-in-alt"></i></th>
                         <th>BILLABLE</th>
                         <th><i class="bi bi-chat-dots"></i></th>
                         <th><i class="bi bi-stopwatch"></i></th>
@@ -268,6 +269,7 @@
 
                         </td>
                         <td><?php echo !empty($task->work_type) ? ucfirst($task->work_type) : '—';?></td>
+                        <td class="text-center"><?php echo task_source_icon_html(isset($task->source) ? $task->source : ''); ?></td>
                         <td><?php echo isset($task->billable) && $task->billable == 1 ? 'Yes' : (isset($task->billable) && $task->billable == 0 ? 'No' : '—');?></td>
                         <td class=''><?php echo $task->notes_count;?><br><i class="bi bi-eye view-notes cursor-pointer"></i></td>
                         <td class='cursor-pointer '>
@@ -284,7 +286,7 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th colspan='13' class='text-center'>
+                        <th colspan='17' class='text-center'>
                             TOTAL:
                             <?php echo count($tasks) . " | NEW: " . $totals['new'] . " | IN PROGRESS: " . $totals['in_progress'] . " | TESTING: " . $totals['testing'] . " | STAGING: " . $totals['staging'] . " | VALIDATED: " . $totals['validated'] . " | COMPLETED: " . $totals['completed'] . " | ON HOLD: " . $totals['on_hold'];?>
                         </th>

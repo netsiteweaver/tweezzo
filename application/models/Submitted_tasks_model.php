@@ -202,6 +202,7 @@ class Submitted_tasks_model extends CI_Model{
                 $this->load->model("system_model");
                 $emailData = [
                     'title'         =>  'New Task Created',
+                    'email_mode'    =>  'create',
                     'projectInfo'   =>  $projectInfo,
                     'data'          =>  $data,
                     'logo'          =>  $this->system_model->getParam("logo"),
@@ -225,11 +226,56 @@ class Submitted_tasks_model extends CI_Model{
             $this->assignUsers(json_decode($data['userIds']),[$taskId],$newTask->customer_id,$newTask->project_id,$newTask->sprint_id);
 
         }else{
+            $beforeTask = $this->db->select('name, description, task_number, sprint_id, stage, section, due_date, estimated_hours, progress, scope_client_expectation, scope_not_included, scope_when_done')
+                ->from('submitted_tasks')
+                ->where('uuid', $data['uuid'])
+                ->get()
+                ->row();
+
+            $deletedFilesForEmail = isset($data['_email_deleted_files']) && is_array($data['_email_deleted_files'])
+                ? $data['_email_deleted_files']
+                : [];
+            unset($data['_email_deleted_files']);
+
             $this->db->where('uuid',$data['uuid']);
             $this->db->update('submitted_tasks');
 
             $taskId = $this->db->select("id")->from("submitted_tasks")->where("uuid",$data['uuid'])->get()->row()->id;
             $this->saveFiles($uploadedFiles,$taskId);
+
+            if (empty($data['stage']) && $beforeTask) {
+                $data['stage'] = $beforeTask->stage;
+            }
+
+            $sprintIds = [];
+            if ($beforeTask && !empty($beforeTask->sprint_id)) {
+                $sprintIds[] = (int) $beforeTask->sprint_id;
+            }
+            if (!empty($data['sprint_id'])) {
+                $sprintIds[] = (int) $data['sprint_id'];
+            }
+            $sprintNames = [];
+            if (!empty($sprintIds)) {
+                $sprintRows = $this->db->select('id, name')->from('sprints')->where_in('id', array_unique($sprintIds))->get()->result();
+                foreach ($sprintRows as $sprintRow) {
+                    $sprintNames[(int) $sprintRow->id] = $sprintRow->name;
+                }
+            }
+
+            $submittedFields = array_intersect_key(task_email_update_field_labels(), array_flip([
+                'name', 'description', 'task_number', 'section', 'sprint_id', 'due_date',
+                'estimated_hours', 'scope_client_expectation', 'scope_not_included', 'scope_when_done',
+            ]));
+            $submittedFields['stage'] = 'Stage';
+            $submittedFields['progress'] = 'Progress';
+
+            $changes = $beforeTask
+                ? task_email_build_update_changes($beforeTask, $data, ['sprint_names' => $sprintNames, 'fields' => $submittedFields])
+                : [];
+            $filesAdded = task_email_format_uploaded_files($uploadedFiles, 'uploads/submitted_tasks/');
+            $filesRemoved = task_email_format_removed_files($deletedFilesForEmail, 'uploads/submitted_tasks/');
+            $actor = $this->db->select('name')->from('users')->where('id', (int) $_SESSION['user_id'])->get()->row();
+            $emailSubject = task_email_update_subject_summary($changes, $filesAdded, $filesRemoved);
 
             $members = $this->System_model->getParam("notification_update_tasks",true);
             foreach($members as $m){
@@ -242,8 +288,13 @@ class Submitted_tasks_model extends CI_Model{
                 $this->load->model("system_model");
                 $emailData = [
                     'title'         =>  'Task Updated',
+                    'email_mode'    =>  'update',
                     'projectInfo'   =>  $projectInfo,
                     'data'          =>  $data,
+                    'changes'       =>  $changes,
+                    'files_added'   =>  $filesAdded,
+                    'files_removed' =>  $filesRemoved,
+                    'actor_name'    =>  $actor ? $actor->name : 'A user',
                     'logo'          =>  $this->system_model->getParam("logo"),
                     'link'          =>  base_url('submitted_tasks/view?task_uuid='.$data['uuid']),
                     'link_label'    =>  'View Task',
@@ -252,7 +303,7 @@ class Submitted_tasks_model extends CI_Model{
                 $content .= $this->load->view("_email/taskCreatedOrUpdated",$emailData, true);
                 $content .= $this->load->view("_email/footer",[], true);
 
-                $this->Email_model3->save($user->email,"Task Updated",$content);
+                $this->Email_model3->save($user->email, $emailSubject, $content);
 
             }
         }

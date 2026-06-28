@@ -127,6 +127,16 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Source</label>
+                                    <select class="form-control" name="source">
+                                        <?php foreach (task_source_options() as $source_value => $source_label): ?>
+                                        <option value="<?php echo htmlspecialchars($source_value); ?>" <?php echo $source_value === 'admin' ? 'selected' : ''; ?><?php echo task_source_disabled_in_form($source_value) ? ' disabled' : ''; ?>><?php echo htmlspecialchars($source_label); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
                             <div class="col-md-6 billable-only" style="display:none;">
                                 <div class="form-group">
                                     <label>Ref (Inv / Quote #)</label>

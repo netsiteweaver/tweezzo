@@ -118,6 +118,12 @@ $task_poll_json = (!empty($task_poll_snapshot) && is_array($task_poll_snapshot))
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
+                            <label for="">Source</label>
+                            <input type="text" class="form-control" value="<?php echo htmlspecialchars(task_source_label(isset($task->source) ? $task->source : '')); ?>" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
                             <label for="">Billable</label>
                             <input type="text" class="form-control" value="<?php echo isset($task->billable) && $task->billable == 1 ? 'Yes' : (isset($task->billable) && $task->billable == 0 ? 'No' : '—');?>" disabled>
                         </div>

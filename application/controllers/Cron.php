@@ -72,7 +72,7 @@ class Cron extends CI_Controller {
         }
         
         $this->db->query("SET @@session.time_zone = '+04:00'");
-        $query = "select t.uuid, t.id, t.task_number, t.name, t.stage, t.description, t.section, t.due_date, t.estimated_hours, s.name as sprint_name, p.name as project_name, c.company_name, u.name developer_name, u.email as developer_email
+        $query = "select t.uuid, t.id, t.task_number, t.name, t.stage, t.source, t.description, t.section, t.due_date, t.estimated_hours, s.name as sprint_name, p.name as project_name, c.company_name, u.name developer_name, u.email as developer_email
                 from tasks t 
                 left join sprints s on s.id = t.sprint_id
                 left join projects p on p.id = s.project_id
@@ -140,7 +140,7 @@ class Cron extends CI_Controller {
     {
         // Send reminders for tasks that are past due
         $this->db->query("SET @@session.time_zone = '+04:00'");
-        $query = "select t.uuid, t.id, t.task_number, t.name, t.stage, t.description, t.section, t.due_date, t.estimated_hours, 
+        $query = "select t.uuid, t.id, t.task_number, t.name, t.stage, t.source, t.description, t.section, t.due_date, t.estimated_hours, 
                 DATEDIFF(CURDATE(), t.due_date) as days_overdue,
                 s.name as sprint_name, p.name as project_name, c.company_name, c.customer_id, p.id as project_id,
                 u.name developer_name, u.email as developer_email

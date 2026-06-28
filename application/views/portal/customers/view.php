@@ -100,6 +100,7 @@
 										   <input type="hidden" name="id" value="<?php echo $task->id;?>">
 										   <?php
 											   $wt = !empty($task->work_type) ? ucfirst($task->work_type) : '—';
+											   $src = task_source_display_html(isset($task->source) ? $task->source : '');
 											   $bill = isset($task->billable) && (string) $task->billable === '1' ? 'Yes' : (isset($task->billable) && (string) $task->billable === '0' ? 'No' : '—');
 											   if (isset($task->billable) && (string) $task->billable === '1') {
 												   $settled = isset($task->settled) && (string) $task->settled === '1' ? 'Yes' : (isset($task->settled) && (string) $task->settled === '0' ? 'No' : '—');
@@ -115,6 +116,7 @@
 											   <thead class="table-light">
 												   <tr>
 													   <th scope="col">Work type</th>
+													   <th scope="col">Source</th>
 													   <th scope="col">Billable</th>
 													   <th scope="col">Settled</th>
 													   <th scope="col">Ref</th>
@@ -123,6 +125,7 @@
 											   <tbody>
 												   <tr>
 													   <td><?php echo htmlspecialchars($wt);?></td>
+													   <td><?php echo $src;?></td>
 													   <td><?php echo htmlspecialchars($bill);?></td>
 													   <td><?php echo $settled;?></td>
 													   <td><?php echo $ref;?></td>

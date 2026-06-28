@@ -26,6 +26,7 @@
                 <th>#</th>
                 <th>SECTION</th>
                 <th>TASK NAME</th>
+                <th>SOURCE</th>
                 <th>SPRINT</th>
                 <th>PROJECT</th>
                 <th>CUSTOMER</th>
@@ -40,6 +41,7 @@
                 <td><?php echo $task->task_number;?></td>
                 <td><?php echo $task->section;?></td>
                 <td><?php echo $task->name;?></td>
+                <td><?php echo task_source_email_display_html(isset($task->source) ? $task->source : ''); ?></td>
                 <td><?php echo $task->sprint_name;?></td>
                 <td><?php echo $task->project_name;?></td>
                 <td><?php echo $task->company_name;?></td>

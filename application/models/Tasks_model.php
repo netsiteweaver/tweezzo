@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Tasks_model extends CI_Model{
 
-    public function fetchAll($customer_id="",$project_id="",$sprint_id="",$stage=[],$assigned_to="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$output="",$notes_only="",$search_text="",$totalRows=false,$work_type="",$billable="",$closed_filter="")
+    public function fetchAll($customer_id="",$project_id="",$sprint_id="",$stage=[],$assigned_to="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$output="",$notes_only="",$search_text="",$totalRows=false,$work_type="",$source="",$billable="",$closed_filter="")
     {
         if(!$totalRows){
             if( (empty($page)) || ($page <= 0) ) $page =1;
@@ -56,6 +56,7 @@ class Tasks_model extends CI_Model{
             $this->db->group_end();
         }
         if(!empty($work_type)) $this->db->where('t.work_type',$work_type);
+        if(!empty($source)) $this->db->where('t.source',$source);
         if($billable !== '' && $billable !== null) $this->db->where('t.billable',$billable);
         // echo $this->db->get_compiled_select();die;
         if(!$totalRows){
@@ -94,9 +95,9 @@ class Tasks_model extends CI_Model{
         
     }
 
-    public function totalRows($customer_id="",$project_id="",$sprint_id="",$stage="",$assigned_to="",$order_by="",$order_dir="asc",$notes_only="",$search_text="",$work_type="",$billable="",$closed_filter="")
+    public function totalRows($customer_id="",$project_id="",$sprint_id="",$stage="",$assigned_to="",$order_by="",$order_dir="asc",$notes_only="",$search_text="",$work_type="",$source="",$billable="",$closed_filter="")
     {
-        $rows = $this->fetchAll($customer_id, $project_id, $sprint_id, $stage, $assigned_to, $order_by, $order_dir, 1, 10, '', $notes_only, $search_text, true, $work_type, $billable, $closed_filter);
+        $rows = $this->fetchAll($customer_id, $project_id, $sprint_id, $stage, $assigned_to, $order_by, $order_dir, 1, 10, '', $notes_only, $search_text, true, $work_type, $source, $billable, $closed_filter);
         return $rows;
 
     }
@@ -179,7 +180,7 @@ class Tasks_model extends CI_Model{
      * Sum estimated_hours for all tasks matching the same filters as tasks/listing (full result set, not current page).
      * Mirrors fetchAll() listing logic including notes filter (with/without).
      */
-    public function sumEstimatedHoursForListing($customer_id = "", $project_id = "", $sprint_id = "", $stage = [], $assigned_to = "", $notes_only = "", $search_text = "", $work_type = "", $billable = "", $closed_filter = "")
+    public function sumEstimatedHoursForListing($customer_id = "", $project_id = "", $sprint_id = "", $stage = [], $assigned_to = "", $notes_only = "", $search_text = "", $work_type = "", $source = "", $billable = "", $closed_filter = "")
     {
         $this->db->select('t.id, COALESCE(t.estimated_hours, 0) AS est_hours, COUNT(tn.id) AS notes', false);
         $this->db->from('tasks t');
@@ -224,6 +225,9 @@ class Tasks_model extends CI_Model{
         }
         if (!empty($work_type)) {
             $this->db->where('t.work_type', $work_type);
+        }
+        if (!empty($source)) {
+            $this->db->where('t.source', $source);
         }
         if ($billable !== '' && $billable !== null) {
             $this->db->where('t.billable', $billable);
@@ -464,7 +468,8 @@ class Tasks_model extends CI_Model{
                                         t.name task_name, 
                                         t.description task_description, 
                                         t.section task_section, 
-                                        t.stage task_stage, 
+                                        t.stage task_stage,
+                                        t.source,
                                         p.name project_name, 
                                         s.name sprint_name, 
                                         c.company_name customer_name 
@@ -486,6 +491,9 @@ class Tasks_model extends CI_Model{
                 // 'title'         =>  'Task Updated',
                 // 'projectInfo'   =>  $projectInfo,
                 'task'          =>  $task,
+                'old_stage'     =>  $old_stage,
+                'changes'       =>  task_email_build_stage_change($old_stage, $data['stage']),
+                'actor_name'    =>  $author->name,
                 'logo'          =>  $this->system_model->getParam("logo"),
                 // 'link'          =>  base_url('tasks/view?task_uuid='.$data['task_uuid']),
                 // 'link_label'    =>  'View Task',
@@ -550,6 +558,7 @@ class Tasks_model extends CI_Model{
         $this->db->set('settled', isset($data['settled']) && $data['settled'] ? 1 : (isset($data['settled']) ? 0 : null));
         $this->db->set('settled_on', !empty($data['settled_on']) ? $data['settled_on'] : null);
         $this->db->set('ref', !empty($data['ref']) ? $data['ref'] : null);
+        $this->db->set('source', task_source_normalize($data['source'] ?? 'admin'));
         $this->db->set('scope_client_expectation',$data['scope_client_expectation']);
         $this->db->set('scope_not_included',$data['scope_not_included']);
         $this->db->set('scope_when_done',$data['scope_when_done']);
@@ -586,6 +595,7 @@ class Tasks_model extends CI_Model{
                 $this->load->model("system_model");
                 $emailData = [
                     'title'         =>  'New Task Created',
+                    'email_mode'    =>  'create',
                     'projectInfo'   =>  $projectInfo,
                     'data'          =>  $data,
                     'logo'          =>  $this->system_model->getParam("logo"),
@@ -609,11 +619,49 @@ class Tasks_model extends CI_Model{
             $this->assignUsers(json_decode($data['userIds']),[$taskId],$newTask->customer_id,$newTask->project_id,$newTask->sprint_id);
 
         }else{
+            $beforeTask = $this->db->select('name, description, task_number, sprint_id, section, due_date, estimated_hours, work_type, billable, settled, settled_on, ref, source, scope_client_expectation, scope_not_included, scope_when_done, stage')
+                ->from('tasks')
+                ->where('uuid', $data['uuid'])
+                ->get()
+                ->row();
+
+            $deletedFilesForEmail = isset($data['_email_deleted_files']) && is_array($data['_email_deleted_files'])
+                ? $data['_email_deleted_files']
+                : [];
+            unset($data['_email_deleted_files']);
+
             $this->db->where('uuid',$data['uuid']);
             $this->db->update('tasks');
 
             $taskId = $this->db->select("id")->from("tasks")->where("uuid",$data['uuid'])->get()->row()->id;
             $this->saveFiles($uploadedFiles,$taskId);
+
+            if (empty($data['stage']) && $beforeTask) {
+                $data['stage'] = $beforeTask->stage;
+            }
+
+            $sprintIds = [];
+            if ($beforeTask && !empty($beforeTask->sprint_id)) {
+                $sprintIds[] = (int) $beforeTask->sprint_id;
+            }
+            if (!empty($data['sprint_id'])) {
+                $sprintIds[] = (int) $data['sprint_id'];
+            }
+            $sprintNames = [];
+            if (!empty($sprintIds)) {
+                $sprintRows = $this->db->select('id, name')->from('sprints')->where_in('id', array_unique($sprintIds))->get()->result();
+                foreach ($sprintRows as $sprintRow) {
+                    $sprintNames[(int) $sprintRow->id] = $sprintRow->name;
+                }
+            }
+
+            $changes = $beforeTask
+                ? task_email_build_update_changes($beforeTask, $data, ['sprint_names' => $sprintNames])
+                : [];
+            $filesAdded = task_email_format_uploaded_files($uploadedFiles);
+            $filesRemoved = task_email_format_removed_files($deletedFilesForEmail);
+            $actor = $this->db->select('name')->from('users')->where('id', (int) $_SESSION['user_id'])->get()->row();
+            $emailSubject = task_email_update_subject_summary($changes, $filesAdded, $filesRemoved);
 
             $members = $this->System_model->getParam("notification_update_tasks",true);
             foreach($members as $m){
@@ -626,8 +674,13 @@ class Tasks_model extends CI_Model{
                 $this->load->model("system_model");
                 $emailData = [
                     'title'         =>  'Task Updated',
+                    'email_mode'    =>  'update',
                     'projectInfo'   =>  $projectInfo,
                     'data'          =>  $data,
+                    'changes'       =>  $changes,
+                    'files_added'   =>  $filesAdded,
+                    'files_removed' =>  $filesRemoved,
+                    'actor_name'    =>  $actor ? $actor->name : 'A user',
                     'logo'          =>  $this->system_model->getParam("logo"),
                     'link'          =>  base_url('tasks/view?task_uuid='.$data['uuid']),
                     'link_label'    =>  'View Task',
@@ -636,7 +689,7 @@ class Tasks_model extends CI_Model{
                 $content .= $this->load->view("_email/taskCreatedOrUpdated",$emailData, true);
                 $content .= $this->load->view("_email/footer",[], true);
 
-                $this->Email_model3->save($user->email,"Task Updated",$content);
+                $this->Email_model3->save($user->email, $emailSubject, $content);
 
             }
         }
@@ -689,7 +742,7 @@ class Tasks_model extends CI_Model{
         return array('result'=>true,'data'=>$data);
     }
 
-    public function notifyUsers($taskDetails, $data, $author, $public='public')
+    public function notifyUsers($taskDetails, $data, $author, $public='public', $options = [])
     {
         $query = "SELECT t.*, s.name sprint_name, p.name project_name, c.email customer_email, c.company_name customer, u.email developer_email, u.name developer_name, c.customer_id
                     FROM tasks t 
@@ -710,16 +763,34 @@ class Tasks_model extends CI_Model{
         $this->load->model("Email_model3");
         $this->load->model("system_model");
 
+        $filesAdded = [];
+        if (!empty($options['files_added'])) {
+            $rawFiles = $options['files_added'];
+            $filesAdded = (isset($rawFiles[0]['url']))
+                ? $rawFiles
+                : task_email_format_uploaded_files($rawFiles);
+        }
+
+        $changes = !empty($options['changes']) && is_array($options['changes'])
+            ? $options['changes']
+            : task_email_build_note_change($data['notes'] ?? '');
+
+        $authorName = is_object($author) ? ($author->name ?? 'Someone') : 'Someone';
+        $subject = $authorName . " added a note for Task {$taskDetails->task_number}/{$taskDetails->sprint_name}/{$taskDetails->project_name}";
+        if (!empty($filesAdded)) {
+            $subject .= ' (' . count($filesAdded) . ' file' . (count($filesAdded) === 1 ? '' : 's') . ' attached)';
+        }
+
         $emailData = [
             'addressee'         =>  '',
             'notes'             =>  $data['notes'],
             'logo'              =>  $this->system_model->getParam("logo"),
             'taskDetails'       =>  $taskDetails,
             'author'            =>  $author,
-            'show_lifecycle'    =>  false
+            'show_lifecycle'    =>  false,
+            'changes'           =>  $changes,
+            'files_added'       =>  $filesAdded,
         ];
-        
-        $subject = "{$author->name} added a note for Task {$taskDetails->task_number}/{$taskDetails->sprint_name}/{$taskDetails->project_name}";
 
         //first send to client if notes is public
         if($public == "public"){
@@ -728,6 +799,9 @@ class Tasks_model extends CI_Model{
             $content .= $this->load->view("_email/noteHasBeenAdded",$emailData, true);
             $content .= $this->load->view("_email/footer",[], true);
             foreach($result[0]->customer_access as $user){
+                if (!empty($options['exclude_customer_access_id']) && (int) $user->id === (int) $options['exclude_customer_access_id']) {
+                    continue;
+                }
                 $check = $this->Email_model3->save($user->email,$subject,$content);
                 if($check == '401'){
                     return array('result'=>false,'reason'=>'Mail Server: Not Authorised');
@@ -741,8 +815,12 @@ class Tasks_model extends CI_Model{
         $content = $this->load->view("_email/header",$emailData, true);
         $content .= $this->load->view("_email/noteHasBeenAdded",$emailData, true);
         $content .= $this->load->view("_email/footer",[], true);
+        $excludeAuthorEmail = !empty($options['exclude_author_email']) ? (string) $options['exclude_author_email'] : '';
         foreach($result as $developer){
             if(empty($developer->developer_email)) continue;
+            if ($excludeAuthorEmail !== '' && $developer->developer_email === $excludeAuthorEmail) {
+                continue;
+            }
             $check = $this->Email_model3->save($developer->developer_email,$subject,$content);
             if($check == '401'){
                 return array('result'=>false,'reason'=>'Mail Server: Not Authorised');
@@ -757,6 +835,9 @@ class Tasks_model extends CI_Model{
         $admins = $this->system_model->getParam("notification_create_notes",true);
         foreach($admins as $admin){
             $user = $this->db->select("*")->from("users")->where("id",$admin)->get()->row();
+            if ($excludeAuthorEmail !== '' && !empty($user->email) && $user->email === $excludeAuthorEmail) {
+                continue;
+            }
             $check = $this->Email_model3->save($user->email,$subject,$content);
             if($check == '401'){
                 return array('result'=>false,'reason'=>'Mail Server: Not Authorised');
@@ -764,6 +845,195 @@ class Tasks_model extends CI_Model{
         }
 
         return array('result'=>true);
+    }
+
+    /**
+     * Notify admins, developers, and customer contacts when files are uploaded to a task.
+     *
+     * @param int         $taskId
+     * @param array       $uploadedFiles
+     * @param object      $author
+     * @param string      $portal developer|admin|customer
+     * @return array{result:bool, reason?:string}
+     */
+    public function notifyTaskFilesUploaded($taskId, $uploadedFiles, $author, $portal = 'developer')
+    {
+        if (empty($uploadedFiles)) {
+            return ['result' => true];
+        }
+
+        $taskRow = $this->db->select('uuid')->from('tasks')->where('id', (int) $taskId)->get()->row();
+        if (empty($taskRow)) {
+            return ['result' => false, 'reason' => 'Task not found'];
+        }
+
+        $taskDetails = $this->fetchSingle($taskRow->uuid);
+        $filesAdded = task_email_format_uploaded_files($uploadedFiles);
+        $changes = task_email_build_files_uploaded_change(count($filesAdded));
+        $subject = 'Task attachments added (' . count($filesAdded) . ' file' . (count($filesAdded) === 1 ? '' : 's') . ') — '
+            . $taskDetails->task_number . '/' . $taskDetails->sprint_name . '/' . $taskDetails->project_name;
+
+        return $this->sendTaskAttachmentNotification(
+            $taskDetails,
+            $author,
+            $portal,
+            '_email/taskFilesUploaded',
+            $subject,
+            $changes,
+            $filesAdded,
+            []
+        );
+    }
+
+    /**
+     * Notify admins, developers, and customer contacts when files are removed from a task.
+     *
+     * @param int         $taskId
+     * @param array       $removedFiles [{file_name, thumb_name}, ...]
+     * @param object      $author
+     * @param string      $portal developer|admin|customer
+     * @return array{result:bool, reason?:string}
+     */
+    public function notifyTaskFilesRemoved($taskId, $removedFiles, $author, $portal = 'developer')
+    {
+        if (empty($removedFiles)) {
+            return ['result' => true];
+        }
+
+        $taskRow = $this->db->select('uuid')->from('tasks')->where('id', (int) $taskId)->get()->row();
+        if (empty($taskRow)) {
+            return ['result' => false, 'reason' => 'Task not found'];
+        }
+
+        $taskDetails = $this->fetchSingle($taskRow->uuid);
+        $filesRemoved = task_email_format_removed_files($removedFiles);
+        $changes = task_email_build_files_removed_change(count($filesRemoved));
+        $subject = 'Task attachments removed (' . count($filesRemoved) . ' file' . (count($filesRemoved) === 1 ? '' : 's') . ') — '
+            . $taskDetails->task_number . '/' . $taskDetails->sprint_name . '/' . $taskDetails->project_name;
+
+        return $this->sendTaskAttachmentNotification(
+            $taskDetails,
+            $author,
+            $portal,
+            '_email/taskFilesRemoved',
+            $subject,
+            $changes,
+            [],
+            $filesRemoved
+        );
+    }
+
+    /**
+     * @param object $taskDetails
+     * @param object $author
+     * @param string $portal
+     * @param string $bodyView
+     * @param string $subject
+     * @param array  $changes
+     * @param array  $filesAdded
+     * @param array  $filesRemoved
+     * @return array{result:bool, reason?:string}
+     */
+    private function sendTaskAttachmentNotification($taskDetails, $author, $portal, $bodyView, $subject, $changes, $filesAdded, $filesRemoved)
+    {
+        $authorName = is_object($author) ? ($author->name ?? 'A user') : 'A user';
+        $authorEmail = is_object($author) ? ($author->email ?? '') : '';
+
+        $query = "SELECT t.*, s.name sprint_name, p.name project_name, c.email customer_email, c.company_name customer, u.email developer_email, u.name developer_name, c.customer_id
+                    FROM tasks t
+                    Left join sprints s on s.id = t.sprint_id
+                    left join projects p on p.id = s.project_id
+                    left join customers c on c.customer_id = p.customer_id
+                    left join task_user tu on tu.task_id = t.id
+                    left join users u on u.id = tu.user_id
+                    where t.status = 1
+                    and t.closed = 0
+                    and t.uuid = '{$taskDetails->uuid}'";
+        $result = $this->db->query($query)->result();
+        $customerAccess = [];
+        if (!empty($result)) {
+            $customerAccess = $this->db->select('id,name,email')
+                ->from('customer_access')
+                ->where(['status' => '1', 'customer_id' => $result[0]->customer_id])
+                ->get()->result();
+        }
+
+        $this->load->model('Email_model3');
+        $this->load->model('system_model');
+
+        $link = $portal === 'customer'
+            ? base_url('portal/customers/view?task_uuid=' . $taskDetails->uuid)
+            : ($portal === 'developer'
+                ? base_url('portal/developers/view?task_uuid=' . $taskDetails->uuid)
+                : base_url('tasks/view?task_uuid=' . $taskDetails->uuid));
+
+        $emailData = [
+            'taskDetails'   => $taskDetails,
+            'changes'       => $changes,
+            'files_added'   => $filesAdded,
+            'files_removed' => $filesRemoved,
+            'actor_name'    => $authorName,
+            'logo'          => $this->system_model->getParam('logo'),
+            'link'          => $link,
+            'link_label'    => 'View Task',
+        ];
+
+        $content = $this->load->view('_email/header', $emailData, true);
+        $content .= $this->load->view($bodyView, $emailData, true);
+        $content .= $this->load->view('_email/footer', [], true);
+
+        $sent = [];
+
+        foreach ($result as $developer) {
+            if (empty($developer->developer_email) || isset($sent[$developer->developer_email])) {
+                continue;
+            }
+            if ($authorEmail !== '' && $developer->developer_email === $authorEmail) {
+                continue;
+            }
+            $check = $this->Email_model3->save($developer->developer_email, $subject, $content);
+            if ($check == '401') {
+                return ['result' => false, 'reason' => 'Mail Server: Not Authorised'];
+            }
+            $sent[$developer->developer_email] = true;
+        }
+
+        $admins = $this->system_model->getParam('notification_update_tasks', true);
+        if (is_array($admins)) {
+            foreach ($admins as $adminId) {
+                $user = $this->db->select('email')->from('users')->where(['status' => '1', 'id' => (int) $adminId])->get()->row();
+                if (empty($user) || empty($user->email) || isset($sent[$user->email])) {
+                    continue;
+                }
+                if ($authorEmail !== '' && $user->email === $authorEmail) {
+                    continue;
+                }
+                $check = $this->Email_model3->save($user->email, $subject, $content);
+                if ($check == '401') {
+                    return ['result' => false, 'reason' => 'Mail Server: Not Authorised'];
+                }
+                $sent[$user->email] = true;
+            }
+        }
+
+        $excludeCustomerAccessId = ($portal === 'customer' && !empty($_SESSION['customer_access_id']))
+            ? (int) $_SESSION['customer_access_id']
+            : 0;
+        foreach ($customerAccess as $customerUser) {
+            if (empty($customerUser->email) || isset($sent[$customerUser->email])) {
+                continue;
+            }
+            if ($excludeCustomerAccessId > 0 && (int) $customerUser->id === $excludeCustomerAccessId) {
+                continue;
+            }
+            $check = $this->Email_model3->save($customerUser->email, $subject, $content);
+            if ($check == '401') {
+                return ['result' => false, 'reason' => 'Mail Server: Not Authorised'];
+            }
+            $sent[$customerUser->email] = true;
+        }
+
+        return ['result' => true];
     }
 
     public function delete($uuid)
@@ -801,7 +1071,7 @@ class Tasks_model extends CI_Model{
         $this->db->where_in("id",$taskIds);
         $this->db->update("tasks");
 
-        $this->db->select('t.id, t.uuid, t.name, t.section, t.task_number, s.name as sprint_name, p.name as project_name, c.company_name');
+        $this->db->select('t.id, t.uuid, t.name, t.section, t.task_number, t.source, s.name as sprint_name, p.name as project_name, c.company_name');
         $this->db->from('tasks t');
         $this->db->join('sprints s', 's.id = t.sprint_id');
         $this->db->join('projects p', 'p.id = s.project_id');
@@ -876,7 +1146,8 @@ class Tasks_model extends CI_Model{
             "notification_update_tasks",
             "Tasks stage changed (bulk)",
             "Bulk stage change",
-            "<p>New stage: <strong>" . htmlspecialchars($stageLabel) . "</strong></p>"
+            "<p>New stage: <strong>" . htmlspecialchars($stageLabel) . "</strong></p>",
+            ['changes' => task_email_build_stage_change('', $stage)]
         );
 
         if (!empty($ids)) {
@@ -1118,7 +1389,7 @@ class Tasks_model extends CI_Model{
 
 
         //get task details to email developers
-        $tasks = $this->db->query("SELECT t.name, t.task_number, s.name sprint_name, p.name project_name, c.company_name FROM tasks t 
+        $tasks = $this->db->query("SELECT t.name, t.task_number, t.source, s.name sprint_name, p.name project_name, c.company_name FROM tasks t 
                                     JOIN sprints s ON s.id = t.sprint_id
                                     JOIN projects p ON p.id = s.project_id
                                     JOIN customers c ON c.customer_id = p.customer_id
@@ -1137,6 +1408,7 @@ class Tasks_model extends CI_Model{
 
         $emailData = [
             'dueDate'   =>  $dueDate,
+            'changes'   =>  task_email_build_due_date_change($dueDate),
             'tasks'      =>  $tasks,
             'logo'      =>  $this->system_model->getParam("logo"),
             'link'      =>  "",
@@ -1210,7 +1482,8 @@ class Tasks_model extends CI_Model{
                 'scope_when_done'       =>  $task['completed'],
                 'stage'         =>  'new',
                 'created_by'    =>  $_SESSION['user_id'],
-                'created_on'    =>  date('Y-m-d H:i:s')
+                'created_on'    =>  date('Y-m-d H:i:s'),
+                'source'        =>  'bulk',
             );
             $this->db->insert('tasks',$data);
             $task_count++;
@@ -1409,7 +1682,7 @@ class Tasks_model extends CI_Model{
      *
      * @param string $settingsKey notification_update_tasks | notification_delete_tasks
      */
-    private function notify_bulk_task_recipients($taskIds, $settingsKey, $subject, $heading, $detailHtml = "")
+    private function notify_bulk_task_recipients($taskIds, $settingsKey, $subject, $heading, $detailHtml = "", $options = [])
     {
         $ids = array_values(array_filter(array_map('intval', (array) $taskIds)));
         if (empty($ids)) {
@@ -1422,7 +1695,7 @@ class Tasks_model extends CI_Model{
             return;
         }
 
-        $this->db->select('t.id, t.uuid, t.name, t.section, t.task_number, s.name as sprint_name, p.name as project_name, c.company_name');
+        $this->db->select('t.id, t.uuid, t.name, t.section, t.task_number, t.source, s.name as sprint_name, p.name as project_name, c.company_name');
         $this->db->from('tasks t');
         $this->db->join('sprints s', 's.id = t.sprint_id', 'left');
         $this->db->join('projects p', 'p.id = s.project_id', 'left');
@@ -1451,6 +1724,9 @@ class Tasks_model extends CI_Model{
             'action_heading' => $heading,
             'action_detail' => $detailHtml,
             'performed_by' => $actor,
+            'changes' => !empty($options['changes']) && is_array($options['changes']) ? $options['changes'] : [],
+            'files_added' => !empty($options['files_added']) && is_array($options['files_added']) ? $options['files_added'] : [],
+            'files_removed' => !empty($options['files_removed']) && is_array($options['files_removed']) ? $options['files_removed'] : [],
         );
         $content = $this->load->view("_email/header", $emailData, true);
         $content .= $this->load->view("_email/tasksBulkAdminNotification", $emailData, true);

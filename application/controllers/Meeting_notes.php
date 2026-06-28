@@ -447,6 +447,7 @@ class Meeting_notes extends MY_Controller
                 'scope_client_expectation' => '',
                 'scope_not_included' => '',
                 'scope_when_done' => '',
+                'source' => 'meeting',
                 'userIds' => $userIds_json, // Developers assigned per task or from defaults
             ];
             

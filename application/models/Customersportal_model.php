@@ -681,20 +681,32 @@ class Customersportal_model extends CI_Model
         if (!empty($note_row['created_on'])) {
             $note_row['created_on_fmt'] = date('Y m d @ H:i', strtotime($note_row['created_on']));
         }
+
+        $this->load->model('Tasks_model');
+        $taskUuid = $this->db->select('uuid')->from('tasks')->where('id', (int) $task_id)->get()->row();
+        if ($taskUuid) {
+            $taskDetails = $this->Tasks_model->fetchSingle($taskUuid->uuid);
+            $author = $this->db->select('email, name')->from('customer_access')->where('id', (int) $_SESSION['customer_access_id'])->get()->row();
+            $filesForNotify = [];
+            if ($attachment_file) {
+                $filesForNotify[] = [
+                    'file_name'   => $attachment_file,
+                    'image_thumb' => $attachment_thumb,
+                ];
+            }
+            $this->Tasks_model->notifyUsers(
+                $taskDetails,
+                ['task_id' => $task_id, 'notes' => $note],
+                $author,
+                'public',
+                [
+                    'files_added'                => $filesForNotify,
+                    'exclude_customer_access_id' => (int) $_SESSION['customer_access_id'],
+                ]
+            );
+        }
+
         return $note_row;
-
-        // $this->load->model("Tasks_model");
-
-        // //get task details by id
-        // $taskUuid = $this->db->select("uuid")->from("tasks")->where("id",$task_id)->get()->row()->uuid;
-        // $taskDetails = $this->Tasks_model->fetchSingle($taskUuid);
-
-        // // get customer email
-        // $author = $this->db->select("email, name")->from('customer_access')->where('id',$_SESSION['customer_access_id'])->get()->row();
-
-        // $this->Tasks_model->notifyUsers($taskDetails, ['task_id'=>$task_id, 'notes'=>$note], $author);
-
-        // return $this->db->affected_rows();
     }
 
     /**

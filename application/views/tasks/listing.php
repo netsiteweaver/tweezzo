@@ -171,6 +171,15 @@ $cleanQuery = http_build_query($queryArray);
         </select>
     </div>
     <div class="col-md-2">
+        <label for="source">Source</label>
+        <select name="source" class="form-control monitor" id="source">
+            <option value="">All</option>
+            <?php foreach (task_source_options() as $source_value => $source_label): ?>
+            <option value="<?php echo htmlspecialchars($source_value); ?>" <?php echo $this->input->get('source') === $source_value ? 'selected' : ''; ?>><?php echo htmlspecialchars($source_label); ?></option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="col-md-2">
         <label for="billable">Billable</label>
         <select name="billable" class="form-control monitor" id="billable">
             <option value="">All</option>
@@ -389,6 +398,7 @@ $cleanQuery = http_build_query($queryArray);
                             <?php endif;?>
                             <th>Stage <?php echo ($this->input->get("order_by") == "stage") ? "<i class='fa fa-sort'></i>" : '';?></th>
                             <th class='no-print'>Work type</th>
+                            <th class='no-print text-center' title="Source"><i class="fas fa-sign-in-alt"></i></th>
                             <th class='no-print'>Billable</th>
                             <th class='no-print'>Settled</th>
                             <th class='no-print'>Date settled</th>
@@ -472,6 +482,7 @@ $cleanQuery = http_build_query($queryArray);
                                 <?php endif; ?>
                             </td>
                             <td class='no-print'><?php echo !empty($task->work_type) ? ucfirst($task->work_type) : '—';?></td>
+                            <td class='no-print text-center'><?php echo task_source_icon_html(isset($task->source) ? $task->source : ''); ?></td>
                             <td class='no-print text-center'><?php
                                 $__bill = isset($task->billable) ? (int) $task->billable : null;
                                 if ($__bill === 1) {

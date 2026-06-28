@@ -130,6 +130,17 @@ $task_poll_json = (!empty($task_poll_snapshot) && is_array($task_poll_snapshot))
 										</select>
 									</div>
 								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label>Source</label>
+										<select class="form-control" name="source">
+											<?php $task_source = isset($task->source) ? $task->source : 'admin'; ?>
+											<?php foreach (task_source_options() as $source_value => $source_label): ?>
+											<option value="<?php echo htmlspecialchars($source_value); ?>" <?php echo $task_source === $source_value ? 'selected' : ''; ?><?php echo task_source_disabled_in_form($source_value, $task_source) ? ' disabled' : ''; ?>><?php echo htmlspecialchars($source_label); ?></option>
+											<?php endforeach; ?>
+										</select>
+									</div>
+								</div>
 								<div class="col-md-6 billable-only" style="display:<?php echo (isset($task->billable) && $task->billable == 1) ? 'block' : 'none';?>;">
 									<div class="form-group">
 										<label>Ref (Inv / Quote #)</label>
