@@ -406,13 +406,12 @@ class Users_model extends CI_Model{
     }
     public function resetPassword($username,$user_level)
     {
-        $user = $this->db->select('u.id,u.uuid,u.username,u.name,u.email,u.last_login,u.user_level,u.job_title, d.name departmentName')
+        $this->db->select('u.id,u.uuid,u.username,u.name,u.email,u.last_login,u.user_level,u.job_title, d.name departmentName')
                                     ->from('users u')
                                     ->join("departments d","d.id=u.department_id","left")
-                                    ->where(array(
-                                        'u.status'=>1,
-                                        'u.username'=>$username
-                                    ))->get()->row();
+                                    ->where('u.status',1);
+        $this->db->group_start()->where('u.username',$username)->or_where('u.email',$username)->group_end();
+        $user = $this->db->get()->row();
         if( !empty($user)) {
             if($user->user_level == "Normal"){
                 $this->load->model("System_model");
@@ -434,7 +433,7 @@ class Users_model extends CI_Model{
             }else{
                 $user->newPassword = genPassword();
                 $this->db->set('password',md5($user->newPassword),true);
-                $this->db->where(array('username'=>$username,'status'=>1));
+                $this->db->where(array('id'=>$user->id,'status'=>1));
                 $this->db->update('users');
                 $this->load->model("email_model2");
                 $content = "Dear " . $user->name . "<br>Your password has been reset to " . $user->newPassword;

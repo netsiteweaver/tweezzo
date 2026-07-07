@@ -500,7 +500,9 @@ class Users extends MY_Controller {
     public function check_user_level()
     {
         $username = $this->input->post("username");
-        $user_level = $this->db->select("user_level")->from("users")->where(array("username"=>$username,"status"=>"1"))->get()->row("user_level");
+        $this->db->select("user_level")->from("users")->where("status","1");
+        $this->db->group_start()->where("username",$username)->or_where("email",$username)->group_end();
+        $user_level = $this->db->get()->row("user_level");
         if(!empty($user_level)){
             $this->forget_password_process($username,$user_level);
             echo json_encode(array("result"=>true,"user_level"=>$user_level));
