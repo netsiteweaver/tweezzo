@@ -281,7 +281,7 @@ class Developers_model extends CI_Model{
 
         if(!empty($username)){
             $this->db->select("count(id) as ct");
-            $this->db->where(array("username"=>$username,"status"=>1));
+            $this->db->where(array("username"=>$username,"status"=>1,"user_type"=>"developer"));
             if(!empty($id)) $this->db->where("id !=",$id);
             $qry1 = $this->db->get("users");
             $result1 = $qry1->row("ct");
@@ -291,10 +291,10 @@ class Developers_model extends CI_Model{
         // if($level !== 'normal'){
         if(!empty($email)){
             $this->db->select("count(id) as ct");
-            $this->db->where(array("email"=>$email,"status"=>1));
+            $this->db->where(array("email"=>$email,"status"=>1,"user_type"=>"developer"));
             if(!empty($id)) $this->db->where("id !=",$id);
             $qry2 = $this->db->get("users");
-            $result2 = $qry2->row("ct");        
+            $result2 = $qry2->row("ct");
         }else{
             $result2 = 99;
         }
