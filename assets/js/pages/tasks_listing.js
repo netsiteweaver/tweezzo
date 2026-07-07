@@ -1,5 +1,11 @@
 jQuery(function(){
 
+    let autoselectMessage = sessionStorage.getItem('tasks_listing_autoselect_message');
+    if(autoselectMessage){
+        sessionStorage.removeItem('tasks_listing_autoselect_message');
+        toastr.info(autoselectMessage);
+    }
+
     // tableSort("#task-list","tasks");
 
     // Copy task reference to clipboard
@@ -540,15 +546,11 @@ jQuery(function(){
         setDueDate(taskIds,dueDate);
     })
     
-    $('#customer_id').on("change",function(){
-        $('#project_id').val('');
-        $('#sprint_id').val('');
-    })
-    
-    $(".monitor").on("change", function(){
-        let customer_id = $('#customer_id').val();
-        let project_id = $('#project_id').val();
-        let sprint_id = $('#sprint_id').val();
+    function navigateWithFilters(overrides){
+        overrides = overrides || {};
+        let customer_id = overrides.customer_id !== undefined ? overrides.customer_id : $('#customer_id').val();
+        let project_id = overrides.project_id !== undefined ? overrides.project_id : $('#project_id').val();
+        let sprint_id = overrides.sprint_id !== undefined ? overrides.sprint_id : $('#sprint_id').val();
         let stage = $('#stage').val();
         let order_by = $('#order_by').val();
         let order_dir = $('#order_dir').val();
@@ -563,7 +565,7 @@ jQuery(function(){
 
         if(customer_id!=='') {
             localStorage.setItem('LastSelectedCustomer',customer_id);
-        }else{ 
+        }else{
             localStorage.removeItem('LastSelectedCustomer')
             localStorage.removeItem('LastSelectedProject')
             localStorage.removeItem('LastSelectedSprint')
@@ -571,21 +573,81 @@ jQuery(function(){
 
         if(project_id!=='') {
             localStorage.setItem('LastSelectedProject',project_id);
-        }else{ 
+        }else{
             localStorage.removeItem('LastSelectedProject')
             localStorage.removeItem('LastSelectedSprint')
         }
 
         if(sprint_id!=='') {
             localStorage.setItem('LastSelectedSprint',sprint_id);
-        }else{ 
+        }else{
             localStorage.removeItem('LastSelectedSprint')
         }
-        
+
         Overlay("on");
         setTimeout(function(){
             window.location.href = base_url + 'tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+encodeURIComponent(search_text)+"&work_type="+work_type+"&source="+encodeURIComponent(source)+"&billable="+billable+"&closed_filter="+encodeURIComponent(closed_filter);
         },100)
+    }
+
+    $('#customer_id').on("change",function(e){
+        if(!e.originalEvent){
+            // Programmatic trigger (e.g. Search button re-submitting filters) - don't
+            // re-run the auto-select cascade or it would clobber a manual project/sprint pick.
+            return;
+        }
+
+        e.stopImmediatePropagation();
+        let customer_id = $(this).val();
+        $('#project_id').val('');
+        $('#sprint_id').val('');
+
+        if(customer_id === ''){
+            navigateWithFilters({customer_id: customer_id, project_id: '', sprint_id: ''});
+            return;
+        }
+
+        Overlay("on");
+        $.ajax({
+            url: base_url + '/projects/getByCustomerId',
+            type: 'POST',
+            data: {customer_id: customer_id},
+            dataType: 'json',
+            success: function(response){
+                if(response.result && response.rows == 1){
+                    let project_id = response.data[0].id;
+                    let project_name = response.data[0].name;
+                    $.ajax({
+                        url: base_url + '/sprints/getByProjectId',
+                        type: 'POST',
+                        data: {project_id: project_id},
+                        dataType: 'json',
+                        success: function(sprintResponse){
+                            let sprint_id = (sprintResponse.result && sprintResponse.rows == 1) ? sprintResponse.data[0].id : '';
+                            let message = 'Auto-selected the only active project "'+project_name+'"';
+                            if(sprint_id !== ''){
+                                message += ' and the only active sprint "'+sprintResponse.data[0].name+'"';
+                            }
+                            sessionStorage.setItem('tasks_listing_autoselect_message', message);
+                            navigateWithFilters({customer_id: customer_id, project_id: project_id, sprint_id: sprint_id});
+                        },
+                        error: function(){
+                            sessionStorage.setItem('tasks_listing_autoselect_message', 'Auto-selected the only active project "'+project_name+'"');
+                            navigateWithFilters({customer_id: customer_id, project_id: project_id, sprint_id: ''});
+                        }
+                    });
+                }else{
+                    navigateWithFilters({customer_id: customer_id, project_id: '', sprint_id: ''});
+                }
+            },
+            error: function(){
+                navigateWithFilters({customer_id: customer_id, project_id: '', sprint_id: ''});
+            }
+        });
+    })
+
+    $(".monitor").on("change", function(){
+        navigateWithFilters();
     })
 
     $('.search').on("click", function(){
