@@ -467,12 +467,12 @@ class Developersportal_model extends CI_Model{
 
     public function forgotPassword($email)
     {
-        $check = $this->db->select("*")->from("users")->where(["email"=>$email,"status"=>1])->get()->row();
+        $check = $this->db->select("*")->from("users")->where(["email"=>$email,"status"=>1,"user_type"=>"developer"])->get()->row();
         if(empty($check)) {
             return false;
         }else{
             $token = randomName(32);
-            $this->db->set("token",$token)->where("email",$email)->update("users");
+            $this->db->set("token",$token)->where(["email"=>$email,"user_type"=>"developer"])->update("users");
             $output = new stdClass;
             $output->result = true;
             $output->token = $token;
@@ -503,11 +503,11 @@ class Developersportal_model extends CI_Model{
     {
         $password = genPassword(12);
         $this->db->set("password", "md5('$password')", false);
-        $this->db->where(["email"=>urldecode($email),"token"=>$token]);
+        $this->db->where(["email"=>urldecode($email),"token"=>$token,"user_type"=>"developer"]);
         $this->db->update("users");
-        if ($this->db->affected_rows() == 1) {
+        if ($this->db->affected_rows() >= 1) {
             $this->db->set("token", '');
-            $this->db->where(["email"=>urldecode($email),"token"=>$token]);
+            $this->db->where(["email"=>urldecode($email),"token"=>$token,"user_type"=>"developer"]);
             $this->db->update("users");
             $this->sendConfirmationEmail(urldecode($email), $password);
         }
