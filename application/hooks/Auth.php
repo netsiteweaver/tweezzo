@@ -55,7 +55,7 @@ class Auth extends CI_Controller {
 				}
 			}elseif(empty($userid)) {
 				if( 
-					( ($controller == "users") && (in_array($method,['signin','authenticate','forget-password','forget_password_process','forget_password','check_user_level','isUserPermanent'])) ) || 
+					( ($controller == "users") && (in_array($method,['signin','authenticate','forget-password','forget_password','check_user_level','processForgotPassword','isUserPermanent'])) ) ||
 					($controller == 'api') || 
 					($controller == 'cron') || 
 					($controller == 'migrate')){

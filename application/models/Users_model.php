@@ -404,7 +404,7 @@ class Users_model extends CI_Model{
         $totalUsers = $this->db->get()->row('ct');
         return $totalUsers;
     }
-    public function resetPassword($username,$user_level)
+    public function forgotPassword($username)
     {
         $this->db->select('u.id,u.uuid,u.username,u.name,u.email,u.last_login,u.user_level,u.job_title, d.name departmentName')
                                     ->from('users u')
@@ -412,38 +412,78 @@ class Users_model extends CI_Model{
                                     ->where('u.status',1);
         $this->db->group_start()->where('u.username',$username)->or_where('u.email',$username)->group_end();
         $user = $this->db->get()->row();
-        if( !empty($user)) {
-            if($user->user_level == "Normal"){
-                $this->load->model("System_model");
-                $this->load->model("email_model2");
 
-                $members = $this->System_model->getParam("notification_reset_password",true);
-                $content = "We have a request to reset password for user:";
-                $content .= "<br><br><b>Name:</b> ".$user->name;
-                $content .= "<br><b>Username:</b> ".$user->username;
-                $content .= "<br><b>Last Login:</b> ".$user->last_login;
-                $content .= "<br><b>Job Title:</b> ".$user->job_title;
-                $content .= "<br><b>Department:</b> ".$user->departmentName;
-                $content .= "<br><br>Please do needful";
-                foreach($members as $m){
-                    $email = $this->db->select("email")->from("users")->where("id",$m)->get()->row("email");
-                    $this->email_model2->save($email,"Forgot Password Request",$content);
-                }
-                return true;
-            }else{
-                $user->newPassword = genPassword();
-                $this->db->set('password',md5($user->newPassword),true);
-                $this->db->where(array('id'=>$user->id,'status'=>1));
-                $this->db->update('users');
-                $this->load->model("email_model2");
-                $content = "Dear " . $user->name . "<br>Your password has been reset to " . $user->newPassword;
-                $this->email_model2->save($user->email,"Forgot Password Request",$content);
-                return true;
-            }
-            
-        }else{
-            return false;
+        if(empty($user)) {
+            return array("result"=>false,"reason"=>"Username not found");
         }
+
+        if($user->user_level == "Normal"){
+            $this->load->model("System_model");
+            $this->load->model("email_model2");
+
+            $members = $this->System_model->getParam("notification_reset_password",true);
+            $content = "We have a request to reset password for user:";
+            $content .= "<br><br><b>Name:</b> ".$user->name;
+            $content .= "<br><b>Username:</b> ".$user->username;
+            $content .= "<br><b>Last Login:</b> ".$user->last_login;
+            $content .= "<br><b>Job Title:</b> ".$user->job_title;
+            $content .= "<br><b>Department:</b> ".$user->departmentName;
+            $content .= "<br><br>Please do needful";
+            foreach($members as $m){
+                $email = $this->db->select("email")->from("users")->where("id",$m)->get()->row("email");
+                $this->email_model2->save($email,"Forgot Password Request",$content);
+            }
+            return array("result"=>true,"user_level"=>$user->user_level);
+        }
+
+        $token = randomName(32);
+        $this->db->set("token",$token)->where("id",$user->id)->update("users");
+        $this->sendForgotPasswordEmail($user->email,$token);
+        return array("result"=>true,"user_level"=>$user->user_level);
+    }
+
+    private function sendForgotPasswordEmail($recipient,$token)
+    {
+        $this->load->model("email_model2");
+        $this->load->model("System_model");
+        $emailData = [
+            'email'     =>  $recipient,
+            'token'     =>  $token,
+            'logo'      =>  $this->System_model->getParam("logo"),
+            'resetLink' =>  'users/processForgotPassword/'
+        ];
+        $content = $this->load->view("_email/header",$emailData, true);
+        $content .= $this->load->view("_email/forgotPassword",$emailData, true);
+        $content .= $this->load->view("_email/footer",[], true);
+        $this->email_model2->save($recipient,"Forgot Password Request",$content);
+    }
+
+    public function processForgotPassword($token,$email)
+    {
+        $user = $this->db->select("id,name,email")->from("users")->where(array("email"=>$email,"token"=>$token,"status"=>1))->get()->row();
+        if(empty($user)) return false;
+
+        $newPassword = genPassword();
+        $this->db->set('password',md5($newPassword),true)->set('token','')->where('id',$user->id)->update('users');
+
+        $this->sendResetConfirmationEmail($user->email,$newPassword);
+        return true;
+    }
+
+    private function sendResetConfirmationEmail($recipient,$password)
+    {
+        $this->load->model("email_model2");
+        $this->load->model("System_model");
+        $emailData = [
+            'email'     =>  $recipient,
+            'password'  =>  $password,
+            'logo'      =>  $this->System_model->getParam("logo"),
+            'signinUrl' =>  'users/signin/'
+        ];
+        $content = $this->load->view("_email/header",$emailData, true);
+        $content .= $this->load->view("_email/forgotPasswordConfirmation",$emailData, true);
+        $content .= $this->load->view("_email/footer",[], true);
+        $this->email_model2->save($recipient,"Forgot Password Complete",$content);
     }
 
     private function recordLogin($user)

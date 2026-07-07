@@ -500,24 +500,19 @@ class Users extends MY_Controller {
     public function check_user_level()
     {
         $username = $this->input->post("username");
-        $this->db->select("user_level")->from("users")->where("status","1");
-        $this->db->group_start()->where("username",$username)->or_where("email",$username)->group_end();
-        $user_level = $this->db->get()->row("user_level");
-        if(!empty($user_level)){
-            $this->forget_password_process($username,$user_level);
-            echo json_encode(array("result"=>true,"user_level"=>$user_level));
-        }else{
-            echo json_encode(array("result"=>false,"reason"=>"Username not found"));
-        }
-        exit;   
+        $this->load->model("users_model");
+        $result = $this->users_model->forgotPassword($username);
+        echo json_encode($result);
+        exit;
     }
 
-    public function forget_password_process($username,$user_level)
+    public function processForgotPassword()
     {
+        $token = $this->uri->segment(3);
+        $email = $this->uri->segment(4);
         $this->load->model("users_model");
-        $result = $this->users_model->resetPassword($username,$user_level);
-        echo json_encode(array("result"=>$result));
-        exit;
+        $this->users_model->processForgotPassword($token, urldecode($email));
+        redirect(base_url("users/signin"));
     }
 
     public function init()
