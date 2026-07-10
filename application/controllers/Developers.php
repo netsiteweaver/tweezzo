@@ -215,6 +215,50 @@ class Developers extends MY_Controller {
         echo json_encode(array("result"=>true, "message"=>"Developer has been unsuspended and notified via email"));
     }
 
+    public function suspend()
+    {
+        //Access Control
+        if(!isAuthorised(get_class(),"edit")) return false;
+
+        $id = $this->input->post("id");
+
+        // Prevent an admin from suspending their own account
+        if($_SESSION['user_id'] == $id){
+            echo json_encode(array("result"=>false, "message"=>"You cannot suspend your own account"));
+            return;
+        }
+
+        // Get user details before suspending
+        $user = $this->developers_model->getById($id);
+
+        if(empty($user)) {
+            echo json_encode(array("result"=>false, "message"=>"User not found"));
+            return;
+        }
+
+        // Update status to suspended (2)
+        $this->db->set('status','2');
+        $this->db->where('id',$id);
+        $this->db->update('users');
+
+        // Send email notification
+        $this->load->model("Email_model3");
+        $this->load->model("system_model");
+
+        $emailData = [
+            'user'  => $user,
+            'logo'  => $this->system_model->getParam("logo"),
+        ];
+
+        $content = $this->load->view("_email/header",$emailData, true);
+        $content .= $this->load->view("_email/developerSuspended",$emailData, true);
+        $content .= $this->load->view("_email/footer",[], true);
+
+        $this->Email_model3->save($user->email, "Your developer account has been suspended", $content);
+
+        echo json_encode(array("result"=>true, "message"=>"Developer has been suspended and notified via email"));
+    }
+
     public function permission()
     {
         //Access Control

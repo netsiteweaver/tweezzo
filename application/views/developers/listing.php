@@ -42,6 +42,9 @@
                             <?php if($perms['edit']): ?>
                                 <a title='Update User' href="<?php echo base_url('developers/edit/' . $developer->id); ?>"><div class="btn btn-flat btn-md btn-primary"><i class='fas fa-edit'></i></div></a>
                             <?php endif; ?>
+                            <?php if($developer->status == '1' && $perms['edit'] && $_SESSION['user_id'] != $developer->id): ?>
+                                <button title='Suspend User' data-url="<?php echo base_url("developers/suspend"); ?>" data-id="<?php echo $developer->id;?>" data-name="<?php echo htmlspecialchars($developer->name);?>" class="suspendDeveloper btn btn-md btn-flat bg-orange"><i class='fas fa-stop-circle'></i></button>
+                            <?php endif; ?>
                             <?php if($developer->status == '2' && $perms['edit']): ?>
                                 <button title='Unsuspend User' data-url="<?php echo base_url("developers/unsuspend"); ?>" data-id="<?php echo $developer->id;?>" data-name="<?php echo htmlspecialchars($developer->name);?>" class="unsuspendDeveloper btn btn-md btn-flat btn-success"><i class='fas fa-unlock'></i></button>
                             <?php endif; ?>
