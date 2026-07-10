@@ -342,6 +342,23 @@ $(document).ready(function(){
     $(this).closest(".row").remove();
   })
 
+  $('input[name=image]').on('change', function(){
+    var $wrapper = $('#image-preview-wrapper');
+    if(!$wrapper.length) return;
+    var file = this.files && this.files[0];
+    if(file && file.type.indexOf('image/') === 0){
+      var reader = new FileReader();
+      reader.onload = function(e){
+        $('#image-preview').attr('src', e.target.result);
+        $wrapper.show();
+      };
+      reader.readAsDataURL(file);
+    }else{
+      $('#image-preview').attr('src', '');
+      $wrapper.hide();
+    }
+  })
+
   $('body').on('click','.resetPassword',function(e){
     alert('Coming Soon');
     return false;
@@ -428,9 +445,17 @@ $(document).ready(function(){
                 console.log(response)
                 if(response.result){
                   toastr["success"](response.message || "Developer has been suspended successfully.");
-                  setTimeout(function(){
-                    window.location.reload();
-                  }, 1500);
+                  var row = t.closest('tr');
+                  row.find('.badge').removeClass('badge-success').addClass('badge-warning').text('Suspended');
+                  row.find('td').eq(1).addClass('inactive');
+                  row.find('td').eq(2).addClass('inactive');
+                  row.find('td').eq(4).addClass('inactive');
+                  var unsuspendBtn = $('<button title="Unsuspend User" class="unsuspendDeveloper btn btn-md btn-flat btn-success"><i class="fas fa-unlock"></i></button>')
+                    .attr('data-url', base_url + 'developers/unsuspend')
+                    .attr('data-id', id)
+                    .attr('data-name', name);
+                  t.replaceWith(unsuspendBtn);
+                  refreshDeveloperStats();
                 }else{
                   toastr["error"](response.message || "Failed to suspend developer.");
                 }
@@ -477,9 +502,17 @@ $(document).ready(function(){
                 console.log(response)
                 if(response.result){
                   toastr["success"](response.message || "Developer has been unsuspended successfully.");
-                  setTimeout(function(){
-                    window.location.reload();
-                  }, 1500);
+                  var row = t.closest('tr');
+                  row.find('.badge').removeClass('badge-warning').addClass('badge-success').text('Active');
+                  row.find('td').eq(1).removeClass('inactive');
+                  row.find('td').eq(2).removeClass('inactive');
+                  row.find('td').eq(4).removeClass('inactive');
+                  var suspendBtn = $('<button title="Suspend User" class="suspendDeveloper btn btn-md btn-flat bg-orange"><i class="fas fa-stop-circle"></i></button>')
+                    .attr('data-url', base_url + 'developers/suspend')
+                    .attr('data-id', id)
+                    .attr('data-name', name);
+                  t.replaceWith(suspendBtn);
+                  refreshDeveloperStats();
                 }else{
                   toastr["error"](response.message || "Failed to unsuspend developer.");
                 }
@@ -490,11 +523,29 @@ $(document).ready(function(){
             })
           }
         }
-    });   
+    });
     return false;
   })
 
+  // Recount the summary badges whenever rows change (suspend/unsuspend/delete)
+  var tbody = document.querySelector('#tbl1 tbody');
+  if(tbody && window.MutationObserver){
+    new MutationObserver(refreshDeveloperStats).observe(tbody, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  }
+
 })
+
+function refreshDeveloperStats(){
+  var $rows = $('#tbl1 tbody tr');
+  $('#count-total').text($rows.length);
+  $('#count-active').text($rows.find('.badge-success').length);
+  $('#count-suspended').text($rows.find('.badge-warning').length);
+}
 
 function generatePassword(passwordLength) {
   var numberChars = "0123456789";

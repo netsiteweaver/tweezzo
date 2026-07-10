@@ -53,7 +53,12 @@
 						<div class="col-xs-12">
 							<label for="userPhoto">Photo</label>
                             <input type="hidden" name="delete_image" value="0">
-							<input type="file" name="image" accept=".jpg,.png,.jpeg">
+							<input type="file" name="image" id="userPhoto" accept=".jpg,.png,.jpeg">
+						</div>
+					</div>
+					<div class="row" id="image-preview-wrapper" style="display:none;">
+						<div class="col-xs-12">
+							<img id="image-preview" style="clip-path: circle(); width:200px; margin-top:10px;" alt="Preview">
 						</div>
 					</div>
 

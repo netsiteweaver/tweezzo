@@ -173,7 +173,11 @@ class Developers_model extends CI_Model{
         $this->db->set("job_title",$userDetails['job_title']);
         $this->db->set("email",$userDetails['email']);
         $this->db->set("country_code",$userDetails['country_code']);
-        if(isset($userDetails['image'])) $this->db->set('photo',$userDetails['image']);
+        if(isset($userDetails['image'])){
+            $this->db->set('photo',$userDetails['image']);
+        }elseif(isset($userDetails['delete_image']) && $userDetails['delete_image'] == '1'){
+            $this->db->set('photo','');
+        }
 
         if(isset($userDetails['level']) && !empty($userDetails['level'])) $this->db->set("user_level",$userDetails['level']);
         if(isset($userDetails['pswd']) && !empty($userDetails['pswd'])) $this->db->set("password",md5($userDetails['pswd']));

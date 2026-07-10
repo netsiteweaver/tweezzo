@@ -2,6 +2,20 @@
 <a title='Add User' href="<?php echo base_url("developers/add/"); ?>"><button class="btn btn-flat btn-success"><i class="fa fa-plus"></i> Add</button></a>
 <?php endif; ?>
 
+<?php
+    $totalDevelopers     = (isset($developers) && !empty($developers)) ? count($developers) : 0;
+    $activeDevelopers    = 0;
+    $suspendedDevelopers = 0;
+    if($totalDevelopers > 0){
+        foreach($developers as $dev){
+            if($dev->status == '1'){
+                $activeDevelopers++;
+            }elseif($dev->status == '2'){
+                $suspendedDevelopers++;
+            }
+        }
+    }
+?>
 <div class="row"><!-- Normal Level -->
     <div class="col-xs-12 col-sm-12">
         <div class="box">
@@ -64,8 +78,16 @@
             </div>
             <?php else: ?>
             <p>No records</p>
-            <?php endif; ?>            
+            <?php endif; ?>
         </div>
+    </div>
+</div>
+
+<div class="row summary-badges extended-bottom-margin">
+    <div class="col-xs-12 text-center">
+        <span class="badge bg-blue" style="font-size:14px; padding:8px 12px; margin:0 4px;"><i class="fas fa-users"></i> Total: <span id="count-total"><?php echo $totalDevelopers; ?></span></span>
+        <span class="badge badge-success" style="font-size:14px; padding:8px 12px; margin:0 4px;"><i class="fas fa-check-circle"></i> Active: <span id="count-active"><?php echo $activeDevelopers; ?></span></span>
+        <span class="badge badge-warning" style="font-size:14px; padding:8px 12px; margin:0 4px;"><i class="fas fa-pause-circle"></i> Suspended: <span id="count-suspended"><?php echo $suspendedDevelopers; ?></span></span>
     </div>
 </div>
 
