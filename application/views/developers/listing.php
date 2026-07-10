@@ -2,6 +2,11 @@
 <a title='Add User' href="<?php echo base_url("developers/add/"); ?>"><button class="btn btn-flat btn-success"><i class="fa fa-plus"></i> Add</button></a>
 <?php endif; ?>
 
+<label class="pull-right" style="font-weight:normal; cursor:pointer; margin-top:6px;">
+    <input type="checkbox" id="hideSuspended" checked> Hide suspended
+</label>
+<div class="clearfix"></div>
+
 <?php
     $totalDevelopers     = (isset($developers) && !empty($developers)) ? count($developers) : 0;
     $activeDevelopers    = 0;

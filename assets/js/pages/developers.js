@@ -456,6 +456,7 @@ $(document).ready(function(){
                     .attr('data-name', name);
                   t.replaceWith(unsuspendBtn);
                   refreshDeveloperStats();
+                  applySuspendedFilter();
                 }else{
                   toastr["error"](response.message || "Failed to suspend developer.");
                 }
@@ -513,6 +514,7 @@ $(document).ready(function(){
                     .attr('data-name', name);
                   t.replaceWith(suspendBtn);
                   refreshDeveloperStats();
+                  applySuspendedFilter();
                 }else{
                   toastr["error"](response.message || "Failed to unsuspend developer.");
                 }
@@ -526,6 +528,10 @@ $(document).ready(function(){
     });
     return false;
   })
+
+  // Hide/show suspended developers based on the checkbox (checked = hide)
+  $('#hideSuspended').on('change', applySuspendedFilter);
+  applySuspendedFilter();
 
   // Recount the summary badges whenever rows change (suspend/unsuspend/delete)
   var tbody = document.querySelector('#tbl1 tbody');
@@ -545,6 +551,15 @@ function refreshDeveloperStats(){
   $('#count-total').text($rows.length);
   $('#count-active').text($rows.find('.badge-success').length);
   $('#count-suspended').text($rows.find('.badge-warning').length);
+}
+
+function applySuspendedFilter(){
+  var hide = $('#hideSuspended').is(':checked');
+  $('#tbl1 tbody tr').each(function(){
+    if($(this).find('.badge-warning').length){
+      $(this).toggle(!hide);
+    }
+  });
 }
 
 function generatePassword(passwordLength) {
