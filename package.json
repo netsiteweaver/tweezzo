@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "dev": "browser-sync start --config bs-config.js"
+  },
   "dependencies": {
     "alertifyjs": "^1.13.1",
     "bootstrap": "^3.4.1",
@@ -7,5 +10,8 @@
     "signature_pad": "^4.1.4",
     "sweetalert2": "^11.14.5",
     "toastr": "^2.1.4"
+  },
+  "devDependencies": {
+    "browser-sync": "^3.0.4"
   }
 }

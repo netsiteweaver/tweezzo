@@ -64,7 +64,7 @@
                                     <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
                                         <div
                                             style="font-family:Helvetica, Arial, sans-serif;font-size:18px;font-weight:400;line-height:24px;text-align:left;color:#434245;">
-                                            <img src="http://taskmanager.local/assets/images/task-lifecycle-2.png"
+                                            <img src="http://tweezzo.local/assets/images/task-lifecycle-2.png"
                                                 alt="" style="width:100%">
                                         </div>
                                     </td>
