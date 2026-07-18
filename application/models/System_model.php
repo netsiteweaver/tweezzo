@@ -189,8 +189,27 @@ class System_model extends CI_Model {
             }
         }
         $postedData['smtp_settings'] = json_encode($postedData['smtp_settings']);
+
+
         foreach ($postedData as $key => $data) {
             $this->setParam($key, $data);
+        }
+    }
+
+    /**
+     * Saves the stage checkboxes from Settings > Reminders, one JSON list per reminder cron.
+     * The form posts a blank placeholder value per list, so an all-unchecked state still
+     * arrives as an empty list rather than a missing key.
+     *
+     * @param array $keys param names to save, e.g. ['overdue_reminder_stages']
+     */
+    public function updateReminderStages($keys)
+    {
+        $postedData = $this->input->post();
+        foreach($keys as $key){
+            if(!isset($postedData[$key])) continue;
+            $stages = array_values(array_filter((array)$postedData[$key], 'strlen'));
+            $this->setParam($key, json_encode($stages));
         }
     }
 

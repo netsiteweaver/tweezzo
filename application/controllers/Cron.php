@@ -121,10 +121,18 @@ class Cron extends CI_Controller {
     /**
      * The single source of truth for the "tasks due in N days" query.
      * Used by both getDueTasks() (which sends) and dryRunDueTasks() (which only reports).
+     *
+     * $stagesParam selects which configured stage list applies — the "due today" run is
+     * scoped separately from the 3/2/1-day-ahead run.
      */
-    private function dueTasksQuery($days)
+    private function dueTasksQuery($days, $stagesParam = null)
     {
         $days = (int)$days;
+        if($stagesParam === null){
+            $stagesParam = ($days === 0) ? "due_today_reminder_stages" : "due_reminder_stages";
+        }
+        $stageList = $this->stageInList($stagesParam);
+
         return "select t.uuid, t.id, t.task_number, t.name, t.stage, t.source, t.description, t.section, t.due_date, t.estimated_hours, s.name as sprint_name, p.name as project_name, c.company_name, u.name developer_name, u.email as developer_email
                 from tasks t
                 left join sprints s on s.id = t.sprint_id
@@ -133,7 +141,7 @@ class Cron extends CI_Controller {
                 left join customers c on c.customer_id = p.customer_id
                 left join users u on u.id = tu.user_id
                 where due_date = CURDATE() + INTERVAL $days DAY
-                and t.stage not in('completed','on_hold')
+                and t.stage in({$stageList})
                 and u.email IS NOT NULL
                 and u.status = '1'
                 and u.user_type = 'developer'
@@ -226,11 +234,41 @@ class Cron extends CI_Controller {
     }
 
     /**
+     * Stages a reminder cron covers, configured in Settings > System Params > Reminders.
+     * Each reminder has its own param: 'overdue_reminder_stages', 'due_reminder_stages'
+     * and 'due_today_reminder_stages'. Falls back to the historical default — everything
+     * except 'completed' and 'on_hold' — when the param is missing or unreadable.
+     */
+    private function reminderStages($key)
+    {
+        $this->load->model("system_model");
+        $stages = $this->system_model->getParam($key, true);
+        if(!is_array($stages)){
+            return ['new','in_progress','testing','staging','validated','stopped'];
+        }
+        return array_values(array_filter(array_map('strval', $stages), 'strlen'));
+    }
+
+    /**
+     * Renders a configured stage list as an escaped SQL IN() body. An empty selection
+     * means nobody should be reminded; "''" keeps the query shape valid and matches nothing.
+     */
+    private function stageInList($key)
+    {
+        $stages = $this->reminderStages($key);
+        return empty($stages)
+            ? "''"
+            : implode(",", array_map([$this->db, 'escape'], $stages));
+    }
+
+    /**
      * Single source of truth for the overdue-tasks query.
      * Used by sendOverdueTaskReminders() (sends) and dryRunOverdueTasks() (reports only).
      */
     private function overdueTasksQuery()
     {
+        $stageList = $this->stageInList("overdue_reminder_stages");
+
         return "select t.uuid, t.id, t.task_number, t.name, t.stage, t.source, t.description, t.section, t.due_date, t.estimated_hours,
                 DATEDIFF(CURDATE(), t.due_date) as days_overdue,
                 s.name as sprint_name, p.name as project_name, c.company_name, c.customer_id, p.id as project_id,
@@ -242,7 +280,7 @@ class Cron extends CI_Controller {
                 left join customers c on c.customer_id = p.customer_id
                 left join users u on u.id = tu.user_id
                 where t.due_date < CURDATE()
-                and t.stage not in('completed','on_hold')
+                and t.stage in({$stageList})
                 and u.email IS NOT NULL
                 and u.status = '1'
                 and u.user_type = 'developer'

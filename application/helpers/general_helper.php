@@ -1198,3 +1198,38 @@ function company_address_line($company = null) {
 
     return implode(', ', $parts);
 }
+/**
+ * Determine whether a menu entry points at the page currently being viewed.
+ *
+ * Controller names are compared with dashes stripped because the active
+ * controller is normalised that way by the controllers themselves, while the
+ * menu table stores the raw name. An empty action is treated as "index" to
+ * match CodeIgniter's default method.
+ *
+ * @param string $controller current controller
+ * @param string $method current method
+ * @param object $item menu entry
+ * @param bool $controller_only match on the controller alone, ignoring the action
+ * @return bool
+ */
+function is_active_menu($controller, $method, $item, $controller_only = FALSE) {
+    $normalise = function ($value) {
+        return strtolower(str_replace('-', '', trim((string) $value)));
+    };
+
+    if ($normalise($controller) !== $normalise(isset($item->controller) ? $item->controller : '')) {
+        return FALSE;
+    }
+
+    if ($controller_only) {
+        return TRUE;
+    }
+
+    $item_action = $normalise(isset($item->action) ? $item->action : '');
+    $item_action = ($item_action === '') ? 'index' : $item_action;
+
+    $current_action = $normalise($method);
+    $current_action = ($current_action === '') ? 'index' : $current_action;
+
+    return $item_action === $current_action;
+}

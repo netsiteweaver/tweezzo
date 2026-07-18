@@ -40,8 +40,20 @@
           <?php if( (!is_null($menu_items['main'])) && (count($menu_items['main'])>0) ):?>
           <?php foreach($menu_items['main'] as $item): ?>
             <?php if(isset($menu_items['sub'][$item->id])): ?>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
+            <?php
+              // Expand the parent branch when one of its children is the current page.
+              // Actions with no menu entry of their own (edit, view, ...) still open
+              // the branch they belong to, but leave every child unhighlighted.
+              $branch_open = false;
+              foreach($menu_items['sub'][$item->id] as $sub_item):
+                if(is_active_menu($controller,$method,$sub_item,TRUE)):
+                  $branch_open = true;
+                  break;
+                endif;
+              endforeach;
+            ?>
+            <li class="nav-item<?php echo $branch_open?' menu-open':'';?>">
+              <a href="#" class="nav-link<?php echo $branch_open?' active':'';?>">
                 <i style='color:<?php echo $item->color;?>' class="nav-icon fa <?php echo $item->class; ?>"></i>
                 <p>
                   <?php echo $item->nom; ?>
@@ -50,8 +62,8 @@
               </a>
               <ul class="nav nav-treeview">
                 <?php foreach($menu_items['sub'][$item->id] as $sub_item): ?>
-                <li class="nav-item <?php echo (($controller==$sub_item->controller)&&($method==$sub_item->action))?"class='active'":"";?>">
-                  <a href="<?php echo base_url($sub_item->controller.'/'.$sub_item->action); ?>" class="nav-link">
+                <li class="nav-item">
+                  <a href="<?php echo base_url($sub_item->controller.'/'.$sub_item->action); ?>" class="nav-link<?php echo is_active_menu($controller,$method,$sub_item)?' active':'';?>">
                     <i class="fa <?php echo $sub_item->class; ?>"></i>
                     <p><?php echo $sub_item->nom; ?></p>
                   </a>
@@ -61,12 +73,12 @@
             </li>
             <?php else:?>
               <li class="nav-item">
-                <a href="<?php echo base_url($item->controller.'/'.$item->action); ?>" class="nav-link">
+                <a href="<?php echo base_url($item->controller.'/'.$item->action); ?>" class="nav-link<?php echo is_active_menu($controller,$method,$item)?' active':'';?>">
                   <i style='color:<?php echo $item->color;?>' class="nav-icon fas <?php echo $item->class; ?>"></i>
                   <p><?php echo $item->nom; ?></p>
                 </a>
               </li>
-            <?php endif;?>  
+            <?php endif;?>
           <?php endforeach;?>
           <?php endif;?>
           <li class="nav-header"><hr></li>

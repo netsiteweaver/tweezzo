@@ -29,6 +29,8 @@ class Settings extends MY_Controller {
         }
 
         $this->data['send_enquiries_to'] = $this->system_model->getParam('send_enquiries_to',true);
+
+
         $this->data['smtp_settings'] = $this->system_model->getParam('smtp_settings',true);
         $this->load->model('users_model');
         $this->data['admins'] = $this->users_model->getAdmins();
@@ -56,6 +58,75 @@ class Settings extends MY_Controller {
             echo json_encode(array("result"=>false));
         }
         exit;
+    }
+
+    /**
+     * Stage scope for each task reminder cron. One tab per reminder, since the three
+     * crons (overdue / due soon / due today) are configured independently.
+     */
+    public function reminders()
+    {
+        //Access Control
+        if(!isAuthorised(get_class(),"reminders")) return false;
+
+        $this->data['page_title'] = "Reminders";
+        $this->data['all_stages'] = $this->reminderStages();
+        $this->data['reminders'] = $this->reminderSettings();
+
+        $this->mybreadcrumb->add('Reminders', base_url('settings/reminders'));
+        $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
+
+        $this->data["content"]=$this->load->view("/settings/reminders",$this->data,true);
+        $this->load->view("/layouts/default",$this->data);
+    }
+
+    public function updatereminders()
+    {
+        //Access Control
+        if(!isAuthorised("settings","reminders")) return false;
+
+        $this->system_model->updateReminderStages(array_keys($this->reminderSettings()));
+
+        flashSuccess("Reminder settings have been updated");
+        redirect(base_url('settings/reminders'));
+    }
+
+    /**
+     * The task stages a reminder can be scoped to.
+     */
+    private function reminderStages()
+    {
+        return ['new','in_progress','testing','staging','validated','completed','on_hold','stopped'];
+    }
+
+    /**
+     * The reminder crons that can be scoped, keyed by the param each is stored in,
+     * with the stages currently selected for each.
+     */
+    private function reminderSettings()
+    {
+        $reminders = [
+            'overdue_reminder_stages' => [
+                'label' => 'Overdue Tasks',
+                'cron'  => 'cron/sendOverdueTaskReminders',
+                'help'  => 'Sent for tasks already past their due date.',
+            ],
+            'due_reminder_stages' => [
+                'label' => 'Due Soon',
+                'cron'  => 'cron/sendDueTaskReminders',
+                'help'  => 'Sent 3, 2 and 1 days before a task is due.',
+            ],
+            'due_today_reminder_stages' => [
+                'label' => 'Due Today',
+                'cron'  => 'cron/sendDueTodayReminders',
+                'help'  => 'Sent on the morning a task is due.',
+            ],
+        ];
+        foreach($reminders as $key => $meta){
+            $stages = $this->system_model->getParam($key,true);
+            $reminders[$key]['selected'] = is_array($stages) ? $stages : [];
+        }
+        return $reminders;
     }
 
     public function updateparams()
