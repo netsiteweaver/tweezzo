@@ -49,9 +49,21 @@ if ($all_sprints_complete) {
     }
 }
 ?>
+<?php $this->load->view("portal/customers/shared/intro_block", ['intro' => [
+    'key'    => 'sprint',
+    'icon'   => 'bi-trophy',
+    'image'  => 'sprints.png',
+    'title'  => 'What is a sprint?',
+    'lead'   => 'A sprint is a fixed block of work inside a project. Rather than delivering everything at once, we group tasks into sprints and deliver them together, so you can see steady progress.',
+    'points' => [
+        'The <strong>% complete</strong> column shows how far along a sprint is &mdash; green means finished.',
+        'Use <strong>View Tasks</strong> to see exactly what is included in a sprint.',
+        'A sprint is finished when every task inside it has been completed.',
+    ],
+]]);?>
 <?php if ($all_sprints_complete):?>
-<div class="row mb-3">
-    <div class="col-md-6 progressive-image" style='position:relative;'>
+<div class="row justify-content-center mb-3">
+    <div class="col-lg-6 col-md-8 progressive-image" style='position:relative;'>
         <img style='' src="./assets/images/tasks complete - 600x188px.jpg" class="placeholder" alt="loading image">
         <img style='' src="./assets/images/tasks complete - 600x188px.png" class="full-res d-none" alt="image loaded">
         <span style='-webkit-text-stroke-width: 1px;-webkit-text-stroke-color: #ccc; position:absolute; top:80px; left:28%; font-weight:bold; font-size:36px; text-shadow: 1px 1px 2px black;color:#fff;z-index:999;'>Wow! All Tasks Completed! </span>
@@ -59,8 +71,8 @@ if ($all_sprints_complete) {
 </div>
     
 <?php endif;?>
-<div class="row table-responsive">
-    <div class="col-md-6">
+<div class="row justify-content-center table-responsive">
+    <div class="col-lg-10 col-md-11">
         <table class="table table-bordered">
             <thead>
                 <tr class='text-center'>

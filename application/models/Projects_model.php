@@ -77,6 +77,8 @@ class Projects_model extends CI_Model{
         $this->db->set('start_date',(!empty($data['start_date']))?$data['start_date']:null);
         $this->db->set('end_date',(!empty($data['end_date']))?$data['end_date']:null);
         $this->db->set('customer_id',$data['customer_id']);
+        $this->db->set('staging_url',$this->cleanUrl(isset($data['staging_url']) ? $data['staging_url'] : ''));
+        $this->db->set('production_url',$this->cleanUrl(isset($data['production_url']) ? $data['production_url'] : ''));
 
         if(empty($data['uuid'])){
             $uuid = gen_uuid();
@@ -124,6 +126,28 @@ class Projects_model extends CI_Model{
         }
         return array('result'=>true,'data'=>$data);
 
+    }
+
+    /**
+     * Normalises a project environment URL for storage. These are rendered as links in the
+     * customer portal, so only http(s) is accepted — anything else (javascript:, data:, …)
+     * is discarded rather than stored. A bare host like "app.example.com" gets https://.
+     *
+     * @return string|null null when empty or rejected
+     */
+    private function cleanUrl($url)
+    {
+        $url = trim((string)$url);
+        if($url === '') return null;
+
+        if(!preg_match('~^[a-z][a-z0-9+.-]*://~i', $url)){
+            $url = 'https://' . $url;
+        }
+        $scheme = strtolower((string)parse_url($url, PHP_URL_SCHEME));
+        if(!in_array($scheme, ['http','https'], true)) return null;
+        if(!filter_var($url, FILTER_VALIDATE_URL)) return null;
+
+        return substr($url, 0, 255);
     }
 
     public function notes($data)

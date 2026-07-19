@@ -32,6 +32,29 @@
                         <li><a class="dropdown-item <?php echo ($this->uri->segment(3)=='validationGuide')?'active':'';?>" href="portal/customers/validationGuide"><i class="bi bi-journal-check me-2"></i>Validation guide</a></li>
                     </ul>
                 </li>
+                <?php if(!empty($project_environments)):?>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="environmentsMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-globe2 me-2"></i>Environments
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="environmentsMenu">
+                        <?php $multiple = (count($project_environments) > 1); $firstProject = true;?>
+                        <?php foreach($project_environments as $env):?>
+                            <?php if($multiple):?>
+                                <?php if(!$firstProject):?><li><hr class="dropdown-divider"></li><?php endif;?>
+                                <li><h6 class="dropdown-header"><?php echo htmlspecialchars($env->name);?></h6></li>
+                            <?php endif;?>
+                            <?php if(!empty($env->production_url)):?>
+                                <li><a class="dropdown-item" href="<?php echo htmlspecialchars($env->production_url);?>" target="_blank" rel="noopener noreferrer"><i class="bi bi-rocket-takeoff me-2"></i>Production<i class="bi bi-box-arrow-up-right ms-2 small text-muted"></i></a></li>
+                            <?php endif;?>
+                            <?php if(!empty($env->staging_url)):?>
+                                <li><a class="dropdown-item" href="<?php echo htmlspecialchars($env->staging_url);?>" target="_blank" rel="noopener noreferrer"><i class="bi bi-cone-striped me-2"></i>Staging<i class="bi bi-box-arrow-up-right ms-2 small text-muted"></i></a></li>
+                            <?php endif;?>
+                            <?php $firstProject = false;?>
+                        <?php endforeach;?>
+                    </ul>
+                </li>
+                <?php endif;?>
                 <!-- <li class="nav-item">
                     <a class="nav-link <?php //echo ($this->uri->segment(3)=='notes')?'active':'';?>" href="portal/customers/notes"><div class="bg-icon bg-chat"></div>Notes</a>
                 </li> -->

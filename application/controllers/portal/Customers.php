@@ -46,6 +46,9 @@ class Customers extends CI_Controller
                 redirect('portal/customers/signin');
             }
 
+            // Environment links for the top bar; shown on every portal page.
+            $this->data['project_environments'] = $this->Customersportal_model->getProjectEnvironments($_SESSION['customer_access_id']);
+
             $adminRow = $this->db->select("admin")->from("customer_access")->where(array(
                 "status"        =>  "1",
                 "id"            =>  $_SESSION['customer_access_id']

@@ -82,6 +82,34 @@ class Customersportal_model extends CI_Model
                         ->result();
     }
 
+    /**
+     * Projects for this login that have at least one environment URL recorded, for the
+     * "Environments" dropdown in the portal top bar. Same visibility rules as getProjects().
+     */
+    public function getProjectEnvironments($customer_access_id)
+    {
+        $ca = $this->db->select('customer_id')
+            ->from('customer_access')
+            ->where('id', (int) $customer_access_id)
+            ->get()->row();
+        if (empty($ca)) {
+            return [];
+        }
+
+        return $this->db->select("p.id, p.name, p.staging_url, p.production_url")
+                        ->from("projects p")
+                        ->join("customers c","c.customer_id = p.customer_id","left")
+                        ->where(["p.status"=>'1',"p.active"=>1,"p.customer_id"=>(int)$ca->customer_id])
+                        ->where(["c.status"=>1,"c.active"=>1])
+                        ->group_start()
+                            ->where("COALESCE(p.staging_url,'') <> ''", null, false)
+                            ->or_where("COALESCE(p.production_url,'') <> ''", null, false)
+                        ->group_end()
+                        ->order_by("p.name")
+                        ->get()
+                        ->result();
+    }
+
     public function getSprints($project_id = '')
     {
         $ca = $this->db->select('customer_id')

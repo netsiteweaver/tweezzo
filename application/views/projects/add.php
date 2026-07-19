@@ -42,6 +42,20 @@
 							</div>
 						</div>
 					</div>
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="">Staging URL</label>
+								<input type="url" class="form-control" name="staging_url" placeholder="https://staging.example.com" value="">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="">Production URL</label>
+								<input type="url" class="form-control" name="production_url" placeholder="https://www.example.com" value="">
+							</div>
+						</div>
+					</div>
 					<div class="form-group">
 						<label for="">Customer</label>
 						<select class="form-control required" name="customer_id" required>

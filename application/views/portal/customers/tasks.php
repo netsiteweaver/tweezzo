@@ -4,6 +4,18 @@
     .task-ref-cell .copy-task-ref:hover { opacity: 1; }
     .task-ref-cell .copy-task-ref.copied { opacity: 1; color: #28a745; }
 </style>
+<?php $this->load->view("portal/customers/shared/intro_block", ['intro' => [
+    'key'    => 'task',
+    'icon'   => 'bi-list-check',
+    'image'  => 'tasks.resized.png',
+    'title'  => 'What is a task?',
+    'lead'   => 'A task is a single piece of work &mdash; one feature, one fix, one change. Tasks are the level at which work actually gets done, and each one moves through stages until it is completed.',
+    'points' => [
+        'The <strong>stage</strong> shows where a task has reached, from new through to completed.',
+        'When a task reaches <strong>staging</strong> it is ready for you to check &mdash; see the <strong>Validation guide</strong> under Work.',
+        'Use the filters below to narrow down by project, sprint or stage.',
+    ],
+]]);?>
 <form method="get" id="taskFilterForm">
 <div class="row mb-5">
     <div class="col-md-2">
