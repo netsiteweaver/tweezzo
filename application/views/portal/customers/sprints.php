@@ -52,7 +52,7 @@ if ($all_sprints_complete) {
 <?php $this->load->view("portal/customers/shared/intro_block", ['intro' => [
     'key'    => 'sprint',
     'icon'   => 'bi-trophy',
-    'image'  => 'sprints.png',
+    'image'  => 'sprints-bw.jpg',
     'title'  => 'What is a sprint?',
     'lead'   => 'A sprint is a fixed block of work inside a project. Rather than delivering everything at once, we group tasks into sprints and deliver them together, so you can see steady progress.',
     'points' => [

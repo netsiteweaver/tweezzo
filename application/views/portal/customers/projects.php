@@ -1,7 +1,7 @@
 <?php $this->load->view("portal/customers/shared/intro_block", ['intro' => [
     'key'    => 'project',
     'icon'   => 'bi-folder2-open',
-    'image'  => 'projects.png',
+    'image'  => 'projects-bw.jpg',
     'title'  => 'What is a project?',
     'lead'   => 'A project is the container for one body of work we are doing for you &mdash; a website, an application, or a system. Everything we build for you lives inside a project.',
     'points' => [
