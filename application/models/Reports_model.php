@@ -157,6 +157,13 @@ class Reports_model extends CI_Model
             return ['result' => false, 'reason' => 'Invalid report type'];
         }
 
+        if (!$this->db->table_exists('saved_reports') || !$this->db->table_exists('saved_report_lines')) {
+            return ['result' => false, 'reason' => 'Saved reports tables are missing. Please run database migrations.'];
+        }
+        if (!$this->db->field_exists('report_code', 'saved_reports')) {
+            return ['result' => false, 'reason' => 'Saved reports schema is incomplete (report_code). Please run database migrations.'];
+        }
+
         $uuid = gen_uuid();
         $reportCode = $this->generateReportCode($reportType, $header, $uuid);
 
@@ -213,7 +220,9 @@ class Reports_model extends CI_Model
 
         $this->db->trans_complete();
         if (!$this->db->trans_status()) {
-            return ['result' => false, 'reason' => 'Failed to save report'];
+            $error = $this->db->error();
+            $detail = !empty($error['message']) ? $error['message'] : 'Failed to save report';
+            return ['result' => false, 'reason' => $detail];
         }
 
         return ['result' => true, 'uuid' => $uuid, 'id' => $reportId, 'report_code' => $reportCode];
@@ -246,21 +255,8 @@ class Reports_model extends CI_Model
             number_format((float) $header['total_amount'], 2, '.', ''),
             $uuid,
         ]);
-        $hash = strtoupper(substr(sha1($payload), 0, 8));
-        $code = 'RPT-' . $type . '-' . $hash;
-
-        // Extremely unlikely collision; append nibble if needed
-        $n = 0;
-        $candidate = $code;
-        while ($this->db->select('id')->from('saved_reports')->where('report_code', $candidate)->get()->row()) {
-            $n++;
-            $candidate = $code . strtoupper(dechex($n % 16));
-            if ($n > 32) {
-                $candidate = 'RPT-' . $type . '-' . strtoupper(substr(sha1($payload . '|' . $n), 0, 8));
-                break;
-            }
-        }
-        return $candidate;
+        // UUID is part of the payload, so codes are unique without a DB round-trip.
+        return 'RPT-' . $type . '-' . strtoupper(substr(sha1($payload), 0, 8));
     }
 
     /**
