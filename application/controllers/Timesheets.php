@@ -14,6 +14,8 @@ class Timesheets extends MY_Controller {
         $this->load->model("Timesheets_model");
         $this->load->model("accesscontrol_model");
         $this->data['perms']['listing'] = $this->accesscontrol_model->authorised("timesheets", "listing");
+        $this->data['perms']['edit'] = $this->accesscontrol_model->authorised("timesheets", "edit");
+        $this->data['perms']['delete'] = $this->accesscontrol_model->authorised("timesheets", "delete");
     }
 
     public function index()
@@ -53,6 +55,9 @@ class Timesheets extends MY_Controller {
 
         $this->data['filters'] = $filters;
         $this->data['rows'] = $this->Timesheets_model->adminFetch($filters);
+        $this->data['listing_qs'] = http_build_query(array_filter($filters, function ($v) {
+            return $v !== null && $v !== '';
+        }));
 
         $this->load->model('Developers_model');
         $this->data['developers'] = $this->Developers_model->lookup();
@@ -82,6 +87,103 @@ class Timesheets extends MY_Controller {
         }
 
         $this->data["content"] = $this->load->view("/timesheets/listing", $this->data, true);
+        $this->load->view("/layouts/default", $this->data);
+    }
+
+    public function edit()
+    {
+        if (!isAuthorised(get_class(), "edit")) {
+            return false;
+        }
+
+        $id = (int) $this->uri->segment(3);
+        $timesheet = $this->Timesheets_model->adminGetById($id);
+        if (empty($timesheet)) {
+            flashDanger("Timesheet entry not found");
+            redirect(base_url('timesheets/listing'));
+            return;
+        }
+
+        $returnQs = $this->input->get('return');
+        if ($returnQs === null) {
+            $returnQs = '';
+        }
+
+        if ($this->input->post()) {
+            $result = $this->Timesheets_model->adminUpdate($id, [
+                'start_time'  => $this->input->post('start_time'),
+                'finish_time' => $this->input->post('finish_time'),
+                'notes'       => $this->input->post('notes'),
+            ]);
+            if (!$result['result']) {
+                flashDanger(!empty($result['reason']) ? $result['reason'] : 'Could not update timesheet');
+                redirect(base_url('timesheets/edit/' . $id . ($returnQs !== '' ? '?return=' . rawurlencode($returnQs) : '')));
+                return;
+            }
+            flashSuccess("Timesheet entry updated");
+            $redirect = base_url('timesheets/listing');
+            if ($returnQs !== '') {
+                $redirect .= '?' . $returnQs;
+            }
+            redirect($redirect);
+            return;
+        }
+
+        $this->mybreadcrumb->add('Timesheets', base_url('timesheets/listing'));
+        $this->mybreadcrumb->add('Edit', base_url('timesheets/edit/' . $id));
+        $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
+        $this->data['page_title'] = "Edit timesheet";
+        $this->data['timesheet'] = $timesheet;
+        $this->data['return_qs'] = $returnQs;
+
+        $this->loadScript('assets/js/pages/timesheets_edit.js');
+        $this->data["content"] = $this->load->view("/timesheets/edit", $this->data, true);
+        $this->load->view("/layouts/default", $this->data);
+    }
+
+    public function delete()
+    {
+        if (!isAuthorised(get_class(), "delete")) {
+            return false;
+        }
+
+        $id = (int) $this->uri->segment(3);
+        $confirm = $this->uri->segment(4);
+        $returnQs = $this->input->get('return');
+        if ($returnQs === null) {
+            $returnQs = '';
+        }
+
+        $listingUrl = base_url('timesheets/listing');
+        if ($returnQs !== '') {
+            $listingUrl .= '?' . $returnQs;
+        }
+
+        if ($confirm === 'confirm') {
+            if ($this->Timesheets_model->adminDelete($id)) {
+                flashSuccess("Timesheet entry deleted");
+            } else {
+                flashDanger("Timesheet entry not found");
+            }
+            redirect($listingUrl);
+            return;
+        }
+
+        $timesheet = $this->Timesheets_model->adminGetById($id);
+        if (empty($timesheet)) {
+            flashDanger("Timesheet entry not found");
+            redirect($listingUrl);
+            return;
+        }
+
+        $this->mybreadcrumb->add('Timesheets', base_url('timesheets/listing'));
+        $this->mybreadcrumb->add('Delete', base_url('timesheets/delete/' . $id));
+        $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
+        $this->data['page_title'] = "Delete timesheet";
+        $this->data['timesheet'] = $timesheet;
+        $this->data['return_qs'] = $returnQs;
+
+        $this->data["content"] = $this->load->view("/timesheets/delete", $this->data, true);
         $this->load->view("/layouts/default", $this->data);
     }
 }

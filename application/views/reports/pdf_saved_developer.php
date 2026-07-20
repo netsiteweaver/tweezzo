@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Developer Timesheet Report</title>
+    <?php $this->load->view('reports/partials/doc_branding_styles', ['doc_is_pdf' => true]); ?>
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #222; }
         h1 { font-size: 18px; margin: 0 0 8px 0; }
@@ -16,6 +17,8 @@
     </style>
 </head>
 <body>
+    <?php $this->load->view('reports/partials/doc_header', ['doc_is_pdf' => true]); ?>
+
     <h1><?php echo htmlspecialchars(!empty($report->title) ? $report->title : 'Developer Timesheet Report'); ?></h1>
     <div class="meta">
         <?php if (!empty($report->report_code)): ?>
@@ -65,5 +68,7 @@
             </tr>
         </tfoot>
     </table>
+
+    <?php $this->load->view('reports/partials/doc_footer', ['doc_is_pdf' => true]); ?>
 </body>
 </html>

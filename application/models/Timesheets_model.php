@@ -247,4 +247,125 @@ class Timesheets_model extends CI_Model
             'to'      => '2099-12-31',
         ]);
     }
+
+    /**
+     * Admin fetch of a single completed timesheet (no portal developer restriction).
+     *
+     * @param int $id
+     * @return object|null
+     */
+    public function adminGetById($id)
+    {
+        $id = (int) $id;
+        if ($id <= 0) {
+            return null;
+        }
+
+        $query = "SELECT
+                        c.customer_id customerId,
+                        s.id sprintId,
+                        p.id projectId,
+                        t2.id taskId,
+                        t2.uuid taskUuid,
+                        t2.name taskName,
+                        t2.task_number taskNumber,
+                        t2.section taskSection,
+                        s.name sprintName,
+                        s.code sprintCode,
+                        p.name projectName,
+                        p.code projectCode,
+                        c.company_name customerName,
+                        u.id developerId,
+                        u.name developerName,
+                        u.email developerEmail,
+                        t.*
+                    FROM timesheet t
+                    JOIN tasks t2 ON t2.id = t.task_id
+                    JOIN sprints s ON s.id = t2.sprint_id
+                    JOIN projects p ON p.id = s.project_id
+                    JOIN customers c ON c.customer_id = p.customer_id
+                    JOIN users u ON u.id = t.developer_id
+                    WHERE t.status = 1
+                    AND t.id = {$id}";
+
+        $row = $this->db->query($query)->row();
+        if (empty($row)) {
+            return null;
+        }
+
+        if (!function_exists('task_ref')) {
+            get_instance()->load->helper('general');
+        }
+        $tn = isset($row->taskNumber) ? $row->taskNumber : '';
+        $row->taskRef = $tn !== ''
+            ? task_ref(isset($row->projectCode) ? $row->projectCode : null, isset($row->sprintCode) ? $row->sprintCode : null, $tn)
+            : '';
+
+        return $row;
+    }
+
+    /**
+     * Soft-delete a timesheet entry (admin — any developer).
+     *
+     * @param int $id
+     * @return bool
+     */
+    public function adminDelete($id)
+    {
+        $id = (int) $id;
+        if ($id <= 0) {
+            return false;
+        }
+        $this->db->where(['id' => $id, 'status' => 1])
+            ->set('status', '0')
+            ->update('timesheet');
+        return $this->db->affected_rows() > 0;
+    }
+
+    /**
+     * Update a completed timesheet entry (admin).
+     *
+     * @param int   $id
+     * @param array $data start_time, finish_time, notes
+     * @return array{result:bool, reason?:string}
+     */
+    public function adminUpdate($id, $data)
+    {
+        $id = (int) $id;
+        $entry = $this->adminGetById($id);
+        if (empty($entry)) {
+            return ['result' => false, 'reason' => 'Timesheet entry not found'];
+        }
+
+        $start = isset($data['start_time']) ? trim((string) $data['start_time']) : '';
+        $finish = isset($data['finish_time']) ? trim((string) $data['finish_time']) : '';
+        $notes = isset($data['notes']) ? (string) $data['notes'] : '';
+
+        if ($start === '' || $finish === '') {
+            return ['result' => false, 'reason' => 'Start and finish time are required'];
+        }
+
+        $startTs = strtotime($start);
+        $finishTs = strtotime($finish);
+        if ($startTs === false || $finishTs === false) {
+            return ['result' => false, 'reason' => 'Invalid start or finish time'];
+        }
+        if ($finishTs <= $startTs) {
+            return ['result' => false, 'reason' => 'Finish time must be after start time'];
+        }
+
+        $durationMinutes = (int) floor(($finishTs - $startTs) / 60);
+        if ($durationMinutes < 1) {
+            return ['result' => false, 'reason' => 'Duration must be at least one minute'];
+        }
+
+        $this->db->where('id', $id)->update('timesheet', [
+            'start_time'       => date('Y-m-d H:i:s', $startTs),
+            'finish_time'      => date('Y-m-d H:i:s', $finishTs),
+            'duration_minutes' => $durationMinutes,
+            'notes'            => $notes,
+        ]);
+
+        return ['result' => true];
+    }
 }

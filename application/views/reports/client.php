@@ -70,6 +70,7 @@ $rateVal = ($rate !== null) ? $rate : '';
             <button type="submit" class="btn btn-info"><i class="fa fa-check"></i> Generate</button>
             <a href="<?php echo base_url('reports/client'); ?>" class="btn btn-warning"><i class="fa fa-undo"></i></a>
             <?php if (!empty($generated)): ?>
+            <div class="btn btn-default print"><i class="fa fa-print"></i> Print</div>
             <a class="btn btn-danger" href="<?php echo base_url('reports/client?' . http_build_query(array_merge($filters, ['rate' => $rate, 'currency' => $currency, 'output' => 'pdf']))); ?>">
                 <i class="fa fa-file-pdf"></i> Download PDF
             </a>
@@ -102,61 +103,79 @@ $rateVal = ($rate !== null) ? $rate : '';
 <?php endif; ?>
 
 <?php if (empty($generated)): ?>
-<div class="alert alert-secondary">Select a customer, date range, and hourly rate, then click Generate.</div>
+<div class="alert alert-secondary no-print">Select a customer, date range, and hourly rate, then click Generate.</div>
 <?php else: ?>
-<div class="mb-3">
-    <strong>Customer:</strong> <?php echo htmlspecialchars($subject ? $subject->company_name : ''); ?><br>
-    <strong>Period:</strong> <?php echo htmlspecialchars($from); ?> → <?php echo htmlspecialchars($to); ?><br>
-    <strong>Rate:</strong> <?php echo htmlspecialchars($currency . ' ' . number_format((float) $rate, 2)); ?> / hour
-    <?php if ($billable_only): ?><br><strong>Filter:</strong> Billable tasks only<?php endif; ?>
-</div>
+<div class="report-print-area">
+    <div class="print-only">
+        <?php $this->load->view('reports/partials/doc_header', ['doc_is_pdf' => false]); ?>
+    </div>
+    <div class="print-only report-print-header mb-3">
+        <h2 class="mb-2">Client Timesheet Report</h2>
+        <div><strong>Customer:</strong> <?php echo htmlspecialchars($subject ? $subject->company_name : ''); ?></div>
+        <div><strong>Period:</strong> <?php echo htmlspecialchars($from); ?> to <?php echo htmlspecialchars($to); ?></div>
+        <div><strong>Rate:</strong> <?php echo htmlspecialchars($currency); ?> <?php echo number_format((float) $rate, 2); ?> / hour</div>
+        <?php if ($billable_only): ?>
+        <div><strong>Filter:</strong> Billable tasks only</div>
+        <?php endif; ?>
+        <div><strong>Generated:</strong> <?php echo date('Y-m-d H:i'); ?></div>
+    </div>
 
-<div class="box">
-    <div class="box-body table-responsive no-padding">
-        <table class="table table-bordered table-hover">
-            <thead>
-                <tr class="text-center text-uppercase">
-                    <th>Code</th>
-                    <th>Task</th>
-                    <th>Project</th>
-                    <th>Sprint</th>
-                    <th>Work type</th>
-                    <th>Entries</th>
-                    <th>Hours</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($rows)): ?>
-                <tr><td colspan="8" class="text-center text-muted">No timesheet hours for this period.</td></tr>
-                <?php else: ?>
-                <?php foreach ($rows as $row):
-                    $amt = $this->Reports_model->amount($row->totalHours, $rate);
-                ?>
-                <tr>
-                    <td><?php echo htmlspecialchars(!empty($row->taskRef) ? $row->taskRef : $row->taskNumber); ?></td>
-                    <td><?php echo htmlspecialchars($row->taskName); ?></td>
-                    <td><?php echo htmlspecialchars($row->projectName); ?></td>
-                    <td><?php echo htmlspecialchars($row->sprintName); ?></td>
-                    <td class="text-center"><?php echo htmlspecialchars(!empty($row->workType) ? $row->workType : '—'); ?></td>
-                    <td class="text-center"><?php echo (int) $row->entryCount; ?></td>
-                    <td class="text-center"><?php echo number_format($row->totalHours, 2); ?></td>
-                    <td class="text-right"><?php echo htmlspecialchars($currency); ?> <?php echo number_format($amt, 2); ?></td>
-                </tr>
-                <?php endforeach; ?>
+    <div class="mb-3 no-print">
+        <strong>Customer:</strong> <?php echo htmlspecialchars($subject ? $subject->company_name : ''); ?><br>
+        <strong>Period:</strong> <?php echo htmlspecialchars($from); ?> → <?php echo htmlspecialchars($to); ?><br>
+        <strong>Rate:</strong> <?php echo htmlspecialchars($currency . ' ' . number_format((float) $rate, 2)); ?> / hour
+        <?php if ($billable_only): ?><br><strong>Filter:</strong> Billable tasks only<?php endif; ?>
+    </div>
+
+    <div class="box">
+        <div class="box-body table-responsive no-padding">
+            <table class="table table-bordered table-hover report-print-table">
+                <thead>
+                    <tr class="text-center text-uppercase">
+                        <th>Code</th>
+                        <th>Task</th>
+                        <th>Project</th>
+                        <th>Sprint</th>
+                        <th>Work type</th>
+                        <th>Entries</th>
+                        <th>Hours</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($rows)): ?>
+                    <tr><td colspan="8" class="text-center text-muted">No timesheet hours for this period.</td></tr>
+                    <?php else: ?>
+                    <?php foreach ($rows as $row):
+                        $amt = $this->Reports_model->amount($row->totalHours, $rate);
+                    ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars(!empty($row->taskRef) ? $row->taskRef : $row->taskNumber); ?></td>
+                        <td><?php echo htmlspecialchars($row->taskName); ?></td>
+                        <td><?php echo htmlspecialchars($row->projectName); ?></td>
+                        <td><?php echo htmlspecialchars($row->sprintName); ?></td>
+                        <td class="text-center"><?php echo htmlspecialchars(!empty($row->workType) ? $row->workType : '—'); ?></td>
+                        <td class="text-center"><?php echo (int) $row->entryCount; ?></td>
+                        <td class="text-center"><?php echo number_format($row->totalHours, 2); ?></td>
+                        <td class="text-right"><?php echo htmlspecialchars($currency); ?> <?php echo number_format($amt, 2); ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+                <?php if (!empty($rows)): ?>
+                <tfoot>
+                    <tr>
+                        <th colspan="6" class="text-right">TOTAL (<?php echo (int) $totals['entries']; ?> tasks)</th>
+                        <th class="text-center"><?php echo number_format($totals['hours'], 2); ?> h</th>
+                        <th class="text-right"><?php echo htmlspecialchars($currency); ?> <?php echo number_format($totals['amount'], 2); ?></th>
+                    </tr>
+                </tfoot>
                 <?php endif; ?>
-            </tbody>
-            <?php if (!empty($rows)): ?>
-            <tfoot>
-                <tr>
-                    <th colspan="5" class="text-right">TOTAL (<?php echo (int) $totals['entries']; ?> tasks)</th>
-                    <th></th>
-                    <th class="text-center"><?php echo number_format($totals['hours'], 2); ?> h</th>
-                    <th class="text-right"><?php echo htmlspecialchars($currency); ?> <?php echo number_format($totals['amount'], 2); ?></th>
-                </tr>
-            </tfoot>
-            <?php endif; ?>
-        </table>
+            </table>
+        </div>
+    </div>
+    <div class="print-only">
+        <?php $this->load->view('reports/partials/doc_footer', ['doc_is_pdf' => false]); ?>
     </div>
 </div>
 <?php endif; ?>

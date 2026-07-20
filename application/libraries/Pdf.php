@@ -80,6 +80,7 @@ protected function ci()
     {
         $dompdf = new Dompdf();
         $dompdf->set_option('isRemoteEnabled', TRUE);
+        $dompdf->set_option('chroot', FCPATH);
         $dompdf->loadHtml($html);
 
         // (Optional) Setup the paper size and orientation

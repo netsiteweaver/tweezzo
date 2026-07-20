@@ -113,13 +113,24 @@ $task_id = !empty($filters['task_id']) ? $filters['task_id'] : '';
                             <th>Start</th>
                             <th>Finish</th>
                             <th>Duration</th>
+                            <?php if (!empty($perms['edit']) || !empty($perms['delete'])): ?>
+                            <th class="no-print">Actions</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
                         <?php $totalSeconds = 0; ?>
+                        <?php
+                        $colspan = 11;
+                        if (!empty($perms['edit']) || !empty($perms['delete'])) {
+                            $colspan = 12;
+                        }
+                        $listingQs = isset($listing_qs) ? $listing_qs : '';
+                        $returnParam = $listingQs !== '' ? '?return=' . rawurlencode($listingQs) : '';
+                        ?>
                         <?php if (empty($rows)): ?>
                         <tr>
-                            <td colspan="11" class="text-center text-muted">No timesheet entries found for the selected filters.</td>
+                            <td colspan="<?php echo $colspan; ?>" class="text-center text-muted">No timesheet entries found for the selected filters.</td>
                         </tr>
                         <?php else: ?>
                         <?php foreach ($rows as $row): ?>
@@ -200,6 +211,16 @@ $task_id = !empty($filters['task_id']) ? $filters['task_id'] : '';
                                 }
                                 ?>
                             </td>
+                            <?php if (!empty($perms['edit']) || !empty($perms['delete'])): ?>
+                            <td class="text-center no-print text-nowrap">
+                                <?php if (!empty($perms['edit'])): ?>
+                                <a class="btn btn-sm btn-primary" href="<?php echo base_url('timesheets/edit/' . (int) $row->id . $returnParam); ?>" title="Edit"><i class="fa fa-edit"></i></a>
+                                <?php endif; ?>
+                                <?php if (!empty($perms['delete'])): ?>
+                                <a class="btn btn-sm btn-danger" href="<?php echo base_url('timesheets/delete/' . (int) $row->id . $returnParam); ?>" title="Delete"><i class="fa fa-trash"></i></a>
+                                <?php endif; ?>
+                            </td>
+                            <?php endif; ?>
                         </tr>
                         <?php endforeach; ?>
                         <?php endif; ?>
@@ -223,6 +244,9 @@ $task_id = !empty($filters['task_id']) ? $filters['task_id'] : '';
                                 }
                                 ?>
                             </th>
+                            <?php if (!empty($perms['edit']) || !empty($perms['delete'])): ?>
+                            <th class="no-print"></th>
+                            <?php endif; ?>
                         </tr>
                     </tfoot>
                     <?php endif; ?>
