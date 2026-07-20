@@ -555,6 +555,7 @@ jQuery(function(){
                 if(!response.result){
                     alertify.alert("Error",response.reason);
                 }else{
+                    $('#modalTaskTimer textarea[name=notes]').val('');
                     $('#modalTaskTimer .modal-body .task-name').text(task_name)
                     $('#modalTaskTimer').modal("show")
                 }
@@ -590,6 +591,8 @@ jQuery(function(){
 
     $('#modalTaskTimer').on("hidden.bs.modal", function(){
         $('#task_list tr.selected').removeClass("selected");
+        $('#modalTaskTimer .modal-body .task-name').text('');
+        $('#modalTaskTimer textarea[name=notes]').val('');
     })
 
     $('.choose-stages').on("click", function() {
