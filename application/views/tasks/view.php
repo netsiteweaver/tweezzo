@@ -283,4 +283,76 @@ $task_poll_json = (!empty($task_poll_snapshot) && is_array($task_poll_snapshot))
 		</div>
 	</div>
 </div>
+
+<div class="row mt-3">
+	<div class="col-md-12">
+		<div class="card card-secondary">
+			<div class="card-header bg-info">
+				<h3 class="card-title">
+					Timesheets
+					<?php if (!empty($timesheets)): ?>
+					<a class="btn btn-sm btn-outline-light float-right" href="<?php echo base_url('timesheets/listing?task_uuid=' . urlencode($task->uuid)); ?>">View all for this task</a>
+					<?php endif; ?>
+				</h3>
+			</div>
+			<div class="card-body table-responsive p-0">
+				<?php if (empty($timesheets)): ?>
+				<p class="p-3 mb-0 text-muted">No timesheet entries for this task yet.</p>
+				<?php else: ?>
+				<table class="table table-bordered table-striped mb-0">
+					<thead>
+						<tr class="text-center">
+							<th>Developer</th>
+							<th>Notes</th>
+							<th>Start</th>
+							<th>Finish</th>
+							<th>Duration</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php $taskTimeSeconds = 0; ?>
+						<?php foreach ($timesheets as $entry): ?>
+						<tr>
+							<td>
+								<a href="<?php echo base_url('timesheets/listing?developer_id=' . (int) $entry->developerId); ?>">
+									<?php echo htmlspecialchars($entry->developerName); ?>
+								</a>
+								<div style="font-size:11px;color:#888;"><?php echo htmlspecialchars($entry->developerEmail); ?></div>
+							</td>
+							<td><?php echo nl2br(htmlspecialchars($entry->notes)); ?></td>
+							<td class="text-center"><?php echo htmlspecialchars($entry->start_time); ?></td>
+							<td class="text-center"><?php echo htmlspecialchars($entry->finish_time); ?></td>
+							<td class="text-center">
+								<?php
+								if (!empty($entry->start_time) && !empty($entry->finish_time)) {
+									$diff = strtotime($entry->finish_time) - strtotime($entry->start_time);
+									if ($diff < 0) {
+										$diff = 0;
+									}
+									$taskTimeSeconds += $diff;
+									printf('%02d:%02d', floor($diff / 3600), floor(($diff % 3600) / 60));
+								} elseif (!empty($entry->duration_minutes)) {
+									$mins = (int) $entry->duration_minutes;
+									$taskTimeSeconds += $mins * 60;
+									printf('%02d:%02d', floor($mins / 60), $mins % 60);
+								}
+								?>
+							</td>
+						</tr>
+						<?php endforeach; ?>
+					</tbody>
+					<tfoot>
+						<tr>
+							<th colspan="4" class="text-right">TOTAL</th>
+							<th class="text-center">
+								<?php printf('%02d:%02d', floor($taskTimeSeconds / 3600), floor(($taskTimeSeconds % 3600) / 60)); ?>
+							</th>
+						</tr>
+					</tfoot>
+				</table>
+				<?php endif; ?>
+			</div>
+		</div>
+	</div>
+</div>
 </div><!-- #admin-task-view-root -->

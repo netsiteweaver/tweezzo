@@ -176,6 +176,11 @@ class Tasks extends MY_Controller {
         $this->load->model('Users_model');
         $this->data['users'] = $this->Users_model->lookup();
 
+        $this->load->model('Timesheets_model');
+        $this->data['timesheets'] = !empty($this->data['task']->id)
+            ? $this->Timesheets_model->getByTaskId($this->data['task']->id)
+            : [];
+
         // $this->loadStyleSheet("node_modules/lightbox2/dist/css/lightbox.min.css");
         // $this->loadScript("node_modules/lightbox2/dist/js/lightbox.min.js");
         $this->data['page_title'] = "View Task";

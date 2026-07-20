@@ -151,4 +151,100 @@ class Timesheets_model extends CI_Model
                         ->row('taskUuid');
         return $result;
     }
+
+    /**
+     * Admin listing of completed timesheet entries with optional filters.
+     *
+     * Supported filters: from, to, developer_id, customer_id, project_id, sprint_id, task_id, task_uuid
+     *
+     * @param array $filters
+     * @return array
+     */
+    public function adminFetch($filters = [])
+    {
+        $from = !empty($filters['from']) ? $filters['from'] : date('Y-m-01');
+        $to = !empty($filters['to']) ? $filters['to'] : date('Y-m-t');
+
+        $query = "SELECT
+                        c.customer_id customerId,
+                        s.id sprintId,
+                        p.id projectId,
+                        t2.id taskId,
+                        t2.uuid taskUuid,
+                        t2.name taskName,
+                        t2.task_number taskNumber,
+                        t2.section taskSection,
+                        s.name sprintName,
+                        s.code sprintCode,
+                        p.name projectName,
+                        p.code projectCode,
+                        c.company_name customerName,
+                        u.id developerId,
+                        u.name developerName,
+                        u.email developerEmail,
+                        t.*
+                    FROM timesheet t
+                    JOIN tasks t2 ON t2.id = t.task_id
+                    JOIN sprints s ON s.id = t2.sprint_id
+                    JOIN projects p ON p.id = s.project_id
+                    JOIN customers c ON c.customer_id = p.customer_id
+                    JOIN users u ON u.id = t.developer_id
+                    WHERE t.status = 1
+                    AND t.finish_time IS NOT NULL
+                    AND t2.status = 1
+                    AND s.status = 1
+                    AND p.status = 1
+                    AND c.status = 1
+                    AND t.start_time >= " . $this->db->escape($from . ' 00:00:00') . "
+                    AND t.finish_time <= " . $this->db->escape($to . ' 23:59:59');
+
+        if (!empty($filters['developer_id'])) {
+            $query .= " AND t.developer_id = " . (int) $filters['developer_id'];
+        }
+        if (!empty($filters['customer_id'])) {
+            $query .= " AND c.customer_id = " . (int) $filters['customer_id'];
+        }
+        if (!empty($filters['project_id'])) {
+            $query .= " AND p.id = " . (int) $filters['project_id'];
+        }
+        if (!empty($filters['sprint_id'])) {
+            $query .= " AND s.id = " . (int) $filters['sprint_id'];
+        }
+        if (!empty($filters['task_id'])) {
+            $query .= " AND t2.id = " . (int) $filters['task_id'];
+        }
+        if (!empty($filters['task_uuid'])) {
+            $query .= " AND t2.uuid = " . $this->db->escape($filters['task_uuid']);
+        }
+
+        $query .= " ORDER BY t.start_time DESC";
+        $rows = $this->db->query($query)->result();
+
+        if (!function_exists('task_ref')) {
+            get_instance()->load->helper('general');
+        }
+        foreach ($rows as $row) {
+            $tn = isset($row->taskNumber) ? $row->taskNumber : '';
+            $row->taskRef = $tn !== ''
+                ? task_ref(isset($row->projectCode) ? $row->projectCode : null, isset($row->sprintCode) ? $row->sprintCode : null, $tn)
+                : '';
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Timesheet entries for a single task (admin task view).
+     *
+     * @param int $taskId
+     * @return array
+     */
+    public function getByTaskId($taskId)
+    {
+        return $this->adminFetch([
+            'task_id' => (int) $taskId,
+            'from'    => '2000-01-01',
+            'to'      => '2099-12-31',
+        ]);
+    }
 }

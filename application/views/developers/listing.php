@@ -58,6 +58,7 @@
                                 <?php endif; ?>
                             </td>
                             <td class="<?php echo ($developer->status!=1)?"inactive":"";?>">
+                            <a title='View Timesheets' href="<?php echo base_url('timesheets/listing?developer_id=' . (int) $developer->id); ?>"><div class="btn btn-flat btn-md btn-info"><i class='fas fa-clock'></i></div></a>
                             <?php if($perms['edit']): ?>
                                 <a title='Update User' href="<?php echo base_url('developers/edit/' . $developer->id); ?>"><div class="btn btn-flat btn-md btn-primary"><i class='fas fa-edit'></i></div></a>
                             <?php endif; ?>
