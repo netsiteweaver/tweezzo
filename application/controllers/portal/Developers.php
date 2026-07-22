@@ -316,8 +316,28 @@ class Developers extends CI_Controller
     {
         $task_id = $this->input->post("task_id");
         $stage = $this->input->post("stage");
+
+        // "validated" is the customer's call only - developers may never set it.
+        if ($stage === 'validated') {
+            echo json_encode([
+                'result' => false,
+                'reason' => 'Only the customer can move a task to Validated.'
+            ]);
+            exit;
+        }
+
         $this->Developersportal_model->moveStage($task_id,$stage);
-        echo json_encode(['result'=>true]);
+
+        // An optional note may be attached to the move; it is saved as a normal task note.
+        $note = trim((string) $this->input->post("note"));
+        $note_saved = false;
+        if ($note !== '') {
+            $public = ($this->input->post("display_type") == null) ? 'private' : 'public';
+            $this->Developersportal_model->saveNotes($task_id, $note, $public);
+            $note_saved = true;
+        }
+
+        echo json_encode(['result'=>true, 'note_saved'=>$note_saved]);
         exit;
     }
 

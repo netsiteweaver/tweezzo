@@ -659,6 +659,185 @@ jQuery(function(){
         $('#stages-list li.selected').removeClass("selected");
     })
 
+    // Inline stage change from the tasks listing: click the stage badge, pick a stage.
+    var stageMoveTaskId = null;
+    var stageMoveBusy = false;
+    var stageNotePending = null;
+
+    function stageMoveLabel(stage) {
+        return String(stage || '').replace(/_/g, ' ').toUpperCase();
+    }
+
+    function closeStageMoveMenu() {
+        $('#stageMoveMenu').addClass('d-none');
+        stageMoveTaskId = null;
+    }
+
+    function refreshStageTotals() {
+        let $totals = $('#task_list_totals');
+        if (!$totals.length) return;
+
+        let order = ['new','in_progress','testing','staging','validated','completed','on_hold'];
+        let counts = {};
+        order.forEach(function(stage){ counts[stage] = 0; });
+
+        let total = 0;
+        $('#task_list tbody .stage-move-trigger').each(function(){
+            let stage = String($(this).data('stage'));
+            total++;
+            if (counts.hasOwnProperty(stage)) counts[stage]++;
+        });
+
+        let parts = order.map(function(stage){ return stageMoveLabel(stage) + ": " + counts[stage]; });
+        $totals.text("TOTAL: " + total + " | " + parts.join(" | "));
+    }
+
+    function notifyStageMoved(taskId, stage, previousStage) {
+        let $message = $('<span>').text("Moved to " + stageMoveLabel(stage) + ".");
+
+        // Developers cannot set "validated", so a task moved out of it cannot be put back.
+        if (previousStage !== 'validated') {
+            let $undo = $('<button type="button" class="stage-move-undo">Undo</button>');
+            $undo.on('click', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                moveTaskStage(taskId, previousStage, stage, false);
+            });
+            $message.append($undo);
+        }
+
+        alertify.success($message.get(0), 6);
+    }
+
+    function moveTaskStage(taskId, stage, previousStage, allowUndo, note, notePublic) {
+        if (!taskId || !stage || stageMoveBusy) return;
+        stageMoveBusy = true;
+
+        let payload = {task_id: taskId, stage: stage};
+        if (note) {
+            payload.note = note;
+            if (notePublic) payload.display_type = 'public';
+        }
+
+        $.ajax({
+            url: 'portal/developers/moveStage',
+            data: payload,
+            method: "POST",
+            dataType: "JSON",
+            showLoader: false,
+            success: function(response){
+                if (response && response.result === false) {
+                    alertify.error(response.reason || "Could not change the stage.");
+                    return;
+                }
+
+                $('#task_list .stage-move-trigger[data-task-id="' + taskId + '"]')
+                    .removeClass('stage-button-' + previousStage)
+                    .addClass('stage-button-' + stage)
+                    .attr('data-stage', stage)
+                    .data('stage', stage)
+                    .find('.stage-move-label').text(stageMoveLabel(stage));
+
+                refreshStageTotals();
+
+                if (response && response.note_saved) {
+                    let $count = $('#task_list tr[data-id="' + taskId + '"] .notes-count');
+                    $count.text((parseInt($count.text(), 10) || 0) + 1);
+                }
+
+                if (allowUndo) {
+                    notifyStageMoved(taskId, stage, previousStage);
+                } else {
+                    alertify.success("Stage restored to " + stageMoveLabel(stage));
+                }
+            },
+            error: function(){
+                alertify.error("Could not change the stage. Please try again.");
+            },
+            complete: function(){
+                stageMoveBusy = false;
+            }
+        })
+    }
+
+    $(document).on('click', '.stage-move-trigger', function(e){
+        e.stopPropagation();
+
+        let $menu = $('#stageMoveMenu');
+        if (!$menu.length) return;
+
+        let taskId = $(this).data('task-id');
+        if ((stageMoveTaskId === taskId) && !$menu.hasClass('d-none')) {
+            closeStageMoveMenu();
+            return;
+        }
+        stageMoveTaskId = taskId;
+
+        let current = String($(this).data('stage'));
+        $menu.find('.stage-move-option').each(function(){
+            $(this).toggleClass('current', String($(this).data('stage')) === current);
+        });
+
+        // Fixed positioning so the menu is not clipped by the scrolling table container.
+        let rect = this.getBoundingClientRect();
+        $menu.removeClass('d-none');
+        let height = $menu.outerHeight();
+        let width = $menu.outerWidth();
+        let top = ((rect.bottom + height + 8) > window.innerHeight) ? (rect.top - height - 4) : (rect.bottom + 4);
+        let left = Math.min(rect.left, window.innerWidth - width - 8);
+        $menu.css({top: Math.max(8, top) + "px", left: Math.max(8, left) + "px"});
+    })
+
+    $(document).on('click', '#stageMoveMenu .stage-move-option', function(e){
+        e.stopPropagation();
+        if ($(this).hasClass('current') || $(this).is('[disabled]')) {
+            closeStageMoveMenu();
+            return;
+        }
+
+        let taskId = stageMoveTaskId;
+        let stage = String($(this).data('stage'));
+        let previousStage = String($('#task_list .stage-move-trigger[data-task-id="' + taskId + '"]').data('stage'));
+        let taskName = $('#task_list tr[data-id="' + taskId + '"] .task-name').text().trim();
+        closeStageMoveMenu();
+
+        stageNotePending = {task_id: taskId, stage: stage, previous_stage: previousStage};
+        $('#modalStageNoteTitle').text("Move to " + stageMoveLabel(stage));
+        $('#modalStageNote .stage-note-summary').text(
+            taskName + " — " + stageMoveLabel(previousStage) + " → " + stageMoveLabel(stage)
+        );
+        $('#modalStageNote .confirmStageMove').text("Move to " + stageMoveLabel(stage));
+        $('#modalStageNote').modal("show");
+    })
+
+    $('#modalStageNote').on("shown.bs.modal", function(){
+        $('#stage_note').trigger("focus");
+    })
+
+    $('#modalStageNote').on("hidden.bs.modal", function(){
+        stageNotePending = null;
+        $('#stage_note').val('');
+        $('#stage_note_display_type').prop("checked", true);
+    })
+
+    $(document).on('click', '#modalStageNote .confirmStageMove', function(){
+        if (!stageNotePending) return;
+
+        let pending = stageNotePending;
+        let note = $('#stage_note').val().trim();
+        let notePublic = $('#stage_note_display_type').is(":checked");
+
+        $('#modalStageNote').modal("hide");
+        moveTaskStage(pending.task_id, pending.stage, pending.previous_stage, true, note, notePublic);
+    })
+
+    $(document).on('click', closeStageMoveMenu);
+    $(document).on('keydown', function(e){
+        if (e.key === 'Escape') closeStageMoveMenu();
+    })
+    $(window).on('resize scroll', closeStageMoveMenu);
+    $('.table-responsive').on('scroll', closeStageMoveMenu);
+
     $(document).ready(function () {
         const $modal = $('#myModal');
     

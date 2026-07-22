@@ -20,6 +20,18 @@
     .task-ref-cell .copy-task-ref:hover { opacity: 1; }
     .task-ref-cell .copy-task-ref.copied { opacity: 1; color: #28a745; }
 
+    .stage-move-trigger { cursor: pointer; white-space: nowrap; font: inherit; }
+    .stage-move-trigger .stage-move-caret { margin-left: 4px; font-size: 0.75em; opacity: 0.75; }
+    .stage-move-menu { position: fixed; z-index: 1080; min-width: 175px; padding: 4px; background: #fff; border: 1px solid #ccc; border-radius: 5px; box-shadow: 0 4px 14px rgba(0,0,0,0.18); }
+    .stage-move-menu .stage-move-option { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 10px; border: 0; background: none; font-size: 12px; text-align: left; border-radius: 3px; cursor: pointer; }
+    .stage-move-menu .stage-move-option:hover { background: #f1f1f1; }
+    .stage-move-menu .stage-move-option.current { font-weight: 700; cursor: default; opacity: 0.55; }
+    .stage-move-menu .stage-move-option[disabled] { cursor: not-allowed; opacity: 0.45; }
+    .stage-move-menu .stage-move-option[disabled]:hover { background: none; }
+    .stage-move-menu .stage-move-lock { margin-left: auto; font-size: 0.85em; }
+    .stage-move-menu .stage-dot { width: 12px; height: 12px; border-radius: 50%; padding: 0; flex: 0 0 12px; }
+    .stage-move-undo { border: 0; background: none; color: inherit; text-decoration: underline; padding: 0 0 0 8px; cursor: pointer; }
+
 </style>
 
 <form id="tasks" method="get" action="./portal/developers/tasks">
@@ -263,15 +275,19 @@
                         <td><?php echo $task->due_date;?></td>
                         <td><?php echo $task->estimated_hours;?></td>
                         <td class="text-center">
-                            <div class="stage-button stage-button-<?php echo $task->task_stage;?>">
-                                <?php echo strtoupper(str_replace("_"," ",$task->task_stage));?>
-                            </div>
-
+                            <button type="button"
+                                class="stage-button stage-button-<?php echo $task->task_stage;?> stage-move-trigger"
+                                data-task-id="<?php echo $task->id;?>"
+                                data-stage="<?php echo $task->task_stage;?>"
+                                title="Click to move stage">
+                                <span class="stage-move-label"><?php echo strtoupper(str_replace("_"," ",$task->task_stage));?></span>
+                                <i class="bi bi-chevron-down stage-move-caret"></i>
+                            </button>
                         </td>
                         <td><?php echo !empty($task->work_type) ? ucfirst($task->work_type) : '—';?></td>
                         <td class="text-center"><?php echo task_source_icon_html(isset($task->source) ? $task->source : ''); ?></td>
                         <td><?php echo isset($task->billable) && $task->billable == 1 ? 'Yes' : (isset($task->billable) && $task->billable == 0 ? 'No' : '—');?></td>
-                        <td class=''><?php echo $task->notes_count;?><br><i class="bi bi-eye view-notes cursor-pointer"></i></td>
+                        <td class=''><span class="notes-count"><?php echo $task->notes_count;?></span><br><i class="bi bi-eye view-notes cursor-pointer"></i></td>
                         <td class='cursor-pointer '>
                             <i class="bi bi-stop-circle-fill timer_stop <?php echo ( ($task->start_time != "") && ($task->finish_time == "")) ? '' : 'd-none';?>" style="font-size:1.2em;color:#f00;"></i>
                             <i class="bi bi-play-circle-fill timer_start <?php echo ( ($task->start_time != "") && ($task->finish_time == "")) ? 'd-none' : '';?>" style="font-size:1.2em;color:#999;"></i>
@@ -286,13 +302,52 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th colspan='17' class='text-center'>
+                        <th colspan='17' class='text-center' id='task_list_totals'>
                             TOTAL:
                             <?php echo count($tasks) . " | NEW: " . $totals['new'] . " | IN PROGRESS: " . $totals['in_progress'] . " | TESTING: " . $totals['testing'] . " | STAGING: " . $totals['staging'] . " | VALIDATED: " . $totals['validated'] . " | COMPLETED: " . $totals['completed'] . " | ON HOLD: " . $totals['on_hold'];?>
                         </th>
                     </tr>
                 </tfoot>
             </table>
+        </div>
+    </div>
+
+    <div id="stageMoveMenu" class="stage-move-menu d-none">
+        <?php foreach(array_keys($totals) as $move_stage):?>
+        <?php $customer_only = ($move_stage === 'validated'); // only the customer may validate ?>
+        <button type="button" class="stage-move-option <?php echo $customer_only ? 'customer-only' : '';?>"
+            data-stage="<?php echo $move_stage;?>"
+            <?php echo $customer_only ? 'disabled title="Only the customer can move a task to Validated"' : '';?>>
+            <span class="stage-dot stage-button-<?php echo $move_stage;?>"></span><?php echo strtoupper(str_replace("_"," ",$move_stage));?>
+            <?php if($customer_only):?><i class="bi bi-lock-fill stage-move-lock"></i><?php endif;?>
+        </button>
+        <?php endforeach;?>
+    </div>
+
+    <!-- Optional note captured while moving a task to another stage -->
+    <div class="modal fade" id="modalStageNote" tabindex="-1" aria-labelledby="modalStageNoteTitle" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalStageNoteTitle">Move stage</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="stage-note-summary mb-3"></p>
+                    <label for="stage_note">Note <span class="text-muted">(optional)</span></label>
+                    <textarea name="stage_note" id="stage_note" rows="4" class="form-control"
+                        placeholder="Why is this moving? Leave blank to just move the task."></textarea>
+                    <div class="mt-2">
+                        <label for="stage_note_display_type">
+                            <input type="checkbox" id="stage_note_display_type" checked> Public
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success confirmStageMove">Move task</button>
+                </div>
+            </div>
         </div>
     </div>
 
