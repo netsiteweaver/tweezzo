@@ -119,10 +119,10 @@ class Notes_model extends CI_Model{
 
     public function getNotesByUserId($id,$start_date="",$end_date="",$project_id="",$sprint_id="",$customer_id="")
     {
-        $query = "select t.uuid task_uuid, COALESCE(u1.name, c.company_name) author, tn.notes, tn.created_on, tn.out_of_scope, t.name taskName, t.task_number taskNumber , t.`section` taskSection , s.id sprintId, s.name sprintName, p.id projectId, p.name projectName, c2.customer_id customerId, c2.company_name 
+        $query = "select t.uuid task_uuid, COALESCE(u1.name, ca.name) author, tn.notes, tn.created_on, tn.out_of_scope, t.name taskName, t.task_number taskNumber , t.`section` taskSection , s.id sprintId, s.name sprintName, p.id projectId, p.name projectName, c2.customer_id customerId, c2.company_name 
                 from task_notes tn 
                 left join users u1 ON u1.id = tn.created_by 
-                left join customers c on c.customer_id = tn.created_by_customer 
+                left join customer_access ca on ca.id = tn.created_by_customer 
                 join tasks t on t.id = tn.task_id 
                 join task_user tu on tu.task_id = t.id 
                 JOIN sprints s on s.id = t.sprint_id 
@@ -145,10 +145,10 @@ class Notes_model extends CI_Model{
     {
         //get master customer id
         $customer_id = $this->db->select()->from("customer_access")->where("id",$customer_access_id)->get()->row()->customer_id;
-        $query = "select DISTINCT tn.id, t.uuid task_uuid, COALESCE(u1.name, c.company_name) author, tn.notes, tn.created_on, tn.out_of_scope, t.name taskName, t.task_number taskNumber , t.`section` taskSection , s.id sprintId, s.name sprintName, p.id projectId, p.name projectName, c2.customer_id customerId, c2.company_name 
+        $query = "select DISTINCT tn.id, t.uuid task_uuid, COALESCE(u1.name, ca.name) author, tn.notes, tn.created_on, tn.out_of_scope, t.name taskName, t.task_number taskNumber , t.`section` taskSection , s.id sprintId, s.name sprintName, p.id projectId, p.name projectName, c2.customer_id customerId, c2.company_name 
                 from task_notes tn 
                 left join users u1 ON u1.id = tn.created_by 
-                left join customers c on c.customer_id = tn.created_by_customer 
+                left join customer_access ca on ca.id = tn.created_by_customer 
                 join tasks t on t.id = tn.task_id 
                 join task_user tu on tu.task_id = t.id 
                 JOIN sprints s on s.id = t.sprint_id 
@@ -172,10 +172,10 @@ class Notes_model extends CI_Model{
         if( (empty($page)) || ($page <= 0) ) $page =1;
         $offset = ( ($page-1)*$per_page); 
 
-        $query = "select DISTINCT tn.id, t.uuid task_uuid, tn.id note_id, COALESCE(u1.name, c.company_name) author, tn.notes, tn.created_on, tn.out_of_scope, t.name taskName, t.task_number taskNumber , t.`section` taskSection , tn.out_of_scope, s.id sprintId, s.name sprintName, p.id projectId, p.name projectName, c2.customer_id customerId, c2.company_name 
+        $query = "select DISTINCT tn.id, t.uuid task_uuid, tn.id note_id, COALESCE(u1.name, ca.name) author, tn.notes, tn.created_on, tn.out_of_scope, t.name taskName, t.task_number taskNumber , t.`section` taskSection , tn.out_of_scope, s.id sprintId, s.name sprintName, p.id projectId, p.name projectName, c2.customer_id customerId, c2.company_name 
                 from task_notes tn 
                 left join users u1 ON u1.id = tn.created_by 
-                left join customers c on c.customer_id = tn.created_by_customer 
+                left join customer_access ca on ca.id = tn.created_by_customer 
                 join tasks t on t.id = tn.task_id 
                 join task_user tu on tu.task_id = t.id 
                 JOIN sprints s on s.id = t.sprint_id 
@@ -204,7 +204,7 @@ class Notes_model extends CI_Model{
         $query = "SELECT COUNT(DISTINCT tn.id) as total
                 from task_notes tn 
                 left join users u1 ON u1.id = tn.created_by 
-                left join customers c on c.customer_id = tn.created_by_customer 
+                left join customer_access ca on ca.id = tn.created_by_customer 
                 join tasks t on t.id = tn.task_id 
                 join task_user tu on tu.task_id = t.id 
                 JOIN sprints s on s.id = t.sprint_id 

@@ -183,10 +183,10 @@ class Developersportal_model extends CI_Model{
                                     ->join("users u","u.id=tu.user_id","left")
                                     ->where("tu.task_id",$task->id)
                                     ->get()->result();
-        $task->notes = $this->db->select("n.id, n.notes,n.created_on,n.created_by,n.out_of_scope,u.name developer, c.company_name customer, u.country_code")
+        $task->notes = $this->db->select("n.id, n.notes,n.created_on,n.created_by,n.out_of_scope,u.name developer, ca.name customer, u.country_code")
                                 ->from("task_notes n")
                                 ->join("users u","u.id=n.created_by","left")
-                                ->join("customers c","c.customer_id=n.created_by_customer","left")
+                                ->join("customer_access ca","ca.id=n.created_by_customer","left")
                                 ->where("n.task_id",$task->id)
                                 ->where("n.status",'1')
                                 ->order_by("created_on","desc")

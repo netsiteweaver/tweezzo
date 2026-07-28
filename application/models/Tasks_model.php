@@ -250,10 +250,10 @@ class Tasks_model extends CI_Model{
 
     public function loadNotes($task_id)
     {
-        $this->db->select('tn.*,u.name, c.company_name customer')
+        $this->db->select('tn.*,u.name, ca.name customer')
                 ->from('task_notes tn')
                 ->join('users u','u.id=tn.created_by','left')
-                ->join('customers c','c.customer_id=tn.created_by_customer','left')
+                ->join('customer_access ca','ca.id=tn.created_by_customer','left')
                 ->where('tn.task_id',$task_id)
                 ->order_by('tn.created_on','desc');
         return $this->db->get()->result();
@@ -274,10 +274,10 @@ class Tasks_model extends CI_Model{
         }
         $tn = isset($task->task_number) ? $task->task_number : '';
         $task->task_ref = $tn !== '' ? task_ref(isset($task->project_code) ? $task->project_code : null, isset($task->sprint_code) ? $task->sprint_code : null, $tn) : '';
-        $task->notes = $this->db->select('tn.id, tn.notes,tn.created_by, tn.created_on,u.name, tn.out_of_scope, c.company_name customer')
+        $task->notes = $this->db->select('tn.id, tn.notes,tn.created_by, tn.created_on,u.name, tn.out_of_scope, ca.name customer')
                                 ->from('task_notes tn')
                                 ->join('users u','u.id=tn.created_by','left')
-                                ->join('customers c','c.customer_id=tn.created_by_customer','left')
+                                ->join('customer_access ca','ca.id=tn.created_by_customer','left')
                                 ->where('tn.task_id',$task->id)
                                 ->order_by('tn.created_on','desc')
                                 ->get()->result();
