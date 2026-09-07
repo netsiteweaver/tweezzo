@@ -26,14 +26,15 @@ class Customersportal_model extends CI_Model
             );
         }elseif(count($result)==1){
             //authentication successful
+            $this->recordSignIn($result[0], trim($user_info['email']));
             return array(
                 "result"    =>  true,
                 "user"      =>  $result,
                 "customers" =>  ''
             );
-            // $this->recordSignIn($result, trim($user_info['email']));
         }else{
             //authentication failed
+            $this->recordSignIn(null, trim($user_info['email']));
             return array(
                 "result"    =>  false,
                 "user"      =>  '',
