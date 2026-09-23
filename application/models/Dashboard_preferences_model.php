@@ -3,7 +3,7 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
- * Per-user dashboard block layout: position and visibility.
+ * Per-user dashboard block layout: position, visibility and row breaks.
  *
  * Rows are keyed on users.id (the primary key), so the shared users table
  * needs no user_type filter here - the back office dashboard is the only
@@ -20,13 +20,13 @@ class Dashboard_preferences_model extends CI_Model
     }
 
     /**
-     * @return array block_key => ['position'=>int,'visible'=>bool]
+     * @return array block_key => ['position'=>int,'visible'=>bool,'row_break'=>bool]
      */
     public function getForUser($user_id)
     {
         if(empty($user_id)) return array();
 
-        $rows = $this->db->select("block_key, position, visible")
+        $rows = $this->db->select("block_key, position, visible, row_break")
                          ->from("dashboard_preferences")
                          ->where("user_id", $user_id)
                          ->get()->result();
@@ -35,7 +35,8 @@ class Dashboard_preferences_model extends CI_Model
         foreach($rows as $row){
             $prefs[$row->block_key] = array(
                 "position"  =>  (int)$row->position,
-                "visible"   =>  (bool)$row->visible
+                "visible"   =>  (bool)$row->visible,
+                "row_break" =>  (bool)$row->row_break
             );
         }
         return $prefs;
@@ -46,7 +47,7 @@ class Dashboard_preferences_model extends CI_Model
      * Blocks with no saved row keep their default order at the end and stay visible.
      *
      * @param array $blocks list of blocks, each with a 'key'
-     * @return array same blocks, reordered, each with a 'visible' bool
+     * @return array same blocks, reordered, each with 'visible' and 'row_break' bools
      */
     public function applyTo(array $blocks, $user_id)
     {
@@ -55,7 +56,8 @@ class Dashboard_preferences_model extends CI_Model
         $ordered = array();
         foreach(array_values($blocks) as $index => $block){
             $key = $block['key'];
-            $block['visible']  = isset($prefs[$key]) ? $prefs[$key]['visible'] : true;
+            $block['visible']   = isset($prefs[$key]) ? $prefs[$key]['visible'] : true;
+            $block['row_break'] = isset($prefs[$key]) ? $prefs[$key]['row_break'] : false;
             $block['position'] = isset($prefs[$key])
                                     ? $prefs[$key]['position']
                                     : ($index + self::UNSAVED_OFFSET);
@@ -75,12 +77,14 @@ class Dashboard_preferences_model extends CI_Model
      *
      * @param array $ordered_keys block keys in the order they should render
      * @param array $hidden_keys  block keys the user has hidden
+     * @param array $break_keys   block keys after which a new row starts
      */
-    public function save($user_id, array $ordered_keys, array $hidden_keys)
+    public function save($user_id, array $ordered_keys, array $hidden_keys, array $break_keys = array())
     {
         if(empty($user_id) || empty($ordered_keys)) return false;
 
         $hidden = array_flip($hidden_keys);
+        $breaks = array_flip($break_keys);
         $now = date("Y-m-d H:i:s");
 
         $rows = array();
@@ -90,6 +94,7 @@ class Dashboard_preferences_model extends CI_Model
                 "block_key"     =>  $key,
                 "position"      =>  $position,
                 "visible"       =>  isset($hidden[$key]) ? 0 : 1,
+                "row_break"     =>  isset($breaks[$key]) ? 1 : 0,
                 "updated_on"    =>  $now
             );
         }
@@ -101,15 +106,17 @@ class Dashboard_preferences_model extends CI_Model
                             . $this->db->escape($row['block_key']) . ","
                             . $this->db->escape($row['position']) . ","
                             . $this->db->escape($row['visible']) . ","
+                            . $this->db->escape($row['row_break']) . ","
                             . $this->db->escape($row['updated_on']) . ")";
         }
 
         $this->db->query("INSERT INTO `dashboard_preferences`
-                            (`user_id`,`block_key`,`position`,`visible`,`updated_on`)
+                            (`user_id`,`block_key`,`position`,`visible`,`row_break`,`updated_on`)
                           VALUES " . implode(",", $values) . "
                           ON DUPLICATE KEY UPDATE
                             `position`   = VALUES(`position`),
                             `visible`    = VALUES(`visible`),
+                            `row_break`  = VALUES(`row_break`),
                             `updated_on` = VALUES(`updated_on`)");
 
         return true;

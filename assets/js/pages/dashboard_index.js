@@ -1,6 +1,7 @@
 /**
- * Per-user dashboard layout: drag blocks to reorder, click the eye to hide one.
- * Both are saved against the logged-in user as soon as they change.
+ * Per-user dashboard layout: drag blocks to reorder, click the eye to hide one,
+ * or force a new row after a block. All three are saved against the logged-in
+ * user as soon as they change.
  */
 $(function () {
 
@@ -19,20 +20,35 @@ $(function () {
     }
 
     function currentLayout() {
-        var order = [], hidden = [];
+        var order = [], hidden = [], breaks = [];
         $grid.children('.dashboard-block').each(function () {
             var key = $(this).data('block-key');
             order.push(key);
             if ($(this).hasClass('is-hidden')) hidden.push(key);
+            if ($(this).hasClass('has-break')) breaks.push(key);
         });
-        return { order: order, hidden: hidden };
+        return { order: order, hidden: hidden, breaks: breaks };
+    }
+
+    /**
+     * Row breaks are their own flex children, so they don't travel with a block
+     * when it is dragged. Rebuild them from the blocks after every change.
+     */
+    function syncBreaks() {
+        $grid.children('.dashboard-row-break').remove();
+        $grid.children('.dashboard-block.has-break').each(function () {
+            $('<div class="w-100 dashboard-row-break"></div>')
+                .toggleClass('is-hidden', $(this).hasClass('is-hidden'))
+                .insertAfter(this);
+        });
     }
 
     function save() {
         var layout = currentLayout();
         $.post($grid.data('save-url'), {
             order:  JSON.stringify(layout.order),
-            hidden: JSON.stringify(layout.hidden)
+            hidden: JSON.stringify(layout.hidden),
+            breaks: JSON.stringify(layout.breaks)
         }, null, 'json')
         .done(function (response) {
             say(response && response.result ? 'Layout saved.' : 'Could not save layout.',
@@ -43,7 +59,7 @@ $(function () {
 
     $grid.sortable({
         items: '> .dashboard-block',
-        cancel: '.dashboard-block-toggle',
+        cancel: '.dashboard-block-toggle, .dashboard-block-break',
         placeholder: 'dashboard-block-placeholder',
         forcePlaceholderSize: true,
         tolerance: 'pointer',
@@ -54,10 +70,11 @@ $(function () {
             ui.placeholder.attr('class',
                 ui.item.attr('class')
                     .replace('dashboard-block', 'dashboard-block-placeholder')
-                    .replace('is-hidden', ''));
+                    .replace('is-hidden', '')
+                    .replace('has-break', ''));
             ui.placeholder.height(ui.item.outerHeight());
         },
-        update: save
+        update: function () { syncBreaks(); save(); }
     });
 
     $toggle.on('click', function () {
@@ -67,7 +84,7 @@ $(function () {
         $toggle.html(editing
             ? '<i class="fas fa-check"></i> Done'
             : '<i class="fas fa-th-large"></i> Customise');
-        if (editing) say('Drag blocks to reorder, or use the eye to hide one.');
+        if (editing) say('Drag to reorder \u00b7 eye hides a block \u00b7 arrow starts a new row after it.');
     });
 
     $grid.on('click', '.dashboard-block-toggle', function (e) {
@@ -76,6 +93,18 @@ $(function () {
         var nowHidden = $block.toggleClass('is-hidden').hasClass('is-hidden');
         $(this).attr('title', nowHidden ? 'Show this block' : 'Hide this block')
                .find('i').attr('class', nowHidden ? 'fas fa-eye' : 'fas fa-eye-slash');
+        syncBreaks();
+        save();
+    });
+
+    $grid.on('click', '.dashboard-block-break', function (e) {
+        e.preventDefault();
+        var $block = $(this).closest('.dashboard-block');
+        var nowBreaking = $block.toggleClass('has-break').hasClass('has-break');
+        $(this).attr('title', nowBreaking
+            ? 'Do not start a new row here'
+            : 'Start a new row after this block');
+        syncBreaks();
         save();
     });
 

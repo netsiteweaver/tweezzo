@@ -93,6 +93,19 @@
         display: block;
         opacity: .40;
     }
+    .dashboard-row-break {
+        height: 0;
+    }
+    #dashboard-blocks.edit-mode .dashboard-row-break {
+        height: 14px;
+        border-top: 2px dashed #3c8dbc;
+        margin: 4px 0 10px;
+    }
+    .dashboard-block.has-break .dashboard-block-break {
+        background-color: #3c8dbc;
+        border-color: #3c8dbc;
+        color: #fff;
+    }
     .dashboard-block-placeholder {
         border: 2px dashed #3c8dbc;
         background: #f0f7fb;
@@ -119,9 +132,13 @@
      data-save-url="<?php echo base_url('ajax/dashboard/savePreferences');?>"
      data-reset-url="<?php echo base_url('ajax/dashboard/resetPreferences');?>">
 <?php foreach($blocks as $block):?>
-    <div class="<?php echo $block['width'];?> dashboard-block<?php echo $block['visible'] ? '' : ' is-hidden';?>"
+    <div class="<?php echo $block['width'];?> dashboard-block<?php echo $block['visible'] ? '' : ' is-hidden';?><?php echo $block['row_break'] ? ' has-break' : '';?>"
          data-block-key="<?php echo $block['key'];?>">
         <div class="dashboard-block-tools">
+            <button type="button" class="btn btn-xs btn-default dashboard-block-break"
+                    title="<?php echo $block['row_break'] ? 'Do not start a new row here' : 'Start a new row after this block';?>">
+                <i class="fas fa-level-down-alt"></i>
+            </button>
             <button type="button" class="btn btn-xs btn-default dashboard-block-toggle"
                     title="<?php echo $block['visible'] ? 'Hide this block' : 'Show this block';?>">
                 <i class="fas <?php echo $block['visible'] ? 'fa-eye-slash' : 'fa-eye';?>"></i>
@@ -129,5 +146,9 @@
         </div>
         <div class="dashboard-block-body"><?php echo $block['html'];?></div>
     </div>
+    <?php /* Flex row break. Hidden blocks must not leave a phantom break behind. */ ?>
+    <?php if($block['row_break']):?>
+    <div class="w-100 dashboard-row-break<?php echo $block['visible'] ? '' : ' is-hidden';?>"></div>
+    <?php endif;?>
 <?php endforeach;?>
 </div>

@@ -19,16 +19,19 @@ class Dashboard extends CI_Controller
 
         $order  = json_decode($this->input->post('order'), true);
         $hidden = json_decode($this->input->post('hidden'), true);
+        $breaks = json_decode($this->input->post('breaks'), true);
 
         if(!is_array($order))  $order  = array();
         if(!is_array($hidden)) $hidden = array();
+        if(!is_array($breaks)) $breaks = array();
 
         $order  = $this->cleanKeys($order);
         $hidden = $this->cleanKeys($hidden);
+        $breaks = $this->cleanKeys($breaks);
 
         if(empty($order)) return $this->respond(false, "Nothing to save.");
 
-        $this->dashboard_preferences_model->save($user_id, $order, $hidden);
+        $this->dashboard_preferences_model->save($user_id, $order, $hidden, $breaks);
 
         return $this->respond(true, "Dashboard layout saved.");
     }
