@@ -74,6 +74,10 @@ class Users extends MY_Controller {
             array("url"=>"orders/listing","label"=>"Orders")
         );
 
+        $this->loadCss("assets/vendors/cropperjs/cropper.min.css");
+        $this->loadJs("assets/vendors/cropperjs/cropper.min.js");
+        $this->loadJs("assets/js/photo-crop.js");
+
         $this->data["content"]=$this->load->view("/users/edit",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   
     }
@@ -92,6 +96,10 @@ class Users extends MY_Controller {
         $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
 
         $this->data['page_title'] = "My Profile";
+
+        $this->loadCss("assets/vendors/cropperjs/cropper.min.css");
+        $this->loadJs("assets/vendors/cropperjs/cropper.min.js");
+        $this->loadJs("assets/js/photo-crop.js");
 
         $this->data["content"]=$this->load->view("/users/profile",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   

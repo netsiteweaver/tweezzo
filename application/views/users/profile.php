@@ -54,9 +54,10 @@
 							<div class="row">
 								<div class="col-xs-12">
 									<label for="userPhoto">Photo</label>
-									<input type="file" name="image" accept=".jpg,.png,.jpeg">
+									<input type="file" name="image" accept=".jpg,.png,.jpeg" data-photo-crop>
 								</div>
 							</div>
+							<?php $this->load->view("/users/_photo_crop"); ?>
 
                             <div class="row">
                                 <div class="col-md-6">
