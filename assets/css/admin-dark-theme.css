@@ -1,15 +1,250 @@
 /**
  * Admin dark theme: AdminLTE handles most surfaces via body.dark-mode.
- * This file adds tweaks for Tweezzo-specific UI and browser chrome hints.
+ *
+ * This file also neutralises the hard-coded light colours in
+ * adminlte_custom.min.css, which were written for the light theme only and
+ * otherwise bleed through: light grid lines, near-black labels, pale row
+ * highlights and dark-on-dark helper text.
+ *
+ * Everything here is scoped to .dark-mode, so the light theme is untouched.
+ * This stylesheet is loaded last, so equal-specificity rules win on order.
  */
 html.admin-dark {
   color-scheme: dark;
+}
+
+.dark-mode {
+  /* Hairlines, not white lines. */
+  --tw-dark-border: rgba(255, 255, 255, 0.13);
+  --tw-dark-border-strong: rgba(255, 255, 255, 0.24);
+
+  /* Text ramp: body text down to the faintest helper note. */
+  --tw-dark-text: #dee2e6;
+  --tw-dark-label: #b4bec9;
+  --tw-dark-muted: #99a3ae;
+  --tw-dark-faint: #7d8794;
+
+  /* Raised surfaces above the #343a40 body. */
+  --tw-dark-surface: #3d444b;
+  --tw-dark-surface-alt: #474f57;
+  --tw-dark-highlight: rgba(255, 255, 255, 0.07);
+}
+
+/* ------------------------------------------------------------------ *
+ * Tables - the light #dee2e6 grid is the worst offender on dark.
+ * ------------------------------------------------------------------ */
+.dark-mode .table th,
+.dark-mode .table td,
+.dark-mode .table-bordered,
+.dark-mode .table-bordered th,
+.dark-mode .table-bordered td {
+  border-color: var(--tw-dark-border);
+}
+
+.dark-mode .table thead th {
+  border-bottom-color: var(--tw-dark-border-strong);
+  color: var(--tw-dark-text);
+}
+
+.dark-mode .table tr td.border-top,
+.dark-mode .table tr th.border-top,
+.dark-mode .table tr td.border-bottom,
+.dark-mode .table tr th.border-bottom,
+.dark-mode #order_sheet th.title {
+  border-color: var(--tw-dark-border-strong) !important;
+}
+
+.dark-mode .table-hover tbody tr:hover {
+  background-color: var(--tw-dark-highlight);
+  color: var(--tw-dark-text);
+}
+
+.dark-mode .table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.dark-mode #items tbody tr:nth-child(even) {
+  border-bottom-color: var(--tw-dark-border);
+}
+
+/* Row states that were light washes in the light theme. */
+.dark-mode tr.draft-order {
+  background-color: var(--tw-dark-surface) !important;
+}
+.dark-mode tr.draft-order td {
+  color: var(--tw-dark-faint) !important;
+}
+.dark-mode tr.active,
+.dark-mode #items tr.selected {
+  background-color: var(--tw-dark-highlight);
+}
+.dark-mode .out-of-scope,
+.dark-mode .out-of-scope:hover,
+.dark-mode .table-hover tbody tr.out-of-scope:hover {
+  background-color: #5a3038;
+  color: #f2d4da;
+}
+.dark-mode .value_updated {
+  background-color: #6b5518;
+  color: #ffe9a8;
+}
+.dark-mode table.table tr td.inverted-light {
+  background-color: var(--tw-dark-surface-alt);
+  color: var(--tw-dark-text);
+}
+
+/* ------------------------------------------------------------------ *
+ * Labels and helper text - #001f3f / #4c4c4c are unreadable on dark.
+ * ------------------------------------------------------------------ */
+.dark-mode label:not(.form-check-label):not(.custom-file-label) {
+  color: var(--tw-dark-label);
+  font-weight: 400;
+}
+
+.dark-mode p.notes,
+.dark-mode .notes,
+.dark-mode .help-block,
+.dark-mode #stage-history .author,
+.dark-mode #stage-history .remarks,
+.dark-mode #comments-block .comment .author,
+.dark-mode #comments-block .comment span,
+.dark-mode #comments .author,
+.dark-mode .loader-text {
+  color: var(--tw-dark-muted);
+}
+
+.dark-mode th.colon:after {
+  color: var(--tw-dark-faint);
+}
+
+.dark-mode .gray,
+.dark-mode .grey {
+  color: var(--tw-dark-faint);
+}
+
+/* ------------------------------------------------------------------ *
+ * Status colours - the light-theme reds/greens are too dark on dark.
+ * ------------------------------------------------------------------ */
+.dark-mode .red,
+.dark-mode th.current {
+  color: #ff7b8a;
+}
+
+.dark-mode .green,
+.dark-mode .success {
+  color: #4ade80;
+}
+
+.dark-mode .error_notes,
+.dark-mode .tab-error {
+  color: #ff7b8a !important;
+}
+
+.dark-mode .asterisk::after {
+  color: #ff7b8a;
+}
+
+/* ------------------------------------------------------------------ *
+ * Dividers and generic borders.
+ * ------------------------------------------------------------------ */
+.dark-mode hr {
+  border-color: var(--tw-dark-border);
+}
+
+.dark-mode hr.h5,
+.dark-mode hr.h10 {
+  background-color: var(--tw-dark-border);
+  border-color: var(--tw-dark-border);
+}
+
+.dark-mode .border,
+.dark-mode .border-top,
+.dark-mode .border-bottom,
+.dark-mode .border-left,
+.dark-mode .border-right,
+.dark-mode .sep,
+.dark-mode .dashboard-title,
+.dark-mode .quotation-footer {
+  border-color: var(--tw-dark-border);
+}
+
+/* ------------------------------------------------------------------ *
+ * Controls.
+ * ------------------------------------------------------------------ */
+.dark-mode .input-xs {
+  background-color: var(--tw-dark-surface-alt);
+  color: var(--tw-dark-text);
+  border: 1px solid var(--tw-dark-border);
+}
+
+.dark-mode .btn-default.btn-outline {
+  border-color: var(--tw-dark-border-strong);
+  color: var(--tw-dark-label);
+}
+
+/* Pastel action buttons: keep the hue, drop the glare. */
+.dark-mode .btn-back   { background-color: #4a5158; border-color: #4a5158; color: #e3e6e8; }
+.dark-mode .btn-create { background-color: #24603c; border-color: #24603c; color: #d8f5e3; }
+.dark-mode .btn-save   { background-color: #1f4d73; border-color: #1f4d73; color: #d6e9f8; }
+.dark-mode .btn-update { background-color: #6b5518; border-color: #6b5518; color: #ffeeb4; }
+.dark-mode .btn-view   { background-color: #4a3a6b; border-color: #4a3a6b; color: #e6dcf8; }
+.dark-mode .btn-listing{ background-color: #1d5257; border-color: #1d5257; color: #d4f0f2; }
+.dark-mode .btn-delete { background-color: #6f2b32; border-color: #6f2b32; color: #f8d9dc; }
+
+.dark-mode .btn-back:hover,   .dark-mode .btn-back:focus   { background-color: #565e66; border-color: #565e66; }
+.dark-mode .btn-create:hover, .dark-mode .btn-create:focus { background-color: #2c7449; border-color: #2c7449; }
+.dark-mode .btn-save:hover,   .dark-mode .btn-save:focus   { background-color: #265e8c; border-color: #265e8c; }
+.dark-mode .btn-update:hover, .dark-mode .btn-update:focus { background-color: #85691e; border-color: #85691e; }
+.dark-mode .btn-view:hover,   .dark-mode .btn-view:focus   { background-color: #5a4783; border-color: #5a4783; }
+.dark-mode .btn-listing:hover,.dark-mode .btn-listing:focus{ background-color: #24666c; border-color: #24666c; }
+.dark-mode .btn-delete:hover, .dark-mode .btn-delete:focus { background-color: #87343d; border-color: #87343d; }
+
+/* ------------------------------------------------------------------ *
+ * Surfaces that were hard-coded white.
+ * ------------------------------------------------------------------ */
+.dark-mode .content-wrapper {
+  background-color: #343a40;
+}
+
+.dark-mode .navbar-nav > .user-menu > .dropdown-menu > .user-footer,
+.dark-mode #dashboard-delivery-boys .delivery_details .small-box {
+  background-color: var(--tw-dark-surface);
+  border-color: var(--tw-dark-border);
+  box-shadow: none;
+}
+
+.dark-mode #modalPhotos .preview-image img {
+  background-color: var(--tw-dark-surface);
+  border-color: var(--tw-dark-border);
 }
 
 .dark-mode #global-search-results .dropdown-item:hover {
   background-color: rgba(255, 255, 255, 0.08);
 }
 
-.dark-mode .loader-text {
-  color: #c2c7d0;
+.dark-mode .alertify .ajs-body .ajs-content .ajs-input {
+  background-color: var(--tw-dark-surface);
+  color: var(--tw-dark-text);
+  border-color: var(--tw-dark-border);
+}
+
+/* Avatars sit on a white plate in the light theme; soften it. */
+.dark-mode img.user {
+  background-color: var(--tw-dark-surface-alt);
+  border-color: var(--tw-dark-border-strong);
+}
+
+.dark-mode #users-list li {
+  border-color: var(--tw-dark-border);
+}
+.dark-mode #users-list li.assigned {
+  background-color: #1d5257;
+}
+.dark-mode #users-list-remove li.select-user-remove.assigned {
+  background-color: #6b5518;
+  border-color: #a07d23;
+}
+
+.dark-mode .random_quote {
+  color: #7fbac4;
 }
