@@ -4,6 +4,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Users_model extends CI_Model{
 
+    /**
+     * users.status is tri-state: 1 active, 2 suspended, 0 deleted.
+     * A suspended account still owns its username and email - it can be
+     * reactivated - so only deleted rows are excluded from uniqueness checks.
+     */
+    const STATUS_DELETED = '0';
+
     public function get($fields="",$user_type="")
     {
         if(!empty($fields)){
@@ -317,10 +324,13 @@ class Users_model extends CI_Model{
 
     }
 
-    public function check_email($email,$id) {
+    public function check_email($email,$id,$user_type="regular") {
         $this->db->select("count(id) as ct");
         $this->db->where("email",$email);
         $this->db->where("id !=",$id);
+        // Developers share this table, so uniqueness is per user_type.
+        $this->db->where("user_type",$user_type);
+        $this->db->where("status !=", self::STATUS_DELETED);
         $qry = $this->db->get("users");
         $result = $qry->row("ct");
 
@@ -332,7 +342,8 @@ class Users_model extends CI_Model{
 
         if(!empty($username)){
             $this->db->select("count(id) as ct");
-            $this->db->where(array("username"=>$username,"status"=>1,"user_type"=>$user_type));
+            $this->db->where(array("username"=>$username,"user_type"=>$user_type));
+            $this->db->where("status !=", self::STATUS_DELETED);
             if(!empty($id)) $this->db->where("id !=",$id);
             $qry1 = $this->db->get("users");
             $result1 = $qry1->row("ct");
@@ -342,7 +353,8 @@ class Users_model extends CI_Model{
         // if($level !== 'normal'){
         if(!empty($email)){
             $this->db->select("count(id) as ct");
-            $this->db->where(array("email"=>$email,"status"=>1,"user_type"=>$user_type));
+            $this->db->where(array("email"=>$email,"user_type"=>$user_type));
+            $this->db->where("status !=", self::STATUS_DELETED);
             if(!empty($id)) $this->db->where("id !=",$id);
             $qry2 = $this->db->get("users");
             $result2 = $qry2->row("ct");        

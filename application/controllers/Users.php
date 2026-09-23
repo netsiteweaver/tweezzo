@@ -480,8 +480,14 @@ class Users extends MY_Controller {
     {
         $email = $this->input->post("email");
         $id = $this->input->post("id");
-        if(empty($email)) echo json_encode(array("result"=>false));
-        $result = $this->users_model->check_email($email,$id);
+        if(empty($email)){
+            echo json_encode(array("result"=>false));
+            return;
+        }
+        $user_type = !empty($_SESSION['authenticated_user']->user_type)
+                        ? $_SESSION['authenticated_user']->user_type
+                        : "regular";
+        $result = $this->users_model->check_email($email,$id,$user_type);
         echo json_encode(array("result"=>$result));
     }
     public function check_username_email()
