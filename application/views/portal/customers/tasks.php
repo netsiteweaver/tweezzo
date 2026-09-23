@@ -197,7 +197,7 @@
 <div class="row mb-5">
     <div class="col-md-4"></div>
     <div class="col-md-4 text-center">
-        <img class='img-thumbnail' src="assets/images/stageColors.png" alt="">
+        <img class='img-thumbnail' src="assets/images/stageColors_edited.png" alt="">
     </div>
 </div>
 
