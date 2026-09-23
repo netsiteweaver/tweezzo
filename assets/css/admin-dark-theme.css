@@ -213,6 +213,14 @@ html.admin-dark {
   box-shadow: none;
 }
 
+/* Bootstrap plates a white card behind thumbnails (the stage colour legend,
+   task attachments). Transparent border keeps the layout identical. */
+.dark-mode .img-thumbnail {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
 .dark-mode #modalPhotos .preview-image img {
   background-color: var(--tw-dark-surface);
   border-color: var(--tw-dark-border);
