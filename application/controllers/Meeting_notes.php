@@ -416,6 +416,8 @@ class Meeting_notes extends MY_Controller
         $currentTaskNumber = !empty($maxTN) ? incrementTaskNumber($maxTN) : '001';
         
         $created_tasks = [];
+        // Task ids per set of developers, so everyone gets a single digest of their own tasks
+        $created_groups = [];
         $errors = [];
 
         foreach ($task_names as $index => $task_name) {
@@ -449,6 +451,8 @@ class Meeting_notes extends MY_Controller
                 'scope_when_done' => '',
                 'source' => 'meeting',
                 'userIds' => $userIds_json, // Developers assigned per task or from defaults
+                // One digest for the whole conversion is sent below, instead of emails per task
+                '_skip_notifications' => true,
             ];
             
             // Increment task number for next task
@@ -472,12 +476,20 @@ class Meeting_notes extends MY_Controller
             
             if ($response['result']) {
                 $created_tasks[] = $task_name;
+                $created_groups[$userIds_json][] = $response['id'];
             } else {
                 $errors[] = $task_name . ': ' . $response['reason'];
             }
         }
 
         if (!empty($created_tasks)) {
+            $this->Tasks_model->notifyImportedTasks(
+                $created_groups,
+                count($created_tasks) . ' task(s) created from meeting notes',
+                'Tasks created from meeting notes',
+                '<p>' . count($created_tasks) . ' task(s) were created from <a href="' . base_url('meeting_notes/view/' . $meeting_note_id) . '">the meeting notes</a> of ' . htmlspecialchars((string) $note->meeting_datetime) . '.</p>'
+            );
+
             echo json_encode([
                 'result' => true,
                 'message' => 'Successfully created ' . count($created_tasks) . ' task(s)',

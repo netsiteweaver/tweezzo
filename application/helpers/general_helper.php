@@ -626,17 +626,18 @@ function task_source_options() {
         'phone'    => 'Phone',
         'bulk'     => 'Bulk import',
         'meeting'  => 'Meeting notes',
+        'hms'      => 'HMS quotation',
         'other'    => 'Other',
     ];
 }
 
 /**
- * Sources set automatically (bulk import, meeting notes) — not selectable on manual add.
+ * Sources set automatically (bulk import, meeting notes, HMS quotation) — not selectable on manual add.
  *
  * @return string[]
  */
 function task_source_auto_only() {
-    return ['bulk', 'meeting'];
+    return ['bulk', 'meeting', 'hms'];
 }
 
 /**
@@ -758,6 +759,7 @@ function task_source_icon_html($source) {
         'phone'    => ['class' => 'fas fa-phone', 'color' => 'text-info'],
         'bulk'     => ['class' => 'fas fa-upload', 'color' => 'text-warning'],
         'meeting'  => ['class' => 'fas fa-users', 'color' => 'text-purple'],
+        'hms'      => ['class' => 'fas fa-file-invoice', 'color' => 'text-success'],
         'other'    => ['class' => 'fas fa-question-circle', 'color' => 'text-muted'],
     ];
 

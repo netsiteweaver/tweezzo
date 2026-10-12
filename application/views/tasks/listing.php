@@ -75,6 +75,8 @@ $cleanQuery = http_build_query($queryArray);
         <?php if($perms['import']): ?>
             <a href="<?php echo base_url("tasks/import/"); ?>"><button class="btn btn-flat btn-info"><i
                     class="fa fa-upload"></i> Import</button></a>
+            <a href="<?php echo base_url("hms_import/index"); ?>"><button class="btn btn-flat btn-info"><i
+                    class="fa fa-file-invoice"></i> Import from HMS</button></a>
         <?php endif; ?>
     </div>
 </div>

@@ -584,7 +584,10 @@ class Tasks_model extends CI_Model{
             $taskId = $this->db->insert_id();
             $this->saveFiles($uploadedFiles,$taskId);
 
-            $members = $this->System_model->getParam("notification_create_tasks",true);
+            // A bulk import sends one digest for all its tasks instead (see notifyImportedTasks)
+            $skipNotifications = !empty($data['_skip_notifications']);
+
+            $members = $skipNotifications ? [] : $this->System_model->getParam("notification_create_tasks",true);
             foreach($members as $m){
                 $user = $this->db->select("*")->from("users")->where("id",$m)->get()->row();
 
@@ -616,7 +619,7 @@ class Tasks_model extends CI_Model{
                                             join projects p on p.id = s.project_id
                                             join customers c on c.customer_id = p.customer_id
                                             where t.id = '$taskId'")->row();
-            $this->assignUsers(json_decode($data['userIds']),[$taskId],$newTask->customer_id,$newTask->project_id,$newTask->sprint_id);
+            if(!$skipNotifications) $this->assignUsers(json_decode($data['userIds']),[$taskId],$newTask->customer_id,$newTask->project_id,$newTask->sprint_id);
 
         }else{
             $beforeTask = $this->db->select('name, description, task_number, sprint_id, section, due_date, estimated_hours, work_type, billable, settled, settled_on, ref, source, scope_client_expectation, scope_not_included, scope_when_done, stage')
@@ -693,7 +696,7 @@ class Tasks_model extends CI_Model{
 
             }
         }
-        return array('result'=>true,'data'=>$data);
+        return array('result'=>true,'data'=>$data,'id'=>$taskId);
 
     }
 
@@ -1675,6 +1678,68 @@ class Tasks_model extends CI_Model{
             "Bulk user assignment",
             $detail
         );
+    }
+
+    /**
+     * Digest for tasks created together with '_skip_notifications' (HMS quotation import, meeting notes):
+     * assigns the developers, then sends each developer one email listing their own tasks and the
+     * "create tasks" recipients one email listing them all, instead of emails per task.
+     *
+     * @param array $groups Task ids keyed by the JSON list of user ids assigned to them, e.g. ['[2,5]' => [10, 11], '[]' => [12]]
+     */
+    public function notifyImportedTasks($groups, $subject, $heading, $detailHtml = "")
+    {
+        $allTaskIds = array();
+        $tasksByUser = array();
+        foreach ((array) $groups as $userIdsJson => $taskIds) {
+            $taskIds = array_values(array_filter(array_map('intval', (array) $taskIds)));
+            $userIds = array_unique(array_filter(array_map('intval', (array) json_decode((string) $userIdsJson, true))));
+            $allTaskIds = array_merge($allTaskIds, $taskIds);
+            foreach ($userIds as $userId) {
+                foreach ($taskIds as $taskId) {
+                    $this->db->set("task_id", $taskId);
+                    $this->db->set("user_id", $userId);
+                    $this->db->insert("task_user");
+                    $tasksByUser[$userId][] = $taskId;
+                }
+            }
+        }
+        if (empty($allTaskIds)) {
+            return;
+        }
+
+        $this->load->model("Email_model3");
+        $this->load->model("system_model");
+
+        $nameParts = array();
+        foreach ($tasksByUser as $userId => $taskIds) {
+            $user = $this->db->select("email, name")->from("users")->where("id", $userId)->get()->row();
+            $tasks = $this->getByIds($taskIds);
+            if (empty($user) || empty($user->email) || empty($tasks)) {
+                continue;
+            }
+            $nameParts[] = $user->name . " (" . count($tasks) . ")";
+
+            $emailData = [
+                'user'      =>  $user,
+                'customer'  =>  $tasks[0]->company_name,
+                'project'   =>  $tasks[0]->project_name,
+                'sprint'    =>  $tasks[0]->sprint_name,
+                'tasks'     =>  $tasks,
+                'logo'      =>  $this->system_model->getParam("logo"),
+                'link'      =>  "",
+                'link_label'=>  ""
+            ];
+            $content = $this->load->view("_email/header",$emailData, true);
+            $content .= $this->load->view("_email/userHasBeenAssignedTasks",$emailData, true);
+            $content .= $this->load->view("_email/footer",[], true);
+            $this->Email_model3->save($user->email,"You have been assigned some tasks",$content);
+        }
+
+        if (!empty($nameParts)) {
+            $detailHtml .= "<p>Assigned to (tasks each): <strong>" . htmlspecialchars(implode(", ", $nameParts)) . "</strong></p>";
+        }
+        $this->notify_bulk_task_recipients($allTaskIds, "notification_create_tasks", $subject, $heading, $detailHtml);
     }
 
     /**
