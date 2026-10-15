@@ -463,6 +463,21 @@ class Sprints_model extends CI_Model{
     public function sendSettlementReminders($reminderDays = 7)
     {
         $reminderDays = max(1, (int) $reminderDays);
+
+        // Fully validated sprints never checked (validated before this existed, or by a path without the hook)
+        $unchecked = $this->db->select("s.id")
+            ->from("sprints s")
+            ->join("tasks t", "t.sprint_id = s.id AND t.status = '1' AND t.closed = '0' AND t.stage != 'stopped'")
+            ->where("s.settlement_checked_on IS NULL", null, false)
+            ->where("s.status", "1")
+            ->where("s.active", "1")
+            ->group_by("s.id")
+            ->having("SUM(t.stage IN ('validated','completed')) = COUNT(t.id) AND SUM(t.stage = 'validated') > 0", null, false)
+            ->get()->result();
+        foreach ($unchecked as $row) {
+            $this->checkSettlementIfAllValidated($row->id);
+        }
+
         $rows = $this->db->select("s.id")
             ->from("sprints s")
             ->where("s.settlement_checked_on IS NOT NULL", null, false)
@@ -517,7 +532,12 @@ class Sprints_model extends CI_Model{
         $outstanding = $this->Hms_model->sprintPaymentRequired($sprint->id, $sprint->project_name, $sprint->sprint_name, $reminder);
         $due = $outstanding['error'] === '' && (!empty($outstanding['invoices']) || !empty($outstanding['quotations']));
 
-        if (!empty($sprint->settlement_checked_on) && $outstanding['error'] === '' && !empty($outstanding['refs'])) {
+        // A fully validated sprint not followed up yet starts being followed up from this send
+        $tracked = !empty($sprint->settlement_checked_on) || $this->allTasksValidated($sprint->id);
+        if ($tracked && $outstanding['error'] === '' && !empty($outstanding['refs'])) {
+            if (empty($sprint->settlement_checked_on)) {
+                $this->db->set("settlement_checked_on", "NOW()", false);
+            }
             $this->db->set("settlement_status", $due ? "due" : "paid");
             if ($due) {
                 $this->db->set("settlement_reminded_on", "NOW()", false);
