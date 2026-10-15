@@ -49,11 +49,12 @@ class Customers extends CI_Controller
             // Environment links for the top bar; shown on every portal page.
             $this->data['project_environments'] = $this->Customersportal_model->getProjectEnvironments($_SESSION['customer_access_id']);
 
-            $adminRow = $this->db->select("admin")->from("customer_access")->where(array(
+            $adminRow = $this->db->select("admin, can_validate")->from("customer_access")->where(array(
                 "status"        =>  "1",
                 "id"            =>  $_SESSION['customer_access_id']
             ))->get()->row();
             $this->data['isAdmin'] = $adminRow ? $adminRow->admin : 0;
+            $this->data['canValidate'] = $adminRow ? (int) $adminRow->can_validate : 0;
             $this->data['user_access'] = $this->db->query("
                 SELECT 
                     ca.id,
@@ -62,7 +63,8 @@ class Customers extends CI_Controller
                     ca.email userEmail,
                     ca.country_code,
                     ca.job_description,
-                    COALESCE(ca.admin, null) isAdmin
+                    COALESCE(ca.admin, null) isAdmin,
+                    ca.can_validate canValidate
                 FROM customers c
                 LEFT JOIN customer_access ca ON ca.customer_id = c.customer_id
                 WHERE c.status = 1 
@@ -497,6 +499,10 @@ class Customers extends CI_Controller
 
     public function validateTask()
     {
+        if (!$this->Customersportal_model->canValidate($_SESSION['customer_access_id'])) {
+            echo json_encode(['result'=>false,'reason'=>"You are not allowed to validate tasks. Please contact your administrator."]);
+            exit;
+        }
         $task_id = $this->input->post("task_id");
         $result = $this->Customersportal_model->validateTask($task_id);
         if($result) {
@@ -509,6 +515,10 @@ class Customers extends CI_Controller
 
     public function rejectTask()
     {
+        if (!$this->Customersportal_model->canValidate($_SESSION['customer_access_id'])) {
+            echo json_encode(['result'=>false,'reason'=>"You are not allowed to reject tasks. Please contact your administrator."]);
+            exit;
+        }
         $task_id = $this->input->post("task_id");
         $reject_reason = $this->input->post("reject_reason");
         $result = $this->Customersportal_model->rejectTask($task_id,$reject_reason);
@@ -652,6 +662,7 @@ class Customers extends CI_Controller
         $password = trim($this->input->post("password"));
         $country_code = trim($this->input->post("country_code"));
         $admin = $this->input->post("admin") ? 1 : 0; // from back-office Add User; portal users get 0
+        $can_validate = $this->input->post("can_validate") ? 1 : 0;
         $generate_password = $this->input->post("generate_password") ? 1 : 0;
         // $confirm_password = trim($this->input->post("confirm_password"));
         $valid = true;
@@ -694,7 +705,7 @@ class Customers extends CI_Controller
             exit;
         }
 
-        $result = $this->Customersportal_model->addUserAccess($uuid, $name, $email, $phone, $password, $country_code, $admin, $generate_password);
+        $result = $this->Customersportal_model->addUserAccess($uuid, $name, $email, $phone, $password, $country_code, $admin, $generate_password, $can_validate);
 
         echo json_encode($result);
 
@@ -732,6 +743,7 @@ class Customers extends CI_Controller
         $phone = $this->input->post("phone", true);
         $country_code = $this->input->post("country_code", true);
         $admin = $this->input->post("admin", true);
+        $can_validate = $this->input->post("can_validate", true);
         $password = trim($this->input->post("password")); // optional; if empty, keep current
 
         // job_description is optional for back-office updates; validate only when provided.
@@ -742,7 +754,7 @@ class Customers extends CI_Controller
             exit;
         }
 
-        $result = $this->Customersportal_model->updateUserAccess($access_id, $name, $email, $phone, $country_code, $admin, $password, $job_description);
+        $result = $this->Customersportal_model->updateUserAccess($access_id, $name, $email, $phone, $country_code, $admin, $password, $job_description, $can_validate);
         echo json_encode($result);
         exit;
     }

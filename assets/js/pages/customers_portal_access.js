@@ -27,7 +27,7 @@ jQuery(function(){
             $m.find('.access_id').val('');
             $m.find('.name, .email, .phone, .password').val('');
             $m.find('.country_code').val('mu');
-            $m.find('.admin').prop('checked', false);
+            $m.find('.admin, .can_validate').prop('checked', false);
             $m.find('.generate_password').prop('checked', true);
             $('#addUserAccessModalTitle').html('<i class="fa fa-unlock"></i> Grant User Access');
             $m.find('.password-group .form-control').attr('placeholder', 'Enter password');
@@ -56,7 +56,7 @@ jQuery(function(){
                 if(response.result){
                     if(response.users && response.users.length > 0){
                         var html = '<div class="table-responsive"><table class="table table-striped table-bordered">';
-                        html += '<thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Job Description</th><th>Admin</th><th>Action</th></tr></thead>';
+                        html += '<thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Job Description</th><th>Admin</th><th>Validator</th><th>Action</th></tr></thead>';
                         html += '<tbody>';
                         response.users.forEach(function(user){
                             html += '<tr>';
@@ -65,6 +65,7 @@ jQuery(function(){
                             html += '<td>' + (user.phone_number1 || '-') + '</td>';
                             html += '<td>' + (user.job_description || '-') + '</td>';
                             html += '<td>' + (user.admin == '1' ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-secondary">No</span>') + '</td>';
+                            html += '<td>' + (user.can_validate == '1' ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-secondary">No</span>') + '</td>';
                             html += '<td><button class="btn btn-warning btn-sm reset-password-btn-standalone" data-access-id="' + user.id + '" data-name="' + user.name + '" data-email="' + user.email + '"><i class="fa fa-key"></i> Reset Password</button></td>';
                             html += '</tr>';
                         });
@@ -113,12 +114,14 @@ jQuery(function(){
         var flagClass = $tr.find("td:eq(3) .flag").attr("class") || "";
         var countryCode = (flagClass.match(/flag-(\w+)/) || [null, "mu"])[1];
         var isAdmin = $tr.find("td:eq(4) .badge").length > 0;
+        var canValidate = $tr.find("td:eq(5) .badge").length > 0;
         $('#addUserAccessModal .access_id').val(id);
         $('#addUserAccessModal .name').val(name);
         $('#addUserAccessModal .phone').val(phone);
         $('#addUserAccessModal .email').val(email);
         $('#addUserAccessModal .country_code').val(countryCode);
         $('#addUserAccessModal .admin').prop('checked', isAdmin);
+        $('#addUserAccessModal .can_validate').prop('checked', canValidate);
         $('#addUserAccessModal .password').val('');
         setAddUserModalMode('edit');
         $('#addUserAccessModal').modal("show");
@@ -136,6 +139,7 @@ jQuery(function(){
         var password = $('#addUserAccessModal .password').val();
         var countryCode = $('#addUserAccessModal .country_code').val();
         var admin = $('#addUserAccessModal .admin').is(':checked') ? 1 : 0;
+        var canValidate = $('#addUserAccessModal .can_validate').is(':checked') ? 1 : 0;
         var generatePassword = $('#addUserAccessModal .generate_password').is(':checked') ? 1 : 0;
         var errorMessage = "";
 
@@ -158,21 +162,23 @@ jQuery(function(){
                 url: base_url + "portal/customers/updateUserAccess",
                 method: "POST",
                 dataType: "JSON",
-                data: { access_id: accessId, name: name, email: email, phone: phone, country_code: countryCode, admin: admin, password: password },
+                data: { access_id: accessId, name: name, email: email, phone: phone, country_code: countryCode, admin: admin, can_validate: canValidate, password: password },
                 success: function(response){
                     if (response.result === false) {
                         alertify.alert(response.reason || 'Update failed');
                     } else {
                         var adminBadge = admin ? '<span class="badge badge-info">Yes</span>' : 'No';
+                        var validatorBadge = canValidate ? '<span class="badge badge-info">Yes</span>' : 'No';
                         var $row = $("#existing_users tbody tr[data-id='" + accessId + "']");
                         $row.find(".userName").val(name);
                         $row.find(".userPhone").val(phone);
                         $row.find(".userEmail").val(email);
                         $row.find("td:eq(3)").html('<i class="flag flag-' + countryCode + '"></i><input type="text" class="form-control d-none" placeholder="' + countryCode + '?">');
                         $row.find("td:eq(4)").html(adminBadge);
+                        $row.find("td:eq(5)").html(validatorBadge);
                         $("#addUserAccessModal input, #addUserAccessModal textarea").val("");
                         $("#addUserAccessModal .access_id").val("");
-                        $("#addUserAccessModal .admin").prop("checked", false);
+                        $("#addUserAccessModal .admin, #addUserAccessModal .can_validate").prop("checked", false);
                         $('#addUserAccessModal').modal("hide");
                     }
                 }
@@ -182,23 +188,25 @@ jQuery(function(){
                 url: base_url + "portal/customers/addUserAccess",
                 method: "POST",
                 dataType: "JSON",
-                data: { uuid: uuid, name: name, email: email, phone: phone, password: password, country_code: countryCode, admin: admin, generate_password: generatePassword },
+                data: { uuid: uuid, name: name, email: email, phone: phone, password: password, country_code: countryCode, admin: admin, can_validate: canValidate, generate_password: generatePassword },
                 success: function(response){
                     if (response.result === false) {
                         alertify.alert(response.reason);
                     } else {
                         $("#addUserAccessModal input, #addUserAccessModal textarea").val("");
                         $("#addUserAccessModal select").val("mu");
-                        $("#addUserAccessModal .admin").prop("checked", false);
+                        $("#addUserAccessModal .admin, #addUserAccessModal .can_validate").prop("checked", false);
                         $("#addUserAccessModal .access_id").val("");
                         $('#addUserAccessModal').modal("hide");
                         var adminBadge = admin ? '<span class="badge badge-info">Yes</span>' : 'No';
+                        var validatorBadge = canValidate ? '<span class="badge badge-info">Yes</span>' : 'No';
                         var row = '<tr data-id="' + response.user_id + '">' +
                             '<td><input type="text" class="form-control userName" placeholder="Enter Name" value="' + name + '" readonly=""></td>' +
                             '<td><input type="text" class="form-control userPhone" placeholder="Enter Phone" value="' + phone + '" readonly=""></td>' +
                             '<td><input type="text" class="form-control userEmail" placeholder="Enter Email" value="' + email + '" readonly=""></td>' +
                             '<td><i class="flag flag-' + countryCode + '"></i><input type="text" class="form-control d-none" placeholder="' + countryCode + '?"></td>' +
                             '<td>' + adminBadge + '</td>' +
+                            '<td>' + validatorBadge + '</td>' +
                             '<td><div class="btn btn-info btn-sm editUser" title="Edit"><i class="fa fa-edit"></i></div> <div class="btn btn-danger btn-sm deleteUser" title="Remove access"><i class="fa fa-trash"></i></div></td>' +
                             '</tr>';
                         $("#existing_users tbody").append(row);

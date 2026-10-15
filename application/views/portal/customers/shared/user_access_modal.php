@@ -3,7 +3,7 @@
 </style>
 <!-- Modal -->
 <div class="modal fade" id="addUserAccessModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="addTaskModalLabel">View Users</h5>
@@ -15,9 +15,11 @@
                       <table id='existing_users' class="table">
                         <thead>
                           <tr>
-                            <th>User</th>
-                            <th>Email</th>
-                            <th>Country</th>
+                            <th><i class="bi bi-person me-1"></i>User</th>
+                            <th><i class="bi bi-envelope me-1"></i>Email</th>
+                            <th><i class="bi bi-globe me-1"></i>Country</th>
+                            <th><i class="bi bi-shield-lock me-1"></i>Admin</th>
+                            <th><i class="bi bi-patch-check me-1"></i>Validator</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -30,10 +32,16 @@
                                 <i class="flag flag-<?php echo htmlspecialchars($user->country_code); ?>"></i>
                               <?php endif; ?>
                             </td>
+                            <td><?php echo !empty($user->isAdmin) ? '<i class="bi bi-check-circle-fill text-success" title="Yes"></i>' : ''; ?></td>
+                            <td><?php echo !empty($user->canValidate) ? '<i class="bi bi-check-circle-fill text-success" title="Yes"></i>' : ''; ?></td>
                           </tr>
                           <?php endforeach;?>
                         </tbody>
                       </table>
+                      <p class="text-muted small mb-0">
+                        <i class="bi bi-shield-lock me-1"></i><strong>Admin</strong>: can add, edit and remove other users.<br>
+                        <i class="bi bi-patch-check me-1"></i><strong>Validator</strong>: can validate or reject tasks on the staging server.
+                      </p>
                     </div>
                 </div>
             </div>

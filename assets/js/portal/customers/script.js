@@ -546,6 +546,8 @@ jQuery(function(){
                         } else {
                             row += "<td></td>";
                         }
+                        row += `<td>${j.admin==1 ? '<i class="bi bi-check-circle-fill text-success" title="Yes"></i>' : ''}</td>`;
+                        row += `<td>${j.can_validate==1 ? '<i class="bi bi-check-circle-fill text-success" title="Yes"></i>' : ''}</td>`;
                         if(j.admin==0){
                             row += "<td class='remove-user'><i class='bi bi-trash'></i></td>";
                         }else{

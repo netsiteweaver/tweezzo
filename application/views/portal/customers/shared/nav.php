@@ -88,7 +88,11 @@
                     </ul>
                 </li>
                 <li class="nav-item cursor-pointer add-user-access portal-nav-action">
+                    <?php if (!empty($isAdmin) && $isAdmin == "1"): ?>
                     <span class="portal-nav-action-label"><i id="addUser" class="bi bi-person-plus-fill portal-nav-icon" aria-hidden="true"></i><span class="portal-nav-action-text">Add user</span></span>
+                    <?php else: ?>
+                    <span class="portal-nav-action-label"><i id="addUser" class="bi bi-people-fill portal-nav-icon" aria-hidden="true"></i><span class="portal-nav-action-text">View users</span></span>
+                    <?php endif; ?>
                 </li>
             </ul>
             <ul class="navbar-nav mb-2 mb-lg-0 ms-auto align-items-center portal-user-info">

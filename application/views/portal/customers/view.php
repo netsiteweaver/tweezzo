@@ -135,7 +135,11 @@
 										   <div class="mb-3"><strong>Description:</strong><br><?php echo $task->description;?></div>
 										   
 										   <!-- Validation Section for Staging Tasks -->
-										   <?php if($task->stage == 'staging'):?>
+										   <?php if($task->stage == 'staging' && empty($canValidate)):?>
+										   <div class="alert alert-info mb-3">
+											   <p class='mb-0 small'>This task is on the <b>Staging Server</b> awaiting validation. You do not have permission to validate tasks; please contact your administrator or send us a note below.</p>
+										   </div>
+										   <?php elseif($task->stage == 'staging'):?>
 										   <div class="card card-info mb-3">
 											   <div class="card-body">
 												   <p class='mb-2'><strong>Task Validation</strong></p>

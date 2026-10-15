@@ -788,6 +788,18 @@ class Customersportal_model extends CI_Model
         return ['result' => true];
     }
 
+    /**
+     * Whether the portal user (customer_access.id) may validate/reject staging tasks.
+     */
+    public function canValidate($customer_access_id)
+    {
+        $row = $this->db->select("can_validate")->from("customer_access")->where(array(
+            "id"        =>  (int) $customer_access_id,
+            "status"    =>  "1"
+        ))->get()->row();
+        return !empty($row) && (int) $row->can_validate === 1;
+    }
+
     public function validateTask($task_id)
     {
         $taskRow = $this->db->select("stage, sprint_id")->from("tasks")->where("id", $task_id)->get()->row();
@@ -1295,8 +1307,9 @@ class Customersportal_model extends CI_Model
     /**
      * addUserAccess is called from the back office or from the portal (portal always passes admin=0).
      * @param int $admin 1 = portal admin (can add/remove other users), 0 = normal user
+     * @param int $can_validate 1 = can validate/reject staging tasks
      */
-    public function addUserAccess($uuid, $name,$email,$phone,$password, $country_code, $admin = 0, $generate_password = 0)
+    public function addUserAccess($uuid, $name,$email,$phone,$password, $country_code, $admin = 0, $generate_password = 0, $can_validate = 0)
     {
         $author = $this->db->select("name,email")->from("users")->where("id",$_SESSION['user_id'])->get()->row();
         $customer = $this->db->select("customer_id, email, full_name, company_name")->from("customers")->where("uuid",$uuid)->get()->row();
@@ -1320,6 +1333,7 @@ class Customersportal_model extends CI_Model
         $this->db->set("created_on",'NOW()',true);
         $this->db->set("created_by_type","customer");
         $this->db->set("admin", (int) $admin);
+        $this->db->set("can_validate", (int) $can_validate);
         $this->db->insert("customer_access");
         $newUserId = $this->db->insert_id();
 
@@ -1336,8 +1350,9 @@ class Customersportal_model extends CI_Model
      * @param int $access_id customer_access.id
      * @param string $password optional; if empty, password is not changed
      * @param string|null $job_description optional; if null, leave unchanged
+     * @param int|null $can_validate optional; if null, leave unchanged
      */
-    public function updateUserAccess($access_id, $name, $email, $phone = null, $country_code = null, $admin = null, $password = '', $job_description = null)
+    public function updateUserAccess($access_id, $name, $email, $phone = null, $country_code = null, $admin = null, $password = '', $job_description = null, $can_validate = null)
     {
         $row = $this->db->select("id, customer_id")->from("customer_access")->where(array("id" => $access_id, "status" => "1"))->get()->row();
         if (empty($row)) {
@@ -1363,6 +1378,9 @@ class Customersportal_model extends CI_Model
         }
         if ($admin !== null) {
             $this->db->set("admin", (int) $admin);
+        }
+        if ($can_validate !== null) {
+            $this->db->set("can_validate", (int) $can_validate);
         }
         if ($password !== '') {
             $this->db->set("password", md5($password), true);

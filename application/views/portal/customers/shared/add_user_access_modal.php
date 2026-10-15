@@ -42,10 +42,12 @@
                       <table id='existing_users' class="table">
                         <thead>
                           <tr>
-                            <th>User</th>
-                            <th>Job</th>
-                            <th>Email</th>
-                            <th>Country</th>
+                            <th><i class="bi bi-person me-1"></i>User</th>
+                            <th><i class="bi bi-briefcase me-1"></i>Job</th>
+                            <th><i class="bi bi-envelope me-1"></i>Email</th>
+                            <th><i class="bi bi-globe me-1"></i>Country</th>
+                            <th><i class="bi bi-shield-lock me-1"></i>Admin</th>
+                            <th><i class="bi bi-patch-check me-1"></i>Validator</th>
                             <th></th>
                           </tr>
                         </thead>
@@ -62,6 +64,8 @@
                                 <i class="flag flag-<?php echo htmlspecialchars($user->country_code); ?>"></i>
                               <?php endif; ?>
                             </td>
+                            <td><?php echo !empty($user->isAdmin) ? '<i class="bi bi-check-circle-fill text-success" title="Yes"></i>' : ''; ?></td>
+                            <td><?php echo !empty($user->canValidate) ? '<i class="bi bi-check-circle-fill text-success" title="Yes"></i>' : ''; ?></td>
                             <td class=''>
                               <i class="remove-user bi bi-trash"></i>
                               <?php if($user->isAdmin):?>
@@ -72,6 +76,10 @@
                           <?php endforeach;?>
                         </tbody>
                       </table>
+                      <p class="text-muted small mb-0">
+                        <i class="bi bi-shield-lock me-1"></i><strong>Admin</strong>: can add, edit and remove other users.<br>
+                        <i class="bi bi-patch-check me-1"></i><strong>Validator</strong>: can validate or reject tasks on the staging server.
+                      </p>
                     </div>
                 </div>
             </div>

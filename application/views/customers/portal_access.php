@@ -30,6 +30,7 @@
                             <th>Email</th>
                             <th style='width:30px;'>Country</th>
                             <th style='width:60px;'>Admin</th>
+                            <th style='width:60px;'>Validator</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -44,6 +45,7 @@
                                 <input type="text" class="form-control d-none" placeholder="mu?">
                             </td>
                             <td><?php echo !empty($user->admin) ? '<span class="badge badge-info">Yes</span>' : 'No'; ?></td>
+                            <td><?php echo !empty($user->can_validate) ? '<span class="badge badge-info">Yes</span>' : 'No'; ?></td>
                             <td>
                                 <div class="btn btn-info btn-sm editUser" title="Edit"><i class="fa fa-edit"></i></div>
                                 <div class="btn btn-danger btn-sm deleteUser" title="Remove access"><i class="fa fa-trash"></i></div>
@@ -156,6 +158,13 @@
             <div class="form-check">
                 <input type="checkbox" class="admin form-check-input" id="addUserAdmin" value="1">
                 <label class="form-check-label" for="addUserAdmin">Portal admin (can add/remove other users)</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="">Validator</label>
+            <div class="form-check">
+                <input type="checkbox" class="can_validate form-check-input" id="addUserCanValidate" value="1">
+                <label class="form-check-label" for="addUserCanValidate">Can validate/reject tasks on staging</label>
             </div>
         </div>
         <div class="form-group">
