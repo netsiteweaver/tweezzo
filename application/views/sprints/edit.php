@@ -87,5 +87,43 @@
                 </div>
             </form>
         </div>
+
+        <?php
+        $settlementLabels = [
+            'due'   => ['danger', 'Payment outstanding: the client is reminded automatically'],
+            'paid'  => ['success', 'Fully paid: ready to go live'],
+            'none'  => ['warning', 'No quotation or invoice referenced by the tasks'],
+            'error' => ['warning', 'HMS could not be reached: retried daily'],
+        ];
+        $settlement = (!empty($sprint->settlement_checked_on) && isset($settlementLabels[$sprint->settlement_status])) ? $settlementLabels[$sprint->settlement_status] : null;
+        ?>
+        <div class="card card-outline card-secondary">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa fa-money-bill"></i> Go-live payment</h3>
+            </div>
+            <div class="card-body">
+                <?php if ($settlement): ?>
+                    <p class="mb-1"><span class="badge badge-<?php echo $settlement[0]; ?>"><?php echo strtoupper($sprint->settlement_status); ?></span> <?php echo $settlement[1]; ?></p>
+                    <small class="form-text text-muted">All tasks validated on <?php echo date('d M Y H:i', strtotime($sprint->settlement_checked_on)); ?>.</small>
+                    <?php if (!empty($sprint->settlement_reminded_on)): ?>
+                        <small class="form-text text-info">Payment request last sent on: <?php echo date('d M Y H:i', strtotime($sprint->settlement_reminded_on)); ?></small>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <p class="text-muted mb-1">Checked automatically once the client has validated every task of this sprint.</p>
+                <?php endif; ?>
+                <small class="form-text text-muted">
+                    HMS emails the client's billing addresses what is still owed on the quotations/invoices referenced by this sprint's tasks. Nothing is sent if everything is paid.
+                </small>
+            </div>
+            <div class="card-footer">
+                <form action="sprints/send_payment_request" method="post" class="d-inline"
+                      onsubmit="return confirm('Email the client a payment request for this sprint now?');">
+                    <input type="hidden" name="uuid" value="<?php echo htmlspecialchars($sprint->uuid); ?>">
+                    <button type="submit" class="btn btn-primary btn-flat">
+                        <i class="fa fa-paper-plane"></i> <?php echo !empty($sprint->settlement_reminded_on) ? 'Resend payment request' : 'Send payment request'; ?>
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>

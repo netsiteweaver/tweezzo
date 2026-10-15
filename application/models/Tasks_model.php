@@ -511,6 +511,7 @@ class Tasks_model extends CI_Model{
         if ($rows > 0 && !empty($current_task) && !empty($current_task->sprint_id)) {
             $this->load->model("Sprints_model");
             $this->Sprints_model->clearValidationReadinessIfNoStagingTasks((int) $current_task->sprint_id);
+            $this->Sprints_model->checkSettlementIfAllValidated((int) $current_task->sprint_id);
         }
 
         return ['result'=>true];
@@ -1164,6 +1165,7 @@ class Tasks_model extends CI_Model{
             foreach ($sprintRows as $sr) {
                 if (!empty($sr->sprint_id)) {
                     $this->Sprints_model->clearValidationReadinessIfNoStagingTasks((int) $sr->sprint_id);
+                    $this->Sprints_model->checkSettlementIfAllValidated((int) $sr->sprint_id);
                 }
             }
         }

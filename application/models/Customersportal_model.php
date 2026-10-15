@@ -840,6 +840,7 @@ class Customersportal_model extends CI_Model
 
             $this->load->model("Sprints_model");
             $this->Sprints_model->clearValidationReadinessIfNoStagingTasks((int) $taskRow->sprint_id);
+            $this->Sprints_model->checkSettlementIfAllValidated((int) $taskRow->sprint_id);
 
             return true;
         }
@@ -886,6 +887,7 @@ class Customersportal_model extends CI_Model
 
             $this->load->model("Sprints_model");
             $this->Sprints_model->clearValidationReadinessIfNoStagingTasks((int) $taskRow->sprint_id);
+            $this->Sprints_model->checkSettlementIfAllValidated((int) $taskRow->sprint_id);
 
             return true;
         }

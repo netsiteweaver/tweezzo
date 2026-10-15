@@ -425,6 +425,208 @@ class Sprints_model extends CI_Model{
         }
     }
 
+    /**
+     * Once every open task of the sprint is validated, check the related HMS quotations/invoices (once).
+     * Anything unpaid: HMS emails the client's billing addresses that payment must be done before we push live.
+     * The team is told either way. Reset when a task leaves validation, so it runs again on the next full validation.
+     */
+    public function checkSettlementIfAllValidated($sprint_id)
+    {
+        $sprint = $this->settlementSprint($sprint_id);
+        if (empty($sprint)) {
+            return;
+        }
+
+        if (!$this->allTasksValidated($sprint->id)) {
+            if (!empty($sprint->settlement_checked_on)) {
+                $this->clearSettlement($sprint->id);
+            }
+            return;
+        }
+        // Claim the check first so two validations landing together send one email
+        $this->db->set("settlement_checked_on", "NOW()", false)
+            ->where("id", $sprint->id)
+            ->where("settlement_checked_on IS NULL", null, false)
+            ->update("sprints");
+        if ((int) $this->db->affected_rows() === 0) {
+            return;
+        }
+
+        $this->runSettlementNotice($sprint, false);
+    }
+
+    /**
+     * Daily follow-up of validated sprints still waiting for payment (cron):
+     * paid since → the team is told it can go live; still due → HMS reminds the client every $reminderDays days;
+     * HMS unreachable at validation time → the first notice is retried.
+     */
+    public function sendSettlementReminders($reminderDays = 7)
+    {
+        $reminderDays = max(1, (int) $reminderDays);
+        $rows = $this->db->select("s.id")
+            ->from("sprints s")
+            ->where("s.settlement_checked_on IS NOT NULL", null, false)
+            ->where_in("s.settlement_status", ["due", "error"])
+            ->get()->result();
+
+        $this->load->model("Hms_model");
+        foreach ($rows as $row) {
+            $sprint = $this->settlementSprint($row->id);
+            if (empty($sprint)) {
+                continue;
+            }
+            if (!$this->allTasksValidated($sprint->id)) {
+                $this->clearSettlement($sprint->id);
+                continue;
+            }
+            if ($sprint->settlement_status === "error") {
+                $this->runSettlementNotice($sprint, false);
+                continue;
+            }
+
+            $outstanding = $this->Hms_model->sprintOutstanding($sprint->id);
+            if ($outstanding['error'] !== '') {
+                continue; // tried again tomorrow
+            }
+            if (empty($outstanding['invoices']) && empty($outstanding['quotations'])) {
+                $this->db->set("settlement_status", "paid")->where("id", $sprint->id)->update("sprints");
+                $this->emailSettlementToTeam($sprint, $outstanding, "paid");
+                continue;
+            }
+            $last = !empty($sprint->settlement_reminded_on) ? $sprint->settlement_reminded_on : $sprint->settlement_checked_on;
+            if (strtotime($last) <= strtotime("-{$reminderDays} days")) {
+                $this->runSettlementNotice($sprint, true);
+            }
+        }
+    }
+
+    /**
+     * Payment request sent by hand from the sprint page, whatever the tasks' stages. HMS emails the client only if
+     * something is owed. A sprint already followed up restarts its reminder interval from now.
+     */
+    public function sendPaymentRequestManually($uuid)
+    {
+        $id = (int) $this->db->select("id")->from("sprints")->where("uuid", (string) $uuid)->where("status", 1)->get()->row("id");
+        $sprint = $this->settlementSprint($id);
+        if (empty($sprint)) {
+            return null;
+        }
+
+        $this->load->model("Hms_model");
+        $reminder = !empty($sprint->settlement_reminded_on);
+        $outstanding = $this->Hms_model->sprintPaymentRequired($sprint->id, $sprint->project_name, $sprint->sprint_name, $reminder);
+        $due = $outstanding['error'] === '' && (!empty($outstanding['invoices']) || !empty($outstanding['quotations']));
+
+        if (!empty($sprint->settlement_checked_on) && $outstanding['error'] === '' && !empty($outstanding['refs'])) {
+            $this->db->set("settlement_status", $due ? "due" : "paid");
+            if ($due) {
+                $this->db->set("settlement_reminded_on", "NOW()", false);
+            }
+            $this->db->where("id", $sprint->id)->update("sprints");
+        }
+        return $outstanding;
+    }
+
+    /** HMS checks what is owed and, if anything is, emails the client; the outcome is stored and sent to the team. */
+    private function runSettlementNotice($sprint, $reminder)
+    {
+        $this->load->model("Hms_model");
+        $outstanding = $this->Hms_model->sprintPaymentRequired($sprint->id, $sprint->project_name, $sprint->sprint_name, $reminder);
+
+        if ($outstanding['error'] !== '') {
+            $status = "error";
+        } elseif (!empty($outstanding['invoices']) || !empty($outstanding['quotations'])) {
+            $status = "due";
+        } elseif (empty($outstanding['refs'])) {
+            $status = "none";
+        } else {
+            $status = "paid";
+        }
+        $this->db->set("settlement_status", $status);
+        if ($status === "due") {
+            $this->db->set("settlement_reminded_on", "NOW()", false);
+        }
+        $this->db->where("id", $sprint->id)->update("sprints");
+
+        $event = $reminder ? ($status === "paid" ? "paid" : "reminder") : "validated";
+        $this->emailSettlementToTeam($sprint, $outstanding, $event);
+    }
+
+    private function emailSettlementToTeam($sprint, $outstanding, $event)
+    {
+        $this->load->model("Email_model3");
+        $this->load->model("system_model");
+        $due = !empty($outstanding['invoices']) || !empty($outstanding['quotations']);
+        if ($outstanding['error'] !== '') {
+            $status = "payment NOT checked";
+        } elseif ($due) {
+            $status = ($event === "reminder") ? "client reminded" : "payment outstanding";
+        } elseif (empty($outstanding['refs'])) {
+            $status = "no quotation/invoice linked";
+        } else {
+            $status = "fully paid, ready to go live";
+        }
+        $titles = ["validated" => "Sprint validated", "reminder" => "Payment reminder", "paid" => "Payment received"];
+
+        $emailData = [
+            "logo" => $this->system_model->getParam("logo"),
+            "customer_name" => $sprint->company_name,
+            "project_name" => $sprint->project_name,
+            "sprint_name" => $sprint->sprint_name,
+            "outstanding" => $outstanding,
+            "event" => $event,
+        ];
+        $content = $this->load->view("_email/header", $emailData, true);
+        $content .= $this->load->view("_email/sprintValidatedAdmin", $emailData, true);
+        $content .= $this->load->view("_email/footer", [], true);
+        $subject = "{$titles[$event]} ({$status}): {$sprint->company_name} / {$sprint->project_name} / {$sprint->sprint_name}";
+        $members = $this->system_model->getParam("notification_update_tasks", true);
+        foreach ((array) $members as $m) {
+            $user = $this->db->select("email")->from("users")->where("id", (int) $m)->get()->row();
+            if (!empty($user->email)) {
+                $this->Email_model3->save($user->email, $subject, $content);
+            }
+        }
+    }
+
+    private function settlementSprint($sprint_id)
+    {
+        if ((int) $sprint_id <= 0) {
+            return null;
+        }
+        return $this->db->select("s.id, s.name sprint_name, s.settlement_checked_on, s.settlement_status, s.settlement_reminded_on, p.name project_name, c.company_name")
+            ->from("sprints s")
+            ->join("projects p", "p.id = s.project_id")
+            ->join("customers c", "c.customer_id = p.customer_id")
+            ->where("s.id", (int) $sprint_id)
+            ->where(["s.status" => "1", "s.active" => "1", "p.active" => "1", "c.active" => "1"])
+            ->get()->row();
+    }
+
+    /** Every open task (stopped ones aside) validated or already completed, and at least one validated. */
+    private function allTasksValidated($sprint_id)
+    {
+        $counts = $this->db->select("COUNT(t.id) AS total,
+                                     SUM(t.stage IN ('validated','completed')) AS done,
+                                     SUM(t.stage = 'validated') AS validated", false)
+            ->from("tasks t")
+            ->where("t.sprint_id", (int) $sprint_id)
+            ->where("t.status", "1")
+            ->where("t.closed", "0")
+            ->where("t.stage !=", "stopped")
+            ->get()->row();
+        return (int) $counts->total > 0 && (int) $counts->done === (int) $counts->total && (int) $counts->validated > 0;
+    }
+
+    private function clearSettlement($sprint_id)
+    {
+        $this->db->set("settlement_checked_on", null)
+            ->set("settlement_status", null)
+            ->set("settlement_reminded_on", null)
+            ->where("id", (int) $sprint_id)
+            ->update("sprints");
+    }
+
     public function toggleActive($uuid)
     {
         $row = $this->db->select('id, active')

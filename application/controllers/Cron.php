@@ -615,6 +615,19 @@ class Cron extends CI_Controller {
         }
     }
 
+    /**
+     * Validated sprints still waiting for payment: HMS reminds the client every `payment_reminder_days`
+     * (config/hms.php) and the team is told once payment is recorded. Run daily.
+     */
+    public function sendGoLivePaymentReminders()
+    {
+        $this->db->query("SET @@session.time_zone = '+04:00'");
+        $this->config->load('hms', TRUE);
+        $cfg = (array) $this->config->item('hms', 'hms');
+        $this->load->model("Sprints_model");
+        $this->Sprints_model->sendSettlementReminders(!empty($cfg['payment_reminder_days']) ? (int) $cfg['payment_reminder_days'] : 7);
+    }
+
     public function fetchQuotes()
     {
         $curl = curl_init();

@@ -212,6 +212,10 @@ $thresholdDays = 30; // Change this value
 # Suspend inactive developers weekly on Sundays at 2 AM
 0 2 * * 0 cd /var/www/html/tweezzo && /usr/bin/php index.php cron suspendInactiveDevelopers >> /var/log/cron-suspend-developers.log 2>&1
 
+# Go-live payment follow-up daily at 9:30 AM: reminds clients of validated sprints still unpaid
+# (every payment_reminder_days, config/hms.php) and tells the team once payment is recorded in HMS
+30 9 * * * cd /var/www/html/tweezzo && /usr/bin/php index.php cron sendGoLivePaymentReminders >> /var/log/cron-golive-payment.log 2>&1
+
 # Fetch quotes daily at midnight
 0 0 * * * cd /var/www/html/tweezzo && /usr/bin/php index.php cron fetchQuotes >> /var/log/cron-quotes.log 2>&1
 ```

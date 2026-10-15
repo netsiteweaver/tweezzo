@@ -7,4 +7,6 @@ $config['hms'] = array(
 	'app_url' => 'http://hms.local/',
 	'api_token' => '3d8d93cafc47b59e60ee613a8147ca29eb69458fd2fd12ae',
 	'timeout_seconds' => 15,
+	// Validated sprints still unpaid: HMS reminds the client every N days (cron sendGoLivePaymentReminders)
+	'payment_reminder_days' => 7,
 );

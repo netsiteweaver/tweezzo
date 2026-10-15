@@ -80,6 +80,77 @@ class Hms_model extends CI_Model
             ->get()->row('ct');
     }
 
+    /**
+     * What the client still owes on the HMS documents (QUO/EST/INV numbers in `ref`) of every task in the sprint.
+     * Returns refs (the numbers found), error (HMS could not be asked), currency, invoices and quotations still due.
+     */
+    public function sprintOutstanding($sprintId)
+    {
+        $refs = $this->sprintRefs($sprintId);
+        if (empty($refs)) {
+            return $this->outstandingResult($refs, ['ok' => true, 'error' => '', 'data' => []]);
+        }
+        $res = $this->request('GET', 'outstanding?refs=' . rawurlencode(implode(',', $refs)));
+        if (!$res['ok']) {
+            log_message('error', 'HMS outstanding check for sprint ' . (int) $sprintId . ': ' . $res['error']);
+        }
+        return $this->outstandingResult($refs, $res);
+    }
+
+    /**
+     * Same as sprintOutstanding(), but HMS also emails the client's billing addresses that payment must be done
+     * before going live (nothing is sent when all is paid). `emails` lists, per client, who was emailed or failed.
+     */
+    public function sprintPaymentRequired($sprintId, $projectName, $sprintName, $reminder = false)
+    {
+        $refs = $this->sprintRefs($sprintId);
+        if (empty($refs)) {
+            return $this->outstandingResult($refs, ['ok' => true, 'error' => '', 'data' => []]);
+        }
+        $res = $this->request('POST', 'payment_required', [
+            'refs' => $refs,
+            'project' => (string) $projectName,
+            'sprint' => (string) $sprintName,
+            'reminder' => (bool) $reminder,
+        ]);
+        if (!$res['ok']) {
+            log_message('error', 'HMS payment notice for sprint ' . (int) $sprintId . ': ' . $res['error']);
+        }
+        return $this->outstandingResult($refs, $res);
+    }
+
+    /** HMS document numbers (QUO/EST/INV) in the `ref` of the sprint's live tasks. */
+    private function sprintRefs($sprintId)
+    {
+        $refs = [];
+        $rows = $this->db->select('ref')->from('tasks')
+            ->where('sprint_id', (int) $sprintId)
+            ->where('status', 1)
+            ->where("COALESCE(ref,'') !=", '')
+            ->get()->result();
+        foreach ($rows as $row) {
+            if (preg_match_all('/\b(?:QUO|EST|INV)\d+\b/i', (string) $row->ref, $m)) {
+                foreach ($m[0] as $ref) {
+                    $refs[strtoupper($ref)] = strtoupper($ref);
+                }
+            }
+        }
+        return array_values($refs);
+    }
+
+    private function outstandingResult($refs, $res)
+    {
+        $data = $res['ok'] ? $res['data'] : [];
+        return [
+            'refs' => $refs,
+            'error' => $res['ok'] ? '' : $res['error'],
+            'currency' => (string) ($data['currency'] ?? ''),
+            'invoices' => (array) ($data['invoices'] ?? []),
+            'quotations' => (array) ($data['quotations'] ?? []),
+            'emails' => (array) ($data['emails'] ?? []),
+        ];
+    }
+
     private function companyKey($name)
     {
         $name = strtolower((string) $name);

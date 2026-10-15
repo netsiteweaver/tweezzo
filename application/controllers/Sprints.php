@@ -154,6 +154,44 @@ class Sprints extends MY_Controller {
         ));
     }
 
+    /** POST uuid: HMS emails the client's billing addresses what must be paid before going live. */
+    public function send_payment_request()
+    {
+        //Access Control
+        if(!isAuthorised(get_class(),"edit")) return false;
+
+        $uuid = (string) $this->input->post('uuid');
+        $back = base_url("sprints/edit/" . rawurlencode($uuid));
+        $result = $this->Sprints_model->sendPaymentRequestManually($uuid);
+        if ($result === null) {
+            flashDanger("Sprint not found, or its project or customer is inactive.");
+        } elseif ($result['error'] !== '') {
+            flashDanger("Payment request NOT sent: " . $result['error']);
+        } elseif (empty($result['refs'])) {
+            flashWarning("No task in this sprint references a quotation or invoice (QUO/EST/INV number in Ref), so there is nothing to request.");
+        } elseif (empty($result['invoices']) && empty($result['quotations'])) {
+            flashSuccess("Nothing outstanding: " . implode(', ', $result['refs']) . " are fully paid. No email was sent.");
+        } else {
+            $sent = [];
+            $problems = [];
+            foreach ($result['emails'] as $mail) {
+                $sent = array_merge($sent, $mail['sent']);
+                if (empty($mail['recipients'])) {
+                    $problems[] = "HMS client {$mail['client']} has no email address";
+                }
+                if (!empty($mail['failed'])) {
+                    $problems[] = "email FAILED for " . implode(', ', $mail['failed']);
+                }
+            }
+            if (empty($problems)) {
+                flashSuccess("Payment request emailed to " . implode(', ', $sent) . ".");
+            } else {
+                flashDanger("Payment request: " . implode('; ', $problems) . "." . (!empty($sent) ? " It was sent to " . implode(', ', $sent) . "." : " Nobody was emailed."));
+            }
+        }
+        redirect($back);
+    }
+
     public function toggle_active()
     {
         if ($this->accesscontrol_model->authorised("sprints", "edit") == 0) {
