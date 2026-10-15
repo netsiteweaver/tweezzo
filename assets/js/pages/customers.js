@@ -176,314 +176,274 @@ jQuery(function(){
         $('#customers_listing tbody tr.active').removeClass("active");
     })
 
-    function setAddUserModalMode(mode) {
-        var $m = $('#addUserAccessModal');
-        if (mode === 'add') {
-            $m.find('.access_id').val('');
-            $m.find('.name, .email, .phone, .password').val('');
-            $m.find('.country_code').val('mu');
-            $m.find('.admin').prop('checked', false);
-            $('#addUserAccessModalTitle').html('<i class="fa fa-unlock"></i> Grant User Access');
-            $m.find('.password-group .form-control').attr('placeholder', 'Enter password');
-            $m.find('.add-mode-hint').show();
-        } else {
-            $('#addUserAccessModalTitle').html('<i class="fa fa-edit"></i> Edit User Access');
-            $m.find('.password-group .form-control').attr('placeholder', 'Leave blank to keep current password');
-            $m.find('.add-mode-hint').hide();
-        }
+    // ---------- Portal users modal (list, add/edit, reset password, remove) ----------
+    var MAX_PORTAL_USERS = 5;
+    var $pu = $('#modalPortalUsers');
+    var portalUsers = [];
+
+    function esc(value) {
+        return $('<div>').text(value == null ? '' : String(value)).html();
     }
 
-    $('#add-user-access').on("click", function(){
-        setAddUserModalMode('add');
-        $('#addUserAccessModal').modal("show");
-        $('#addUserAccessModal').one("shown.bs.modal", function(){
-            $("#addUserAccessModal .name").trigger("focus");
+    function currentPortalUuid() {
+        return $pu.find('input[name=portal_customer_uuid]').val();
+    }
+
+    function showPortalPanel(panel) {
+        $pu.find('.portal-users-list-panel').toggleClass('d-none', panel !== 'list');
+        $pu.find('.portal-user-form-panel').toggleClass('d-none', panel !== 'form');
+    }
+
+    function updateListingCount(uuid, count) {
+        var $badge = $('#customers_listing tr[data-uuid="' + uuid + '"] .portal-user-count');
+        $badge.text(count).toggleClass('badge-info', count > 0).toggleClass('badge-secondary', count === 0);
+    }
+
+    function renderPortalUsers() {
+        var check = '<i class="fa fa-check-circle text-success" title="Yes"></i>';
+        var count = portalUsers.length;
+        $pu.find('.users-count-label').text(count + ' user' + (count === 1 ? '' : 's') + ' (max ' + MAX_PORTAL_USERS + ')');
+        $pu.find('.add-portal-user').toggle(count < MAX_PORTAL_USERS);
+        updateListingCount(currentPortalUuid(), count);
+
+        if (count === 0) {
+            $pu.find('.portal-users-list').html('<div class="alert alert-info">No portal access users found for this customer.</div>');
+            return;
+        }
+        var html = '<div class="table-responsive"><table class="table table-striped table-bordered table-sm">';
+        html += '<thead><tr>' +
+            '<th><i class="fa fa-user mr-1"></i>Name</th>' +
+            '<th><i class="fa fa-envelope mr-1"></i>Email</th>' +
+            '<th><i class="fa fa-phone mr-1"></i>Phone</th>' +
+            '<th><i class="fa fa-briefcase mr-1"></i>Job Description</th>' +
+            '<th><i class="fa fa-globe mr-1"></i>Country</th>' +
+            '<th class="text-center"><i class="fa fa-user-shield mr-1"></i>Admin</th>' +
+            '<th class="text-center"><i class="fa fa-check-double mr-1"></i>Validator</th>' +
+            '<th style="width:1%;white-space:nowrap;">Actions</th>' +
+            '</tr></thead><tbody>';
+        portalUsers.forEach(function(user){
+            html += '<tr data-id="' + esc(user.id) + '">' +
+                '<td>' + esc(user.name) + '</td>' +
+                '<td>' + esc(user.email) + '</td>' +
+                '<td>' + (esc(user.phone_number1) || '-') + '</td>' +
+                '<td>' + (esc(user.job_description) || '-') + '</td>' +
+                '<td>' + (user.country_code ? '<i class="flag flag-' + esc(user.country_code) + '"></i>' : '') + '</td>' +
+                '<td class="text-center">' + (user.admin == '1' ? check : '') + '</td>' +
+                '<td class="text-center">' + (user.can_validate == '1' ? check : '') + '</td>' +
+                '<td style="white-space:nowrap;">' +
+                    '<button type="button" class="btn btn-info btn-sm edit-portal-user" title="Edit"><i class="fa fa-edit"></i></button> ' +
+                    '<button type="button" class="btn btn-warning btn-sm reset-portal-password" title="Reset password"><i class="fa fa-key"></i></button> ' +
+                    '<button type="button" class="btn btn-danger btn-sm remove-portal-user" title="Remove access"><i class="fa fa-trash"></i></button>' +
+                '</td>' +
+                '</tr>';
         });
-    });
+        html += '</tbody></table></div>';
+        $pu.find('.portal-users-list').html(html);
+    }
 
-    $('#addUserAccessModal').on("hidden.bs.modal", function(){
-        $('#addUserAccessModal .access_id').val('');
-    });
-
-    $('#existing_users').on("click", ".editUser", function(){
-        var $tr = $(this).closest("tr");
-        var id = $tr.data("id");
-        var name = $tr.find(".userName").val();
-        var phone = $tr.find(".userPhone").val();
-        var email = $tr.find(".userEmail").val();
-        var flagClass = $tr.find("td:eq(3) .flag").attr("class") || "";
-        var countryCode = (flagClass.match(/flag-(\w+)/) || [null, "mu"])[1];
-        var isAdmin = $tr.find("td:eq(4) .badge").length > 0;
-        $('#addUserAccessModal .access_id').val(id);
-        $('#addUserAccessModal .name').val(name);
-        $('#addUserAccessModal .phone').val(phone);
-        $('#addUserAccessModal .email').val(email);
-        $('#addUserAccessModal .country_code').val(countryCode);
-        $('#addUserAccessModal .admin').prop('checked', isAdmin);
-        $('#addUserAccessModal .password').val('');
-        setAddUserModalMode('edit');
-        $('#addUserAccessModal').modal("show");
-        $('#addUserAccessModal').one("shown.bs.modal", function(){
-            $("#addUserAccessModal .name").trigger("focus");
-        });
-    });
-
-    $('#addUserAccessModal .save').on("click", function(){
-        let uuid = $("input[name=uuid]").val();
-        let accessId = $('#addUserAccessModal .access_id').val();
-        let name = $('#addUserAccessModal .name').val().trim();
-        let email = $('#addUserAccessModal .email').val();
-        let phone = $('#addUserAccessModal .phone').val();
-        let password = $('#addUserAccessModal .password').val();
-        let country_code = $('#addUserAccessModal .country_code').val();
-        let admin = $('#addUserAccessModal .admin').is(':checked') ? 1 : 0;
-        let errorMessage = "";
-
-        if(name.length < 4){
-            errorMessage += "- a name of at least 4 chars\r\n";
-        }
-        if(!isValidEmail(email)){
-            errorMessage += "- a valid email\r\n";
-        }
-        if(!accessId && password.length < 4){
-            errorMessage += "- a valid password of at least 4 chars (required for new user)\r\n";
-        }
-        if(errorMessage.length > 0){
-            errorMessage = "Please correct the following error(s):\r\n" + errorMessage;
-            alert(errorMessage);
-            return false;
-        }
-
-        if (accessId) {
-            $.ajax({
-                url: base_url + "portal/customers/updateUserAccess",
-                method: "POST",
-                dataType: "JSON",
-                data: { access_id: accessId, name: name, email: email, phone: phone, country_code: country_code, admin: admin, password: password },
-                success: function(response){
-                    if(response.result === false){
-                        alertify.alert(response.reason || 'Update failed');
-                    } else {
-                        var adminBadge = admin ? '<span class="badge badge-info">Yes</span>' : 'No';
-                        var $row = $("#existing_users tbody tr[data-id='" + accessId + "']");
-                        $row.find(".userName").val(name);
-                        $row.find(".userPhone").val(phone);
-                        $row.find(".userEmail").val(email);
-                        $row.find("td:eq(3)").html('<i class="flag flag-' + country_code + '"></i><input type="text" class="form-control d-none" placeholder="' + country_code + '?">');
-                        $row.find("td:eq(4)").html(adminBadge);
-                        $("#addUserAccessModal input, #addUserAccessModal textarea").val("");
-                        $("#addUserAccessModal .access_id").val("");
-                        $("#addUserAccessModal .admin").prop("checked", false);
-                        $('#addUserAccessModal').modal("hide");
-                    }
-                }
-            });
-        } else {
-            $.ajax({
-                url: base_url + "portal/customers/addUserAccess",
-                method: "POST",
-                dataType: "JSON",
-                data:{uuid:uuid,name:name,email:email,phone:phone,password:password,country_code:country_code,admin:admin},
-                success:function(response){
-                    if(response.result == false){
-                        alertify.alert(response.reason);
-                    }else{
-                        $("#addUserAccessModal input, #addUserAccessModal textarea").val("");
-                        $("#addUserAccessModal select").val("mu");
-                        $("#addUserAccessModal .admin").prop("checked", false);
-                        $("#addUserAccessModal .access_id").val("");
-                        $('#addUserAccessModal').modal("hide");
-                        let adminBadge = admin ? '<span class="badge badge-info">Yes</span>' : 'No';
-                        let row = `<tr data-id="${response.user_id}">
-                            <td><input type="text" class="form-control" placeholder="Enter Name" value="${name}" readonly=""></td>
-                            <td><input type="text" class="form-control" placeholder="Enter Phone" value="${phone}" readonly=""></td>
-                            <td><input type="text" class="form-control" placeholder="Enter Email" value="${email}" readonly=""></td>
-                            <td>
-                                <i class="flag flag-${country_code}"></i>
-                                <input type="text" class="form-control d-none" placeholder="${country_code}?">
-                            </td>
-                            <td>${adminBadge}</td>
-                            <td>
-                                <div class="btn btn-info btn-sm editUser" title="Edit"><i class="fa fa-edit"></i></div>
-                                <div class="btn btn-danger btn-sm deleteUser" title="Remove access"><i class="fa fa-trash"></i></div>
-                            </td>
-                        </tr>`;
-                        $("#existing_users tbody").append(row);
-                    }
-                }
-            });
-        }
-    });
-
-    $('#existing_users').on("click",".deleteUser",function(){
-        let row = $(this);
-        let id = $(this).closest("tr").data("id");
-        let name = $(this).closest("tr").find(".userName").val();
-        bootbox.confirm({
-	        message: `Are you sure you want to remove access to user <b>${name}</b>?`,
-	        buttons: {
-	            confirm: {
-	                label: 'Remove Access',
-	                className: 'btn-danger'
-	            },
-	            cancel: {
-	                label: 'Cancel',
-	                className: 'btn-primary'
-	            }
-	        },
-	        callback: function (result) {
-	        	if(result==true){
-                    $.ajax({
-                        url: base_url + "portal/customers/removeAccess",
-                        data: {user_id:id,name:name},
-                        method:"POST",
-                        dataType:"JSON",
-                        success:function(response){
-                            if(response.result){
-                                $(row).closest("tr").remove();
-                            }else{
-                                bootbox.alert({
-                                    title: "Error",
-                                    message: "Failed to remove selected user"
-                                })
-                            }
-                        }
-                    })	        	
-                }
-	            
-	        }
-	    });	
-
-    })
-
-    // Manage Portal Password functionality
-    $(".managePortalPassword").on("click", function(){
-        let uuid = $(this).closest("tr").data("uuid");
-        let companyName = $(this).closest("tr").find("td:first").text();
-        
-        $('#portal-customer-name').text(companyName);
-        $('input[name=portal_customer_uuid]').val(uuid);
-        $('#portal-users-list').html('<p class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading...</p>');
-        $('#modalPortalPassword').modal('show');
-        
-        // Load portal access users
+    function loadPortalUsers() {
+        $pu.find('.portal-users-list').html('<p class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading...</p>');
         $.ajax({
             url: base_url + "/customers/get_portal_access_users",
             type: "POST",
             dataType: "JSON",
-            data: {uuid: uuid},
+            data: {uuid: currentPortalUuid()},
             success: function(response){
                 if(response.result){
-                    if(response.users && response.users.length > 0){
-                        let html = '<div class="table-responsive"><table class="table table-striped table-bordered">';
-                        html += '<thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Job Description</th><th>Admin</th><th>Action</th></tr></thead>';
-                        html += '<tbody>';
-                        
-                        response.users.forEach(function(user){
-                            html += '<tr>';
-                            html += '<td>' + user.name + '</td>';
-                            html += '<td>' + user.email + '</td>';
-                            html += '<td>' + (user.phone_number1 || '-') + '</td>';
-                            html += '<td>' + (user.job_description || '-') + '</td>';
-                            html += '<td>' + (user.admin == '1' ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-secondary">No</span>') + '</td>';
-                            html += '<td><button class="btn btn-warning btn-sm reset-password-btn" data-access-id="' + user.id + '" data-name="' + user.name + '" data-email="' + user.email + '">';
-                            html += '<i class="fa fa-key"></i> Reset Password</button></td>';
-                            html += '</tr>';
-                        });
-                        
-                        html += '</tbody></table></div>';
-                        $('#portal-users-list').html(html);
-                    } else {
-                        $('#portal-users-list').html('<div class="alert alert-info">No portal access users found for this customer.</div>');
-                    }
+                    portalUsers = response.users || [];
+                    renderPortalUsers();
                 } else {
-                    $('#portal-users-list').html('<div class="alert alert-danger">Error: ' + response.reason + '</div>');
+                    $pu.find('.portal-users-list').html('<div class="alert alert-danger">Error: ' + esc(response.reason) + '</div>');
                 }
             },
             error: function(){
-                $('#portal-users-list').html('<div class="alert alert-danger">Error loading portal access users.</div>');
+                $pu.find('.portal-users-list').html('<div class="alert alert-danger">Error loading portal access users.</div>');
+            }
+        });
+    }
+
+    function findPortalUser($btn) {
+        var id = $btn.closest('tr').data('id');
+        return portalUsers.filter(function(u){ return u.id == id; })[0];
+    }
+
+    function togglePasswordInput() {
+        $pu.find('.password').toggleClass('d-none', $pu.find('.generate_password').is(':checked'));
+    }
+
+    function openPortalUserForm(user) {
+        var $f = $pu.find('.portal-user-form-panel');
+        $f.find('.access_id').val(user ? user.id : '');
+        $f.find('.name').val(user ? user.name : '');
+        $f.find('.email').val(user ? user.email : '');
+        $f.find('.phone').val(user ? (user.phone_number1 || '') : '');
+        $f.find('.country_code').val(user && user.country_code ? user.country_code : 'mu');
+        $f.find('.admin').prop('checked', !!user && user.admin == '1');
+        $f.find('.can_validate').prop('checked', !!user && user.can_validate == '1');
+        $f.find('.generate_password').prop('checked', true);
+        $f.find('.password').val('');
+        togglePasswordInput();
+        $f.find('.add-mode-only').toggle(!user);
+        $f.find('.form-title').html(user
+            ? '<i class="fa fa-edit"></i> Edit ' + esc(user.name)
+            : '<i class="fa fa-unlock"></i> Grant User Access');
+        $pu.find('.new-password-panel').addClass('d-none');
+        showPortalPanel('form');
+        $f.find('.name').trigger('focus');
+    }
+
+    $('.managePortalUsers').on('click', function(){
+        var $tr = $(this).closest('tr');
+        $pu.find('input[name=portal_customer_uuid]').val($tr.data('uuid'));
+        $pu.find('.customer-name').text($tr.find('td:first').text());
+        $pu.find('.new-password-panel').addClass('d-none');
+        showPortalPanel('list');
+        portalUsers = [];
+        $pu.modal('show');
+        loadPortalUsers();
+    });
+
+    $pu.on('click', '.add-portal-user', function(){ openPortalUserForm(null); });
+    $pu.on('click', '.edit-portal-user', function(){ openPortalUserForm(findPortalUser($(this))); });
+    $pu.on('click', '.cancel-portal-user', function(){ showPortalPanel('list'); });
+    $pu.on('change', '.generate_password', togglePasswordInput);
+    $pu.on('click', '.close-new-password', function(){ $pu.find('.new-password-panel').addClass('d-none'); });
+
+    $pu.on('click', '.save-portal-user', function(){
+        var $f = $pu.find('.portal-user-form-panel');
+        var accessId = $f.find('.access_id').val();
+        var data = {
+            name: $f.find('.name').val().trim(),
+            email: $f.find('.email').val().trim(),
+            phone: $f.find('.phone').val().trim(),
+            country_code: $f.find('.country_code').val(),
+            admin: $f.find('.admin').is(':checked') ? 1 : 0,
+            can_validate: $f.find('.can_validate').is(':checked') ? 1 : 0
+        };
+        var generatePassword = $f.find('.generate_password').is(':checked');
+        var errorMessage = "";
+        if (data.name.length < 4) errorMessage += "- a name of at least 4 chars\r\n";
+        if (!isValidEmail(data.email)) errorMessage += "- a valid email\r\n";
+        if (!accessId && !generatePassword && $f.find('.password').val().length < 4) {
+            errorMessage += "- a password of at least 4 chars (or tick 'Generate password')\r\n";
+        }
+        if (errorMessage.length > 0) {
+            alert("Please correct the following error(s):\r\n" + errorMessage);
+            return false;
+        }
+
+        var url;
+        if (accessId) {
+            url = base_url + "portal/customers/updateUserAccess";
+            data.access_id = accessId;
+        } else {
+            url = base_url + "portal/customers/addUserAccess";
+            data.uuid = currentPortalUuid();
+            data.generate_password = generatePassword ? 1 : 0;
+            data.password = generatePassword ? '' : $f.find('.password').val();
+        }
+
+        var $btn = $(this).prop('disabled', true);
+        $.ajax({
+            url: url,
+            method: "POST",
+            dataType: "JSON",
+            data: data,
+            success: function(response){
+                if (response.result === false) {
+                    alertify.alert(response.reason || 'Save failed');
+                    return;
+                }
+                alertify.success(accessId ? "User updated" : "User added");
+                showPortalPanel('list');
+                loadPortalUsers();
+            },
+            error: function(){
+                alertify.error("Error saving user. Please try again.");
+            },
+            complete: function(){
+                $btn.prop('disabled', false);
             }
         });
     });
 
-    // Reset password button click handler (using event delegation)
-    $('#portal-users-list').on('click', '.reset-password-btn', function(){
-        let accessId = $(this).data('access-id');
-        let userName = $(this).data('name');
-        let userEmail = $(this).data('email');
-        let btn = $(this);
-        
+    $pu.on('click', '.remove-portal-user', function(){
+        var user = findPortalUser($(this));
+        if (!user) return;
         bootbox.confirm({
-            message: "Are you sure you want to reset the password for <b>" + userName + "</b>?<br><br>A new password will be generated and emailed to <b>" + userEmail + "</b>.",
+            message: "Are you sure you want to remove access to user <b>" + esc(user.name) + "</b>?",
             buttons: {
-                confirm: {
-                    label: 'Yes, Reset Password',
-                    className: 'btn-warning'
-                },
-                cancel: {
-                    label: 'Cancel',
-                    className: 'btn-default'
-                }
+                confirm: { label: 'Remove Access', className: 'btn-danger' },
+                cancel: { label: 'Cancel', className: 'btn-primary' }
             },
             callback: function (result) {
-                if(result){
-                    btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Resetting...');
-                    
-                    $.ajax({
-                        url: base_url + "/customers/reset_portal_password",
-                        type: "POST",
-                        dataType: "JSON",
-                        data: {access_id: accessId},
-                        success: function(response){
-                            if(response.result){
-                                // Close the portal password modal
-                                $('#modalPortalPassword').modal('hide');
-                                
-                                // Show the new password modal
-                                $('#reset-user-name').text(response.user.name);
-                                $('#reset-user-email').text(response.user.email);
-                                $('#new-password-display').val(response.password);
-                                $('#modalNewPassword').modal('show');
-                                
-                                alertify.success(response.message);
-                            } else {
-                                alertify.error("Error: " + response.reason);
-                                btn.prop('disabled', false).html('<i class="fa fa-key"></i> Reset Password');
-                            }
-                        },
-                        error: function(){
-                            alertify.error("Error resetting password. Please try again.");
-                            btn.prop('disabled', false).html('<i class="fa fa-key"></i> Reset Password');
+                if (!result) return;
+                $.ajax({
+                    url: base_url + "portal/customers/removeAccess",
+                    data: {user_id: user.id, name: user.name},
+                    method: "POST",
+                    dataType: "JSON",
+                    success: function(response){
+                        if (response.result) {
+                            alertify.success("Access removed");
+                            loadPortalUsers();
+                        } else {
+                            bootbox.alert({ title: "Error", message: "Failed to remove selected user" });
                         }
-                    });
-                }
+                    }
+                });
             }
         });
     });
 
-    // Copy password to clipboard
-    $('#copy-password-btn').on('click', function(){
-        let passwordField = $('#new-password-display');
-        passwordField.select();
-        document.execCommand('copy');
-        
-        let btn = $(this);
-        let originalHtml = btn.html();
-        btn.html('<i class="fa fa-check"></i> Copied!');
-        
-        setTimeout(function(){
-            btn.html(originalHtml);
-        }, 2000);
-        
-        alertify.success('Password copied to clipboard!');
+    $pu.on('click', '.reset-portal-password', function(){
+        var user = findPortalUser($(this));
+        if (!user) return;
+        var $btn = $(this);
+        bootbox.confirm({
+            message: "Are you sure you want to reset the password for <b>" + esc(user.name) + "</b>?<br><br>A new password will be generated and emailed to <b>" + esc(user.email) + "</b>.",
+            buttons: {
+                confirm: { label: 'Yes, Reset Password', className: 'btn-warning' },
+                cancel: { label: 'Cancel', className: 'btn-default' }
+            },
+            callback: function (result) {
+                if (!result) return;
+                $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i>');
+                $.ajax({
+                    url: base_url + "/customers/reset_portal_password",
+                    type: "POST",
+                    dataType: "JSON",
+                    data: {access_id: user.id},
+                    success: function(response){
+                        if (response.result) {
+                            var $np = $pu.find('.new-password-panel');
+                            $np.find('.reset-user-name').text(response.user.name);
+                            $np.find('.reset-user-email').text(response.user.email);
+                            $np.find('.new-password-display').val(response.password);
+                            $np.removeClass('d-none');
+                            alertify.success(response.message);
+                        } else {
+                            alertify.error("Error: " + response.reason);
+                        }
+                    },
+                    error: function(){
+                        alertify.error("Error resetting password. Please try again.");
+                    },
+                    complete: function(){
+                        $btn.prop('disabled', false).html('<i class="fa fa-key"></i>');
+                    }
+                });
+            }
+        });
     });
 
-    // When new password modal is hidden, show the portal password modal again
-    $('#modalNewPassword').on('hidden.bs.modal', function () {
-        let uuid = $('input[name=portal_customer_uuid]').val();
-        if(uuid){
-            // Optionally reload the portal password modal
-            // $('#modalPortalPassword').modal('show');
-        }
+    $pu.on('click', '.copy-password-btn', function(){
+        $pu.find('.new-password-display').trigger('select');
+        document.execCommand('copy');
+        var $btn = $(this);
+        var originalHtml = $btn.html();
+        $btn.html('<i class="fa fa-check"></i> Copied!');
+        setTimeout(function(){ $btn.html(originalHtml); }, 2000);
+        alertify.success('Password copied to clipboard!');
     });
 })

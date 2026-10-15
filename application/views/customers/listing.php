@@ -59,6 +59,7 @@
                                 <th>Name</th>
                                 <th>Address</th>
                                 <th>Email</th>
+                                <th class="text-center" title="Number of users with portal access">Portal Users</th>
                                 <th>&nbsp;</th>
                                 <th>Actions</th>
                             </tr>
@@ -70,6 +71,13 @@
                                     <td><?php echo $customer->full_name; ?></td>
                                     <td><?php echo $customer->address; ?></td>
                                     <td><?php echo $customer->email; ?></td>
+                                    <td class="text-center">
+                                        <?php if ($perms['edit']) : ?>
+                                        <span class="badge badge-<?php echo ((int) $customer->access_count > 0) ? 'info' : 'secondary'; ?> portal-user-count managePortalUsers cursor-pointer" title="Manage portal users"><?php echo (int) $customer->access_count; ?></span>
+                                        <?php else : ?>
+                                        <?php echo (int) $customer->access_count; ?>
+                                        <?php endif; ?>
+                                    </td>
                                     <td class='text-center activeOrNot'><div class="btn btn-block btn-<?php echo ($customer->active=='1')?'info':'danger';?>"><i class='fa fa-<?php echo ($customer->active=='1')?'check':'times';?>'></i></div></td>
                                     <td>
                                         <?php if ($perms['view']) : ?>
@@ -86,15 +94,8 @@
                                             </div>
                                         <?php endif; ?>
                                         <?php if ($perms['edit']) : ?>
-                                            <a href="<?php echo base_url("customers/portal_access/" . $customer->uuid . "?referer=customers/listing/" . $this->uri->segment(3,1)); ?>">
-                                                <div class="btn btn-secondary" title="Customer Access">
-                                                    <i class="fa fa-user"></i>
-                                                </div>
-                                            </a>
-                                        <?php endif; ?>
-                                        <?php if ($perms['edit']) : ?>
-                                            <div class="btn btn-info managePortalPassword" title="Manage Portal Passwords">
-                                                <i class="fa fa-key"></i>
+                                            <div class="btn btn-secondary managePortalUsers" title="Portal Users">
+                                                <i class="fa fa-user"></i>
                                             </div>
                                         <?php endif; ?>
                                         <!-- <?php if($perms['delete']) //echo DeleteButton2('customers','uuid',$customer->uuid,'','','',false); ?> -->
@@ -191,61 +192,108 @@
     </div>
 </div>
 
-<!-- Modal Portal Access Password Management -->
-<div class="modal fade" id="modalPortalPassword" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
-    aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+<!-- Modal Portal Users: list, add/edit, reset password, remove -->
+<div class="modal fade" id="modalPortalUsers" tabindex="-1" role="dialog" aria-labelledby="modalPortalUsersTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalPortalPasswordTitle">Manage Portal Access</h5>
+                <h5 class="modal-title" id="modalPortalUsersTitle"><i class="fa fa-users"></i> Portal Users &ndash; <span class="customer-name"></span></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <p><strong>Customer: <span id="portal-customer-name"></span></strong></p>
-                <div id="portal-users-list">
-                    <p class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading...</p>
-                </div>
-            </div>
-            <input type="hidden" name="portal_customer_uuid" value="">
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-            </div>
-        </div>
-    </div>
-</div>
+                <input type="hidden" name="portal_customer_uuid" value="">
 
-<!-- Modal Display New Password -->
-<div class="modal fade" id="modalNewPassword" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
-    aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="modalNewPasswordTitle">Password Reset Successful</h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p><strong>User:</strong> <span id="reset-user-name"></span></p>
-                <p><strong>Email:</strong> <span id="reset-user-email"></span></p>
-                <div class="alert alert-info">
-                    <p class="mb-2"><strong>New Password:</strong></p>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="new-password-display" readonly>
+                <!-- New password (shown after a reset) -->
+                <div class="alert alert-success new-password-panel d-none">
+                    <button type="button" class="close close-new-password" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <p class="mb-2"><strong>New password for <span class="reset-user-name"></span></strong> (<span class="reset-user-email"></span>) &ndash; it has been emailed to the user.</p>
+                    <div class="input-group" style="max-width:420px;">
+                        <input type="text" class="form-control new-password-display" readonly>
                         <div class="input-group-append">
-                            <button class="btn btn-outline-secondary" type="button" id="copy-password-btn">
-                                <i class="fa fa-copy"></i> Copy
-                            </button>
+                            <button class="btn btn-outline-secondary copy-password-btn" type="button"><i class="fa fa-copy"></i> Copy</button>
                         </div>
                     </div>
+                    <small class="text-muted">You can also copy the password and send it directly via WhatsApp.</small>
                 </div>
-                <p class="text-success"><i class="fa fa-check-circle"></i> The password has been emailed to the user.</p>
-                <p class="text-muted"><small>You can also copy the password above and send it directly via WhatsApp.</small></p>
+
+                <!-- List -->
+                <div class="portal-users-list-panel">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted users-count-label"></span>
+                        <button type="button" class="btn btn-info btn-sm add-portal-user"><i class="fa fa-plus"></i> <i class="fa fa-user"></i> Add User</button>
+                    </div>
+                    <div class="portal-users-list">
+                        <p class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading...</p>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        <i class="fa fa-user-shield mr-1"></i><strong>Admin</strong>: can add, edit and remove other users from the portal.<br>
+                        <i class="fa fa-check-double mr-1"></i><strong>Validator</strong>: can validate or reject tasks on the staging server.
+                    </p>
+                </div>
+
+                <!-- Add / Edit form -->
+                <div class="portal-user-form-panel d-none">
+                    <h6 class="form-title mb-3"></h6>
+                    <input type="hidden" class="access_id" value="">
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label>Name <span class="text-danger">*</span></label>
+                            <input type="text" class="name form-control" placeholder="Enter user's name">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>Email <span class="text-danger">*</span></label>
+                            <input type="email" class="email form-control" placeholder="Enter user's email">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>Phone</label>
+                            <input type="text" class="phone form-control" placeholder="[OPTIONAL] Enter phone number">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>Country</label>
+                            <select class="country_code form-control">
+                                <option value="mu" selected>Mauritius</option>
+                                <option value="in">India</option>
+                                <option value="ua">Ukraine</option>
+                                <option value="pl">Poland</option>
+                                <option value="br">Brazil</option>
+                                <option value="cn">China</option>
+                                <option value="mx">Mexico</option>
+                                <option value="pk">Pakistan</option>
+                                <option value="ma">Morocco</option>
+                                <option value="cr">Costa Rica</option>
+                                <option value="ru">Russia</option>
+                                <option value="fr">France</option>
+                                <option value="de">Germany</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <div class="form-check">
+                                <input type="checkbox" class="admin form-check-input" id="portalUserAdmin" value="1">
+                                <label class="form-check-label" for="portalUserAdmin">Admin (can add/remove other users)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="can_validate form-check-input" id="portalUserCanValidate" value="1">
+                                <label class="form-check-label" for="portalUserCanValidate">Validator (can validate/reject tasks on staging)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 form-group add-mode-only">
+                            <div class="form-check">
+                                <input type="checkbox" class="generate_password form-check-input" id="portalUserGeneratePassword" value="1" checked>
+                                <label class="form-check-label" for="portalUserGeneratePassword">Generate password and send it by email</label>
+                            </div>
+                            <input type="text" class="password form-control mt-2 d-none" placeholder="Enter password (4 chars min)">
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <button type="button" class="btn btn-secondary cancel-portal-user"><i class="fa fa-times"></i> Cancel</button>
+                        <button type="button" class="btn btn-primary save-portal-user"><i class="fa fa-save"></i> Save</button>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-dismiss="modal"><i class="fa fa-check"></i> Done</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
             </div>
         </div>
     </div>

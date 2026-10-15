@@ -389,7 +389,7 @@ class Customers extends MY_Controller
         }
 
         // Get all portal access users for this customer
-        $users = $this->db->select("id, name, email, job_description, phone_number1, admin, can_validate, created_on")
+        $users = $this->db->select("id, name, email, job_description, phone_number1, country_code, admin, can_validate, created_on")
                           ->from("customer_access")
                           ->where(array("customer_id" => $customer->customer_id, "status" => "1"))
                           ->order_by("name", "ASC")

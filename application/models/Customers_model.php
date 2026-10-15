@@ -8,7 +8,7 @@ class Customers_model extends CI_Model
     public function get($uuid="",$page="",$rows_per_page="",$search_text="",$hide_completed=false,$active_filter="active")
     {
         if(empty($uuid)){
-            $this->db->select("c.*,u.name agent");
+            $this->db->select("c.*,u.name agent,(SELECT COUNT(ca.id) FROM customer_access ca WHERE ca.customer_id = c.customer_id AND ca.status = 1) access_count", false);
             $this->db->from("customers c");
             $this->db->join("users u","u.id=c.created_by","left");
             
