@@ -54,7 +54,12 @@
                 <tr id="note-<?= $note->id ?>">
                     <td><?= $this->Meeting_note_model->formatMeetingDatetime($note->meeting_datetime) ?></td>
                     <td><?= !empty($note->next_meeting_date) ? $this->Meeting_note_model->formatNextMeeting($note->next_meeting_date) : '—' ?></td>
-                    <td><?= htmlspecialchars($note->customer_name) ?></td>
+                    <td>
+                        <?= htmlspecialchars($note->customer_name) ?>
+                        <?php if (isset($note->status) && $note->status === 'live'): ?>
+                        <a href="<?= site_url('meeting_notes/edit/'.$note->id) ?>" class="badge badge-danger ml-1" title="Live session in progress"><i class="fa fa-circle"></i> LIVE</a>
+                        <?php endif; ?>
+                    </td>
                     <td>
                         <?php if($note->last_updated_by):?>
                         <?= $this->Meeting_note_model->formatMeetingDatetime($note->last_updated) . ( ($note->last_updated_by) ? ' by ' . $note->updatedBy : '' ) ?>

@@ -57,6 +57,11 @@
 
 
         <div class="form-group">
+            <label for="agenda" class="form-label">Agenda <span class="text-muted">(optional &ndash; shown to invitees before the meeting)</span></label>
+            <textarea name="agenda" id="agenda" class="form-control summernote2" rows="3"><?= set_value('agenda') ?></textarea>
+        </div>
+
+        <div class="form-group">
             <label for="notes" class="form-label">Notes</label>
             <textarea name="notes" id="notes" class="form-control summernote2 required" rows="5" required><?= set_value('notes') ?></textarea>
         </div>
@@ -87,6 +92,8 @@
     </div>
     <div class="card-footer">
         <button type="submit" class="btn btn-save"><i class="fa fa-save"></i> Save Note</button>
+        <button type="button" class="btn btn-info ms-2 plan-meeting" title="Plan a future meeting: invite people now, it goes live automatically at the meeting time"><i class="fa fa-calendar-plus"></i> Plan Meeting</button>
+        <button type="button" class="btn btn-danger ms-2 start-live-session" title="Save now and continue writing live; share it with your client and developers"><i class="fa fa-broadcast-tower"></i> Start Live Session</button>
         <a href="<?= site_url('meeting_notes') ?>" class="btn btn-back ms-2"><i class="fa fa-times"></i> Cancel</a>
     </div>
     </form>

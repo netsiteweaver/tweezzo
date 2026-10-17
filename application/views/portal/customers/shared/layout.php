@@ -114,6 +114,9 @@
     <script src="<?php echo base_url("assets/js/portal/global-search.js?t=".date("YmdHis"));?>"></script>
     <script src="<?php echo base_url('assets/js/userSelectModal.js')."?".date("YmdHis"); ?>"></script>
     <script src="<?php echo base_url("assets/js/downloadTableAsCSV.js?t=".date("YmdHis"));?>"></script>
+    <?php if (!empty($page_scripts)) foreach ($page_scripts as $page_script): ?>
+    <script src="<?php echo $page_script; ?>"></script>
+    <?php endforeach; ?>
     <!-- Option 2: Separate Popper and Bootstrap JS -->
     <!--
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>

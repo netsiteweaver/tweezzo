@@ -193,6 +193,7 @@ $thresholdDays = 30; // Change this value
 4. **Send Overdue Task Reminders**: `php index.php cron sendOverdueTaskReminders`
 5. **Get Due Tasks**: `php index.php cron getDueTasks [days]`
 6. **Fetch Quotes**: `php index.php cron fetchQuotes`
+7. **Planned Meetings Tick**: `php index.php cron meetingNotesTick` — starts planned meetings that are due (and emails "now live"), and sends the reminder for meetings starting within the hour. Run every minute. Pages that show meetings also start due ones, so a late cron only delays the reminder and the "now live" email.
 
 ### Complete Crontab Example:
 
@@ -215,6 +216,9 @@ $thresholdDays = 30; // Change this value
 # Go-live payment follow-up daily at 9:30 AM: reminds clients of validated sprints still unpaid
 # (every payment_reminder_days, config/hms.php) and tells the team once payment is recorded in HMS
 30 9 * * * cd /var/www/html/tweezzo && /usr/bin/php index.php cron sendGoLivePaymentReminders >> /var/log/cron-golive-payment.log 2>&1
+
+# Planned meetings: auto go-live + 1-hour reminders, every minute
+* * * * * cd /var/www/html/tweezzo && /usr/bin/php index.php cron meetingNotesTick >> /var/log/cron-meetings.log 2>&1
 
 # Fetch quotes daily at midnight
 0 0 * * * cd /var/www/html/tweezzo && /usr/bin/php index.php cron fetchQuotes >> /var/log/cron-quotes.log 2>&1

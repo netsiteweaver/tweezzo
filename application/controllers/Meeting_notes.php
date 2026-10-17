@@ -42,6 +42,8 @@ class Meeting_notes extends MY_Controller
             $start_date = date('Y-m-d', strtotime('-29 days'));
         }
 
+        $this->Meeting_note_model->promote_due();
+
         $this->data['customers'] = $this->Customers_model->lookup();
         $this->data['customer_id'] = $customer_id;
         $this->data['start_date'] = $start_date;
@@ -107,7 +109,15 @@ class Meeting_notes extends MY_Controller
         $this->form_validation->set_rules('customer_id', 'Client Name', 'required');
         $this->form_validation->set_rules('meeting_date', 'Meeting Date', 'required');
         $this->form_validation->set_rules('meeting_time', 'Meeting Time', 'required');
-        $this->form_validation->set_rules('notes', 'Notes', 'required');
+        // Live sessions and planned meetings start before anything is written, so notes are only required for a normal save.
+        $start_live = (bool) $this->input->post('start_live');
+        $plan = (bool) $this->input->post('plan_meeting');
+        if (!$start_live && !$plan) {
+            $this->form_validation->set_rules('notes', 'Notes', 'required');
+        }
+        if ($plan) {
+            $this->form_validation->set_rules('meeting_time', 'Meeting Time', 'required|callback_validate_planned_datetime');
+        }
         $this->form_validation->set_rules('next_meeting_date', 'Next Meeting Date', 'callback_validate_next_meeting_date');
 
         if ($this->form_validation->run() === FALSE) {
@@ -122,12 +132,22 @@ class Meeting_notes extends MY_Controller
                     $this->input->post('next_meeting_date'),
                     $this->input->post('next_meeting_time')
                 ),
-                'notes' => $this->input->post('notes'),
+                'notes' => (string) $this->input->post('notes'),
+                'agenda' => (string) $this->input->post('agenda'),
                 'attendees' => $this->input->post('attendees', true),
                 'lieu' => $this->input->post('lieu', true),
+                'status' => $start_live ? 'live' : ($plan ? 'planned' : 'closed'),
             ];
-            $this->Meeting_note_model->insert_note($data);
+            $note_id = $this->Meeting_note_model->insert_note($data);
 
+            if ($plan) {
+                flashSuccess("Meeting planned. Invite your client and developers below; it goes live automatically at the start time.");
+                redirect("meeting_notes/edit/" . $note_id);
+            }
+            if ($start_live) {
+                flashSuccess("Live session started. Share it with your client and developers below.");
+                redirect("meeting_notes/edit/" . $note_id);
+            }
             redirect("meeting_notes/index");
         }
     }
@@ -147,11 +167,20 @@ class Meeting_notes extends MY_Controller
 
         $this->data['customers'] = $this->Customers_model->lookup();
 
+        $this->Meeting_note_model->promote_due((int) $id);
         $this->data['note'] = $this->Meeting_note_model->get_note($id);
 
         $this->data['attachments'] = $this->Attachment_model->get_attachments($id);
 
         $this->data['page_title'] = "Edit Meeting Note";
+
+        if (!empty($this->data['note']) && in_array($this->data['note']->status, ['planned', 'live'], true)) {
+            $this->data['page_title'] = ($this->data['note']->status === 'live') ? "Live Meeting Note" : "Planned Meeting";
+            $this->data['shares'] = $this->Meeting_note_model->get_shares($id);
+            $this->data['shareable'] = $this->Meeting_note_model->shareable_people($this->data['note']);
+            $this->data['entries'] = $this->Meeting_note_model->get_entries($id);
+            $this->data['scripts'][] = base_url('assets/js/meeting-live.js') . '?' . date('YmdHis');
+        }
 
         $this->data["content"]=$this->load->view("meeting_notes/edit",$this->data,true);
         $this->load->view("/layouts/default",$this->data);   
@@ -173,8 +202,139 @@ class Meeting_notes extends MY_Controller
             $this->edit($id);
         } else {
             $this->Meeting_note_model->update_note($id);
+            $note = $this->Meeting_note_model->get_note($id);
+            if (!empty($note) && in_array($note->status, ['planned', 'live'], true)) {
+                flashSuccess("Note updated.");
+                redirect("meeting_notes/edit/" . $id);
+            }
             redirect("meeting_notes/index");
         }
+    }
+
+    // ---------------------------------------------------------------------
+    // Live session endpoints (AJAX, JSON)
+    // ---------------------------------------------------------------------
+
+    private function _json($payload)
+    {
+        echo json_encode($payload);
+        exit;
+    }
+
+    /**
+     * Loads the note for a live endpoint, or answers with an error.
+     * @param array|null $statuses statuses the action is allowed in; null = any
+     */
+    private function _live_note($id, $statuses = ['live'])
+    {
+        $this->Meeting_note_model->promote_due((int) $id);
+        $note = $this->Meeting_note_model->get_note((int) $id);
+        if (empty($note)) {
+            $this->_json(['result' => false, 'reason' => 'Meeting note not found.']);
+        }
+        if ($statuses !== null && !in_array($note->status, $statuses, true)) {
+            $reasons = ['planned' => "This meeting hasn't started yet.", 'live' => 'This meeting has already started.', 'closed' => 'This meeting has ended.'];
+            $this->_json(['result' => false, 'reason' => isset($reasons[$note->status]) ? $reasons[$note->status] : 'Not available for this note.']);
+        }
+        return $note;
+    }
+
+    public function live_save($id)
+    {
+        if (!isAuthorised(get_class(), "edit")) return false;
+        $this->_live_note($id);
+        $version = $this->Meeting_note_model->live_save($id, $this->input->post('notes'));
+        $this->_json(['result' => $version !== false, 'notes_version' => $version, 'saved_at' => date('H:i:s')]);
+    }
+
+    public function share_add($id)
+    {
+        if (!isAuthorised(get_class(), "edit")) return false;
+        $note = $this->_live_note($id, ['planned', 'live']);
+        // people[i][type|id|can_contribute]
+        $people = $this->input->post('people');
+        if (empty($people) || !is_array($people)) {
+            $this->_json(['result' => false, 'reason' => 'Select at least one person.']);
+        }
+        $added = 0;
+        $errors = [];
+        foreach ($people as $person) {
+            $type = isset($person['type']) ? $person['type'] : '';
+            $result = $this->Meeting_note_model->add_share($note, $type, isset($person['id']) ? $person['id'] : 0, !empty($person['can_contribute']));
+            if ($result['result']) {
+                $this->Meeting_note_model->email_participants($note, 'invite', [$result['share_id']]);
+                $added++;
+            } else {
+                $errors[] = $result['reason'];
+            }
+        }
+        $this->_json([
+            'result'    => $added > 0,
+            'added'     => $added,
+            'reason'    => implode(' ', array_unique($errors)),
+        ] + $this->_share_state($note));
+    }
+
+    public function share_update($id)
+    {
+        if (!isAuthorised(get_class(), "edit")) return false;
+        $this->_live_note($id, null);
+        $this->Meeting_note_model->update_share($id, $this->input->post('share_id'), (int) $this->input->post('can_contribute') === 1);
+        $this->_json(['result' => true]);
+    }
+
+    public function share_remove($id)
+    {
+        if (!isAuthorised(get_class(), "edit")) return false;
+        $note = $this->_live_note($id, null);
+        $removed = $this->Meeting_note_model->remove_share($id, $this->input->post('share_id'));
+        $this->_json(['result' => $removed] + $this->_share_state($note));
+    }
+
+    /** Current share list plus who can still be invited, for redrawing the share panel. */
+    private function _share_state($note)
+    {
+        return [
+            'shares'    => $this->Meeting_note_model->get_shares($note->id),
+            'shareable' => $this->Meeting_note_model->shareable_people($note),
+        ];
+    }
+
+    public function entry_add($id)
+    {
+        if (!isAuthorised(get_class(), "edit")) return false;
+        $this->_live_note($id);
+        $entryId = $this->Meeting_note_model->add_entry($id, 'admin', $_SESSION['user_id'], $this->input->post('body'));
+        $this->_json($entryId === false ? ['result' => false, 'reason' => 'Please write something first.'] : ['result' => true, 'entry_id' => $entryId]);
+    }
+
+    public function poll($id)
+    {
+        if (!isAuthorised(get_class(), "edit")) return false;
+        $note = $this->_live_note($id, null);
+        $this->Meeting_note_model->touch_admin($id, $_SESSION['user_id']);
+        $payload = $this->Meeting_note_model->poll_payload($note, $this->input->get('since_version'), $this->input->get('since_entry_id'));
+        unset($payload['notes']); // the admin is the author of the main notes
+        $payload['shares'] = $this->Meeting_note_model->get_shares($id);
+        $payload['participants'] = $this->Meeting_note_model->get_participants($id, 'admin', $_SESSION['user_id']);
+        $this->_json($payload);
+    }
+
+    /** Starts a planned meeting before its scheduled time. */
+    public function start_session($id)
+    {
+        if (!isAuthorised(get_class(), "edit")) return false;
+        $this->_live_note($id, ['planned']);
+        $this->Meeting_note_model->set_status($id, 'live');
+        $this->_json(['result' => true]);
+    }
+
+    public function end_session($id)
+    {
+        if (!isAuthorised(get_class(), "edit")) return false;
+        $this->_live_note($id);
+        $this->Meeting_note_model->set_status($id, 'closed');
+        $this->_json(['result' => true]);
     }
 
     public function delete($id)
@@ -503,6 +663,17 @@ class Meeting_notes extends MY_Controller
             ]);
         }
         exit;
+    }
+
+    /** A planned meeting must start in the future (it goes live automatically at that time). */
+    public function validate_planned_datetime($meeting_time)
+    {
+        $start = strtotime(trim((string) $this->input->post('meeting_date')) . ' ' . trim((string) $meeting_time));
+        if ($start === false || $start <= time()) {
+            $this->form_validation->set_message('validate_planned_datetime', 'A planned meeting must start in the future. To start now, use Start Live Session.');
+            return false;
+        }
+        return true;
     }
 
     public function validate_next_meeting_date($next_date)

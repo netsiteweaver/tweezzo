@@ -101,6 +101,9 @@
     <script src="<?php echo base_url("assets/portal/js/task-ref-copy.js?t=".date("YmdHis"));?>"></script>
     <script src="<?php echo base_url("assets/js/portal/global-search.js?t=".date("YmdHis"));?>"></script>
     <script src="<?php echo base_url("assets/js/downloadTableAsCSV.js?t=".date("YmdHis"));?>"></script>
+    <?php if (!empty($page_scripts)) foreach ($page_scripts as $page_script): ?>
+    <script src="<?php echo $page_script; ?>"></script>
+    <?php endforeach; ?>
 
         <!-- Option 2: Separate Popper and Bootstrap JS -->
         <!--
