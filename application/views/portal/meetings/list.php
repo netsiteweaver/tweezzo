@@ -25,7 +25,7 @@
                         <td>
                             <?php if ($meeting->status === 'live'): ?>
                                 <?php echo $this->Meeting_note_model->host_state_badge($this->Meeting_note_model->host_state($meeting)); ?>
-                                <?php if ($meeting->can_contribute == 1): ?><span class="badge bg-secondary ms-1" title="You can add entries"><i class="bi bi-pencil"></i></span><?php endif; ?>
+                                <?php if ($meeting->can_contribute == 1): ?><span class="badge bg-secondary ms-1" title="You can send messages"><i class="bi bi-chat-dots"></i></span><?php endif; ?>
                             <?php elseif ($meeting->status === 'planned'): ?>
                                 <span class="badge bg-info text-dark"><i class="bi bi-calendar-event me-1"></i>Upcoming</span>
                             <?php else: ?>

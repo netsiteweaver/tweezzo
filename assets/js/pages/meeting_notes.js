@@ -233,7 +233,7 @@ jQuery(function(){
                     ' <span class="badge badge-' + (s.participant_type === 'customer' ? 'success' : 'secondary') + '">' + (s.participant_type === 'customer' ? 'Client' : 'Developer') + '</span>' +
                 '</span>' +
                 '<span class="text-nowrap">' +
-                    '<label class="small mb-0 mr-2" title="Can add entries"><input type="checkbox" class="share-toggle-contribute" ' + (s.can_contribute == 1 ? 'checked' : '') + '> <i class="fa fa-pen"></i></label>' +
+                    '<label class="small mb-0 mr-2" title="Can send messages"><input type="checkbox" class="share-toggle-contribute" ' + (s.can_contribute == 1 ? 'checked' : '') + '> <i class="fa fa-comment"></i></label>' +
                     '<button type="button" class="btn btn-xs btn-link text-danger p-0 share-remove" title="Stop sharing"><i class="fa fa-times"></i></button>' +
                 '</span>' +
             '</li>';
@@ -262,7 +262,7 @@ jQuery(function(){
                         '<input type="checkbox" class="form-check-input share-pick" id="sp-' + key + '">' +
                         '<label class="form-check-label" for="sp-' + key + '">' + esc(p.name) + '<br><small class="text-muted">' + esc(p.email) + '</small></label>' +
                     '</div>' +
-                    '<label class="small mb-0 text-nowrap" title="Can add entries"><input type="checkbox" class="share-pick-contribute"> <i class="fa fa-pen"></i></label>' +
+                    '<label class="small mb-0 text-nowrap" title="Can send messages"><input type="checkbox" class="share-pick-contribute"> <i class="fa fa-comment"></i></label>' +
                 '</li>';
             });
             $(this).html(html + '</ul>');
@@ -380,21 +380,72 @@ jQuery(function(){
         });
     }
 
-    // --- Contributions (live only) ---
+    // --- Insert a message into the notes (admin only) ---
+    // Messages go in as a new block below the line the cursor was on (or at the end), never splitting text.
+    // The line is remembered on blur, since clicking in the Messages panel takes the focus away from the notes.
+    var $notesEditable = $('#notes').next('.note-editor').find('.note-editable');
+    var lastNotesBlock = null;
+
+    function topBlockAt(node) {
+        var editable = $notesEditable[0];
+        while (node && node.parentNode !== editable) node = node.parentNode;
+        return node && node.parentNode === editable ? node : null;
+    }
+    $('#notes').on('summernote.blur summernote.keyup summernote.mouseup', function(){
+        var sel = window.getSelection();
+        if (sel && sel.rangeCount && $notesEditable[0].contains(sel.anchorNode)) lastNotesBlock = topBlockAt(sel.anchorNode);
+    });
+
+    function messageToNotesHtml($entry) {
+        var credit = '<strong>' + esc($entry.data('author')) + ' (' + esc($entry.data('role')) + '):</strong> ';
+        var $body = $entry.find('.meeting-entry-body').clone();
+        var $blocks = $body.children();
+        // A single paragraph becomes "Name (Role): text"; anything richer (lists, several paragraphs) keeps its shape under the credit line.
+        if ($blocks.length === 1 && $blocks.is('p')) return '<p>' + credit + $blocks.html() + '</p>';
+        if (!$blocks.length) return '<p>' + credit + $body.html() + '</p>';
+        return '<p>' + credit + '</p>' + $body.html();
+    }
+
+    function insertIntoNotes(html) {
+        var $new = $('<div>').html(html).contents();
+        var $blocks = $notesEditable.children();
+        var emptyNotes = $blocks.length <= 1 && $notesEditable.text().trim() === '';
+        if (emptyNotes) {
+            $notesEditable.empty().append($new);
+        } else if (lastNotesBlock && $.contains($notesEditable[0], lastNotesBlock)) {
+            $(lastNotesBlock).after($new);
+        } else {
+            $notesEditable.append($new);
+        }
+        lastNotesBlock = $new.last()[0];   // the next insert goes after this one
+        $('#notes').val($notesEditable.html());   // keep the form field in sync for Update
+        $('#notes').trigger('summernote.change'); // autosave so participants see it
+    }
+
+    // Add the button to messages as they arrive.
+    $entries.on('meeting:entries', function(){
+        $entries.find('.meeting-entry').each(function(){
+            if ($(this).find('.meeting-entry-insert').length) return;
+            $(this).find('.meeting-entry-meta').append(
+                ' <button type="button" class="btn btn-link btn-sm p-0 ml-2 meeting-entry-insert" title="Insert this message into the notes"><i class="fa fa-file-import"></i> Insert into notes</button>'
+            );
+        });
+    });
+
+    $entries.on('click', '.meeting-entry-insert', function(){
+        var $entry = $(this).closest('.meeting-entry');
+        insertIntoNotes(messageToNotesHtml($entry));
+        $(this).html('<i class="fa fa-check"></i> Inserted').addClass('text-success');
+        alertify.success('Added to the notes');
+    });
+
+    // --- Messages (live only) ---
     if ($('.live-entry-input').length) {
-        $('.live-entry-input').summernote(MeetingLive.editorOptions('Add an entry to the shared thread...'));
+        $('.live-entry-input').summernote(MeetingLive.editorOptions('Write a message to everyone in the meeting...', function(){ $('.live-entry-add').trigger('click'); }));
     }
 
     $('.live-entry-add').on('click', function(){
-        var $btn = $(this).prop('disabled', true);
-        $.post(url('entry_add'), { body: $('.live-entry-input').summernote('code') }, function(response){
-            if (response.result) {
-                $('.live-entry-input').summernote('reset');
-                poll();
-            } else {
-                alertify.alert(response.reason || 'Could not add entry.');
-            }
-        }, 'json').always(function(){ $btn.prop('disabled', false); });
+        MeetingLive.sendMessage($('.live-entry-input'), $(this), url('entry_add'), 'body', poll);
     });
 
     // --- Polling: new entries + who is watching ---
@@ -450,7 +501,7 @@ jQuery(function(){
 
     $('.end-live-session').on('click', function(){
         bootbox.confirm({
-            message: 'End the meeting? Shared users will no longer see live updates or be able to add entries, but they keep read-only access.',
+            message: 'End the meeting? Shared users will no longer see live updates or be able to send messages, but they keep read-only access.',
             buttons: {
                 confirm: { label: 'End Meeting', className: 'btn-danger' },
                 cancel: { label: 'Cancel', className: 'btn-default' }
@@ -471,6 +522,8 @@ jQuery(function(){
 
     // Initial render, then poll.
     renderShares(state.shares);
+    MeetingLive.showTimeSeconds(true);
+    MeetingLive.floatPanel($('.meeting-float'));
     if (status === 'live') lastEntryId = MeetingLive.appendEntries($entries, state.entries, 0);
     poll();
     pollTimer = setInterval(poll, status === 'live' ? MeetingLive.POLL_MS : 5000);

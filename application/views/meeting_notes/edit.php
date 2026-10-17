@@ -172,18 +172,6 @@ $is_shared_session = ($is_live || $is_planned);
     </form>
 </div>
 <?php if ($is_shared_session): ?>
-<?php if ($is_live): ?>
-<div class="card card-outline card-info">
-    <div class="card-header"><h3 class="card-title"><i class="fa fa-comments"></i> Contributions</h3></div>
-    <div class="card-body">
-        <div class="live-entries"></div>
-        <div class="mt-3">
-            <textarea class="form-control live-entry-input" rows="2"></textarea>
-            <button type="button" class="btn btn-info btn-sm mt-2 live-entry-add"><i class="fa fa-plus"></i> Add Entry</button>
-        </div>
-    </div>
-</div>
-<?php endif; ?>
 </div><!-- /.col-lg-8 -->
 <div class="col-lg-4">
 <div class="card card-outline card-danger live-share-panel">
@@ -203,6 +191,26 @@ $is_shared_session = ($is_live || $is_planned);
 </div>
 </div><!-- /.col-lg-4 -->
 </div><!-- /.row -->
+
+<?php if ($is_live): ?>
+<!-- Floating messages panel (newest first) -->
+<div class="card meeting-float" data-float-key="admin-<?= (int) $note->id ?>">
+    <div class="card-header meeting-float-header">
+        <span><i class="fa fa-comments mr-1"></i> Messages <span class="meeting-float-total text-muted small"></span></span>
+        <span><span class="badge badge-danger meeting-float-unread d-none"></span> <button type="button" class="btn btn-sm btn-link p-0 meeting-float-toggle" aria-label="Minimise messages"></button></span>
+    </div>
+    <div class="card-body meeting-float-body">
+        <div class="meeting-float-form">
+            <textarea class="form-control live-entry-input" rows="2"></textarea>
+            <div class="d-flex align-items-center justify-content-between mt-2">
+                <small class="text-muted">Enter to send &middot; Shift+Enter for a new line</small>
+                <button type="button" class="btn btn-info btn-sm live-entry-add"><i class="fa fa-paper-plane"></i> Send</button>
+            </div>
+        </div>
+        <div class="live-entries"></div>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- Modal: pick several client users and developers at once -->
 <div class="modal fade" id="modalShareMeeting" tabindex="-1" role="dialog" aria-labelledby="modalShareMeetingTitle" aria-hidden="true">
@@ -230,7 +238,7 @@ $is_shared_session = ($is_live || $is_planned);
                         <div class="share-people" data-type="developer"></div>
                     </div>
                 </div>
-                <p class="text-muted small mt-3 mb-0">Tick the people to share with. Use <i class="fa fa-pen"></i> to also let someone add entries. Each person gets an email with a link to the note.</p>
+                <p class="text-muted small mt-3 mb-0">Tick the people to share with. Use <i class="fa fa-comment"></i> to also let someone send messages. Each person gets an email with a link to the note.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>

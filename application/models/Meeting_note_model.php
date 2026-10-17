@@ -487,11 +487,11 @@ class Meeting_note_model extends CI_Model
             return ['result' => false, 'reason' => $access['note']->status === 'planned' ? "This meeting hasn't started yet." : 'This meeting has ended.'];
         }
         if ($access['share']->can_contribute != 1) {
-            return ['result' => false, 'reason' => "You don't have permission to add entries."];
+            return ['result' => false, 'reason' => "You don't have permission to send messages."];
         }
         $entryId = $this->add_entry($noteId, $type, $participantId, $body);
         return $entryId === false
-            ? ['result' => false, 'reason' => 'Please write something first.']
+            ? ['result' => false, 'reason' => 'Please write a message first.']
             : ['result' => true, 'entry_id' => $entryId];
     }
 

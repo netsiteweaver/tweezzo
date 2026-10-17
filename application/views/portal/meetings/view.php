@@ -57,15 +57,20 @@ $is_planned = ($note->status === 'planned');
             <?php endif; ?>
 
             <?php if (!empty($note->agenda) && trim(strip_tags($note->agenda)) !== ''): ?>
-            <div class="card mb-3">
-                <div class="card-header"><i class="bi bi-list-ol me-1"></i>Agenda</div>
-                <div class="card-body"><?php echo $note->agenda; ?></div>
+            <div class="card mb-3 meeting-agenda" data-collapse-key="<?php echo htmlspecialchars($portal . '-' . $note->uuid); ?>">
+                <div class="card-header d-flex justify-content-between align-items-center" role="button" data-bs-toggle="collapse" data-bs-target="#meeting-agenda-body" aria-expanded="true" aria-controls="meeting-agenda-body" style="cursor:pointer;">
+                    <span><i class="bi bi-list-ol me-1"></i>Agenda</span>
+                    <i class="bi bi-chevron-up meeting-agenda-chevron" aria-hidden="true"></i>
+                </div>
+                <div id="meeting-agenda-body" class="collapse show">
+                    <div class="card-body"><?php echo $note->agenda; ?></div>
+                </div>
             </div>
             <?php endif; ?>
 
             <?php if (!$is_planned): ?>
             <div class="row">
-                <div class="col-lg-8">
+                <div class="col-12">
                     <div class="card mb-3">
                         <div class="card-header"><i class="bi bi-journal-text me-1"></i>Notes</div>
                         <div class="card-body meeting-notes-body"><?php echo $note->notes; ?></div>
@@ -82,17 +87,23 @@ $is_planned = ($note->status === 'planned');
                     </div>
                     <?php endif; ?>
                 </div>
-                <div class="col-lg-4">
-                    <div class="card mb-3">
-                        <div class="card-header"><i class="bi bi-chat-dots me-1"></i>Contributions</div>
-                        <div class="card-body">
-                            <div class="meeting-entries"></div>
-                            <div class="meeting-entry-form mt-3 <?php echo ($is_live && $share->can_contribute == 1) ? '' : 'd-none'; ?>">
-                                <textarea class="form-control meeting-entry-input" rows="2"></textarea>
-                                <button type="button" class="btn btn-primary btn-sm mt-2 meeting-entry-add"><i class="bi bi-plus-lg me-1"></i>Add Entry</button>
-                            </div>
+            </div>
+
+            <!-- Floating messages panel (newest first) -->
+            <div class="card meeting-float" data-float-key="<?php echo htmlspecialchars($portal . '-' . $note->uuid); ?>">
+                <div class="card-header meeting-float-header">
+                    <span><i class="bi bi-chat-dots me-1"></i>Messages <span class="meeting-float-total text-muted small"></span></span>
+                    <span><span class="badge bg-danger meeting-float-unread d-none"></span> <button type="button" class="btn btn-sm btn-link p-0 meeting-float-toggle" aria-label="Minimise messages"></button></span>
+                </div>
+                <div class="card-body meeting-float-body">
+                    <div class="meeting-float-form meeting-entry-form <?php echo ($is_live && $share->can_contribute == 1) ? '' : 'd-none'; ?>">
+                        <textarea class="form-control meeting-entry-input" rows="2"></textarea>
+                        <div class="d-flex align-items-center justify-content-between mt-2">
+                            <small class="text-muted">Enter to send &middot; Shift+Enter for a new line</small>
+                            <button type="button" class="btn btn-primary btn-sm meeting-entry-add"><i class="bi bi-send me-1"></i>Send</button>
                         </div>
                     </div>
+                    <div class="meeting-entries"></div>
                 </div>
             </div>
             <?php endif; ?>

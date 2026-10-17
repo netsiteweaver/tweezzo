@@ -316,7 +316,7 @@ class Meeting_notes extends MY_Controller
         if (!isAuthorised(get_class(), "edit")) return false;
         $this->_live_note($id);
         $entryId = $this->Meeting_note_model->add_entry($id, 'admin', $_SESSION['user_id'], $this->input->post('body'));
-        $this->_json($entryId === false ? ['result' => false, 'reason' => 'Please write something first.'] : ['result' => true, 'entry_id' => $entryId]);
+        $this->_json($entryId === false ? ['result' => false, 'reason' => 'Please write a message first.'] : ['result' => true, 'entry_id' => $entryId]);
     }
 
     public function poll($id)

@@ -17,6 +17,23 @@ jQuery(function(){
     var $input = $root.find('.meeting-entry-input');
     var editorReady = false;
     var pollTimer = null;
+    MeetingLive.floatPanel($('.meeting-float'), { reserve: $root });
+
+    // Agenda: collapsible, open/closed remembered per meeting.
+    var $agenda = $root.find('.meeting-agenda');
+    if ($agenda.length) {
+        var agendaKey = 'meetingAgendaCollapsed:' + $agenda.data('collapse-key');
+        var $agendaBody = $('#meeting-agenda-body');
+        var setChevron = function(open){
+            $agenda.find('.meeting-agenda-chevron').toggleClass('bi-chevron-up', open).toggleClass('bi-chevron-down', !open);
+            $agenda.find('[data-bs-toggle="collapse"]').attr('aria-expanded', open ? 'true' : 'false');
+        };
+        try {
+            if (localStorage.getItem(agendaKey) === '1') { $agendaBody.removeClass('show'); setChevron(false); }
+        } catch (e) { /* storage unavailable */ }
+        $agendaBody.on('shown.bs.collapse', function(){ setChevron(true); try { localStorage.setItem(agendaKey, '0'); } catch (e) {} });
+        $agendaBody.on('hidden.bs.collapse', function(){ setChevron(false); try { localStorage.setItem(agendaKey, '1'); } catch (e) {} });
+    }
     var lastEntryId = MeetingLive.appendEntries($entries, JSON.parse($('#portal-meeting-entries').text() || '[]'), 0);
 
     function url(action) {
@@ -27,7 +44,7 @@ jQuery(function(){
         canContribute = allowed;
         $form.toggleClass('d-none', !allowed);
         if (allowed && !editorReady) {
-            $input.summernote(MeetingLive.editorOptions());
+            $input.summernote(MeetingLive.editorOptions(null, function(){ $root.find('.meeting-entry-add').trigger('click'); }));
             editorReady = true;
         }
     }
@@ -88,15 +105,7 @@ jQuery(function(){
     }
 
     $root.on('click', '.meeting-entry-add', function(){
-        var $btn = $(this).prop('disabled', true);
-        $.post(url('meetingAddEntry'), { body: $input.summernote('code') }, function(response){
-            if (response.result) {
-                $input.summernote('reset');
-                poll();
-            } else {
-                alertify.alert(response.reason || 'Could not add your entry.');
-            }
-        }, 'json').always(function(){ $btn.prop('disabled', false); });
+        MeetingLive.sendMessage($input, $(this), url('meetingAddEntry'), 'body', poll);
     });
 
     setCanContribute(canContribute);
