@@ -104,6 +104,51 @@ jQuery(function(){
     $('.start-live-session').on('click', function(){ submitWithoutNotes(this, 'start_live'); });
     $('.plan-meeting').on('click', function(){ submitWithoutNotes(this, 'plan_meeting'); });
 
+    // Update on a shared note: ask whether to email the shared people about it.
+    var $notifyModal = $('#modalNotifyUpdate');
+    if ($notifyModal.length) {
+        var $updateForm = $('.btn-update').closest('form');
+        var notifyConfirmed = false;
+
+        $('.btn-update').on('click', function(e){
+            if (notifyConfirmed) return;
+            e.preventDefault();
+            $updateForm.find('input[name="notify_share_ids[]"]').remove();
+            $notifyModal.modal('show');
+        });
+
+        function submitUpdate(ids) {
+            ids.forEach(function(id){
+                $updateForm.append('<input type="hidden" name="notify_share_ids[]" value="' + parseInt(id, 10) + '">');
+            });
+            notifyConfirmed = true;
+            $notifyModal.modal('hide');
+            $updateForm.trigger('submit');
+            // If client-side validation stops the submit, ask again next time.
+            setTimeout(function(){ notifyConfirmed = false; }, 0);
+        }
+
+        function updateNotifyButton() {
+            var n = $notifyModal.find('.notify-share:checked').length;
+            $notifyModal.find('.notify-send').prop('disabled', n === 0)
+                .html('<i class="fa fa-paper-plane"></i> Update &amp; notify' + (n ? ' ' + n : ''));
+            $notifyModal.find('.notify-toggle-all').text(n ? 'Untick all' : 'Tick all');
+        }
+
+        $notifyModal.on('change', '.notify-share', updateNotifyButton);
+        $notifyModal.on('click', '.notify-toggle-all', function(e){
+            e.preventDefault();
+            var tickAll = $notifyModal.find('.notify-share:checked').length === 0;
+            $notifyModal.find('.notify-share').prop('checked', tickAll);
+            updateNotifyButton();
+        });
+        $notifyModal.on('click', '.notify-skip', function(){ submitUpdate([]); });
+        $notifyModal.on('click', '.notify-send', function(){
+            submitUpdate($notifyModal.find('.notify-share:checked').map(function(){ return this.value; }).get());
+        });
+        updateNotifyButton();
+    }
+
     $('select[name=customer_id]').on("change",function(){
         let elemName = $('select[name=customer_id] option:selected').text();
         let customerId = $(this).val();

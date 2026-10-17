@@ -121,6 +121,8 @@ class Meeting_note_model extends CI_Model
 
     public function update_note($id)
     {
+        $before = $this->get_note($id);
+
         // Ensure upload folder exists
         $upload_dir = './uploads/meetings/';
         if (!is_dir($upload_dir)) {
@@ -179,6 +181,10 @@ class Meeting_note_model extends CI_Model
             'last_updated'  =>  date("Y-m-d H:i:s"),
             'last_updated_by'   =>  $_SESSION['user_id']
         ];
+        // A planned meeting moved to another time gets its reminder again.
+        if (!empty($before) && $before->status === 'planned' && $data['meeting_datetime'] . ':00' !== $before->meeting_datetime && $data['meeting_datetime'] !== $before->meeting_datetime) {
+            $data['reminder_sent_on'] = null;
+        }
         // Followers of a live note refresh when the version moves.
         $this->db->set('notes_version', 'notes_version + 1', false);
         return $this->db->where('id', $id)->update('meeting_notes', $data);
@@ -566,6 +572,7 @@ class Meeting_note_model extends CI_Model
             'invite'    => ($note->status === 'planned' ? "Meeting invitation: " : "Live meeting notes: ") . $note->customer_name,
             'reminder'  => "Reminder: meeting at " . date('H:i', strtotime($note->meeting_datetime)) . " - " . $note->customer_name,
             'live'      => "Meeting started - follow live: " . $note->customer_name,
+            'update'    => ($note->status === 'planned' ? "Meeting updated: " : "Meeting notes updated: ") . $note->customer_name,
         ];
         $count = 0;
         foreach ($this->get_shares($note->id) as $share) {

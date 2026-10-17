@@ -1,13 +1,15 @@
 <?php
-// $kind: invite | reminder | live
+// $kind: invite | reminder | live | update
 $is_planned = ($meeting->status === 'planned');
 $when = date('l d M Y \a\t H:i', strtotime($meeting->meeting_datetime));
 $headings = [
     'invite'    => $is_planned ? "You're invited to a meeting" : "You've been invited to follow live meeting notes",
     'reminder'  => "Your meeting starts soon",
     'live'      => "The meeting has started",
+    'update'    => $is_planned ? "The meeting details have been updated" : "The meeting notes have been updated",
 ];
-$button = ($kind === 'live' || !$is_planned) ? 'Follow Live Notes' : 'Open Meeting';
+$button = ($kind === 'update' && $meeting->status === 'closed') ? 'Read Meeting Notes'
+    : (($kind === 'live' || !$is_planned) ? 'Follow Live Notes' : 'Open Meeting');
 ?>
 <div style="margin:0 auto;max-width:800px;">
     <table align="center" border="1" cellpadding="10" cellspacing="0" role="presentation" style="width:100%;">
@@ -20,6 +22,10 @@ $button = ($kind === 'live' || !$is_planned) ? 'Follow Live Notes' : 'Open Meeti
                         <p>A meeting has been planned and you're invited. You can follow the notes live in the portal while the meeting takes place.</p>
                     <?php elseif ($kind === 'invite'): ?>
                         <p>The meeting notes below have been shared with you. You can follow them live while they are being written.</p>
+                    <?php elseif ($kind === 'update' && $is_planned): ?>
+                        <p>The meeting below has been updated. Please check the date, time and agenda<?php if (!empty($calendar)): ?>, and update your calendar if needed<?php endif; ?>.</p>
+                    <?php elseif ($kind === 'update'): ?>
+                        <p>The notes of the meeting below have been updated. Open the portal to read the latest version.</p>
                     <?php elseif ($kind === 'reminder'): ?>
                         <p>This is a reminder that the meeting below starts at <strong><?php echo date('H:i', strtotime($meeting->meeting_datetime)); ?></strong>.</p>
                     <?php else: ?>

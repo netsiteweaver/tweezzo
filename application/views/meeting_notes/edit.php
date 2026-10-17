@@ -240,3 +240,40 @@ $is_shared_session = ($is_live || $is_planned);
     </div>
 </div>
 <?php endif; ?>
+
+<?php if (!empty($notify_shares)): ?>
+<!-- Modal: notify shared people about this update? -->
+<div class="modal fade" id="modalNotifyUpdate" tabindex="-1" role="dialog" aria-labelledby="modalNotifyUpdateTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalNotifyUpdateTitle"><i class="fa fa-paper-plane"></i> Notify about this update?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">This note is shared with the people below. Tick who should get an email about the update<?= $note->status === 'planned' ? ' (with the new date, agenda and calendar links)' : '' ?>.</p>
+                <div class="d-flex justify-content-end mb-1"><a href="#" class="small notify-toggle-all">Untick all</a></div>
+                <ul class="list-group">
+                    <?php foreach ($notify_shares as $sh): ?>
+                    <li class="list-group-item py-2">
+                        <div class="form-check mb-0">
+                            <input type="checkbox" class="form-check-input notify-share" id="notify-<?= (int) $sh->id ?>" value="<?= (int) $sh->id ?>" checked>
+                            <label class="form-check-label" for="notify-<?= (int) $sh->id ?>">
+                                <?= htmlspecialchars($sh->name ?: '(removed user)') ?>
+                                <span class="badge badge-<?= $sh->participant_type === 'customer' ? 'success' : 'secondary' ?>"><?= $sh->participant_type === 'customer' ? 'Client' : 'Developer' ?></span>
+                                <br><small class="text-muted"><?= htmlspecialchars((string) $sh->email) ?></small>
+                            </label>
+                        </div>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
+                <button type="button" class="btn btn-secondary notify-skip"><i class="fa fa-save"></i> Update only</button>
+                <button type="button" class="btn btn-primary notify-send"><i class="fa fa-paper-plane"></i> Update &amp; notify</button>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>

@@ -173,6 +173,8 @@ class Meeting_notes extends MY_Controller
         $this->data['attachments'] = $this->Attachment_model->get_attachments($id);
 
         $this->data['page_title'] = "Edit Meeting Note";
+        // For the "notify about this update?" prompt on Update.
+        $this->data['notify_shares'] = empty($this->data['note']) ? [] : $this->Meeting_note_model->get_shares($id);
 
         if (!empty($this->data['note']) && in_array($this->data['note']->status, ['planned', 'live'], true)) {
             $this->data['page_title'] = ($this->data['note']->status === 'live') ? "Live Meeting Note" : "Planned Meeting";
@@ -195,7 +197,11 @@ class Meeting_notes extends MY_Controller
         $this->form_validation->set_rules('customer_name', 'Client Name', 'required');
         $this->form_validation->set_rules('meeting_date', 'Meeting DateTime', 'required');
         $this->form_validation->set_rules('meeting_time', 'Meeting DateTime', 'required');
-        $this->form_validation->set_rules('notes', 'Notes', 'required');
+        // Planned and live meetings can still have empty notes.
+        $before = $this->Meeting_note_model->get_note($id);
+        if (empty($before) || $before->status === 'closed') {
+            $this->form_validation->set_rules('notes', 'Notes', 'required');
+        }
         $this->form_validation->set_rules('next_meeting_date', 'Next Meeting Date', 'callback_validate_next_meeting_date');
 
         if ($this->form_validation->run() === FALSE) {
@@ -203,8 +209,13 @@ class Meeting_notes extends MY_Controller
         } else {
             $this->Meeting_note_model->update_note($id);
             $note = $this->Meeting_note_model->get_note($id);
+
+            // People picked in the "notify about this update?" prompt.
+            $notifyIds = array_filter(array_map('intval', (array) $this->input->post('notify_share_ids')));
+            $notified = $notifyIds ? $this->Meeting_note_model->email_participants($note, 'update', $notifyIds) : 0;
+            flashSuccess("Note updated." . ($notified ? " {$notified} " . ($notified === 1 ? 'person' : 'people') . " notified." : ''));
+
             if (!empty($note) && in_array($note->status, ['planned', 'live'], true)) {
-                flashSuccess("Note updated.");
                 redirect("meeting_notes/edit/" . $id);
             }
             redirect("meeting_notes/index");
