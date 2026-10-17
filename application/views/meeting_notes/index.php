@@ -57,7 +57,7 @@
                     <td>
                         <?= htmlspecialchars($note->customer_name) ?>
                         <?php if (isset($note->status) && $note->status === 'live'): ?>
-                        <a href="<?= site_url('meeting_notes/edit/'.$note->id) ?>" class="badge badge-danger ml-1" title="Live session in progress"><i class="fa fa-circle"></i> LIVE</a>
+                        <a href="<?= site_url('meeting_notes/edit/'.$note->id) ?>" class="ml-1"><?= $this->Meeting_note_model->host_state_badge($this->Meeting_note_model->host_state($note), 4) ?></a>
                         <?php endif; ?>
                     </td>
                     <td>

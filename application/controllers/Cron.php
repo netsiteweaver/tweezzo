@@ -629,15 +629,15 @@ class Cron extends CI_Controller {
     }
 
     /**
-     * Planned meetings: start the ones that are due and send reminders for those starting within the hour.
-     * Run every minute.
+     * Meetings: start planned ones that are due, send reminders for those starting within the hour,
+     * and end meetings left in progress with no activity for 3 hours. Run every minute.
      */
     public function meetingNotesTick()
     {
         $this->load->model("Meeting_note_model");
-        $started = $this->Meeting_note_model->promote_due();
+        list($started, $ended) = $this->Meeting_note_model->sweep();
         $reminders = $this->Meeting_note_model->send_due_reminders();
-        echo date("Y-m-d H:i:s") . " meetings started: {$started}, reminder emails: {$reminders}\n";
+        echo date("Y-m-d H:i:s") . " meetings started: {$started}, reminder emails: {$reminders}, idle meetings ended: {$ended}\n";
     }
 
     public function fetchQuotes()

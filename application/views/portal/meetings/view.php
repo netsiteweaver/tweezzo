@@ -22,7 +22,7 @@ $is_planned = ($note->status === 'planned');
                 </h4>
                 <span class="meeting-status-badge">
                     <?php if ($is_live): ?>
-                        <span class="badge bg-danger"><i class="bi bi-broadcast me-1"></i>LIVE</span>
+                        <span class="meeting-host-badge"><?php echo $this->Meeting_note_model->host_state_badge($this->Meeting_note_model->host_state($note)); ?></span>
                         <small class="text-muted ms-2 meeting-updated"></small>
                     <?php elseif ($is_planned): ?>
                         <span class="badge bg-info text-dark"><i class="bi bi-calendar-event me-1"></i>Upcoming</span>

@@ -93,7 +93,7 @@
     <div class="card-footer">
         <button type="submit" class="btn btn-save"><i class="fa fa-save"></i> Save Note</button>
         <button type="button" class="btn btn-info ms-2 plan-meeting" title="Plan a future meeting: invite people now, it goes live automatically at the meeting time"><i class="fa fa-calendar-plus"></i> Plan Meeting</button>
-        <button type="button" class="btn btn-danger ms-2 start-live-session" title="Save now and continue writing live; share it with your client and developers"><i class="fa fa-broadcast-tower"></i> Start Live Session</button>
+        <button type="button" class="btn btn-warning ms-2 start-live-session" title="Save now and keep writing; the client and developers you share it with follow the notes as you type"><i class="fa fa-pen"></i> Start Meeting Notes</button>
         <a href="<?= site_url('meeting_notes') ?>" class="btn btn-back ms-2"><i class="fa fa-times"></i> Cancel</a>
     </div>
     </form>

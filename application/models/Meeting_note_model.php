@@ -45,7 +45,7 @@ class Meeting_note_model extends CI_Model
     public function get_all_notes($customer_id = '', $start_date = '', $end_date = '')
     {
         $this->db
-            ->select('mn.*, u.name updatedBy')
+            ->select('mn.*, u.name updatedBy, (SELECT MAX(p.last_seen) FROM meeting_note_admin_presence p WHERE p.meeting_note_id = mn.id) AS host_seen', false)
             ->from('meeting_notes mn')
             ->join('users u', 'u.id = mn.last_updated_by', 'left');
 
@@ -418,8 +418,8 @@ class Meeting_note_model extends CI_Model
     /** Notes shared with a portal participant, live ones first. */
     public function notes_shared_with($type, $participantId)
     {
-        $this->promote_due();
-        return $this->db->select('mn.id, mn.uuid, mn.customer_name, mn.meeting_datetime, mn.lieu, mn.status, mn.closed_on, s.can_contribute')
+        $this->sweep();
+        return $this->db->select('mn.id, mn.uuid, mn.customer_name, mn.meeting_datetime, mn.lieu, mn.status, mn.closed_on, mn.last_updated, mn.live_notified_on, s.can_contribute, (SELECT MAX(p.last_seen) FROM meeting_note_admin_presence p WHERE p.meeting_note_id = mn.id) AS host_seen', false)
             ->from('meeting_note_shares s')
             ->join('meeting_notes mn', 'mn.id = s.meeting_note_id')
             ->where(['s.participant_type' => $type, 's.participant_id' => (int) $participantId])
@@ -472,6 +472,8 @@ class Meeting_note_model extends CI_Model
         $payload = $this->poll_payload($access['note'], $sinceVersion, $sinceEntryId);
         $payload['can_contribute'] = ($access['share']->can_contribute == 1 && $access['note']->status === 'live');
         $payload['participants'] = $participants;
+        $payload['host_state'] = $this->host_state($access['note']);
+        $payload['host_badge'] = $this->host_state_badge($payload['host_state']);
         return $payload;
     }
 
@@ -500,6 +502,10 @@ class Meeting_note_model extends CI_Model
     /** Meetings have no end time; calendar entries use this length. */
     const DEFAULT_DURATION_MINUTES = 60;
     const REMINDER_MINUTES_BEFORE = 60;
+    /** A meeting in progress with no activity for this long is ended automatically. */
+    const AUTO_END_IDLE_HOURS = 3;
+    /** A started meeting shows "In progress" while the host edited within this many minutes (or has the page open). */
+    const HOST_ACTIVE_EDIT_MINUTES = 15;
 
     public function lieu_label($lieu)
     {
@@ -529,6 +535,95 @@ class Meeting_note_model extends CI_Model
             }
         }
         return $promoted;
+    }
+
+    /**
+     * Housekeeping for all meetings: start planned ones that are due and end idle ones.
+     * Run by cron every minute and, as a fallback, by the meeting listing pages.
+     * @return array [started, ended]
+     */
+    public function sweep()
+    {
+        return [$this->promote_due(), $this->end_idle()];
+    }
+
+    /**
+     * What a started meeting looks like to everyone, decided by the host (a back-office user):
+     *  - 'waiting': went live on schedule and no admin has opened it since
+     *  - 'active':  the host started it and is on the page (seen within AWAY_WINDOW, covers background tabs)
+     *               or edited within HOST_ACTIVE_EDIT_MINUTES
+     *  - 'paused':  the host started it but is away
+     * Returns null when the note isn't live. Listing queries select host_seen to save a query.
+     */
+    public function host_state($note)
+    {
+        if (empty($note) || $note->status !== 'live') {
+            return null;
+        }
+        $hostSeen = property_exists($note, 'host_seen') ? $note->host_seen
+            : $this->db->select_max('last_seen')->from('meeting_note_admin_presence')->where('meeting_note_id', (int) $note->id)->get()->row()->last_seen;
+        $seen = empty($hostSeen) ? 0 : strtotime($hostSeen);
+        $edited = empty($note->last_updated) ? 0 : strtotime($note->last_updated);
+        // live_notified_on = when it went live from planned (schedule or Start Now); empty = host started it on creation.
+        $wentLive = empty($note->live_notified_on) ? 0 : strtotime($note->live_notified_on);
+        if ($wentLive && max($seen, $edited) < $wentLive) {
+            return 'waiting';
+        }
+        $now = time();
+        if ($seen >= $now - self::AWAY_WINDOW || $edited >= $now - self::HOST_ACTIVE_EDIT_MINUTES * 60) {
+            return 'active';
+        }
+        return 'paused';
+    }
+
+    /** Badge for host_state(); $bs = 4 (back office) or 5 (portals). */
+    public function host_state_badge($state, $bs = 5)
+    {
+        $grey = $bs === 4 ? 'badge-secondary' : 'bg-secondary';
+        $amber = $bs === 4 ? 'badge-warning' : 'bg-warning text-dark';
+        $icons = $bs === 4
+            ? ['active' => 'fa fa-pen', 'paused' => 'fa fa-pause', 'waiting' => 'fa fa-hourglass-half']
+            : ['active' => 'bi bi-pencil-square', 'paused' => 'bi bi-pause-fill', 'waiting' => 'bi bi-hourglass-split'];
+        $labels = ['active' => 'In progress', 'paused' => 'Paused', 'waiting' => 'Waiting for host'];
+        $titles = [
+            'active'  => 'The host is writing the notes now',
+            'paused'  => "The meeting has started, but the notes aren't being written right now",
+            'waiting' => "It's time for the meeting, but the host hasn't started it yet",
+        ];
+        if (!isset($labels[$state])) {
+            return '';
+        }
+        return '<span class="badge ' . ($state === 'active' ? $amber : $grey) . '" title="' . $titles[$state] . '">'
+            . '<i class="' . $icons[$state] . ($bs === 4 ? '' : ' me-1') . '"></i>' . ($bs === 4 ? ' ' : '') . $labels[$state] . '</span>';
+    }
+
+    /**
+     * Ends meetings in progress that nobody closed: no edit, no team member on the page and no new contribution
+     * for AUTO_END_IDLE_HOURS, counted from when it started at the earliest. Participants keep read-only access.
+     * @return int meetings ended
+     */
+    public function end_idle()
+    {
+        $cutoff = $this->db->escape(date('Y-m-d H:i:s', time() - self::AUTO_END_IDLE_HOURS * 3600));
+        $epoch = "'1970-01-01 00:00:00'";
+        $rows = $this->db->query("
+            SELECT mn.id FROM meeting_notes mn
+            WHERE mn.status = 'live'
+              AND GREATEST(
+                    COALESCE(mn.last_updated, {$epoch}),
+                    COALESCE(mn.created_at, {$epoch}),
+                    COALESCE(mn.live_notified_on, {$epoch}),
+                    COALESCE((SELECT MAX(p.last_seen) FROM meeting_note_admin_presence p WHERE p.meeting_note_id = mn.id), {$epoch}),
+                    COALESCE((SELECT MAX(e.created_on) FROM meeting_note_entries e WHERE e.meeting_note_id = mn.id), {$epoch})
+                  ) < {$cutoff}
+        ")->result();
+        $ended = 0;
+        foreach ($rows as $row) {
+            $this->db->set('status', 'closed')->set('closed_on', date('Y-m-d H:i:s'))
+                ->where(['id' => $row->id, 'status' => 'live'])->update('meeting_notes');
+            $ended += ($this->db->affected_rows() === 1) ? 1 : 0;
+        }
+        return $ended;
     }
 
     /** "Now live" email, sent once per meeting (claimed atomically). */
@@ -580,9 +675,9 @@ class Meeting_note_model extends CI_Model
         $this->load->model("system_model");
         $logo = $this->system_model->getParam("logo");
         $subjects = [
-            'invite'    => ($note->status === 'planned' ? "Meeting invitation: " : "Live meeting notes: ") . $note->customer_name,
+            'invite'    => ($note->status === 'planned' ? "Meeting invitation: " : "Meeting notes shared with you: ") . $note->customer_name,
             'reminder'  => "Reminder: meeting at " . date('H:i', strtotime($note->meeting_datetime)) . " - " . $note->customer_name,
-            'live'      => "Meeting started - follow live: " . $note->customer_name,
+            'live'      => "Meeting started - follow the notes: " . $note->customer_name,
             'update'    => ($note->status === 'planned' ? "Meeting updated: " : "Meeting notes updated: ") . $note->customer_name,
         ];
         $count = 0;
@@ -623,7 +718,7 @@ class Meeting_note_model extends CI_Model
     private function calendar_text($note, $share)
     {
         $portal = ($share->participant_type === 'customer') ? 'customers' : 'developers';
-        $text = "Meeting notes (live during the meeting): " . base_url("portal/{$portal}/meeting/" . $note->uuid);
+        $text = "Meeting notes (follow them here during the meeting): " . base_url("portal/{$portal}/meeting/" . $note->uuid);
         $agenda = trim(html_entity_decode(strip_tags(str_replace(['</li>', '</p>', '<br>', '<br/>', '<br />'], "\n", (string) $note->agenda)), ENT_QUOTES, 'UTF-8'));
         if ($agenda !== '') {
             $text .= "\n\nAgenda:\n" . preg_replace("/\n{2,}/", "\n", $agenda);

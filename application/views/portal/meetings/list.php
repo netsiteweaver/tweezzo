@@ -24,7 +24,7 @@
                         <td><?php echo htmlspecialchars($lieu_labels[$meeting->lieu] ?? ucfirst((string) $meeting->lieu)); ?></td>
                         <td>
                             <?php if ($meeting->status === 'live'): ?>
-                                <span class="badge bg-danger"><i class="bi bi-broadcast me-1"></i>LIVE</span>
+                                <?php echo $this->Meeting_note_model->host_state_badge($this->Meeting_note_model->host_state($meeting)); ?>
                                 <?php if ($meeting->can_contribute == 1): ?><span class="badge bg-secondary ms-1" title="You can add entries"><i class="bi bi-pencil"></i></span><?php endif; ?>
                             <?php elseif ($meeting->status === 'planned'): ?>
                                 <span class="badge bg-info text-dark"><i class="bi bi-calendar-event me-1"></i>Upcoming</span>
@@ -33,8 +33,8 @@
                             <?php endif; ?>
                         </td>
                         <td class="text-nowrap">
-                            <a href="portal/<?php echo $portal; ?>/meeting/<?php echo htmlspecialchars($meeting->uuid); ?>" class="btn btn-sm <?php echo $meeting->status === 'live' ? 'btn-danger' : 'btn-outline-secondary'; ?>">
-                                <i class="bi bi-<?php echo $meeting->status === 'live' ? 'eye' : 'journal-text'; ?> me-1"></i><?php echo $meeting->status === 'live' ? 'Join' : 'View'; ?>
+                            <a href="portal/<?php echo $portal; ?>/meeting/<?php echo htmlspecialchars($meeting->uuid); ?>" class="btn btn-sm <?php echo $meeting->status === 'live' ? 'btn-warning' : 'btn-outline-secondary'; ?>">
+                                <i class="bi bi-<?php echo $meeting->status === 'live' ? 'pencil-square' : 'journal-text'; ?> me-1"></i><?php echo $meeting->status === 'live' ? 'Follow notes' : 'View'; ?>
                             </a>
                         </td>
                     </tr>

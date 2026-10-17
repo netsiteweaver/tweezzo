@@ -65,6 +65,7 @@ jQuery(function(){
                     return;
                 }
                 if (response.participants) MeetingLive.renderParticipants($root.find('.meeting-participants'), response.participants);
+                if (typeof response.host_badge !== 'undefined') $root.find('.meeting-host-badge').html(response.host_badge);
                 if (status === 'planned') {
                     // Scheduled time reached (or started early): reload into live mode.
                     if (response.status !== 'planned') { stopPolling(); location.reload(); }

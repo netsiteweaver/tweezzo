@@ -42,7 +42,7 @@ class Meeting_notes extends MY_Controller
             $start_date = date('Y-m-d', strtotime('-29 days'));
         }
 
-        $this->Meeting_note_model->promote_due();
+        $this->Meeting_note_model->sweep();
 
         $this->data['customers'] = $this->Customers_model->lookup();
         $this->data['customer_id'] = $customer_id;
@@ -145,7 +145,7 @@ class Meeting_notes extends MY_Controller
                 redirect("meeting_notes/edit/" . $note_id);
             }
             if ($start_live) {
-                flashSuccess("Live session started. Share it with your client and developers below.");
+                flashSuccess("Meeting notes started. Share them with your client and developers below.");
                 redirect("meeting_notes/edit/" . $note_id);
             }
             redirect("meeting_notes/index");
@@ -177,7 +177,7 @@ class Meeting_notes extends MY_Controller
         $this->data['notify_shares'] = empty($this->data['note']) ? [] : $this->Meeting_note_model->get_shares($id);
 
         if (!empty($this->data['note']) && in_array($this->data['note']->status, ['planned', 'live'], true)) {
-            $this->data['page_title'] = ($this->data['note']->status === 'live') ? "Live Meeting Note" : "Planned Meeting";
+            $this->data['page_title'] = ($this->data['note']->status === 'live') ? "Meeting in Progress" : "Planned Meeting";
             $this->data['shares'] = $this->Meeting_note_model->get_shares($id);
             $this->data['shareable'] = $this->Meeting_note_model->shareable_people($this->data['note']);
             $this->data['entries'] = $this->Meeting_note_model->get_entries($id);
@@ -681,7 +681,7 @@ class Meeting_notes extends MY_Controller
     {
         $start = strtotime(trim((string) $this->input->post('meeting_date')) . ' ' . trim((string) $meeting_time));
         if ($start === false || $start <= time()) {
-            $this->form_validation->set_message('validate_planned_datetime', 'A planned meeting must start in the future. To start now, use Start Live Session.');
+            $this->form_validation->set_message('validate_planned_datetime', 'A planned meeting must start in the future. To start now, use Start Meeting Notes.');
             return false;
         }
         return true;

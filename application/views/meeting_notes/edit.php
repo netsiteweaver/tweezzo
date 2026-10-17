@@ -13,8 +13,8 @@ $is_shared_session = ($is_live || $is_planned);
 <div id="live-session" class="alert alert-light border d-flex flex-wrap align-items-center justify-content-between" data-note-id="<?= (int) $note->id ?>" data-status="<?= htmlspecialchars($note->status) ?>">
     <?php if ($is_live): ?>
     <div>
-        <span class="badge badge-danger mr-2 live-badge"><i class="fa fa-circle"></i> LIVE</span>
-        <strong>Live session</strong>
+        <span class="badge badge-warning mr-2 live-badge"><i class="fa fa-pen"></i> In progress</span>
+        <strong>Meeting in progress</strong>
         <span class="text-muted ml-2">Shared users follow your notes as you type (autosaved).</span>
         <span class="text-muted ml-2 live-save-status"></span>
     </div>
@@ -25,7 +25,7 @@ $is_shared_session = ($is_live || $is_planned);
         <strong><?= htmlspecialchars(date('l d M Y \a\t H:i', strtotime($note->meeting_datetime))) ?></strong>
         <span class="text-muted ml-2">Invitees see it as upcoming with the agenda. It goes live automatically at this time; a reminder goes out an hour before.</span>
     </div>
-    <button type="button" class="btn btn-sm btn-danger start-live-now"><i class="fa fa-broadcast-tower"></i> Start Now</button>
+    <button type="button" class="btn btn-sm btn-danger start-live-now"><i class="fa fa-pen"></i> Start Now</button>
     <?php endif; ?>
 </div>
 <div class="mb-3"><i class="fa fa-users text-muted mr-1"></i><span class="meeting-participants"><span class="text-muted small">Loading participants&hellip;</span></span></div>
