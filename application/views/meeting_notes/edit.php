@@ -4,6 +4,45 @@
 }
 </style>
 <?= validation_errors('<div class="alert alert-danger">', '</div>') ?>
+<?php
+$is_live = ($note->status === 'live');
+$is_planned = ($note->status === 'planned');
+$is_shared_session = ($is_live || $is_planned);
+?>
+<?php if ($is_shared_session): ?>
+<div id="live-session" class="alert alert-light border d-flex flex-wrap align-items-center justify-content-between" data-note-id="<?= (int) $note->id ?>" data-status="<?= htmlspecialchars($note->status) ?>">
+    <?php if ($is_live): ?>
+    <div>
+        <span class="badge badge-danger mr-2 live-badge"><i class="fa fa-circle"></i> LIVE</span>
+        <strong>Live session</strong>
+        <span class="text-muted ml-2">Shared users follow your notes as you type (autosaved).</span>
+        <span class="text-muted ml-2 live-save-status"></span>
+    </div>
+    <button type="button" class="btn btn-sm btn-outline-danger end-live-session"><i class="fa fa-stop-circle"></i> End Meeting</button>
+    <?php else: ?>
+    <div>
+        <span class="badge badge-info mr-2"><i class="fa fa-calendar-alt"></i> PLANNED</span>
+        <strong><?= htmlspecialchars(date('l d M Y \a\t H:i', strtotime($note->meeting_datetime))) ?></strong>
+        <span class="text-muted ml-2">Invitees see it as upcoming with the agenda. It goes live automatically at this time; a reminder goes out an hour before.</span>
+    </div>
+    <button type="button" class="btn btn-sm btn-danger start-live-now"><i class="fa fa-broadcast-tower"></i> Start Now</button>
+    <?php endif; ?>
+</div>
+<div class="mb-3"><i class="fa fa-users text-muted mr-1"></i><span class="meeting-participants"><span class="text-muted small">Loading participants&hellip;</span></span></div>
+<script type="application/json" id="live-meeting-data"><?= json_encode([
+    'note_id'       => (int) $note->id,
+    'status'        => $note->status,
+    'viewer'        => ['type' => 'admin', 'id' => (int) $_SESSION['user_id']],
+    'notes_version' => (int) $note->notes_version,
+    'shares'        => $shares,
+    'shareable'     => $shareable,
+    'entries'       => $entries,
+], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
+<div class="row">
+<div class="col-lg-8">
+<?php elseif ($note->status === 'closed' && !empty($note->closed_on)): ?>
+<div class="alert alert-secondary"><i class="fa fa-flag-checkered"></i> Live meeting ended on <?= htmlspecialchars(date('d M Y H:i', strtotime($note->closed_on))) ?>. Shared users keep read-only access.</div>
+<?php endif; ?>
 <div class="card card-primary">
     <?= form_open_multipart('meeting_notes/update/'.$note->id) ?>
     <div class="card-body">
@@ -56,6 +95,11 @@
                 rows="5"><?= set_value('attendees', isset($note) ? $note->attendees : '') ?></textarea>
         </div>
 
+
+        <div class="form-group">
+            <label for="agenda" class="form-label">Agenda <span class="text-muted">(optional &ndash; shown to invitees)</span></label>
+            <textarea name="agenda" id="agenda" class="form-control summernote2" rows="3"><?= set_value('agenda', isset($note->agenda) ? $note->agenda : '') ?></textarea>
+        </div>
 
         <div class="form-group">
             <label for="notes" class="form-label">Notes</label>
@@ -127,3 +171,72 @@
     </div>
     </form>
 </div>
+<?php if ($is_shared_session): ?>
+<?php if ($is_live): ?>
+<div class="card card-outline card-info">
+    <div class="card-header"><h3 class="card-title"><i class="fa fa-comments"></i> Contributions</h3></div>
+    <div class="card-body">
+        <div class="live-entries"></div>
+        <div class="mt-3">
+            <textarea class="form-control live-entry-input" rows="2"></textarea>
+            <button type="button" class="btn btn-info btn-sm mt-2 live-entry-add"><i class="fa fa-plus"></i> Add Entry</button>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+</div><!-- /.col-lg-8 -->
+<div class="col-lg-4">
+<div class="card card-outline card-danger live-share-panel">
+    <div class="card-header"><h3 class="card-title"><i class="fa fa-share-alt"></i> Shared With</h3></div>
+    <div class="card-body">
+        <div class="live-shares mb-3"></div>
+        <button type="button" class="btn btn-danger btn-sm share-open"><i class="fa fa-user-plus"></i> Share with people&hellip;</button>
+        <p class="text-muted small mt-3 mb-0">
+            <?php if ($is_planned): ?>
+            Invitees get an email with the date, agenda and calendar links, a reminder an hour before, and a "now live" email when it starts. They find it in their portal under <b>Meetings</b>.
+            <?php else: ?>
+            Shared users see your notes live in their portal, under <b>Meetings</b>, and receive an email with the link.
+            <?php endif; ?>
+            <i class="fa fa-circle" style="color:#28a745;"></i> viewing now &middot; <i class="fa fa-circle" style="color:#ffc107;"></i> page open in the background &middot; <i class="fa fa-circle" style="color:#adb5bd;"></i> not on the page.
+        </p>
+    </div>
+</div>
+</div><!-- /.col-lg-4 -->
+</div><!-- /.row -->
+
+<!-- Modal: pick several client users and developers at once -->
+<div class="modal fade" id="modalShareMeeting" tabindex="-1" role="dialog" aria-labelledby="modalShareMeetingTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalShareMeetingTitle"><i class="fa fa-share-alt"></i> Share live notes</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <input type="search" class="form-control form-control-sm mb-3 share-search" placeholder="Search by name or email">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong><i class="fa fa-building"></i> Client users</strong>
+                            <a href="#" class="small share-select-all" data-type="customer">Select all</a>
+                        </div>
+                        <div class="share-people" data-type="customer"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong><i class="fa fa-code"></i> Developers</strong>
+                            <a href="#" class="small share-select-all" data-type="developer">Select all</a>
+                        </div>
+                        <div class="share-people" data-type="developer"></div>
+                    </div>
+                </div>
+                <p class="text-muted small mt-3 mb-0">Tick the people to share with. Use <i class="fa fa-pen"></i> to also let someone add entries. Each person gets an email with a link to the note.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
+                <button type="button" class="btn btn-danger share-save" disabled><i class="fa fa-user-plus"></i> Share</button>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>

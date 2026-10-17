@@ -774,5 +774,56 @@ class Customers extends CI_Controller
     {
 
     }
-    
+
+    // ---------------------------------------------------------------------
+    // Shared meeting notes (live follow + contributions)
+    // ---------------------------------------------------------------------
+
+    public function meetings()
+    {
+        $this->load->model("Meeting_note_model");
+        $this->data['page_title'] = "Meetings";
+        $this->data['portal'] = "customers";
+        $this->data['meetings'] = $this->Meeting_note_model->notes_shared_with('customer', (int) $_SESSION['customer_access_id']);
+        $this->data['content'][] = $this->load->view("/portal/meetings/list", $this->data, true);
+        $this->load->view("/portal/customers/shared/layout", $this->data);
+    }
+
+    public function meeting($id = 0)
+    {
+        $this->load->model(["Meeting_note_model", "Attachment_model"]);
+        $access = $this->Meeting_note_model->portal_note((int) $id, 'customer', (int) $_SESSION['customer_access_id']);
+        if (empty($access)) {
+            setFlashMessage("danger", "This meeting is not shared with you.");
+            redirect("portal/customers/meetings");
+        }
+        $this->data['page_title'] = "Meeting Notes";
+        $this->data['portal'] = "customers";
+        $this->data['note'] = $access['note'];
+        $this->data['share'] = $access['share'];
+        $this->data['entries'] = $this->Meeting_note_model->get_entries($access['note']->id);
+        $this->data['attachments'] = $this->Attachment_model->get_attachments($access['note']->id);
+        $this->data['lieu'] = $this->Meeting_note_model->lieu_label($access['note']->lieu);
+        $this->data['calendar'] = ($access['note']->status === 'planned') ? $this->Meeting_note_model->calendar_links($access['note'], $access['share']) : null;
+        $this->data['page_scripts'] = [
+            base_url("assets/js/meeting-live.js?t=" . date("YmdHis")),
+            base_url("assets/js/portal/meeting.js?t=" . date("YmdHis")),
+        ];
+        $this->data['content'][] = $this->load->view("/portal/meetings/view", $this->data, true);
+        $this->load->view("/portal/customers/shared/layout", $this->data);
+    }
+
+    public function meetingPoll($id = 0)
+    {
+        $this->load->model("Meeting_note_model");
+        echo json_encode($this->Meeting_note_model->portal_poll((int) $id, 'customer', (int) $_SESSION['customer_access_id'], $this->input->get('since_version'), $this->input->get('since_entry_id')));
+        exit;
+    }
+
+    public function meetingAddEntry($id = 0)
+    {
+        $this->load->model("Meeting_note_model");
+        echo json_encode($this->Meeting_note_model->portal_add_entry((int) $id, 'customer', (int) $_SESSION['customer_access_id'], $this->input->post('body')));
+        exit;
+    }
 }

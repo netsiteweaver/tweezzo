@@ -58,6 +58,7 @@ class Auth extends CI_Controller {
 					( ($controller == "users") && (in_array($method,['signin','authenticate','forget-password','forget_password','check_user_level','processForgotPassword','isUserPermanent'])) ) ||
 					($controller == 'api') || 
 					($controller == 'cron') || 
+					($controller == 'calendar') || 
 					($controller == 'migrate')){
 	
 				}else{

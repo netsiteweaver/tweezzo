@@ -16,7 +16,7 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link <?php echo (!in_array($this->uri->segment(3),['myCustomers','myProjects','mySprints','notes','timesheets']))?'active':'';?>" href="portal/developers/tasks"><i class="bi bi-list-check me-2"></i>Tasks</a>
+                    <a class="nav-link <?php echo (!in_array($this->uri->segment(3),['myCustomers','myProjects','mySprints','notes','timesheets','meetings','meeting']))?'active':'';?>" href="portal/developers/tasks"><i class="bi bi-list-check me-2"></i>Tasks</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link <?php echo ($this->uri->segment(3)=='myCustomers')?'active':'';?>" href="portal/developers/myCustomers"><i class="bi bi-people me-2"></i>Customers</a>
@@ -32,6 +32,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link <?php echo ($this->uri->segment(3)=='timesheets')?'active':'';?>" href="portal/developers/timesheets"><i class="bi bi-clock-history me-2"></i>Timesheets</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php echo in_array($this->uri->segment(3), ['meetings','meeting'])?'active':'';?>" href="portal/developers/meetings"><i class="bi bi-people me-2"></i>Meetings</a>
                 </li>
                 <div class="nav-item">
                     <a href="portal/developers/signout" class="nav-link"><i class="bi bi-box-arrow-right me-2"></i>Signout</a>

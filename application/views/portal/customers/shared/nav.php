@@ -55,6 +55,9 @@
                     </ul>
                 </li>
                 <?php endif;?>
+                <li class="nav-item">
+                    <a class="nav-link <?php echo in_array($this->uri->segment(3), ['meetings','meeting'])?'active':'';?>" href="portal/customers/meetings"><i class="bi bi-people me-2"></i>Meetings</a>
+                </li>
                 <!-- <li class="nav-item">
                     <a class="nav-link <?php //echo ($this->uri->segment(3)=='notes')?'active':'';?>" href="portal/customers/notes"><div class="bg-icon bg-chat"></div>Notes</a>
                 </li> -->

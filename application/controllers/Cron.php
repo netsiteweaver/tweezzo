@@ -628,6 +628,18 @@ class Cron extends CI_Controller {
         $this->Sprints_model->sendSettlementReminders(!empty($cfg['payment_reminder_days']) ? (int) $cfg['payment_reminder_days'] : 7);
     }
 
+    /**
+     * Planned meetings: start the ones that are due and send reminders for those starting within the hour.
+     * Run every minute.
+     */
+    public function meetingNotesTick()
+    {
+        $this->load->model("Meeting_note_model");
+        $started = $this->Meeting_note_model->promote_due();
+        $reminders = $this->Meeting_note_model->send_due_reminders();
+        echo date("Y-m-d H:i:s") . " meetings started: {$started}, reminder emails: {$reminders}\n";
+    }
+
     public function fetchQuotes()
     {
         $curl = curl_init();
