@@ -33,7 +33,7 @@
                             <?php endif; ?>
                         </td>
                         <td class="text-nowrap">
-                            <a href="portal/<?php echo $portal; ?>/meeting/<?php echo (int) $meeting->id; ?>" class="btn btn-sm <?php echo $meeting->status === 'live' ? 'btn-danger' : 'btn-outline-secondary'; ?>">
+                            <a href="portal/<?php echo $portal; ?>/meeting/<?php echo htmlspecialchars($meeting->uuid); ?>" class="btn btn-sm <?php echo $meeting->status === 'live' ? 'btn-danger' : 'btn-outline-secondary'; ?>">
                                 <i class="bi bi-<?php echo $meeting->status === 'live' ? 'eye' : 'journal-text'; ?> me-1"></i><?php echo $meeting->status === 'live' ? 'Join' : 'View'; ?>
                             </a>
                         </td>

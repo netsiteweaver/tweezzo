@@ -7,7 +7,7 @@ $is_planned = ($note->status === 'planned');
         <a href="portal/<?php echo $portal; ?>/meetings" class="btn btn-sm btn-outline-secondary mb-3"><i class="bi bi-chevron-left me-1"></i>Meetings</a>
 
         <div id="portal-meeting"
-             data-note-id="<?php echo (int) $note->id; ?>"
+             data-note-ref="<?php echo htmlspecialchars($note->uuid); ?>"
              data-portal="<?php echo $portal; ?>"
              data-notes-version="<?php echo (int) $note->notes_version; ?>"
              data-status="<?php echo htmlspecialchars($note->status); ?>"

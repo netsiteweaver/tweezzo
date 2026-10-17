@@ -16,7 +16,7 @@ class Calendar extends CI_Controller
         }
         $this->output
             ->set_content_type('text/calendar', 'utf-8')
-            ->set_header('Content-Disposition: attachment; filename="meeting-' . (int) $note->id . '.ics"')
+            ->set_header('Content-Disposition: attachment; filename="meeting.ics"')
             ->set_output($this->Meeting_note_model->ics($note, $share));
     }
 }

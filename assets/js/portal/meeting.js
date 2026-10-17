@@ -6,7 +6,7 @@ jQuery(function(){
     var $root = $('#portal-meeting');
     if (!$root.length || typeof MeetingLive === 'undefined') return;
 
-    var noteId = $root.data('note-id');
+    var noteRef = $root.data('note-ref');
     var portal = $root.data('portal');
     var notesVersion = parseInt($root.data('notes-version'), 10) || 0;
     var status = $root.data('status');
@@ -20,7 +20,7 @@ jQuery(function(){
     var lastEntryId = MeetingLive.appendEntries($entries, JSON.parse($('#portal-meeting-entries').text() || '[]'), 0);
 
     function url(action) {
-        return base_url + 'portal/' + portal + '/' + action + '/' + noteId;
+        return base_url + 'portal/' + portal + '/' + action + '/' + noteRef;
     }
 
     function setCanContribute(allowed) {

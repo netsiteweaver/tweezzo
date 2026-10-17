@@ -539,10 +539,11 @@ class Developers extends CI_Controller
         $this->load->view("/portal/developers/shared/layout", $this->data);
     }
 
-    public function meeting($id = 0)
+    public function meeting($uuid = '')
     {
         $this->load->model(["Meeting_note_model", "Attachment_model"]);
-        $access = $this->Meeting_note_model->portal_note((int) $id, 'developer', (int) $_SESSION['developer_id']);
+        $id = $this->Meeting_note_model->note_id_for_uuid($uuid);
+        $access = $this->Meeting_note_model->portal_note($id, 'developer', (int) $_SESSION['developer_id']);
         if (empty($access)) {
             setFlashMessage("danger", "This meeting is not shared with you.");
             redirect("portal/developers/meetings");
@@ -563,17 +564,17 @@ class Developers extends CI_Controller
         $this->load->view("/portal/developers/shared/layout", $this->data);
     }
 
-    public function meetingPoll($id = 0)
+    public function meetingPoll($uuid = '')
     {
         $this->load->model("Meeting_note_model");
-        echo json_encode($this->Meeting_note_model->portal_poll((int) $id, 'developer', (int) $_SESSION['developer_id'], $this->input->get('since_version'), $this->input->get('since_entry_id')));
+        echo json_encode($this->Meeting_note_model->portal_poll($this->Meeting_note_model->note_id_for_uuid($uuid), 'developer', (int) $_SESSION['developer_id'], $this->input->get('since_version'), $this->input->get('since_entry_id')));
         exit;
     }
 
-    public function meetingAddEntry($id = 0)
+    public function meetingAddEntry($uuid = '')
     {
         $this->load->model("Meeting_note_model");
-        echo json_encode($this->Meeting_note_model->portal_add_entry((int) $id, 'developer', (int) $_SESSION['developer_id'], $this->input->post('body')));
+        echo json_encode($this->Meeting_note_model->portal_add_entry($this->Meeting_note_model->note_id_for_uuid($uuid), 'developer', (int) $_SESSION['developer_id'], $this->input->post('body')));
         exit;
     }
 }

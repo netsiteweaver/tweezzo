@@ -70,6 +70,7 @@ class Meeting_note_model extends CI_Model
     public function insert_note($data)
     {
         $data['last_updated'] = $data['created_at'] = date('Y-m-d H:i:s');
+        $data['uuid'] = gen_uuid();
         $data['customer_id'] = ($this->input->post('customer_id') == 'other') ? null : $this->input->post('customer_id');
         $this->db->insert('meeting_notes', $data);
         $note_id = $this->db->insert_id();
@@ -418,7 +419,7 @@ class Meeting_note_model extends CI_Model
     public function notes_shared_with($type, $participantId)
     {
         $this->promote_due();
-        return $this->db->select('mn.id, mn.customer_name, mn.meeting_datetime, mn.lieu, mn.status, mn.closed_on, s.can_contribute')
+        return $this->db->select('mn.id, mn.uuid, mn.customer_name, mn.meeting_datetime, mn.lieu, mn.status, mn.closed_on, s.can_contribute')
             ->from('meeting_note_shares s')
             ->join('meeting_notes mn', 'mn.id = s.meeting_note_id')
             ->where(['s.participant_type' => $type, 's.participant_id' => (int) $participantId])
@@ -426,6 +427,16 @@ class Meeting_note_model extends CI_Model
             ->order_by("FIELD(mn.status, 'live', 'planned', 'closed')", '', false)
             ->order_by('mn.meeting_datetime', 'DESC')
             ->get()->result();
+    }
+
+    /** Note id for a shared-link uuid, or 0. Portal URLs never carry the numeric id. */
+    public function note_id_for_uuid($uuid)
+    {
+        if (!preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i', (string) $uuid)) {
+            return 0;
+        }
+        $row = $this->db->select('id')->from('meeting_notes')->where('uuid', strtolower($uuid))->get()->row();
+        return $row ? (int) $row->id : 0;
     }
 
     /**
@@ -589,7 +600,7 @@ class Meeting_note_model extends CI_Model
                 'name'      => $share->name,
                 'meeting'   => $note,
                 'lieu'      => $this->lieu_label($note->lieu),
-                'link'      => base_url("portal/{$portal}/meeting/" . (int) $note->id),
+                'link'      => base_url("portal/{$portal}/meeting/" . $note->uuid),
                 'calendar'  => ($note->status === 'planned') ? $this->calendar_links($note, $share) : null,
             ];
             $content = $this->load->view("_email/header", $emailData, true);
@@ -612,7 +623,7 @@ class Meeting_note_model extends CI_Model
     private function calendar_text($note, $share)
     {
         $portal = ($share->participant_type === 'customer') ? 'customers' : 'developers';
-        $text = "Meeting notes (live during the meeting): " . base_url("portal/{$portal}/meeting/" . (int) $note->id);
+        $text = "Meeting notes (live during the meeting): " . base_url("portal/{$portal}/meeting/" . $note->uuid);
         $agenda = trim(html_entity_decode(strip_tags(str_replace(['</li>', '</p>', '<br>', '<br/>', '<br />'], "\n", (string) $note->agenda)), ENT_QUOTES, 'UTF-8'));
         if ($agenda !== '') {
             $text .= "\n\nAgenda:\n" . preg_replace("/\n{2,}/", "\n", $agenda);
@@ -678,7 +689,7 @@ class Meeting_note_model extends CI_Model
             'CALSCALE:GREGORIAN',
             'METHOD:PUBLISH',
             'BEGIN:VEVENT',
-            'UID:meeting-' . (int) $note->id . '@' . $host,
+            'UID:meeting-' . $note->uuid . '@' . $host,
             'DTSTAMP:' . (new DateTime('now', $utc))->format('Ymd\THis\Z'),
             'DTSTART:' . (clone $start)->setTimezone($utc)->format('Ymd\THis\Z'),
             'DTEND:' . (clone $end)->setTimezone($utc)->format('Ymd\THis\Z'),
