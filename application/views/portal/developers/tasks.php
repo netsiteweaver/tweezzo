@@ -405,10 +405,45 @@
       <div class="modal-body">
         <p class='task-name'></p>
         <textarea name="notes" id="" class="form-control" placeholder="Please enter a description of what you are doing specifically. This will be useful in reports since, for the task, you have multiple entries in the timesheet."></textarea>
+        <div class="form-check mt-3 timer-start-stage d-none">
+          <input class="form-check-input" type="checkbox" id="timerMoveInProgress" checked>
+          <label class="form-check-label" for="timerMoveInProgress">
+            Also move this task from <span class="stage-button stage-button-new px-1">NEW</span> to <span class="stage-button stage-button-in_progress px-1">IN PROGRESS</span>
+          </label>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary insert-timer">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stop timer: suggest the next stage -->
+<div class="modal fade" id="modalTimerStop" tabindex="-1" aria-labelledby="modalTimerStopTitle" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTimerStopTitle">Stop Timer <i class="bi bi-stop-circle"></i></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="task-name fw-bold mb-2"></p>
+        <p class="mb-2">Where is this task now?</p>
+        <div class="timer-stop-stages"></div>
+        <div class="timer-stop-note mt-3 d-none">
+          <label for="timer_stop_note" class="form-label small mb-1">Note for the move <span class="text-muted">(optional)</span></label>
+          <textarea id="timer_stop_note" class="form-control" rows="2" placeholder="e.g. ready for testing on staging: check the new landing page"></textarea>
+          <div class="form-check mt-1">
+            <input class="form-check-input" type="checkbox" id="timer_stop_note_public" checked>
+            <label class="form-check-label small" for="timer_stop_note_public">Visible to the client</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger confirm-timer-stop"><i class="bi bi-stop-circle me-1"></i>Stop timer</button>
       </div>
     </div>
   </div>

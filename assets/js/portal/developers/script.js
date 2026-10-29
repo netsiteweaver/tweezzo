@@ -486,23 +486,8 @@ jQuery(function(){
        
     })
 
-    $('.timer_stop').on("click",function(){
-        if($(this).hasClass("running")) return false;
-        let item = $(this);
-        let actionType = $(this).hasClass("task-view") ? 'view' : 'listing';
-        let task_id = null;
-        // $(this).addClass("running");
-        //remove previously selected row
-        if(actionType == 'listing'){
-            $('#task_list tr.selected').removeClass("selected");
-            //mark current as selected
-            $(this).closest("tr").addClass("selected");
-
-            task_id = $(this).closest("tr").data("id");
-        }else{
-            task_id = $(this).data("task-id");
-        }
-
+    // Stops the running timer. item = the clicked stop icon; onStopped(ok) runs after the server answered.
+    function stopTimer(item, actionType, task_id, onStopped) {
         $.ajax({
             url: base_url + "portal/developers/timer_stop",
             data: {task_id:task_id},
@@ -511,27 +496,87 @@ jQuery(function(){
             success:function(response){
                 if(!response.result){
                     alertify.alert("Error",response.reason);
-                    $('#running-task').addClass("d-none");
-                    $('#running-task a').prop("href",`portal/developers/view?task_uuid=`)
-                }else{
-                    // $("#task_list tr.selected").find('.bi-stop-circle-fill').addClass("d-none");
-                    // $("#task_list tr.selected").find('.bi-play-circle-fill').removeClass("d-none");
-                    $('#running-task').addClass("d-none");
-                    $('#running-task a').prop("href",`portal/developers/view?task_uuid=`)
                 }
+                $('#running-task').addClass("d-none");
+                $('#running-task a').prop("href",`portal/developers/view?task_uuid=`)
                 if(actionType == 'listing'){
-                    $("#task_list tr.selected").find('.bi-stop-circle-fill').addClass("d-none");
-                    $("#task_list tr.selected").find('.bi-play-circle-fill').removeClass("d-none");
-                    $('#task_list tr.selected').removeClass("selected");
+                    let $row = $('#task_list tr[data-id="' + task_id + '"]');
+                    $row.find('.bi-stop-circle-fill').addClass("d-none");
+                    $row.find('.bi-play-circle-fill').removeClass("d-none");
+                    $row.removeClass("selected");
                 }else{
                     $(item).closest(".card-footer").remove();
                 }
-
-
-                
+                if (onStopped) onStopped(!!response.result);
             }
         })
-        
+    }
+
+    // Listing: stopping asks where the task is now (keep the stage, or move it to testing / staging).
+    var timerStopPending = null;
+
+    $('.timer_stop').on("click",function(){
+        if($(this).hasClass("running")) return false;
+        let item = $(this);
+        let actionType = $(this).hasClass("task-view") ? 'view' : 'listing';
+
+        if(actionType != 'listing'){
+            stopTimer(item, actionType, $(this).data("task-id"));
+            return;
+        }
+
+        let $row = $(this).closest("tr");
+        $('#task_list tr.selected').removeClass("selected");
+        $row.addClass("selected");
+
+        let task_id = $row.data("id");
+        let current = String($row.find('.stage-move-trigger').data('stage') || '');
+        // Keep the current stage (default), or move it along; in progress -> testing -> staging is the usual path.
+        let options = [current];
+        ['in_progress', 'testing', 'staging'].forEach(function(st){ if (options.indexOf(st) < 0) options.push(st); });
+
+        let html = '';
+        options.forEach(function(st, i){
+            let label = (i === 0 ? 'Keep ' : 'Move to ') + '<span class="stage-button stage-button-' + st + ' px-1">' + stageMoveLabel(st) + '</span>';
+            html += '<div class="form-check mb-1">' +
+                '<input class="form-check-input" type="radio" name="timer_stop_stage" id="timer-stop-' + st + '" value="' + st + '"' + (i === 0 ? ' checked' : '') + '>' +
+                '<label class="form-check-label" for="timer-stop-' + st + '">' + label + '</label>' +
+            '</div>';
+        });
+
+        timerStopPending = {item: item, task_id: task_id, current: current};
+        $('#modalTimerStop .task-name').text($row.find('.task-name').text().trim());
+        $('#modalTimerStop .timer-stop-stages').html(html);
+        $('#modalTimerStop .timer-stop-note').addClass('d-none');
+        $('#timer_stop_note').val('');
+        $('#timer_stop_note_public').prop('checked', true);
+        $('#modalTimerStop').modal("show");
+    })
+
+    $('#modalTimerStop').on('change', 'input[name=timer_stop_stage]', function(){
+        let keep = timerStopPending && $(this).val() === timerStopPending.current;
+        $('#modalTimerStop .timer-stop-note').toggleClass('d-none', keep);
+    })
+
+    $('#modalTimerStop .confirm-timer-stop').on('click', function(){
+        if (!timerStopPending) return;
+        let pending = timerStopPending;
+        let stage = $('#modalTimerStop input[name=timer_stop_stage]:checked').val() || pending.current;
+        let note = $('#timer_stop_note').val().trim();
+        let notePublic = $('#timer_stop_note_public').is(':checked');
+        timerStopPending = null;
+        $('#modalTimerStop').modal("hide");
+
+        stopTimer(pending.item, 'listing', pending.task_id, function(ok){
+            if (ok && stage !== pending.current) {
+                moveTaskStage(pending.task_id, stage, pending.current, true, note, notePublic);
+            }
+        });
+    })
+
+    $('#modalTimerStop').on("hidden.bs.modal", function(){
+        if (timerStopPending) $('#task_list tr.selected').removeClass("selected");
+        timerStopPending = null;
     })
 
     $('.timer_start').on("click",function(){
@@ -555,8 +600,12 @@ jQuery(function(){
                 if(!response.result){
                     alertify.alert("Error",response.reason);
                 }else{
+                    let stage = String($('#task_list tr[data-id="' + task_id + '"] .stage-move-trigger').data('stage') || '');
                     $('#modalTaskTimer textarea[name=notes]').val('');
                     $('#modalTaskTimer .modal-body .task-name').text(task_name)
+                    // A NEW task being worked on is in progress: suggest the move (ticked by default).
+                    $('#modalTaskTimer .timer-start-stage').toggleClass('d-none', stage !== 'new');
+                    $('#timerMoveInProgress').prop('checked', true);
                     $('#modalTaskTimer').modal("show")
                 }
             }
@@ -566,7 +615,7 @@ jQuery(function(){
     $('.insert-timer').on("click", function(){
         let task_id = $('#task_list tr.selected').closest("tr").data("id");
         let notes = $('#modalTaskTimer textarea[name=notes]').val();
-        console.log(task_id,notes)
+        let moveToInProgress = !$('#modalTaskTimer .timer-start-stage').hasClass('d-none') && $('#timerMoveInProgress').is(':checked');
 
         $.ajax({
             url: base_url + "portal/developers/timer_insert",
@@ -584,6 +633,10 @@ jQuery(function(){
 
                     $('#running-task').removeClass("d-none");
                     $('#running-task a').prop("href",`portal/developers/view?task_uuid=${response.task_uuid}`)
+
+                    if (moveToInProgress) {
+                        moveTaskStage(task_id, 'in_progress', 'new', true);
+                    }
                 }
             }
         })
