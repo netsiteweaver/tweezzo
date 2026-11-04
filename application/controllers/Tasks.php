@@ -269,6 +269,8 @@ class Tasks extends MY_Controller {
 
         $this->load->model('Sprints_model');
         $this->data['sprints'] = $this->Sprints_model->lookup2($project_id);
+        $this->data['active_sprint_counts'] = $this->Sprints_model->activeCountByCustomer();
+        $this->data['task_counts'] = $this->Tasks_model->countByCustomer($closed_filter);
 
         $this->data['stages'] = ['new','in_progress','testing','staging','validated','completed','on_hold','stopped'];
 

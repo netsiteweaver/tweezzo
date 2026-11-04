@@ -1812,6 +1812,19 @@ class Tasks_model extends CI_Model{
      *
      * @param string $closed_filter open | closed | all
      */
+    public function countByCustomer($closed_filter="")
+    {
+        $this->db->select('c.customer_id, count(1) as ct');
+        $this->db->from('tasks t');
+        $this->db->join('sprints s','s.id=t.sprint_id');
+        $this->db->join('projects p','p.id=s.project_id');
+        $this->db->join('customers c','c.customer_id=p.customer_id');
+        $this->db->where(['t.status'=>'1','s.active'=>'1','p.active'=>'1','c.active'=>'1']);
+        $this->apply_listing_closed_filter($closed_filter);
+        $this->db->group_by('c.customer_id');
+        return array_column($this->db->get()->result_array(), 'ct', 'customer_id');
+    }
+
     private function apply_listing_closed_filter($closed_filter)
     {
         $closed_filter = is_string($closed_filter) ? strtolower(trim($closed_filter)) : '';
