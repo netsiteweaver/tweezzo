@@ -105,6 +105,7 @@ class Sprints extends MY_Controller {
 
         $this->load->model('Customers_model');
         $this->data['customers'] = $this->Customers_model->lookup();
+        $this->data['active_sprint_counts'] = $this->Sprints_model->activeCountByCustomer();
 
         $this->data['task_perms']['add'] = $this->accesscontrol_model->authorised('tasks', 'add');
 

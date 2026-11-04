@@ -55,6 +55,20 @@ class Sprints_model extends CI_Model{
         return $this->db->get()->row('ct');
     }
 
+    public function activeCountByCustomer()
+    {
+        $this->db->select('c.customer_id, count(1) as ct');
+        $this->db->from('sprints s');
+        $this->db->join('projects p','p.id=s.project_id');
+        $this->db->join('customers c','c.customer_id=p.customer_id');
+        $this->db->where('s.status',1);
+        $this->db->where('s.active',1);
+        $this->db->where('p.active',1);
+        $this->db->where('c.active',1);
+        $this->db->group_by('c.customer_id');
+        return array_column($this->db->get()->result_array(), 'ct', 'customer_id');
+    }
+
     public function fetchSingle($uuid){
         $this->db->select('s.*');
         $this->db->from('sprints s');

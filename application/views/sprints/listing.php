@@ -16,8 +16,12 @@
         <select class="form-control monitor" id="customer_id">
             <option value="">Select Customer</option>
             <?php foreach($customers as $customer): ?>
-            <option value="<?php echo $customer->customer_id; ?>" <?php echo ($this->input->get("customer_id") == $customer->customer_id) ? "selected" : ""; ?>>
-                <?php echo "{$customer->company_name}"; ?>
+            <?php
+                $active_ct = (int) ($active_sprint_counts[$customer->customer_id] ?? 0);
+                $is_selected = ($this->input->get("customer_id") == $customer->customer_id);
+            ?>
+            <option value="<?php echo $customer->customer_id; ?>" <?php echo $is_selected ? "selected" : ""; ?> <?php echo ($active_ct === 0 && !$is_selected) ? "disabled" : ""; ?>>
+                <?php echo "{$customer->company_name} ({$active_ct})"; ?>
             </option>
             <?php endforeach; ?>
         </select>
