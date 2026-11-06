@@ -84,7 +84,7 @@
 
                 <div class="form-group">
                     <label for="attachments">Attachments</label>
-                    <input type="file" class="form-control-file" name="attachments[]" id="attachments" multiple>
+                    <input type="file" class="form-control-file hd-attachments" name="attachments[]" id="attachments" multiple data-max-files="<?php echo Tickets_model::MAX_FILES; ?>" data-max-kb="<?php echo Tickets_model::MAX_FILE_KB; ?>" data-types="<?php echo Tickets_model::ALLOWED_TYPES; ?>" accept="<?php echo '.' . str_replace('|', ',.', Tickets_model::ALLOWED_TYPES); ?>">
                     <small class="text-muted">Up to <?php echo Tickets_model::MAX_FILES; ?> files, <?php echo Tickets_model::MAX_FILE_KB / 1024; ?> MB each (<?php echo str_replace('|', ', ', Tickets_model::ALLOWED_TYPES); ?>).</small>
                 </div>
             </div>
@@ -115,4 +115,4 @@ document.addEventListener('DOMContentLoaded', function () {
     filterByCustomer();
 });
 </script>
-<script src="<?php echo base_url('assets/js/helpdesk-editor.js?v=2'); ?>" defer></script>
+<script src="<?php echo base_url('assets/js/helpdesk-editor.js?v=3'); ?>" defer></script>

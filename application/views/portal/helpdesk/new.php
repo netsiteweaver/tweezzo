@@ -42,7 +42,7 @@
                 </div>
                 <div class="mb-1">
                     <label for="attachments" class="form-label">Attachments <small class="text-muted">(screenshots, documents)</small></label>
-                    <input class="form-control" type="file" id="attachments" name="attachments[]" multiple>
+                    <input class="form-control hd-attachments" type="file" id="attachments" name="attachments[]" multiple data-max-files="<?php echo Tickets_model::MAX_FILES; ?>" data-max-kb="<?php echo Tickets_model::MAX_FILE_KB; ?>" data-types="<?php echo Tickets_model::ALLOWED_TYPES; ?>" accept="<?php echo '.' . str_replace('|', ',.', Tickets_model::ALLOWED_TYPES); ?>">
                     <div class="form-text">Up to <?php echo Tickets_model::MAX_FILES; ?> files, <?php echo Tickets_model::MAX_FILE_KB / 1024; ?> MB each.</div>
                 </div>
             </div>
@@ -53,7 +53,7 @@
         </form>
     </div>
 </div>
-<script src="assets/js/helpdesk-editor.js?v=2" defer></script>
+<script src="assets/js/helpdesk-editor.js?v=3" defer></script>
 <script>
     document.getElementById('ticket-form').addEventListener('submit', function (ev) {
         var bodyEl = document.getElementById('body');

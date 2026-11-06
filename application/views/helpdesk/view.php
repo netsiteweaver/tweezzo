@@ -52,7 +52,7 @@ $slaState = function ($due, $doneAt) use ($ticket, $fmt) {
                 <textarea class="form-control hd-editor" name="body" id="reply-body" rows="6" data-height="180" placeholder="Write your reply…"></textarea>
                 <div class="row mt-2 align-items-end">
                     <div class="col-md-6">
-                        <input type="file" class="form-control-file" name="attachments[]" multiple>
+                        <input type="file" class="form-control-file hd-attachments" name="attachments[]" multiple data-max-files="<?php echo Tickets_model::MAX_FILES; ?>" data-max-kb="<?php echo Tickets_model::MAX_FILE_KB; ?>" data-types="<?php echo Tickets_model::ALLOWED_TYPES; ?>" accept="<?php echo '.' . str_replace('|', ',.', Tickets_model::ALLOWED_TYPES); ?>">
                         <small class="text-muted">Up to <?php echo Tickets_model::MAX_FILES; ?> files, <?php echo Tickets_model::MAX_FILE_KB / 1024; ?> MB each.</small>
                     </div>
                     <div class="col-md-3">
@@ -337,4 +337,4 @@ $selContact = $ticket->customer_access_id ?: ($suggestedContact ? $suggestedCont
 <script>
     var HD_TICKET_UUID = <?php echo json_encode($ticket->uuid); ?>;
 </script>
-<script src="<?php echo base_url('assets/js/helpdesk-editor.js?v=2'); ?>" defer></script>
+<script src="<?php echo base_url('assets/js/helpdesk-editor.js?v=3'); ?>" defer></script>

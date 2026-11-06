@@ -61,7 +61,7 @@ $backUrl = isset($backUrl) ? $backUrl : "portal/{$portal}/tickets";
                 <textarea class="form-control hd-editor" id="reply-body" name="body" rows="5" data-height="160" placeholder="Write your message…"></textarea>
                 <div class="row mt-2 g-2 align-items-end">
                     <div class="col-md">
-                        <input class="form-control form-control-sm" type="file" name="attachments[]" multiple>
+                        <input class="form-control form-control-sm hd-attachments" type="file" name="attachments[]" multiple data-max-files="<?php echo Tickets_model::MAX_FILES; ?>" data-max-kb="<?php echo Tickets_model::MAX_FILE_KB; ?>" data-types="<?php echo Tickets_model::ALLOWED_TYPES; ?>" accept="<?php echo '.' . str_replace('|', ',.', Tickets_model::ALLOWED_TYPES); ?>">
                         <div class="form-text">Up to <?php echo Tickets_model::MAX_FILES; ?> files, <?php echo Tickets_model::MAX_FILE_KB / 1024; ?> MB each.</div>
                     </div>
                     <?php if ($isDev): ?>
@@ -85,7 +85,7 @@ $backUrl = isset($backUrl) ? $backUrl : "portal/{$portal}/tickets";
         <?php endif; ?>
     </div>
 </div>
-<script src="assets/js/helpdesk-editor.js?v=2" defer></script>
+<script src="assets/js/helpdesk-editor.js?v=3" defer></script>
 <script>
     (function () {
         var form = document.getElementById('ticket-reply-form');
