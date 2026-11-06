@@ -208,6 +208,9 @@ class Settings extends MY_Controller {
         $this->data['update_tasks'] = $this->system_model->getParam("notification_update_tasks",true);
         $this->data['delete_tasks'] = $this->system_model->getParam("notification_delete_tasks",true);
 
+        $create_tickets = $this->system_model->getParam("notification_create_tickets",true);
+        $this->data['create_tickets'] = is_array($create_tickets) ? $create_tickets : [];
+
         $this->data['create_notes'] = $this->system_model->getParam("notification_create_notes",true);
         $this->data['update_notes'] = $this->system_model->getParam("notification_update_notes",true);
         $this->data['delete_notes'] = $this->system_model->getParam("notification_delete_notes",true);

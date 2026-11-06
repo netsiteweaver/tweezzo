@@ -385,6 +385,67 @@
     </div>
 </div>
 
+<div class="row"><div class="col-md-12 text-center bg-info mt-5 pt-2"><h3><i class="fa fa-life-ring"></i> HELPDESK</h3></div></div>
+<div class="row"><!-- HELPDESK -->
+    <div class="col-lg-4 col-md-4 col-sm-9">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">New Ticket</h3>
+            </div>
+            <div class="card-body">
+                <form role="form" action="#" method="post">
+                    <table id="create_tickets" class="table table-bordered table-hover process">
+                        <thead>
+                            <th>PHOTO</th>
+                            <th>NAME</th>
+                            <th>EMAIL</th>
+                            <th>CREATED</th>
+                            <th></th>
+                        </thead>
+
+                        <tbody>
+                            <?php foreach ($users as $user):?>
+                            <tr data-user='<?php echo $user->id;?>'>
+                                <th class='text-center'>
+                                    <?php if(!empty($user->photo)) :?>
+                                    <img style='width:50px;' class='' src="uploads/users/<?php echo htmlspecialchars($user->photo);?>" alt="">
+                                    <?php endif;?>
+                                </th>
+                                <td><?php echo htmlspecialchars($user->name);?></td>
+                                <td><?php echo htmlspecialchars($user->email);?></td>
+                                <td><?php echo ($user->created);?></td>
+                                <td>
+                                    <input type="checkbox" class='pull-right' name="<?php echo $user->id;?>" <?php echo (in_array($user->id,$create_tickets)) ? 'checked' : '';?>>
+                                </td>
+                            </tr>
+                            <?php endforeach;?>
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+            <div class="card-footer">
+                <div class="btn btn-default updatenotifications" id="" data-type="create_tickets"><i class="fa fa-save"></i> Save for New Ticket</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8 col-md-8 col-sm-9">
+        <div class="card card-outline card-info">
+            <div class="card-header">
+                <h3 class="card-title">Who receives helpdesk emails</h3>
+            </div>
+            <div class="card-body small">
+                <ul class="mb-0 pl-3">
+                    <li><b>New ticket:</b> the users ticked under <i>New Ticket</i>, from any channel (customer portal, public support form, or created by staff). When a ticket is assigned on creation, the assignee gets the assignment email instead.</li>
+                    <li><b>Customer replies:</b> the assigned user; if the ticket is unassigned, the users ticked under <i>New Ticket</i>.</li>
+                    <li><b>SLA breaches:</b> the assigned user and the users ticked under <i>New Ticket</i>.</li>
+                    <li><b>Assignment</b> and <b>internal notes</b> by others: the assigned user only.</li>
+                    <li>The customer always receives a confirmation and updates on staff replies (not internal notes).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row"><div class="col-md-12 text-center bg-purple mt-5 pt-2"><h3><i class="fa fa-users"></i> CUSTOMERS</h3></div></div>
 <div class="row"><!-- CUSTOMERS -->
     <div class="col-lg-4 col-md-4 col-sm-9">
