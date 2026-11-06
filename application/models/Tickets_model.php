@@ -136,6 +136,19 @@ class Tickets_model extends CI_Model
         return $ticket->ticket_number . (!empty($ticket->public_ref) ? " ({$ticket->public_ref})" : '');
     }
 
+    /**
+     * Name the requester gave. A public-form ticket matched to a portal account keeps the name typed
+     * in the form, which may differ from the account's name (e.g. a shared "Admin" login).
+     */
+    public static function requesterName($ticket)
+    {
+        if (!empty($ticket->requester_name)
+            && (empty($ticket->customer_access_id) || strcasecmp((string) $ticket->requester_email, (string) $ticket->contact_email) === 0)) {
+            return $ticket->requester_name;
+        }
+        return $ticket->contact_name;
+    }
+
     // ------------------------------------------------------------------
     // Lookups
     // ------------------------------------------------------------------
@@ -462,8 +475,9 @@ class Tickets_model extends CI_Model
             'body'               => $body,
             'customer_id'        => $customer_id,
             'customer_access_id' => $customer_access_id,
-            'requester_name'     => $customer_access_id ? null : (trim((string) ($data['requester_name'] ?? '')) ?: null),
-            'requester_email'    => $customer_access_id ? null : ($requester_email ?: null),
+            // Public-form tickets keep what was typed even when matched to a portal account.
+            'requester_name'     => $customer_access_id && $source !== 'public' ? null : (trim((string) ($data['requester_name'] ?? '')) ?: null),
+            'requester_email'    => $customer_access_id && $source !== 'public' ? null : ($requester_email ?: null),
             'requester_company'  => trim((string) ($data['requester_company'] ?? '')) ?: null,
             'project_id'         => $project_id,
             'category_id'        => $category_id,
@@ -1115,7 +1129,7 @@ class Tickets_model extends CI_Model
             $this->sendEmail($ticket->contact_email, "We received your request: [{$ticket->public_ref}] {$ticket->subject}", [
                 'ref'          => $ticket->public_ref,
                 'title'        => 'Support request received',
-                'intro'        => 'Hi ' . ($ticket->contact_name ?: 'there') . ", thanks for contacting us. Your request has been logged and our team will get back to you. Just reply on the ticket page to add more information.",
+                'intro'        => 'Hi ' . (self::requesterName($ticket) ?: 'there') . ", thanks for contacting us. Your request has been logged and our team will get back to you. Just reply on the ticket page to add more information.",
                 'ticket'       => $ticket,
                 'message'      => $ticket->body,
                 'link'         => $this->requesterLink($ticket),
@@ -1132,7 +1146,7 @@ class Tickets_model extends CI_Model
             $sentTo[$u->email] = true;
             $this->sendEmail($u->email, "New ticket " . $subject, [
                 'title'        => 'New support ticket',
-                'intro'        => 'A new ticket was submitted by ' . ($ticket->contact_name ?: 'a customer') . ($ticket->company_name ? " ({$ticket->company_name})" : '') . '.',
+                'intro'        => 'A new ticket was submitted by ' . (self::requesterName($ticket) ?: 'a customer') . ($ticket->company_name ? " ({$ticket->company_name})" : '') . '.',
                 'ticket'       => $ticket,
                 'message'      => $ticket->body,
                 'link'         => $this->staffLink($ticket, $u->user_type),

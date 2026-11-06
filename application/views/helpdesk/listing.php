@@ -140,7 +140,7 @@ $cards = [
                                 </div>
                             </td>
                             <td>
-                                <?php echo $e($t->contact_name ?: $t->contact_email ?: '—'); ?>
+                                <?php echo $e(Tickets_model::requesterName($t) ?: $t->contact_email ?: '—'); ?>
                                 <div class="hd-meta"><?php echo $e($t->company_name ?: ($t->requester_company ?: ($t->customer_id ? '' : 'Guest'))); ?></div>
                             </td>
                             <td><?php echo Tickets_model::priorityBadge($t->priority); ?></td>

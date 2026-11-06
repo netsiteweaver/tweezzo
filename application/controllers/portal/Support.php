@@ -25,6 +25,11 @@ class Support extends CI_Controller
 
     public function index()
     {
+        // Signed-in portal users open tickets in the portal, where they're linked to their company.
+        if (isset($_SESSION['customer_access_id'])) {
+            redirect('portal/customers/newTicket');
+            return;
+        }
         $_SESSION['support_form_token'] = bin2hex(random_bytes(16));
         $_SESSION['support_form_time'] = time();
         $this->data['token'] = $_SESSION['support_form_token'];
@@ -85,24 +90,11 @@ class Support extends CI_Controller
             return $fail("You've submitted several requests recently. Please wait a while, or reply on one of your existing tickets.");
         }
 
-        // Link to a company only when the email belongs to exactly one portal user who can sign in
-        // (same conditions as the portal login). Otherwise the requester is a guest and follows the
-        // ticket through the emailed tracking link.
-        $matches = $this->db->select('ca.id, ca.customer_id')
-            ->from('customer_access ca')
-            ->join('customers c', 'c.customer_id = ca.customer_id')
-            ->where(['ca.status' => 1, 'c.status' => 1, 'c.active' => 1])
-            ->where('ca.email', $post['requester_email'])
-            ->limit(2)->get()->result();
-        $access = count($matches) === 1 ? $matches[0] : null;
-
+        // Never link by email: anyone can type any address. The ticket stays a guest ticket and
+        // staff attach it to a customer from the ticket page if needed.
         $data = $post;
         $data['ip_address'] = $ip;
-        if ($access) {
-            $data['customer_access_id'] = (int) $access->id;
-            $data['customer_id'] = (int) $access->customer_id;
-        }
-        $actor = $access ? ['type' => 'customer', 'id' => (int) $access->id] : ['type' => 'guest', 'id' => null];
+        $actor = ['type' => 'guest', 'id' => null];
 
         $result = $this->Tickets_model->create($data, 'public', $actor);
         if (!$result['result']) {
@@ -113,7 +105,6 @@ class Support extends CI_Controller
             'number'        => $result['ticket']->public_ref,
             'email'         => $post['requester_email'],
             'upload_errors' => $result['upload_errors'],
-            'portal_user'   => (bool) $access,
         ];
         redirect('portal/support/thanks');
     }

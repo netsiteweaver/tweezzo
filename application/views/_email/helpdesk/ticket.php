@@ -34,7 +34,7 @@ $e = function ($s) { return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8'); 
             <tr>
                 <th style="text-align:left;background:#f6f6f6;">FROM</th>
                 <td>
-                    <?php echo $e($ticket->contact_name ?: '—'); ?>
+                    <?php echo $e(Tickets_model::requesterName($ticket) ?: '—'); ?>
                     <?php if (!empty($ticket->contact_email)): ?>&lt;<?php echo $e($ticket->contact_email); ?>&gt;<?php endif; ?>
                     <?php if (!empty($ticket->company_name)): ?><br><?php echo $e($ticket->company_name); ?><?php elseif (!empty($ticket->requester_company)): ?><br><?php echo $e($ticket->requester_company); ?><?php endif; ?>
                 </td>

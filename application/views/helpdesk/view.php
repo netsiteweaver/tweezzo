@@ -122,7 +122,10 @@ $slaState = function ($due, $doneAt) use ($ticket, $fmt) {
                 <dl class="mb-0">
                     <dt>Requester</dt>
                     <dd>
-                        <?php echo $e($ticket->contact_name ?: '—'); ?>
+                        <?php echo $e(Tickets_model::requesterName($ticket) ?: '—'); ?>
+                        <?php if ($ticket->customer_access_id && Tickets_model::requesterName($ticket) !== $ticket->contact_name): ?>
+                        <small class="text-muted">(portal account: <?php echo $e($ticket->contact_name); ?>)</small>
+                        <?php endif; ?>
                         <?php if ($ticket->contact_email): ?><br><a href="mailto:<?php echo $e($ticket->contact_email); ?>"><?php echo $e($ticket->contact_email); ?></a><?php endif; ?>
                         <br><small class="text-muted">
                             <?php if ($ticket->company_name): ?><?php echo $e($ticket->company_name); ?>
@@ -261,13 +264,18 @@ $slaState = function ($due, $doneAt) use ($ticket, $fmt) {
 
 <?php if ($canEdit): ?>
 <?php
-// Suggest the portal contact whose email matches the guest requester.
-$suggestedContact = null;
+// Suggest the portal contact whose email matches the guest requester. When the email exists in
+// several companies, list them all and let staff choose instead of pre-selecting one.
+// Contacts of companies missing from the customer list (inactive) can't be chosen, so they don't count.
+$companyNames = [];
+foreach ($link_customers as $c) $companyNames[$c->customer_id] = $c->company_name;
+$matchingContacts = [];
 if (!$ticket->customer_access_id && $ticket->requester_email) {
     foreach ($link_contacts as $c) {
-        if (strcasecmp($c->email, $ticket->requester_email) === 0) { $suggestedContact = $c; break; }
+        if (isset($companyNames[$c->customer_id]) && strcasecmp($c->email, $ticket->requester_email) === 0) $matchingContacts[] = $c;
     }
 }
+$suggestedContact = count($matchingContacts) === 1 ? $matchingContacts[0] : null;
 $selCustomer = $ticket->customer_id ?: ($suggestedContact ? $suggestedContact->customer_id : '');
 $selContact = $ticket->customer_access_id ?: ($suggestedContact ? $suggestedContact->id : '');
 ?>
@@ -306,6 +314,14 @@ $selContact = $ticket->customer_access_id ?: ($suggestedContact ? $suggestedCont
                     </div>
                     <?php if ($suggestedContact): ?>
                     <div class="alert alert-info py-2 small mb-0"><i class="fa fa-lightbulb"></i> The requester's email matches the portal contact <b><?php echo $e($suggestedContact->name); ?></b>.</div>
+                    <?php elseif (count($matchingContacts) > 1): ?>
+                    <div class="alert alert-warning py-2 small mb-0"><i class="fa fa-exclamation-triangle"></i> The requester's email is used by portal contacts in several companies — check which one this request is about:
+                        <ul class="mb-0 pl-3">
+                            <?php foreach ($matchingContacts as $c): ?>
+                            <li><?php echo $e($c->name); ?> — <?php echo $e($companyNames[$c->customer_id]); ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
                     <?php endif; ?>
                 </div>
                 <div class="modal-footer">

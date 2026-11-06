@@ -8,12 +8,7 @@
                 <?php if (!empty($last)): ?>
                     <p class="lead mb-1">Your ticket reference is <b><?php echo $e($last['number']); ?></b>.</p>
                     <p class="text-muted">
-                        We've sent a confirmation to <b><?php echo $e($last['email']); ?></b>
-                        <?php if ($last['portal_user']): ?>
-                            — you can also follow it in the <a href="portal/customers/tickets">customer portal</a>.
-                        <?php else: ?>
-                            with a private link to follow your ticket and reply.
-                        <?php endif; ?>
+                        We've sent a confirmation to <b><?php echo $e($last['email']); ?></b> with a link to follow your ticket and reply.
                     </p>
                     <?php if (!empty($last['upload_errors'])): ?>
                     <div class="alert alert-warning text-start">Some files were not attached: <?php echo $e(implode('; ', $last['upload_errors'])); ?></div>

@@ -48,7 +48,7 @@ $authorLabel = ['admin' => 'Support', 'developer' => 'Support', 'customer' => 'C
 <div class="hd-thread">
     <div class="hd-msg original">
         <div class="hd-msg-head">
-            <span><b><?php echo $e($ticket->contact_name ?: ($ticket->contact_email ?: 'Customer')); ?></b>
+            <span><b><?php echo $e(Tickets_model::requesterName($ticket) ?: ($ticket->contact_email ?: 'Customer')); ?></b>
                 <span class="hd-tag">Original request</span></span>
             <span><?php echo $e(date('d M Y H:i', strtotime($ticket->created_on))); ?></span>
         </div>
