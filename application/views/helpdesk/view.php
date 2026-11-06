@@ -129,6 +129,16 @@ $slaState = function ($due, $doneAt) use ($ticket, $fmt) {
                             <?php elseif ($ticket->requester_company): ?><?php echo $e($ticket->requester_company); ?> (not a customer)
                             <?php else: ?>Guest<?php endif; ?>
                         </small>
+                        <?php if ($ticket->customer_access_id && $ticket->requester_email && strcasecmp($ticket->requester_email, (string) $ticket->contact_email) !== 0): ?>
+                        <br><small class="text-muted">Originally from <?php echo $e(trim($ticket->requester_name . ' <' . $ticket->requester_email . '>')); ?></small>
+                        <?php endif; ?>
+                        <?php if ($canEdit): ?>
+                        <div class="mt-1">
+                            <button type="button" class="btn btn-xs btn-sm <?php echo $ticket->customer_id ? 'btn-outline-secondary' : 'btn-outline-primary'; ?>" data-toggle="modal" data-target="#modalLinkCustomer">
+                                <i class="fa fa-building"></i> <?php echo $ticket->customer_id ? 'Change customer' : 'Attach to customer'; ?>
+                            </button>
+                        </div>
+                        <?php endif; ?>
                     </dd>
                     <?php if ($ticket->project_name): ?>
                     <dt>Project</dt><dd><?php echo $e($ticket->project_name); ?></dd>
@@ -242,6 +252,65 @@ $slaState = function ($due, $doneAt) use ($ticket, $fmt) {
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-success"><i class="fa fa-check"></i> Create task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
+<?php if ($canEdit): ?>
+<?php
+// Suggest the portal contact whose email matches the guest requester.
+$suggestedContact = null;
+if (!$ticket->customer_access_id && $ticket->requester_email) {
+    foreach ($link_contacts as $c) {
+        if (strcasecmp($c->email, $ticket->requester_email) === 0) { $suggestedContact = $c; break; }
+    }
+}
+$selCustomer = $ticket->customer_id ?: ($suggestedContact ? $suggestedContact->customer_id : '');
+$selContact = $ticket->customer_access_id ?: ($suggestedContact ? $suggestedContact->id : '');
+?>
+<div class="modal fade" id="modalLinkCustomer" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="<?php echo base_url('helpdesk/linkCustomer'); ?>">
+                <input type="hidden" name="uuid" value="<?php echo $e($ticket->uuid); ?>">
+                <div class="modal-header">
+                    <h5 class="modal-title"><?php echo $ticket->customer_id ? 'Change customer' : 'Attach to customer'; ?></h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <?php if ($ticket->requester_email): ?>
+                    <p class="small text-muted mb-2">Requester: <?php echo $e(trim($ticket->requester_name . ' <' . $ticket->requester_email . '>')); ?><?php echo $ticket->requester_company ? ' · ' . $e($ticket->requester_company) : ''; ?></p>
+                    <?php endif; ?>
+                    <div class="form-group">
+                        <label for="link_customer_id">Customer</label>
+                        <select class="form-control" name="customer_id" id="link_customer_id">
+                            <option value=""><?php echo $ticket->requester_email ? '— None (guest) —' : 'Select customer'; ?></option>
+                            <?php foreach ($link_customers as $c): ?>
+                            <option value="<?php echo $c->customer_id; ?>" <?php echo (string) $selCustomer === (string) $c->customer_id ? 'selected' : ''; ?>><?php echo $e($c->company_name); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group" id="link-contact-wrap">
+                        <label for="link_customer_access_id">Portal contact</label>
+                        <select class="form-control" name="customer_access_id" id="link_customer_access_id">
+                            <option value=""><?php echo $ticket->requester_email ? '— Keep the original requester —' : 'Select contact'; ?></option>
+                            <?php foreach ($link_contacts as $c): ?>
+                            <option value="<?php echo $c->id; ?>" data-customer="<?php echo $c->customer_id; ?>" <?php echo (string) $selContact === (string) $c->id ? 'selected' : ''; ?>><?php echo $e("{$c->name} <{$c->email}>"); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small class="form-text text-muted" id="link-help-contact">The contact becomes the requester: they follow the ticket in the customer portal and receive the email updates.</small>
+                        <small class="form-text text-muted" id="link-help-keep">The company will see the ticket in their portal. <?php echo $ticket->requester_email ? 'The original requester keeps receiving updates by email and their tracking link keeps working.' : ''; ?></small>
+                    </div>
+                    <?php if ($suggestedContact): ?>
+                    <div class="alert alert-info py-2 small mb-0"><i class="fa fa-lightbulb"></i> The requester's email matches the portal contact <b><?php echo $e($suggestedContact->name); ?></b>.</div>
+                    <?php endif; ?>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> Save</button>
                 </div>
             </form>
         </div>

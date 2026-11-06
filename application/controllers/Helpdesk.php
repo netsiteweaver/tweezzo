@@ -139,6 +139,13 @@ class Helpdesk extends MY_Controller {
         $this->data['assignees'] = $this->Tickets_model->assignableUsers();
         $this->data['sla'] = $this->Tickets_model->slaSettings();
 
+        if ($this->data['perms']['edit']) {
+            $this->load->model('Customers_model');
+            $this->data['link_customers'] = $this->Customers_model->lookup();
+            $this->data['link_contacts'] = $this->db->select('id, customer_id, name, email')->from('customer_access')
+                ->where('status', 1)->order_by('name')->get()->result();
+        }
+
         // Convert-to-task modal: sprints of the ticket's customer (or all when unknown).
         if ($this->data['perms']['edit'] && empty($ticket->task_id)) {
             $this->load->model('Sprints_model');
@@ -229,6 +236,32 @@ class Helpdesk extends MY_Controller {
             flashSuccess("Task {$result['task_number']} has been created from this ticket.");
         } else {
             flashDanger($result['reason']);
+        }
+        redirect(base_url('helpdesk/view?uuid=' . urlencode($uuid)));
+    }
+
+    /** Attach a ticket (e.g. from the public form) to a customer and optionally one of its contacts. */
+    public function linkCustomer()
+    {
+        if (!isAuthorised(get_class(), "edit")) return false;
+
+        $uuid = $this->input->post('uuid');
+        $ticket = $this->Tickets_model->getByUuid($uuid);
+        if (empty($ticket)) {
+            flashDanger('Ticket not found.');
+            redirect(base_url('helpdesk/listing'));
+            return;
+        }
+        $result = $this->Tickets_model->linkCustomer(
+            $ticket,
+            $this->input->post('customer_id'),
+            $this->input->post('customer_access_id'),
+            $this->Tickets_model->staffActorFromSession()
+        );
+        if (!$result['result']) {
+            flashDanger($result['reason']);
+        } elseif (!empty($result['changed'])) {
+            flashSuccess($this->input->post('customer_id') ? 'Ticket attached to the customer.' : 'Ticket detached from the customer.');
         }
         redirect(base_url('helpdesk/view?uuid=' . urlencode($uuid)));
     }

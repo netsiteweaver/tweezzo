@@ -640,6 +640,70 @@ class Tickets_model extends CI_Model
         return ['result' => true, 'changed' => true, 'ticket' => $fresh];
     }
 
+    /**
+     * Attaches a ticket (typically from the public form) to a customer company, optionally to one
+     * of its portal contacts.
+     * - Company only: the company sees it in their portal; the original requester keeps receiving
+     *   emails and their tracking link keeps working.
+     * - With a contact: the contact becomes the requester and follows it in the portal.
+     * Passing an empty customer detaches it again (only possible when there is a requester email).
+     */
+    public function linkCustomer($ticket, $customer_id, $customer_access_id, $actor)
+    {
+        $customer_id = !empty($customer_id) ? (int) $customer_id : null;
+        $customer_access_id = !empty($customer_access_id) ? (int) $customer_access_id : null;
+
+        if (!$customer_id) {
+            $customer_access_id = null;
+        }
+        if (!$customer_access_id && empty($ticket->requester_email)) {
+            return ['result' => false, 'reason' => 'This ticket has no requester email, so please choose a contact to keep someone informed.'];
+        }
+        if ($customer_id) {
+            $customer = $this->db->select('company_name')->get_where('customers', ['customer_id' => $customer_id, 'status' => 1])->row();
+            if (!$customer) {
+                return ['result' => false, 'reason' => 'Invalid customer.'];
+            }
+        }
+        if ($customer_access_id) {
+            $ok = $this->db->where(['id' => $customer_access_id, 'customer_id' => $customer_id, 'status' => 1])->count_all_results('customer_access');
+            if (!$ok) {
+                return ['result' => false, 'reason' => "The contact doesn't belong to this customer."];
+            }
+        }
+        if ((int) $ticket->customer_id === (int) $customer_id && (int) $ticket->customer_access_id === (int) $customer_access_id) {
+            return ['result' => true, 'changed' => false];
+        }
+
+        $now = date('Y-m-d H:i:s');
+        $update = [
+            'customer_id'        => $customer_id,
+            'customer_access_id' => $customer_access_id,
+            'updated_on'         => $now,
+            'last_activity_at'   => $now,
+        ];
+        // A project from another company no longer makes sense.
+        if (!empty($ticket->project_id)) {
+            $projectCustomer = $this->db->select('customer_id')->get_where('projects', ['id' => (int) $ticket->project_id])->row('customer_id');
+            if ((int) $projectCustomer !== (int) $customer_id) {
+                $update['project_id'] = null;
+            }
+        }
+        $this->db->where('id', (int) $ticket->id)->update('tickets', $update);
+
+        $newCompany = $customer_id ? $customer->company_name : null;
+        if ((int) $ticket->customer_id !== (int) $customer_id) {
+            $this->logHistory((int) $ticket->id, 'customer', $ticket->company_name, $newCompany, $actor);
+        }
+        if ((int) $ticket->customer_access_id !== (int) $customer_access_id) {
+            $contactName = $customer_access_id ? $this->db->select('name')->get_where('customer_access', ['id' => $customer_access_id])->row('name') : null;
+            $oldContact = !empty($ticket->customer_access_id) ? $ticket->contact_name : null;
+            $this->logHistory((int) $ticket->id, 'contact', $oldContact, $contactName, $actor);
+        }
+
+        return ['result' => true, 'changed' => true];
+    }
+
     public function softDelete($ticket, $actor)
     {
         $this->db->where('id', (int) $ticket->id)->update('tickets', ['deleted' => 1, 'updated_on' => date('Y-m-d H:i:s')]);

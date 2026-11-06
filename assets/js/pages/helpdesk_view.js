@@ -61,6 +61,23 @@ jQuery(function () {
         $('#convert_user_ids').val(JSON.stringify(selected));
     });
 
+    // Attach-to-customer modal: only show the chosen customer's contacts.
+    function filterLinkContacts() {
+        var cid = $('#link_customer_id').val();
+        var $sel = $('#link_customer_access_id');
+        $sel.find('option[data-customer]').each(function () {
+            var show = cid !== '' && String($(this).data('customer')) === cid;
+            $(this).prop('hidden', !show).prop('disabled', !show);
+        });
+        if ($sel.find('option:selected').prop('disabled')) $sel.val('');
+        $('#link-contact-wrap').toggle(cid !== '');
+        var hasContact = $sel.val() !== '';
+        $('#link-help-contact').toggle(hasContact);
+        $('#link-help-keep').toggle(!hasContact);
+    }
+    $('#link_customer_id, #link_customer_access_id').on('change', filterLinkContacts);
+    if ($('#link_customer_id').length) filterLinkContacts();
+
     // Jump to the reply anchor after posting.
     if (window.location.hash && $(window.location.hash).length) {
         $('html, body').animate({ scrollTop: $(window.location.hash).offset().top - 80 }, 300);

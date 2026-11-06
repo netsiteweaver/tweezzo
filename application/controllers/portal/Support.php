@@ -179,8 +179,15 @@ class Support extends CI_Controller
     private function guestTicket($token)
     {
         $ticket = $this->Tickets_model->getByToken($token);
-        if (empty($ticket) || !empty($ticket->customer_access_id)) {
+        if (empty($ticket)) {
             show_404();
+            exit;
+        }
+        if (!empty($ticket->customer_access_id)) {
+            // Staff handed the ticket over to a portal contact.
+            $this->data['ticket'] = $ticket;
+            $this->render('portal/support/moved');
+            $this->output->_display();
             exit;
         }
         return $ticket;
