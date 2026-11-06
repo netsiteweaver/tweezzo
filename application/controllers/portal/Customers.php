@@ -827,4 +827,134 @@ class Customers extends CI_Controller
         echo json_encode($this->Meeting_note_model->portal_add_entry($this->Meeting_note_model->note_id_for_uuid($uuid), 'customer', (int) $_SESSION['customer_access_id'], $this->input->post('body')));
         exit;
     }
+
+    // ---------------------------------------------------------------------
+    // Support tickets (helpdesk). Visible to every portal user of the same company.
+    // ---------------------------------------------------------------------
+
+    private function _ticketActor()
+    {
+        return ['type' => 'customer', 'id' => (int) $_SESSION['customer_access_id']];
+    }
+
+    private function _ticketCustomerId()
+    {
+        $this->load->model("Tickets_model");
+        return (int) $this->Tickets_model->customerIdForAccess((int) $_SESSION['customer_access_id']);
+    }
+
+    private function _ticketOr404($uuid)
+    {
+        $ticket = $this->Tickets_model->getForCustomer($uuid, $this->_ticketCustomerId());
+        if (empty($ticket)) {
+            setFlashMessage("danger", "Ticket not found.");
+            redirect("portal/customers/tickets");
+        }
+        return $ticket;
+    }
+
+    public function tickets()
+    {
+        $customer_id = $this->_ticketCustomerId();
+        $filter = in_array($this->input->get('show'), ['active', 'done', 'all'], true) ? $this->input->get('show') : 'all';
+        $this->data['page_title'] = "Support";
+        $this->data['portal'] = "customers";
+        $this->data['show'] = $filter;
+        $this->data['tickets'] = $this->Tickets_model->listForCustomer($customer_id, $filter);
+        $this->data['content'][] = $this->load->view("/portal/helpdesk/list", $this->data, true);
+        $this->load->view("/portal/customers/shared/layout", $this->data);
+    }
+
+    public function newTicket()
+    {
+        $this->load->model("Tickets_model");
+        $this->data['page_title'] = "New support ticket";
+        $this->data['categories'] = $this->Tickets_model->categories();
+        $this->data['content'][] = $this->load->view("/portal/helpdesk/new", $this->data, true);
+        $this->load->view("/portal/customers/shared/layout", $this->data);
+    }
+
+    public function saveTicket()
+    {
+        $customer_id = $this->_ticketCustomerId();
+        $result = $this->Tickets_model->create([
+            'subject'            => $this->input->post('subject'),
+            'body'               => $this->input->post('body'),
+            'priority'           => $this->input->post('priority'),
+            'category_id'        => $this->input->post('category_id'),
+            'project_id'         => $this->input->post('project_id'),
+            'customer_id'        => $customer_id,
+            'customer_access_id' => (int) $_SESSION['customer_access_id'],
+            'ip_address'         => $this->input->ip_address(),
+        ], 'portal', $this->_ticketActor());
+
+        if (!$result['result']) {
+            setFlashMessage("danger", $result['reason']);
+            redirect("portal/customers/newTicket");
+            return;
+        }
+        if (!empty($result['upload_errors'])) {
+            setFlashMessage("warning", 'Some files were not attached: ' . htmlspecialchars(implode('; ', $result['upload_errors'])));
+        }
+        setFlashMessage("success", "Your ticket {$result['ticket']->public_ref} has been submitted. We'll get back to you shortly.");
+        redirect("portal/customers/ticket/" . $result['ticket']->uuid);
+    }
+
+    public function ticket($uuid = '')
+    {
+        $this->load->model("Tickets_model");
+        $ticket = $this->_ticketOr404($uuid);
+        $this->data['page_title'] = $ticket->public_ref;
+        $this->data['portal'] = "customers";
+        $this->data['ticket'] = $ticket;
+        $this->data['thread'] = $this->Tickets_model->getThread($ticket, false);
+        $this->data['fileUrl'] = base_url('portal/customers/ticketFile/{id}');
+        $this->data['replyUrl'] = base_url('portal/customers/ticketReply/' . $ticket->uuid);
+        $this->data['resolveUrl'] = base_url('portal/customers/ticketResolve/' . $ticket->uuid);
+        $this->data['content'][] = $this->load->view("/portal/helpdesk/view", $this->data, true);
+        $this->load->view("/portal/customers/shared/layout", $this->data);
+    }
+
+    public function ticketReply($uuid = '')
+    {
+        $this->load->model("Tickets_model");
+        $ticket = $this->_ticketOr404($uuid);
+        $result = $this->Tickets_model->addReply($ticket, $this->_ticketActor(), $this->input->post('body'));
+        if ($result['result']) {
+            if (!empty($result['upload_errors'])) {
+                setFlashMessage("warning", 'Some files were not attached: ' . htmlspecialchars(implode('; ', $result['upload_errors'])));
+            }
+            setFlashMessage("success", "Your reply has been sent.");
+        } else {
+            setFlashMessage("danger", $result['reason']);
+        }
+        redirect("portal/customers/ticket/" . $ticket->uuid);
+    }
+
+    public function ticketResolve($uuid = '')
+    {
+        $this->load->model("Tickets_model");
+        $ticket = $this->_ticketOr404($uuid);
+        if ($this->input->method() === 'post' && !in_array($ticket->status, Tickets_model::CLOSED_STATUSES, true)) {
+            $this->Tickets_model->changeField($ticket, 'status', 'resolved', $this->_ticketActor());
+            setFlashMessage("success", "Thanks! The ticket has been marked as resolved.");
+        }
+        redirect("portal/customers/ticket/" . $ticket->uuid);
+    }
+
+    public function ticketFile($id = 0)
+    {
+        $this->load->model("Tickets_model");
+        $attachment = $this->Tickets_model->getAttachment($id);
+        if (empty($attachment) || $attachment->is_internal) {
+            show_404();
+            return;
+        }
+        $ticket = $this->Tickets_model->getById($attachment->ticket_id);
+        if (empty($ticket) || (int) $ticket->customer_id !== $this->_ticketCustomerId()) {
+            show_404();
+            return;
+        }
+        $this->Tickets_model->streamAttachment($attachment);
+    }
 }

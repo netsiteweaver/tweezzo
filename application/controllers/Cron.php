@@ -640,6 +640,17 @@ class Cron extends CI_Controller {
         echo date("Y-m-d H:i:s") . " meetings started: {$started}, reminder emails: {$reminders}, idle meetings ended: {$ended}\n";
     }
 
+    /**
+     * Helpdesk SLA alerts: emails the assignee and the helpdesk notification list once per breach
+     * (first response and resolution). Run every 5–15 minutes.
+     */
+    public function helpdeskSla()
+    {
+        $this->load->model("Tickets_model");
+        $alerts = $this->Tickets_model->processSlaBreaches();
+        echo date("Y-m-d H:i:s") . " helpdesk SLA breaches alerted: {$alerts}\n";
+    }
+
     public function fetchQuotes()
     {
         $curl = curl_init();

@@ -577,4 +577,82 @@ class Developers extends CI_Controller
         echo json_encode($this->Meeting_note_model->portal_add_entry($this->Meeting_note_model->note_id_for_uuid($uuid), 'developer', (int) $_SESSION['developer_id'], $this->input->post('body')));
         exit;
     }
+
+    // ---------------------------------------------------------------------
+    // Support tickets assigned to this developer (helpdesk)
+    // ---------------------------------------------------------------------
+
+    private function _ticketActor()
+    {
+        return ['type' => 'developer', 'id' => (int) $_SESSION['developer_id']];
+    }
+
+    private function _ticketOr404($uuid)
+    {
+        $this->load->model("Tickets_model");
+        $ticket = $this->Tickets_model->getForDeveloper($uuid, (int) $_SESSION['developer_id']);
+        if (empty($ticket)) {
+            setFlashMessage("danger", "Ticket not found or no longer assigned to you.");
+            redirect("portal/developers/tickets");
+        }
+        return $ticket;
+    }
+
+    public function tickets()
+    {
+        $this->load->model("Tickets_model");
+        $show = $this->input->get('show') === 'all' ? 'all' : 'active';
+        $this->data['page_title'] = "Support tickets";
+        $this->data['portal'] = "developers";
+        $this->data['show'] = $show;
+        $this->data['tickets'] = $this->Tickets_model->listForDeveloper((int) $_SESSION['developer_id'], $show);
+        $this->data['content'][] = $this->load->view("/portal/helpdesk/list", $this->data, true);
+        $this->load->view("/portal/developers/shared/layout", $this->data);
+    }
+
+    public function ticket($uuid = '')
+    {
+        $ticket = $this->_ticketOr404($uuid);
+        $this->data['page_title'] = $ticket->ticket_number;
+        $this->data['portal'] = "developers";
+        $this->data['ticket'] = $ticket;
+        $this->data['thread'] = $this->Tickets_model->getThread($ticket, true);
+        $this->data['fileUrl'] = base_url('portal/developers/ticketFile/{id}');
+        $this->data['replyUrl'] = base_url('portal/developers/ticketReply/' . $ticket->uuid);
+        $this->data['content'][] = $this->load->view("/portal/helpdesk/view", $this->data, true);
+        $this->load->view("/portal/developers/shared/layout", $this->data);
+    }
+
+    public function ticketReply($uuid = '')
+    {
+        $ticket = $this->_ticketOr404($uuid);
+        $result = $this->Tickets_model->addReply(
+            $ticket,
+            $this->_ticketActor(),
+            $this->input->post('body'),
+            $this->input->post('is_internal') === '1',
+            $this->input->post('status')
+        );
+        if ($result['result']) {
+            if (!empty($result['upload_errors'])) {
+                setFlashMessage("warning", 'Some files were not attached: ' . htmlspecialchars(implode('; ', $result['upload_errors'])));
+            }
+            setFlashMessage("success", $this->input->post('is_internal') === '1' ? "Internal note added." : "Reply sent.");
+        } else {
+            setFlashMessage("danger", $result['reason']);
+        }
+        redirect("portal/developers/ticket/" . $ticket->uuid);
+    }
+
+    public function ticketFile($id = 0)
+    {
+        $this->load->model("Tickets_model");
+        $attachment = $this->Tickets_model->getAttachment($id);
+        $ticket = $attachment ? $this->Tickets_model->getById($attachment->ticket_id) : null;
+        if (empty($ticket) || (int) $ticket->assigned_to !== (int) $_SESSION['developer_id']) {
+            show_404();
+            return;
+        }
+        $this->Tickets_model->streamAttachment($attachment);
+    }
 }

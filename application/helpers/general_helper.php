@@ -627,6 +627,7 @@ function task_source_options() {
         'bulk'     => 'Bulk import',
         'meeting'  => 'Meeting notes',
         'hms'      => 'HMS quotation',
+        'helpdesk' => 'Helpdesk ticket',
         'other'    => 'Other',
     ];
 }
@@ -637,7 +638,7 @@ function task_source_options() {
  * @return string[]
  */
 function task_source_auto_only() {
-    return ['bulk', 'meeting', 'hms'];
+    return ['bulk', 'meeting', 'hms', 'helpdesk'];
 }
 
 /**
@@ -760,6 +761,7 @@ function task_source_icon_html($source) {
         'bulk'     => ['class' => 'fas fa-upload', 'color' => 'text-warning'],
         'meeting'  => ['class' => 'fas fa-users', 'color' => 'text-purple'],
         'hms'      => ['class' => 'fas fa-file-invoice', 'color' => 'text-success'],
+        'helpdesk' => ['class' => 'fas fa-life-ring', 'color' => 'text-danger'],
         'other'    => ['class' => 'fas fa-question-circle', 'color' => 'text-muted'],
     ];
 
