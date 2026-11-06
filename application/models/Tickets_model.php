@@ -432,6 +432,24 @@ class Tickets_model extends CI_Model
             GROUP BY c.customer_id, c.company_name ORDER BY c.company_name")->result();
     }
 
+    /**
+     * Open tickets that need staff attention, for the dashboard: overdue first, then unassigned,
+     * then by priority and nearest SLA deadline. Paused tickets (waiting on customer/on hold) are left out.
+     */
+    public function attentionList($limit = 8)
+    {
+        $paused = "'" . implode("','", self::PAUSED_STATUSES) . "'";
+        $now = $this->db->escape(date('Y-m-d H:i:s'));
+        $this->baseSelect();
+        $this->db->where("t.status NOT IN ($paused)", null, false);
+        $this->db->order_by("CASE WHEN t.resolution_due < $now OR (t.first_responded_at IS NULL AND t.first_response_due < $now) THEN 0 ELSE 1 END", '', false);
+        $this->db->order_by('CASE WHEN t.assigned_to IS NULL THEN 0 ELSE 1 END', '', false);
+        $this->db->order_by("FIELD(t.priority,'urgent','high','normal','low')", '', false);
+        $this->db->order_by('IF(t.first_responded_at IS NULL, t.first_response_due, t.resolution_due)', 'ASC', false);
+        $this->db->limit((int) $limit);
+        return $this->db->get()->result();
+    }
+
     public function listForCustomer($customer_id, $status = 'all')
     {
         $this->baseSelect();

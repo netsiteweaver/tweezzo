@@ -1,15 +1,42 @@
 <style>
-    .info-box-number {
-        position: absolute;
-        right: 10px;
-        top: 0px;
-        font-size: 2em;
-        float: right;
-        background-color: #000;
-        color: #fff;
-        padding: 0px 15px;
-        border-radius: 5px;
-        box-shadow: 5px 5px 5px #ccc;
+    /* Compact counters */
+    .dashboard-counter {
+        min-height: 0;
+        padding: .35rem;
+        margin-bottom: .5rem;
+        color: inherit;
+        text-decoration: none;
+    }
+    .dashboard-counter:hover {
+        color: inherit;
+        text-decoration: none;
+        filter: brightness(1.08);
+    }
+    .dashboard-counter .info-box-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+        border-radius: 4px;
+    }
+    .dashboard-counter .info-box-content {
+        padding: 0 .5rem;
+        line-height: 1.2;
+        min-width: 0;
+    }
+    .dashboard-counter .info-box-text {
+        font-size: .8rem;
+        opacity: .85;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    /* While customising, clicks drag/arrange the block instead of following the link. */
+    #dashboard-blocks.edit-mode .dashboard-counter {
+        pointer-events: none;
+    }
+    .dashboard-counter-number {
+        font-size: 1.35rem;
+        font-weight: 700;
     }
 
     /* Online Users Dashboard Styles */

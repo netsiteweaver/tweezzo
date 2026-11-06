@@ -70,7 +70,34 @@ class Dashboard extends MY_Controller {
         $this->load->model("developersportal_model");
         $this->load->model("Tasks_model");
 
+        $canTickets = (bool) $this->accesscontrol_model->authorised("helpdesk", "listing");
+        if($canTickets){
+            $this->load->model("Tickets_model");
+            $ticketCounts = $this->Tickets_model->summaryCounts((int) $_SESSION['user_id']);
+        }
+
         $blocks = array();
+
+        // Helpdesk first: tickets are time-sensitive (SLA).
+        if($canTickets){
+            foreach($this->ticketCounterItems($ticketCounts) as $key => $item){
+                $blocks[] = array(
+                    "key"   =>  $key,
+                    "width" =>  "col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12",
+                    "new_on_top" => true,
+                    "html"  =>  $this->load->view("/dashboard/blocks/counter", array("item"=>$item), true)
+                );
+            }
+            $blocks[] = array(
+                "key"   =>  "tickets_attention",
+                "width" =>  "col-md-12",
+                "new_on_top" => true,
+                "html"  =>  $this->load->view("/dashboard/blocks/tickets_attention", array(
+                                "tickets" =>  $this->Tickets_model->attentionList(10),
+                                "counts"  =>  $ticketCounts
+                            ), true)
+            );
+        }
 
         $blocks[] = array(
             "key"   =>  "online_users",
@@ -81,7 +108,7 @@ class Dashboard extends MY_Controller {
         foreach($this->counterItems() as $key => $item){
             $blocks[] = array(
                 "key"   =>  $key,
-                "width" =>  "col-lg-4 col-md-4 col-sm-6 col-xs-12",
+                "width" =>  "col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12",
                 "html"  =>  $this->load->view("/dashboard/blocks/counter", array("item"=>$item), true)
             );
         }
@@ -128,6 +155,28 @@ class Dashboard extends MY_Controller {
         );
 
         return $blocks;
+    }
+
+    /** Helpdesk info-boxes; links open the matching helpdesk listing filter. */
+    private function ticketCounterItems($counts)
+    {
+        return array(
+            "tickets_open" => array(
+                "label" => "Open Tickets", "icon" => "fa-life-ring", "class" => "bg-info",
+                "count" => $counts['active'],
+                "link"  => "helpdesk/listing?status=active"
+            ),
+            "tickets_unassigned" => array(
+                "label" => "Unassigned Tickets", "icon" => "fa-user-slash", "class" => "bg-secondary",
+                "count" => $counts['unassigned'],
+                "link"  => "helpdesk/listing?status=active&assigned_to=unassigned"
+            ),
+            "tickets_overdue" => array(
+                "label" => "Overdue Tickets", "icon" => "fa-exclamation-triangle", "class" => "bg-red",
+                "count" => $counts['overdue'],
+                "link"  => "helpdesk/listing?status=active&overdue=1"
+            ),
+        );
     }
 
     /** @return array block_key => info-box definition */

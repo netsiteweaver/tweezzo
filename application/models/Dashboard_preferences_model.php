@@ -11,7 +11,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class Dashboard_preferences_model extends CI_Model
 {
-    /** Blocks never seen before sort after every saved one, still visible. */
+    /** Blocks never seen before sort after every saved one (or before, with 'new_on_top'), still visible. */
     const UNSAVED_OFFSET = 1000;
 
     public function __construct()
@@ -58,9 +58,10 @@ class Dashboard_preferences_model extends CI_Model
             $key = $block['key'];
             $block['visible']   = isset($prefs[$key]) ? $prefs[$key]['visible'] : true;
             $block['row_break'] = isset($prefs[$key]) ? $prefs[$key]['row_break'] : false;
+            // Unsaved blocks go after the saved ones, unless flagged 'new_on_top' (shown above them).
             $block['position'] = isset($prefs[$key])
                                     ? $prefs[$key]['position']
-                                    : ($index + self::UNSAVED_OFFSET);
+                                    : (!empty($block['new_on_top']) ? $index - self::UNSAVED_OFFSET : $index + self::UNSAVED_OFFSET);
             $ordered[] = $block;
         }
 

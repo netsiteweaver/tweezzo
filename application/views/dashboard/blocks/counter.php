@@ -1,10 +1,8 @@
-<div class="info-box">
+<?php /* Compact counter: the whole box links to the matching listing. Expects: $item (label, icon, class, count, link) */ ?>
+<a class="info-box dashboard-counter" href="<?php echo base_url($item['link']);?>" title="<?php echo htmlspecialchars($item['label']);?>">
     <span class="info-box-icon <?php echo $item['class'];?>"><i class="fa <?php echo $item['icon'];?>"></i></span>
-    <div class="info-box-content" style="position:relative">
+    <span class="info-box-content">
         <span class="info-box-text"><?php echo $item['label'];?></span>
-        <div class="info-box-number"><?php echo $item['count'];?></div>
-        <div class="info-box-link">
-            <a href="<?php echo base_url($item['link']);?>">More Info <i class='fa fa-arrow-circle-right'></i></a>
-        </div>
-    </div>
-</div>
+        <span class="dashboard-counter-number"><?php echo $item['count'];?></span>
+    </span>
+</a>
