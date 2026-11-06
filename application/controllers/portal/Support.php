@@ -85,10 +85,16 @@ class Support extends CI_Controller
             return $fail("You've submitted several requests recently. Please wait a while, or reply on one of your existing tickets.");
         }
 
-        // Known portal users are linked to their company; everyone else becomes a guest requester.
-        $access = $this->db->select('id, customer_id')->from('customer_access')
-            ->where('status', 1)->where('email', $post['requester_email'])
-            ->order_by('id')->limit(1)->get()->row();
+        // Link to a company only when the email belongs to exactly one portal user who can sign in
+        // (same conditions as the portal login). Otherwise the requester is a guest and follows the
+        // ticket through the emailed tracking link.
+        $matches = $this->db->select('ca.id, ca.customer_id')
+            ->from('customer_access ca')
+            ->join('customers c', 'c.customer_id = ca.customer_id')
+            ->where(['ca.status' => 1, 'c.status' => 1, 'c.active' => 1])
+            ->where('ca.email', $post['requester_email'])
+            ->limit(2)->get()->result();
+        $access = count($matches) === 1 ? $matches[0] : null;
 
         $data = $post;
         $data['ip_address'] = $ip;
