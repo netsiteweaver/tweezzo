@@ -27,6 +27,11 @@ $authorLabel = ['admin' => 'Support', 'developer' => 'Support', 'customer' => 'C
     .hd-msg-head { display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; padding:8px 14px; border-bottom:1px solid #eef0f2; font-size:13px; color:#6c757d; }
     .hd-msg-head b { color:#343a40; }
     .hd-msg-body { padding:12px 14px; white-space:normal; word-wrap:break-word; overflow-wrap:anywhere; }
+    .hd-msg-body > :last-child { margin-bottom:0; }
+    .hd-msg-body p { margin-bottom:.5rem; }
+    .hd-msg-body blockquote { border-left:3px solid #ced4da; margin:0 0 .5rem; padding:.25rem .75rem; color:#6c757d; }
+    .hd-msg-body pre { background:rgba(0,0,0,.05); padding:.5rem .75rem; border-radius:4px; white-space:pre-wrap; }
+    .hd-msg-body ul, .hd-msg-body ol { padding-left:1.5rem; margin-bottom:.5rem; }
     .hd-msg.customer, .hd-msg.guest { border-left-color:#17a2b8; }
     .hd-msg.admin, .hd-msg.developer { border-left-color:#28a745; }
     .hd-msg.internal { border-left-color:#ffc107; background:#fffbea; }

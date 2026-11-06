@@ -53,7 +53,7 @@ $val = function ($k, $default = '') use ($old) { return isset($old[$k]) ? $old[$
                 </div>
                 <div class="mb-3">
                     <label for="body" class="form-label">How can we help? <span class="text-danger">*</span></label>
-                    <textarea class="form-control" id="body" name="body" rows="8" required><?php echo $e($val('body')); ?></textarea>
+                    <textarea class="form-control hd-editor" id="body" name="body" rows="8" data-height="220" required><?php echo $e($val('body')); ?></textarea>
                 </div>
                 <div class="mb-1">
                     <label for="attachments" class="form-label">Attachments</label>
@@ -67,8 +67,16 @@ $val = function ($k, $default = '') use ($old) { return isset($old[$k]) ? $old[$
         </form>
     </div>
 </div>
+<script src="assets/js/helpdesk-editor.js?v=2" defer></script>
 <script>
-    document.getElementById('support-form').addEventListener('submit', function () {
+    document.getElementById('support-form').addEventListener('submit', function (ev) {
+        var bodyEl = document.getElementById('body');
+        if (window.hdEditor ? hdEditor.isEmpty(bodyEl) : !bodyEl.value.trim()) {
+            ev.preventDefault();
+            alert('Please tell us how we can help.');
+            if (window.hdEditor) hdEditor.focus(bodyEl);
+            return;
+        }
         document.getElementById('support-submit').disabled = true;
     });
 </script>

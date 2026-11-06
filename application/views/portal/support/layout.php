@@ -10,6 +10,7 @@
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" href="./node_modules/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="./node_modules/lightbox2/dist/css/lightbox.min.css">
+    <link rel="stylesheet" href="vendor/summernote/summernote-lite.min.css">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/faviconCustomer/favicon-32x32.png">
     <style>
         body { background:#f4f6f9; }
@@ -33,5 +34,6 @@
     </main>
     <script src="<?php echo base_url("assets/AdminLTE-3.2.0/plugins/jquery/jquery.min.js"); ?>"></script>
     <script src="<?php echo base_url("node_modules/lightbox2/dist/js/lightbox.min.js"); ?>"></script>
+    <script src="<?php echo base_url("vendor/summernote/summernote-lite.min.js"); ?>"></script>
 </body>
 </html>

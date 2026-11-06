@@ -41,7 +41,7 @@
                 </div>
                 <div class="form-group">
                     <label for="body">Description <span class="text-danger">*</span></label>
-                    <textarea class="form-control" name="body" id="body" rows="8" required></textarea>
+                    <textarea class="form-control hd-editor" name="body" id="body" rows="8" data-height="220" required></textarea>
                 </div>
 
                 <div class="row">
@@ -115,3 +115,4 @@ document.addEventListener('DOMContentLoaded', function () {
     filterByCustomer();
 });
 </script>
+<script src="<?php echo base_url('assets/js/helpdesk-editor.js?v=2'); ?>" defer></script>

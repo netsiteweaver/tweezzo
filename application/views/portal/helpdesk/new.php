@@ -38,7 +38,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="body" class="form-label">Description <span class="text-danger">*</span></label>
-                    <textarea class="form-control" id="body" name="body" rows="8" required placeholder="What happened? What did you expect? Steps to reproduce, page URL, error messages…"></textarea>
+                    <textarea class="form-control hd-editor" id="body" name="body" rows="8" data-height="220" required placeholder="What happened? What did you expect? Steps to reproduce, page URL, error messages…"></textarea>
                 </div>
                 <div class="mb-1">
                     <label for="attachments" class="form-label">Attachments <small class="text-muted">(screenshots, documents)</small></label>
@@ -53,8 +53,16 @@
         </form>
     </div>
 </div>
+<script src="assets/js/helpdesk-editor.js?v=2" defer></script>
 <script>
-    document.getElementById('ticket-form').addEventListener('submit', function () {
+    document.getElementById('ticket-form').addEventListener('submit', function (ev) {
+        var bodyEl = document.getElementById('body');
+        if (window.hdEditor ? hdEditor.isEmpty(bodyEl) : !bodyEl.value.trim()) {
+            ev.preventDefault();
+            alert('Please describe your request.');
+            if (window.hdEditor) hdEditor.focus(bodyEl);
+            return;
+        }
         document.getElementById('ticket-submit').disabled = true;
     });
 </script>

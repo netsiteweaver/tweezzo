@@ -58,7 +58,7 @@ $backUrl = isset($backUrl) ? $backUrl : "portal/{$portal}/tickets";
                 </div>
                 <?php endif; ?>
                 <label for="reply-body" class="form-label"><?php echo $isDev ? 'Message' : 'Add a reply'; ?></label>
-                <textarea class="form-control" id="reply-body" name="body" rows="5" placeholder="Write your message…"></textarea>
+                <textarea class="form-control hd-editor" id="reply-body" name="body" rows="5" data-height="160" placeholder="Write your message…"></textarea>
                 <div class="row mt-2 g-2 align-items-end">
                     <div class="col-md">
                         <input class="form-control form-control-sm" type="file" name="attachments[]" multiple>
@@ -85,14 +85,16 @@ $backUrl = isset($backUrl) ? $backUrl : "portal/{$portal}/tickets";
         <?php endif; ?>
     </div>
 </div>
+<script src="assets/js/helpdesk-editor.js?v=2" defer></script>
 <script>
     (function () {
         var form = document.getElementById('ticket-reply-form');
         if (!form) return;
         form.addEventListener('submit', function (ev) {
-            var body = document.getElementById('reply-body').value.trim();
+            var bodyEl = document.getElementById('reply-body');
+            var empty = window.hdEditor ? hdEditor.isEmpty(bodyEl) : !bodyEl.value.trim();
             var files = form.querySelector('input[type=file]').files.length;
-            if (!body && !files) {
+            if (empty && !files) {
                 ev.preventDefault();
                 alert('Please write a message.');
                 return;

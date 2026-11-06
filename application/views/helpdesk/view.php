@@ -49,7 +49,7 @@ $slaState = function ($due, $doneAt) use ($ticket, $fmt) {
                 <?php if (empty($ticket->contact_email)): ?>
                 <div class="alert alert-warning py-2 reply-only">This ticket has no contact email, so the customer won't be notified of replies.</div>
                 <?php endif; ?>
-                <textarea class="form-control" name="body" id="reply-body" rows="6" placeholder="Write your reply…"></textarea>
+                <textarea class="form-control hd-editor" name="body" id="reply-body" rows="6" data-height="180" placeholder="Write your reply…"></textarea>
                 <div class="row mt-2 align-items-end">
                     <div class="col-md-6">
                         <input type="file" class="form-control-file" name="attachments[]" multiple>
@@ -337,3 +337,4 @@ $selContact = $ticket->customer_access_id ?: ($suggestedContact ? $suggestedCont
 <script>
     var HD_TICKET_UUID = <?php echo json_encode($ticket->uuid); ?>;
 </script>
+<script src="<?php echo base_url('assets/js/helpdesk-editor.js?v=2'); ?>" defer></script>

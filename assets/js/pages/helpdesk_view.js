@@ -8,7 +8,7 @@ jQuery(function () {
         $(this).addClass('active');
         $('#is_internal').val(internal ? 1 : 0);
         $('#reply-form').toggleClass('border-warning', internal);
-        $('#reply-body').attr('placeholder', internal ? 'Internal note — only visible to staff…' : 'Write your reply…');
+        hdEditor.setPlaceholder('#reply-body', internal ? 'Internal note — only visible to staff…' : 'Write your reply…');
         $('#reply-submit').html(internal ? '<i class="fa fa-sticky-note"></i> Add note' : '<i class="fa fa-paper-plane"></i> Send reply');
         $('.reply-only').toggle(!internal);
         if (internal) $('#reply-status').val('');
@@ -16,7 +16,7 @@ jQuery(function () {
 
     $('#reply-form').on('submit', function () {
         var hasFiles = $(this).find('input[type=file]').get(0).files.length > 0;
-        if ($.trim($('#reply-body').val()) === '' && !hasFiles) {
+        if (hdEditor.isEmpty('#reply-body') && !hasFiles) {
             toastr.error('Please write a message.');
             return false;
         }

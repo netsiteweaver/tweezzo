@@ -75,12 +75,117 @@ class Tickets_model extends CI_Model
         return '<span class="' . $cls . '">' . htmlspecialchars(self::priorityLabel($priority)) . '</span>';
     }
 
-    /** Plain-text body → safe HTML with line breaks and clickable links. */
-    public static function formatBody($text)
+    /** Bodies are stored as sanitized HTML; sanitize again on output in case of older or edited rows. */
+    public static function formatBody($html)
+    {
+        return self::sanitizeHtml($html);
+    }
+
+    /** Plain text → HTML with line breaks and clickable links (used to migrate pre-rich-text bodies). */
+    public static function textToHtml($text)
     {
         $html = htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
-        $html = preg_replace('~(https?://[^\s<]+)~i', '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>', $html);
+        $html = preg_replace('~(https?://[^\s<]+)~i', '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>', $html);
         return nl2br($html);
+    }
+
+    /** Max stored body size (pasted content can be large; images go in attachments). */
+    const MAX_BODY_BYTES = 200000;
+
+    /** Tags kept with their content (attributes are all dropped except a safe href). */
+    const ALLOWED_TAGS = ['p', 'br', 'b', 'strong', 'i', 'em', 'u', 's', 'strike', 'del', 'sub', 'sup',
+        'ul', 'ol', 'li', 'a', 'blockquote', 'pre', 'code', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'div', 'span'];
+    /** Tags removed together with everything inside them. */
+    const DROPPED_TAGS = ['script', 'style', 'iframe', 'frame', 'frameset', 'object', 'embed', 'applet', 'noscript',
+        'template', 'svg', 'math', 'head', 'title', 'meta', 'link', 'base', 'form', 'input', 'button', 'select',
+        'textarea', 'option', 'img', 'video', 'audio', 'source', 'track', 'picture', 'canvas', 'map', 'area'];
+
+    /**
+     * Whitelist HTML sanitizer for ticket bodies, which can come from anonymous visitors.
+     * Parses with DOMDocument (no regex), keeps only ALLOWED_TAGS, strips every attribute, and keeps
+     * links only when they are http(s) or mailto. Unknown tags are unwrapped so their text survives.
+     */
+    public static function sanitizeHtml($html)
+    {
+        $html = (string) $html;
+        if (trim($html) === '') return '';
+
+        $doc = new DOMDocument();
+        $prev = libxml_use_internal_errors(true);
+        $doc->loadHTML('<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>'
+            . $html . '</body></html>', LIBXML_NONET);
+        libxml_clear_errors();
+        libxml_use_internal_errors($prev);
+
+        $body = $doc->getElementsByTagName('body')->item(0);
+        if (!$body) return '';
+        self::sanitizeChildren($body);
+
+        $out = '';
+        foreach ($body->childNodes as $child) {
+            $out .= $doc->saveHTML($child);
+        }
+        return trim($out);
+    }
+
+    private static function sanitizeChildren(DOMNode $node)
+    {
+        foreach (iterator_to_array($node->childNodes) as $child) {
+            if ($child instanceof DOMCdataSection) {
+                $node->replaceChild($node->ownerDocument->createTextNode($child->data), $child);
+                continue;
+            }
+            if ($child instanceof DOMText) {
+                continue; // saveHTML escapes text
+            }
+            if (!($child instanceof DOMElement)) {
+                $node->removeChild($child); // comments, processing instructions
+                continue;
+            }
+            $tag = strtolower($child->nodeName);
+            if (in_array($tag, self::DROPPED_TAGS, true)) {
+                $node->removeChild($child);
+                continue;
+            }
+            self::sanitizeChildren($child);
+            if (!in_array($tag, self::ALLOWED_TAGS, true)) {
+                while ($child->firstChild) {
+                    $node->insertBefore($child->firstChild, $child);
+                }
+                $node->removeChild($child);
+                continue;
+            }
+            $href = $tag === 'a' ? trim($child->getAttribute('href')) : '';
+            foreach (iterator_to_array($child->attributes) as $attr) {
+                $child->removeAttribute($attr->nodeName);
+            }
+            if ($tag === 'a') {
+                // getAttribute() returns the entity-decoded value; reject control chars hiding a scheme.
+                if ($href !== '' && !preg_match('/[\x00-\x20]/', $href) && preg_match('~^(https?://|mailto:)~i', $href)) {
+                    $child->setAttribute('href', $href);
+                    $child->setAttribute('target', '_blank');
+                    $child->setAttribute('rel', 'noopener noreferrer nofollow');
+                }
+            }
+        }
+    }
+
+    /** True when the HTML has visible text. */
+    public static function htmlHasText($html)
+    {
+        return trim(html_entity_decode(strip_tags((string) $html), ENT_QUOTES, 'UTF-8'), " \t\n\r\0\x0B\xC2\xA0") !== '';
+    }
+
+    /** Sanitized body, or '' when there's no visible text (e.g. an empty editor's "<p><br></p>"). */
+    public static function cleanBody($html)
+    {
+        $html = (string) $html;
+        // No markup at all (editor didn't load, API/email input): keep line breaks and links.
+        if (!preg_match('~<[a-z/!]~i', $html)) {
+            $html = self::textToHtml(trim($html));
+        }
+        $clean = self::sanitizeHtml($html);
+        return self::htmlHasText($clean) ? $clean : '';
     }
 
     public static function isOverdue($ticket)
@@ -421,7 +526,10 @@ class Tickets_model extends CI_Model
     public function create($data, $source, $actor)
     {
         $subject = trim((string) ($data['subject'] ?? ''));
-        $body = trim((string) ($data['body'] ?? ''));
+        if (strlen((string) ($data['body'] ?? '')) > self::MAX_BODY_BYTES) {
+            return ['result' => false, 'reason' => 'The description is too long. Please shorten it or attach a file instead.'];
+        }
+        $body = self::cleanBody($data['body'] ?? '');
         if ($subject === '' || $body === '') {
             return ['result' => false, 'reason' => 'Please enter a subject and a description.'];
         }
@@ -524,7 +632,10 @@ class Tickets_model extends CI_Model
      */
     public function addReply($ticket, $actor, $body, $isInternal = false, $newStatus = null)
     {
-        $body = trim((string) $body);
+        if (strlen((string) $body) > self::MAX_BODY_BYTES) {
+            return ['result' => false, 'reason' => 'The message is too long. Please shorten it or attach a file instead.'];
+        }
+        $body = self::cleanBody($body);
         $isStaff = self::isStaff($actor);
         $isInternal = $isStaff && $isInternal;
         if ($body === '' && empty($this->pendingUploadNames())) {
@@ -761,8 +872,8 @@ class Tickets_model extends CI_Model
             'uuid'                     => $task_uuid,
             'name'                     => $ticket->subject,
             'section'                  => $ticket->category_name ?: 'Helpdesk',
-            // Task descriptions are rendered as HTML; ticket text is untrusted plain text.
-            'description'              => nl2br(htmlspecialchars($ticket->body, ENT_QUOTES, 'UTF-8'))
+            // Task descriptions are rendered as raw HTML; ticket bodies come from untrusted users.
+            'description'              => self::sanitizeHtml($ticket->body)
                 . '<br><br><em>(From helpdesk ticket ' . htmlspecialchars($ticket->ticket_number . ' / ' . $ticket->public_ref) . ')</em>',
             'sprint_id'                => (int) $sprint_id,
             'task_number'              => $task_number,
