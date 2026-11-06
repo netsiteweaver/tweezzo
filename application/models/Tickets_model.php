@@ -1233,7 +1233,7 @@ class Tickets_model extends CI_Model
 
     private function notifyNewTicket($ticket)
     {
-        $subject = "[{$ticket->ticket_number}] {$ticket->subject}";
+        $subject = "[{$ticket->public_ref}] {$ticket->subject}";
 
         // Acknowledge the requester (not for staff-created tickets without a contact).
         if (!empty($ticket->contact_email)) {
@@ -1271,7 +1271,7 @@ class Tickets_model extends CI_Model
     {
         $assignee = $this->assignee($ticket);
         if (!$assignee) return;
-        $this->sendEmail($assignee->email, "Ticket assigned to you: [{$ticket->ticket_number}] {$ticket->subject}", [
+        $this->sendEmail($assignee->email, "Ticket assigned to you: [{$ticket->public_ref}] {$ticket->subject}", [
             'title'        => 'Ticket assigned to you',
             'intro'        => "Hi {$assignee->name}, the following ticket has been assigned to you.",
             'ticket'       => $ticket,
@@ -1284,13 +1284,12 @@ class Tickets_model extends CI_Model
 
     private function notifyReply($ticket, $reply, $actor)
     {
-        $subject = "Re: [{$ticket->ticket_number}] {$ticket->subject}";
-        $customerSubject = "Re: [{$ticket->public_ref}] {$ticket->subject}";
+        $subject = "Re: [{$ticket->public_ref}] {$ticket->subject}";
         $author = $this->actorName($actor, $ticket);
 
         if (self::isStaff($actor)) {
             if (!$reply->is_internal && !empty($ticket->contact_email)) {
-                $this->sendEmail($ticket->contact_email, $customerSubject, [
+                $this->sendEmail($ticket->contact_email, $subject, [
                     'ref'        => $ticket->public_ref,
                     'title'      => 'New reply on your ticket',
                     'intro'      => "{$author} replied to your support ticket.",
@@ -1303,7 +1302,7 @@ class Tickets_model extends CI_Model
             // Internal notes (or replies) by someone else notify the assignee.
             $assignee = $this->assignee($ticket);
             if ($assignee && (int) $assignee->id !== (int) $actor['id'] && $reply->is_internal) {
-                $this->sendEmail($assignee->email, "Internal note: [{$ticket->ticket_number}] {$ticket->subject}", [
+                $this->sendEmail($assignee->email, "Internal note: [{$ticket->public_ref}] {$ticket->subject}", [
                     'title'      => 'Internal note added',
                     'intro'      => "{$author} added an internal note.",
                     'ticket'     => $ticket,
@@ -1321,7 +1320,7 @@ class Tickets_model extends CI_Model
         foreach ($recipients as $u) {
             $this->sendEmail($u->email, $subject, [
                 'title'      => 'Customer replied',
-                'intro'      => "{$author} replied on ticket {$ticket->ticket_number}.",
+                'intro'      => "{$author} replied on ticket {$ticket->public_ref}.",
                 'ticket'     => $ticket,
                 'message'    => $reply->body,
                 'link'       => $this->staffLink($ticket, $u->user_type),
@@ -1354,7 +1353,7 @@ class Tickets_model extends CI_Model
         foreach ($this->notificationUsers() as $u) $recipients[$u->email] = $u;
         $due = $kind === 'first response' ? $ticket->first_response_due : $ticket->resolution_due;
         foreach ($recipients as $u) {
-            $this->sendEmail($u->email, "SLA breached ({$kind}): [{$ticket->ticket_number}] {$ticket->subject}", [
+            $this->sendEmail($u->email, "SLA breached ({$kind}): [{$ticket->public_ref}] {$ticket->subject}", [
                 'title'        => 'SLA breached',
                 'intro'        => "The {$kind} target for this " . strtolower(self::priorityLabel($ticket->priority)) . "-priority ticket was due on " . date('d M Y H:i', strtotime($due)) . '.',
                 'ticket'       => $ticket,
