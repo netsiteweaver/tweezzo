@@ -22,7 +22,7 @@
 <body>
     <header class="support-header py-3 mb-3">
         <div class="container d-flex justify-content-between align-items-center">
-            <a href="portal/support"><img src="assets/images/<?php echo htmlspecialchars((string) $logoDark); ?>" alt="Logo"></a>
+            <a href="support"><img src="assets/images/<?php echo htmlspecialchars((string) $logoDark); ?>" alt="Logo"></a>
             <a href="portal/customers/signin" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-arrow-in-right me-1"></i>Customer portal</a>
         </div>
     </header>

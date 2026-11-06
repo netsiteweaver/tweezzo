@@ -1190,7 +1190,7 @@ class Tickets_model extends CI_Model
         if (!empty($ticket->customer_access_id)) {
             return base_url('portal/customers/ticket/' . $ticket->uuid);
         }
-        return base_url('portal/support/track?t=' . $ticket->public_token);
+        return base_url('support/track?t=' . $ticket->public_token);
     }
 
     private function staffLink($ticket, $user_type)

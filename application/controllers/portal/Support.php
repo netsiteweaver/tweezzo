@@ -42,7 +42,7 @@ class Support extends CI_Controller
     public function submit()
     {
         if ($this->input->method() !== 'post') {
-            redirect('portal/support');
+            redirect('support');
             return;
         }
 
@@ -58,7 +58,7 @@ class Support extends CI_Controller
         $fail = function ($reason) use ($post) {
             $_SESSION['support_form_old'] = $post;
             setFlashMessage('danger', $reason);
-            redirect('portal/support');
+            redirect('support');
         };
 
         $token = (string) $this->input->post('form_token');
@@ -71,7 +71,7 @@ class Support extends CI_Controller
         // Bots: the hidden "website" field must stay empty and humans take a few seconds to fill the form.
         $startedAt = isset($_SESSION['support_form_time']) ? (int) $_SESSION['support_form_time'] : 0;
         if ($this->input->post('website') !== '' && $this->input->post('website') !== null) {
-            redirect('portal/support/thanks');
+            redirect('support/thanks');
             return;
         }
         if (time() - $startedAt < self::MIN_FILL_SECONDS) {
@@ -106,7 +106,7 @@ class Support extends CI_Controller
             'email'         => $post['requester_email'],
             'upload_errors' => $result['upload_errors'],
         ];
-        redirect('portal/support/thanks');
+        redirect('support/thanks');
     }
 
     public function thanks()
@@ -124,9 +124,9 @@ class Support extends CI_Controller
         $this->data['portal'] = 'public';
         $this->data['ticket'] = $ticket;
         $this->data['thread'] = $this->Tickets_model->getThread($ticket, false);
-        $this->data['fileUrl'] = base_url('portal/support/file/{id}?t=' . $token);
-        $this->data['replyUrl'] = base_url('portal/support/reply?t=' . $token);
-        $this->data['resolveUrl'] = base_url('portal/support/resolve?t=' . $token);
+        $this->data['fileUrl'] = base_url('support/file/{id}?t=' . $token);
+        $this->data['replyUrl'] = base_url('support/reply?t=' . $token);
+        $this->data['resolveUrl'] = base_url('support/resolve?t=' . $token);
         $this->render('portal/helpdesk/view');
     }
 
@@ -142,7 +142,7 @@ class Support extends CI_Controller
         } else {
             setFlashMessage('danger', $result['reason']);
         }
-        redirect('portal/support/track?t=' . $ticket->public_token);
+        redirect('support/track?t=' . $ticket->public_token);
     }
 
     public function resolve()
@@ -152,7 +152,7 @@ class Support extends CI_Controller
             $this->Tickets_model->changeField($ticket, 'status', 'resolved', ['type' => 'guest', 'id' => null]);
             setFlashMessage('success', 'Thanks! The ticket has been marked as resolved.');
         }
-        redirect('portal/support/track?t=' . $ticket->public_token);
+        redirect('support/track?t=' . $ticket->public_token);
     }
 
     public function file($id = 0)

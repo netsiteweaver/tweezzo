@@ -52,3 +52,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $route['default_controller'] = 'dashboard';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = TRUE;
+
+// Public helpdesk form (controllers/portal/Support.php); the old portal/support/* URLs keep working.
+$route['support'] = 'portal/support';
+$route['support/(.+)'] = 'portal/support/$1';

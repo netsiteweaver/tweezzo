@@ -16,7 +16,7 @@
                 <?php else: ?>
                     <p class="text-muted">We'll get back to you by email shortly.</p>
                 <?php endif; ?>
-                <a href="portal/support" class="btn btn-outline-secondary mt-2">Submit another request</a>
+                <a href="support" class="btn btn-outline-secondary mt-2">Submit another request</a>
             </div>
         </div>
     </div>

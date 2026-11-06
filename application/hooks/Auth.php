@@ -59,6 +59,7 @@ class Auth extends CI_Controller {
 					($controller == 'api') || 
 					($controller == 'cron') || 
 					($controller == 'calendar') || 
+					($controller == 'support') || 
 					($controller == 'migrate')){
 	
 				}else{

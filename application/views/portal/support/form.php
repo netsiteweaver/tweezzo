@@ -7,7 +7,7 @@ $val = function ($k, $default = '') use ($old) { return isset($old[$k]) ? $old[$
         <h3 class="mb-1"><i class="bi bi-life-preserver me-2"></i>Contact support</h3>
         <p class="text-muted">Tell us what's going on and we'll get back to you by email. Existing customers can also <a href="portal/customers/signin">sign in to the portal</a> to follow all their tickets.</p>
 
-        <form method="post" action="portal/support/submit" enctype="multipart/form-data" class="card" id="support-form">
+        <form method="post" action="support/submit" enctype="multipart/form-data" class="card" id="support-form">
             <input type="hidden" name="form_token" value="<?php echo $e($token); ?>">
             <div style="position:absolute;left:-10000px;" aria-hidden="true">
                 <label for="website">Leave this field empty</label>
