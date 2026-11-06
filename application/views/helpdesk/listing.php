@@ -136,6 +136,7 @@ $cards = [
                                 <div class="hd-meta">
                                     <?php echo $t->category_name ? $e($t->category_name) . ' · ' : ''; ?>
                                     <?php echo (int) $t->reply_count; ?> repl<?php echo $t->reply_count == 1 ? 'y' : 'ies'; ?>
+                                    <?php if ((int) $t->attachment_count > 0): ?> · <span title="<?php echo (int) $t->attachment_count; ?> attachment<?php echo $t->attachment_count == 1 ? '' : 's'; ?>"><i class="fa fa-paperclip"></i> <?php echo (int) $t->attachment_count; ?></span><?php endif; ?>
                                     <?php if (!empty($t->task_number)): ?> · <i class="fa fa-tasks"></i> <?php echo $e($t->task_number); ?><?php endif; ?>
                                 </div>
                             </td>

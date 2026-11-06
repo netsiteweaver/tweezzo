@@ -55,6 +55,7 @@ $isCustomer = $portal === 'customers';
                                 <?php echo $t->category_name ? $e($t->category_name) . ' · ' : ''; ?>
                                 <?php echo $isCustomer ? 'by ' . $e($t->contact_name ?: '—') . ' · ' : ''; ?>
                                 <?php echo (int) $t->reply_count; ?> repl<?php echo $t->reply_count == 1 ? 'y' : 'ies'; ?>
+                                <?php if ((int) $t->attachment_count > 0): ?> · <span title="<?php echo (int) $t->attachment_count; ?> attachment<?php echo $t->attachment_count == 1 ? '' : 's'; ?>"><i class="bi bi-paperclip"></i> <?php echo (int) $t->attachment_count; ?></span><?php endif; ?>
                             </div>
                         </td>
                         <?php if (!$isCustomer): ?><td><?php echo $e($t->company_name ?: ($t->contact_name ?: 'Guest')); ?></td><?php endif; ?>

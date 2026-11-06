@@ -392,6 +392,7 @@ class Tickets_model extends CI_Model
         $per_page = max(1, (int) $per_page);
         $this->baseSelect();
         $this->db->select('(SELECT COUNT(1) FROM ticket_replies r WHERE r.ticket_id = t.id AND r.is_internal = 0) AS reply_count', false);
+        $this->db->select('(SELECT COUNT(1) FROM ticket_attachments a WHERE a.ticket_id = t.id) AS attachment_count', false);
         $this->applyFilters($filters);
         $this->db->order_by("FIELD(t.status,'new','open','pending_customer','on_hold','resolved','closed')", '', false);
         $this->db->order_by("FIELD(t.priority,'urgent','high','normal','low')", '', false);
@@ -435,6 +436,7 @@ class Tickets_model extends CI_Model
     {
         $this->baseSelect();
         $this->db->select('(SELECT COUNT(1) FROM ticket_replies r WHERE r.ticket_id = t.id AND r.is_internal = 0) AS reply_count', false);
+        $this->db->select('(SELECT COUNT(1) FROM ticket_attachments a WHERE a.ticket_id = t.id AND a.is_internal = 0) AS attachment_count', false);
         $this->db->where('t.customer_id', (int) $customer_id);
         if ($status === 'active') {
             $this->db->where_not_in('t.status', self::CLOSED_STATUSES);
@@ -448,6 +450,7 @@ class Tickets_model extends CI_Model
     {
         $this->baseSelect();
         $this->db->select('(SELECT COUNT(1) FROM ticket_replies r WHERE r.ticket_id = t.id) AS reply_count', false);
+        $this->db->select('(SELECT COUNT(1) FROM ticket_attachments a WHERE a.ticket_id = t.id) AS attachment_count', false);
         $this->db->where('t.assigned_to', (int) $developer_id);
         if ($status === 'active') {
             $this->db->where_not_in('t.status', self::CLOSED_STATUSES);
