@@ -1,5 +1,6 @@
 /**
- * Global search in topbar: live typeahead for tasks (by task ref, name, etc.).
+ * Global search in topbar: live typeahead for tasks (by task ref, name, etc.) and helpdesk tickets
+ * (by ticket number, customer ref, subject, requester or company).
  */
 (function () {
   var DEBOUNCE_MS = 300;
@@ -10,29 +11,54 @@
 
   if (!$input.length || !$results.length) return;
 
-  function renderResults(tasks) {
+  function esc(v) {
+    return (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  var STATUS_BADGE = { 'new': 'primary', open: 'info', pending_customer: 'warning', on_hold: 'secondary', resolved: 'success', closed: 'dark' };
+
+  function renderResults(tasks, tickets) {
+    tasks = tasks || [];
+    tickets = tickets || [];
     $results.empty();
-    if (!tasks || tasks.length === 0) {
-      $results.append('<span class="dropdown-item text-muted">No tasks found</span>');
+    if (tasks.length === 0 && tickets.length === 0) {
+      $results.append('<span class="dropdown-item text-muted">No tasks or tickets found</span>');
       $results.show();
       return;
     }
     var html = '';
-    tasks.forEach(function (t) {
-      var ref = (t.task_ref || t.task_number || '').toString();
-      var name = (t.name || '').toString().replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      var project = (t.project_name || '').toString().replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      var sprint = (t.sprint_name || '').toString().replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      var url = (t.view_url || '').toString();
-      html += '<a class="dropdown-item global-search-item" href="' + url + '" data-view-url="' + url.replace(/"/g, '&quot;') + '">';
-      html += '<div class="d-flex justify-content-between align-items-start">';
-      html += '<span class="font-weight-bold">' + (ref ? ref + ' &middot; ' : '') + name + '</span>';
-      html += '</div>';
-      if (project || sprint) {
-        html += '<small class="text-muted">' + [project, sprint].filter(Boolean).join(' / ') + '</small>';
-      }
-      html += '</a>';
-    });
+    var both = tasks.length > 0 && tickets.length > 0;
+    if (tasks.length) {
+      if (both) html += '<h6 class="dropdown-header"><i class="fas fa-tasks mr-1"></i> Tasks</h6>';
+      tasks.forEach(function (t) {
+        var ref = esc(t.task_ref || t.task_number || '');
+        var url = esc(t.view_url || '');
+        var project = esc(t.project_name), sprint = esc(t.sprint_name);
+        html += '<a class="dropdown-item global-search-item" href="' + url + '" data-view-url="' + url + '">';
+        html += '<div class="d-flex justify-content-between align-items-start">';
+        html += '<span class="font-weight-bold">' + (ref ? ref + ' &middot; ' : '') + esc(t.name) + '</span>';
+        html += '</div>';
+        if (project || sprint) {
+          html += '<small class="text-muted">' + [project, sprint].filter(Boolean).join(' / ') + '</small>';
+        }
+        html += '</a>';
+      });
+    }
+    if (tickets.length) {
+      if (both) html += '<div class="dropdown-divider"></div>';
+      html += '<h6 class="dropdown-header"><i class="fas fa-life-ring mr-1"></i> Tickets</h6>';
+      tickets.forEach(function (t) {
+        var url = esc(t.view_url || '');
+        var badge = STATUS_BADGE[t.status] || 'secondary';
+        html += '<a class="dropdown-item global-search-item" href="' + url + '" data-view-url="' + url + '">';
+        html += '<div class="d-flex justify-content-between align-items-start">';
+        html += '<span class="font-weight-bold">' + esc(t.ticket_number) + ' &middot; ' + esc(t.subject) + '</span>';
+        html += '<span class="badge badge-' + badge + ' ml-2">' + esc(t.status_label) + '</span>';
+        html += '</div>';
+        html += '<small class="text-muted">' + esc(t.public_ref) + ' &middot; ' + esc(t.requester) + '</small>';
+        html += '</a>';
+      });
+    }
     $results.html(html).show();
   }
 
@@ -44,14 +70,14 @@
     }
     $.get(base_url + 'search/tasks', { q: q })
       .done(function (data) {
-        if (data && data.result && Array.isArray(data.tasks)) {
-          renderResults(data.tasks);
+        if (data && data.result) {
+          renderResults(data.tasks, data.tickets);
         } else {
-          renderResults([]);
+          renderResults([], []);
         }
       })
       .fail(function () {
-        renderResults([]);
+        renderResults([], []);
       });
   }
 
