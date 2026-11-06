@@ -276,7 +276,12 @@ class Helpdesk extends MY_Controller {
             return $this->json(['result' => false, 'reason' => 'Ticket not found.']);
         }
         $affected = $this->Tickets_model->softDelete($ticket, $this->Tickets_model->staffActorFromSession());
-        return $this->json(['result' => true, 'affected_rows' => $affected]);
+        // Fresh counts let the listing update its summary cards without reloading.
+        return $this->json([
+            'result'        => true,
+            'affected_rows' => $affected,
+            'counts'        => $this->Tickets_model->summaryCounts((int) $_SESSION['user_id']),
+        ]);
     }
 
     public function download($id = 0)

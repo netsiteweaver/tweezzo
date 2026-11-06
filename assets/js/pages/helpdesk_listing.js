@@ -35,10 +35,53 @@ jQuery(function () {
     tick();
     setInterval(tick, 60000);
 
-    // Rows removed by the shared deleteAjax handler: reload so counters stay right.
-    $(document).ajaxSuccess(function (e, xhr, settings) {
-        if (settings.url && settings.url.indexOf('helpdesk/delete') !== -1) {
-            setTimeout(function () { window.location.reload(); }, 800);
-        }
+    // Delete in place: remove the row only once the server confirms, then refresh the counters.
+    $('body').on('click', '.hd-delete', function (e) {
+        e.preventDefault();
+        var $btn = $(this);
+        bootbox.confirm({
+            message: $btn.data('message') || 'Delete this ticket?',
+            buttons: {
+                confirm: { label: 'Yes', className: 'btn-danger' },
+                cancel: { label: 'No', className: 'btn-primary' }
+            },
+            callback: function (ok) {
+                if (!ok) return;
+                $btn.prop('disabled', true);
+                $.ajax({
+                    url: $btn.data('url'),
+                    method: 'POST',
+                    dataType: 'JSON',
+                    data: { uuid: $btn.data('uuid') }
+                }).done(function (r) {
+                    if (!r || !r.result) {
+                        toastr.error((r && r.reason) || 'Unable to delete the ticket.');
+                        $btn.prop('disabled', false);
+                        return;
+                    }
+                    var $tbody = $btn.closest('tbody');
+                    $btn.closest('tr').fadeOut(250, function () {
+                        $(this).remove();
+                        if (!$tbody.children('tr').length) {
+                            $tbody.closest('table').hide();
+                            $('#hd-empty-after-delete').show();
+                        }
+                    });
+                    if (r.counts) {
+                        $.each(r.counts, function (key, val) {
+                            $('[data-hd-count="' + key + '"]').text(val);
+                        });
+                    }
+                    var $total = $('#hd-total');
+                    var total = Math.max(0, (parseInt($total.data('total'), 10) || 1) - 1);
+                    $total.data('total', total).text(total + ' ticket' + (total === 1 ? '' : 's'));
+                    toastr.warning('Ticket deleted.');
+                }).fail(function () {
+                    toastr.error('Unable to delete the ticket.');
+                    $btn.prop('disabled', false);
+                });
+            }
+        });
+        return false;
     });
 });

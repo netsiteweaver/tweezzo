@@ -3,11 +3,11 @@ $e = function ($s) { return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8'); 
 $get = function ($k) { return (string) $this->input->get($k); };
 $statusFilter = $filters['status'];
 $cards = [
-    ['label' => 'New',        'count' => $counts['new'],        'icon' => 'fa-inbox',               'color' => 'primary', 'qs' => 'status=new'],
-    ['label' => 'Active',     'count' => $counts['active'],     'icon' => 'fa-life-ring',           'color' => 'info',    'qs' => 'status=active'],
-    ['label' => 'Unassigned', 'count' => $counts['unassigned'], 'icon' => 'fa-user-slash',          'color' => 'secondary', 'qs' => 'status=active&assigned_to=unassigned'],
-    ['label' => 'Overdue',    'count' => $counts['overdue'],    'icon' => 'fa-exclamation-triangle','color' => 'danger',  'qs' => 'status=active&overdue=1'],
-    ['label' => 'Mine',       'count' => $counts['mine'],       'icon' => 'fa-user-check',          'color' => 'success', 'qs' => 'status=active&assigned_to=me'],
+    ['key' => 'new',        'label' => 'New',        'count' => $counts['new'],        'icon' => 'fa-inbox',               'color' => 'primary', 'qs' => 'status=new'],
+    ['key' => 'active',     'label' => 'Active',     'count' => $counts['active'],     'icon' => 'fa-life-ring',           'color' => 'info',    'qs' => 'status=active'],
+    ['key' => 'unassigned', 'label' => 'Unassigned', 'count' => $counts['unassigned'], 'icon' => 'fa-user-slash',          'color' => 'secondary', 'qs' => 'status=active&assigned_to=unassigned'],
+    ['key' => 'overdue',    'label' => 'Overdue',    'count' => $counts['overdue'],    'icon' => 'fa-exclamation-triangle','color' => 'danger',  'qs' => 'status=active&overdue=1'],
+    ['key' => 'mine',       'label' => 'Mine',       'count' => $counts['mine'],       'icon' => 'fa-user-check',          'color' => 'success', 'qs' => 'status=active&assigned_to=me'],
 ];
 ?>
 <style>
@@ -27,7 +27,7 @@ $cards = [
                 <span class="info-box-icon bg-<?php echo $c['color']; ?>"><i class="fa <?php echo $c['icon']; ?>"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text"><?php echo $c['label']; ?></span>
-                    <span class="info-box-number"><?php echo (int) $c['count']; ?></span>
+                    <span class="info-box-number" data-hd-count="<?php echo $c['key']; ?>"><?php echo (int) $c['count']; ?></span>
                 </div>
             </div>
         </a>
@@ -162,7 +162,7 @@ $cards = [
                             <td class="no-print text-right">
                                 <a href="<?php echo base_url('helpdesk/view?uuid=' . $t->uuid); ?>" class="btn btn-flat btn-default btn-sm"><i class="fas fa-eye"></i></a>
                                 <?php if ($perms['delete']): ?>
-                                <button data-url="<?php echo base_url('helpdesk/delete'); ?>" data-uuid="<?php echo $t->uuid; ?>" data-message="Delete ticket <?php echo $e($t->ticket_number); ?>?" class="deleteAjax btn btn-flat btn-danger btn-sm"><i class="fa fa-trash"></i></button>
+                                <button data-url="<?php echo base_url('helpdesk/delete'); ?>" data-uuid="<?php echo $t->uuid; ?>" data-message="Delete ticket <?php echo $e($t->ticket_number); ?>?" class="hd-delete btn btn-flat btn-danger btn-sm"><i class="fa fa-trash"></i></button>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -172,9 +172,10 @@ $cards = [
                 <?php else: ?>
                 <p class="p-3 mb-0 text-muted">No tickets match these filters.</p>
                 <?php endif; ?>
+                <p class="p-3 mb-0 text-muted" id="hd-empty-after-delete" style="display:none;">No tickets left on this page. <a href="<?php echo base_url('helpdesk/listing?' . $e($qs)); ?>">Refresh</a></p>
             </div>
         </div>
-        <div class="hd-meta mb-2"><?php echo (int) $total_rows; ?> ticket<?php echo $total_rows == 1 ? '' : 's'; ?></div>
+        <div class="hd-meta mb-2" id="hd-total" data-total="<?php echo (int) $total_rows; ?>"><?php echo (int) $total_rows; ?> ticket<?php echo $total_rows == 1 ? '' : 's'; ?></div>
     </div>
 </div>
 
