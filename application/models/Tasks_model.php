@@ -506,6 +506,9 @@ class Tasks_model extends CI_Model{
 
             $this->Email_model3->save($user->email,$subject,$content);
 
+            $this->load->model("Push_model");
+            $this->Push_model->toUser((int) $m, "{$task->task_number} moved to " . ucfirst(str_replace("_"," ",$task->task_stage)), "{$author->name} · {$task->task_name}", ['type' => 'task', 'uuid' => $data['task_uuid'], 'tag' => 'task-' . $data['task_uuid']]);
+
         }
 
         if ($rows > 0 && !empty($current_task) && !empty($current_task->sprint_id)) {
@@ -1607,6 +1610,9 @@ class Tasks_model extends CI_Model{
                     $content .= $this->load->view("_email/userHasBeenAssignedTask",$emailData, true);
                     $content .= $this->load->view("_email/footer",[], true);
                     $this->Email_model3->save($user->email,"You have been assigned a task",$content);
+
+                    $this->load->model("Push_model");
+                    $this->Push_model->toUser((int) $userId, "Task assigned to you: " . (isset($task->task_ref) && $task->task_ref !== '' ? $task->task_ref : $task->task_number), (string) $task->name, ['type' => 'task', 'uuid' => $task->uuid, 'tag' => 'task-' . $task->uuid]);
                 }
             } catch (Exception $e) {
                 // Log error but don't fail the assignment
@@ -1659,6 +1665,14 @@ class Tasks_model extends CI_Model{
                 $content .= $this->load->view("_email/footer",[], true);
                 // echo $content;
                 $this->Email_model3->save($user->email,"You have been assigned some tasks",$content);
+
+                $this->load->model("Push_model");
+                $taskList = is_array($tasks) ? array_values($tasks) : [];
+                if (count($taskList) === 1 && !empty($taskList[0]->uuid)) {
+                    $this->Push_model->toUser((int) $userId, "Task assigned to you", (string) $taskList[0]->name, ['type' => 'task', 'uuid' => $taskList[0]->uuid]);
+                } elseif (count($taskList) > 1) {
+                    $this->Push_model->toUser((int) $userId, count($taskList) . " tasks assigned to you", trim((isset($project) ? $project : '') . ' ' . (isset($sprint) ? $sprint : '')), ['type' => 'tasks']);
+                }
         }
 
         if (!empty($userIds)) {

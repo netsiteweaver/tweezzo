@@ -628,6 +628,9 @@ class Developersportal_model extends CI_Model{
                 $content .= $this->load->view("_email/footer",[], true);
                 $subject = "Task/{$result->task_number}/{$result->sprint_name}/{$result->project_name} moved to " . strtoupper(str_replace("_"," ",$result->task_stage));
                 $this->Email_model3->save($email,$subject,$content);
+
+                $this->load->model("Push_model");
+                $this->Push_model->toUser((int) $id, "{$result->task_number} moved to " . ucfirst(str_replace("_"," ",$result->task_stage)), ($developer ? $developer->name . ' · ' : '') . $result->task_name, ['type' => 'task', 'uuid' => $result->task_uuid, 'tag' => 'task-' . $result->task_uuid]);
             }
             
         }

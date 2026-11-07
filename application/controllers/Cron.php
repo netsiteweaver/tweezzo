@@ -651,6 +651,21 @@ class Cron extends CI_Controller {
         echo date("Y-m-d H:i:s") . " helpdesk SLA breaches alerted: {$alerts}\n";
     }
 
+    /**
+     * Mobile app push notifications (push_queue -> Firebase Cloud Messaging). Run every minute.
+     * CLI only: it talks to FCM with the server's service-account key.
+     */
+    public function sendPush()
+    {
+        if (!is_cli()) {
+            show_404();
+            return;
+        }
+        $this->load->model("Push_model");
+        $s = $this->Push_model->processQueue(200);
+        echo date("Y-m-d H:i:s") . " push sent: {$s['sent']}, failed: {$s['failed']}, skipped: {$s['skipped']}, stale tokens removed: {$s['removed_tokens']}\n";
+    }
+
     public function fetchQuotes()
     {
         $curl = curl_init();
