@@ -12,7 +12,8 @@ class Fcm
     const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
     private $account;
-    private $channel;
+    /** @var array<string,array{channel:string,sound:string}> data.type => channel + sound */
+    private $channels;
     private $cacheFile;
     private $accessToken;
 
@@ -21,7 +22,10 @@ class Fcm
         $CI =& get_instance();
         $CI->config->load('fcm', true);
         $path = (string) $CI->config->item('fcm_service_account', 'fcm');
-        $this->channel = (string) $CI->config->item('fcm_android_channel', 'fcm') ?: 'tweezzo_default';
+        $channels = $CI->config->item('fcm_android_channels', 'fcm');
+        $this->channels = is_array($channels) && $channels
+            ? $channels
+            : ['ticket' => ['channel' => 'tweezzo_tickets', 'sound' => 'tweezzo_ticket']];
         $this->cacheFile = APPPATH . 'cache/fcm_access_token.json';
 
         if ($path !== '' && is_readable($path)) {
@@ -52,6 +56,9 @@ class Fcm
 
         // FCM data values must be strings.
         $data = array_map('strval', array_filter($data, function ($v) { return $v !== null; }));
+        $type = isset($data['type']) ? (string) $data['type'] : '';
+        $ch = isset($this->channels[$type]) ? $this->channels[$type] : reset($this->channels);
+
         $message = [
             'message' => [
                 'token'        => $deviceToken,
@@ -59,7 +66,8 @@ class Fcm
                 'data'         => (object) $data,
                 'android'      => [
                     'priority'     => 'HIGH',
-                    'notification' => ['channel_id' => $this->channel, 'tag' => $data['tag'] ?? null],
+                    // sound: used by Android 7 and older (no channels); newer versions play the channel's sound.
+                    'notification' => ['channel_id' => $ch['channel'], 'sound' => $ch['sound'], 'tag' => $data['tag'] ?? null],
                 ],
             ],
         ];

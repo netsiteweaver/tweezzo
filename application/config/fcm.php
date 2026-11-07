@@ -24,5 +24,13 @@ $config['fcm_service_account'] = getenv('TWEEZZO_FCM_SERVICE_ACCOUNT') ?: (funct
     return $candidates[0];
 })();
 
-/* Android notification channel id the app creates (must match the Flutter app). */
-$config['fcm_android_channel'] = 'tweezzo_default';
+/*
+| Android notification channel per notification type (data.type), with its sound
+| (res/raw/<sound>.ogg in the app). Channel ids must match the Flutter app
+| (lib/core/push.dart); the first entry is used for unknown types.
+*/
+$config['fcm_android_channels'] = [
+    'ticket' => ['channel' => 'tweezzo_tickets', 'sound' => 'tweezzo_ticket'],
+    'task'   => ['channel' => 'tweezzo_tasks',   'sound' => 'tweezzo_task'],
+    'tasks'  => ['channel' => 'tweezzo_tasks',   'sound' => 'tweezzo_task'],
+];
