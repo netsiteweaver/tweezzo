@@ -692,11 +692,14 @@ $(document).ready(function(){
 				$("#login-modal #result").addClass("alert alert-danger").text(response.reason);
 			  }else{
 				toastr.success("Authentication Successful!");
-				isLoggedIn();
-				setTimeout(function(){
-					window.location.href = base_url + "dashboard/index";
-				},1000)
+				// stay on the current page (keeps unsaved work); restart the session ping stopped on expiry
+				$("#login-modal #result").removeClass("alert alert-danger").text("");
+				$('input[name=modal-password]').val("");
 				$('#login-modal').modal("hide");
+				clearInterval(pingActive);
+				pingActive = setInterval(function(){
+					isLoggedIn();
+				},5000);
 			  }
 			},
 			error:function(){
