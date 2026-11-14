@@ -180,10 +180,14 @@ class Users_model extends CI_Model{
     public function keep_session() {
         $inputEmail = $this->input->post('inputEmail');
         $inputPassword = $this->input->post('inputPassword');
-        $this->db->select("users.id, username, users.name, photo, user_level, user_type, users.email, created, last_login, ip, job_title, users.status,department_id");
+        $this->db->select("users.id, username, users.name, photo, user_level, user_type, users.email, created, last_login, ip, job_title, users.status,department_id,dp.name AS department");
+        $this->db->join("departments as dp","dp.id=users.department_id","left");
         $this->db->where("password", md5($inputPassword), true );
-        $this->db->where("users.email", $inputEmail);
-        $this->db->where("status", '1');
+        $this->db->group_start();
+        $this->db->where("username", $inputEmail);
+        $this->db->or_where("users.email", $inputEmail);
+        $this->db->group_end();
+        $this->db->where("users.status", '1');
         $result = $this->db->get("users")->row();
         // if(empty($result->email)){
         //     $result->status=99;
@@ -194,7 +198,7 @@ class Users_model extends CI_Model{
         }else{
             $user = new stdClass;
             $user->id = null;
-            $user->username = $user_info['inputEmail'];
+            $user->username = $inputEmail;
             $this->recordLogin($user);
         }
         return $result;
