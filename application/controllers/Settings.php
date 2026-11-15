@@ -64,6 +64,53 @@ class Settings extends MY_Controller {
      * Stage scope for each task reminder cron. One tab per reminder, since the three
      * crons (overdue / due soon / due today) are configured independently.
      */
+    /**
+     * Settings > Tokens: the signed-in staff user's API tokens (Yawmee desktop app, mobile app sign-ins).
+     * One URL for the page and its two actions (POST "do" = create | revoke), so the permission check covers all.
+     * CSRF protection is off in this app, so the forms carry a per-session key checked here.
+     * A new token is shown on the page returned by the create POST only, never put in the session.
+     */
+    public function tokens()
+    {
+        if(!isAuthorised(get_class(),"tokens")) return false;
+        $this->load->model("Api_tokens_model");
+        $userId = (int) $_SESSION['user_id'];
+
+        if (empty($_SESSION['tokens_form_key'])) {
+            $_SESSION['tokens_form_key'] = bin2hex(random_bytes(16));
+        }
+        if ($this->input->method() === 'post') {
+            if (!hash_equals($_SESSION['tokens_form_key'], (string) $this->input->post('form_key'))) {
+                flashDanger("The form has expired. Please try again.");
+                redirect(base_url('settings/tokens'));
+            }
+            if ($this->input->post('do') === 'create') {
+                $label = trim((string) $this->input->post('label', true));
+                $token = $this->Api_tokens_model->issue($userId, $label !== '' ? $label : 'Yawmee', $this->input->ip_address());
+                if ($token === false) {
+                    flashDanger("You already have " . Api_tokens_model::MAX_ACTIVE . " active tokens. Revoke one first.");
+                    redirect(base_url('settings/tokens'));
+                }
+                $this->data['new_token'] = $token;
+            } elseif ($this->input->post('do') === 'revoke') {
+                if ($this->Api_tokens_model->revoke((int) $this->input->post('id'), $userId)) {
+                    flashSuccess("The token has been revoked");
+                }
+                redirect(base_url('settings/tokens'));
+            }
+        }
+
+        $this->data['page_title'] = "Tokens";
+        $this->data['tokens'] = $this->Api_tokens_model->listForStaff($userId);
+        $this->data['form_key'] = $_SESSION['tokens_form_key'];
+
+        $this->mybreadcrumb->add('Tokens', base_url('settings/tokens'));
+        $this->data['breadcrumbs'] = $this->mybreadcrumb->render();
+
+        $this->data["content"]=$this->load->view("/settings/tokens",$this->data,true);
+        $this->load->view("/layouts/default",$this->data);
+    }
+
     public function reminders()
     {
         //Access Control

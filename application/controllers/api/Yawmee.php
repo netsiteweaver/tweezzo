@@ -12,7 +12,8 @@ require_once APPPATH . 'core/Api_Controller.php';
  *        developer -> tasks and tickets assigned to them (all the developer portal lets them see)
  * POST api/yawmee/items/<id>/complete    (route) move a task to Completed (staff with tasks/add permission)
  *
- * Auth: "Authorization: Bearer <token>" from POST api/account/login (portal=team), like the mobile app.
+ * Auth: "Authorization: Bearer <token>": a personal token from Settings > Tokens (staff), or from
+ * POST api/account/login (portal=team) like the mobile app (developers).
  * Customer tokens are refused. Ids are "task-<uuid>" and "ticket-<uuid>".
  * Tickets and developers' tasks are read-only here (can_complete false): a ticket is resolved with a
  * reply, and only staff close a task.
