@@ -56,3 +56,7 @@ $route['translate_uri_dashes'] = TRUE;
 // Public helpdesk form (controllers/portal/Support.php); the old portal/support/* URLs keep working.
 $route['support'] = 'portal/support';
 $route['support/(.+)'] = 'portal/support/$1';
+
+// Yawmee desktop app (controllers/api/Yawmee.php)
+$route['api/yawmee/items']['GET'] = 'api/yawmee/items';
+$route['api/yawmee/items/([A-Za-z0-9-]+)/complete']['POST'] = 'api/yawmee/complete/$1';
