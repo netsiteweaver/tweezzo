@@ -8,6 +8,14 @@
 
 class Migrate extends CI_Controller {
 
+    public function __construct() {
+        parent::__construct();
+        // Command line only (php index.php migrate): over the web anyone could run or roll back migrations
+        if (!is_cli()) {
+            show_404();
+        }
+    }
+
     public function index() {
         $this->load->library('migration');
 
