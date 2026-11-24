@@ -2,20 +2,20 @@
 <div class="table-responsive">
     <table class="table table-bordered table-hover">
         <thead>
-            <tr class='text-center'>
-                <th class='table-primary' style='width:16.667%;'>COMPANY</th>
-                <th class='table-primary'>TOTAL TASKS</th>
-                <th class='table-primary'>COMPLETED</th>
-                <th class='table-primary'>%</th>
+            <tr class='text-center bg-primary'>
+                <th style='width:40%;'>COMPANY</th>
+                <th style='width:20%;'>TOTAL TASKS</th>
+                <th style='width:20%;'>COMPLETED</th>
+                <th style='width:20%;'>%</th>
             </tr>
         </thead>
         <tbody>
             <?php foreach($task_progress as $c => $item):?>
             <tr class='text-center'>
-                <td><?php echo $item->company_name;?></td>
-                <td><?php echo $item->total_tasks;?></td>
-                <td><?php echo $item->completed_tasks;?></td>
-                <td style='width:100px'>
+                <td style='width:40%;'><?php echo $item->company_name;?></td>
+                <td style='width:20%;' class='align-middle'><?php echo $item->total_tasks;?></td>
+                <td style='width:20%;' class='align-middle'><?php echo $item->completed_tasks;?></td>
+                <td style='width:20%;' class='align-middle'>
                     <div class="progress position-relative" style="height: 20px;">
                         <div
                         class="progress-bar
@@ -31,7 +31,7 @@
                         aria-valuemin="0"
                         aria-valuemax="100">
                         </div>
-                        <span class="w-100 text-center" style='position:absolute; bottom:10px;'><?= $item->overall_progress_pct ?>%</span>
+                        <span class="w-100 text-center small" style='position:absolute; top:0; left:0; line-height:20px;'><?= $item->overall_progress_pct ?>%</span>
                     </div>
                 </td>
             </tr>
