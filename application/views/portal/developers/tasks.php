@@ -219,26 +219,26 @@
 
     <div class="row table-responsive">
         <div class="col-md-12">
-            <table id="task_list" class="table table-bordered">
+            <table id="task_list" class="table table-bordered" data-columns-key="tweezzo.devTaskColumns.<?php echo (int) $_SESSION['developer_id'];?>">
                 <thead>
                     <tr>
-                        <th># <img src="assets/images/sort.png" alt="" class='<?php echo ( (empty($this->input->get('order_by'))) || ($this->input->get('order_by') == 'task_number') ) ? '' :'d-none';?>'></th>
-                        <th>SECTION <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'section') ? '' :'d-none';?>'></th>
-                        <th>TASK <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'task_name') ? '' :'d-none';?>'></th>
-                        <th>SPRINT <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'sprint_name') ? '' :'d-none';?>'></th>
-                        <th>PROJECT <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'project_name') ? '' :'d-none';?>'></th>
-                        <th>CUSTOMER <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'company_name') ? '' :'d-none';?>'></th>
-                        <th>CREATED DATE</th>
-                        <th>CREATED BY</th>
-                        <th>DUE DATE <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'due_date') ? '' :'d-none';?>'></th>
-                        <th>ESTIMATED HOURS <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'estimated_hours') ? '' :'d-none';?>'></th>
-                        <th>STAGE <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'stage') ? '' :'d-none';?>'></th>
-                        <th>WORK TYPE</th>
-                        <th class="text-center" title="Source"><i class="fas fa-sign-in-alt"></i></th>
-                        <th>BILLABLE</th>
-                        <th><i class="bi bi-chat-dots"></i></th>
-                        <th><i class="bi bi-stopwatch"></i></th>
-                        <th></th>
+                        <th data-col="number" data-label="#" data-locked="1"># <img src="assets/images/sort.png" alt="" class='<?php echo ( (empty($this->input->get('order_by'))) || ($this->input->get('order_by') == 'task_number') ) ? '' :'d-none';?>'></th>
+                        <th data-col="section" data-label="Section">SECTION <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'section') ? '' :'d-none';?>'></th>
+                        <th data-col="task" data-label="Task" data-locked="1">TASK <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'task_name') ? '' :'d-none';?>'></th>
+                        <th data-col="sprint" data-label="Sprint">SPRINT <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'sprint_name') ? '' :'d-none';?>'></th>
+                        <th data-col="project" data-label="Project">PROJECT <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'project_name') ? '' :'d-none';?>'></th>
+                        <th data-col="customer" data-label="Customer">CUSTOMER <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'company_name') ? '' :'d-none';?>'></th>
+                        <th data-col="created_on" data-label="Created date">CREATED DATE</th>
+                        <th data-col="created_by" data-label="Created by">CREATED BY</th>
+                        <th data-col="due_date" data-label="Due date">DUE DATE <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'due_date') ? '' :'d-none';?>'></th>
+                        <th data-col="estimated_hours" data-label="Estimated hours">ESTIMATED HOURS <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'estimated_hours') ? '' :'d-none';?>'></th>
+                        <th data-col="stage" data-label="Stage">STAGE <img src="assets/images/sort.png" alt="" class='<?php echo ($this->input->get('order_by') == 'stage') ? '' :'d-none';?>'></th>
+                        <th data-col="work_type" data-label="Work type">WORK TYPE</th>
+                        <th class="text-center" title="Source" data-col="source" data-label="Source"><i class="fas fa-sign-in-alt"></i></th>
+                        <th data-col="billable" data-label="Billable">BILLABLE</th>
+                        <th data-col="notes" data-label="Notes"><i class="bi bi-chat-dots"></i></th>
+                        <th data-col="timer" data-label="Timer"><i class="bi bi-stopwatch"></i></th>
+                        <th data-col="view" data-label="View" data-locked="1" class="text-center"><i class="bi bi-gear-fill cursor-pointer" id="task_columns_settings" title="Choose visible columns"></i></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -407,6 +407,23 @@
 </div>
 
 <!-- Modal -->
+<!-- Visible columns -->
+<div class="modal fade" id="modalTaskColumns" tabindex="-1" aria-labelledby="modalTaskColumnsTitle" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTaskColumnsTitle"><i class="bi bi-gear-fill"></i> Visible columns</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body task-columns-list"></div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-outline-secondary btn-sm task-columns-reset">Show all</button>
+        <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Who else is working on a task -->
 <div class="modal fade" id="modalOthersWorking" tabindex="-1" aria-labelledby="modalOthersWorkingTitle" aria-hidden="true">
   <div class="modal-dialog modal-sm modal-dialog-centered">

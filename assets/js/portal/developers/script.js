@@ -579,6 +579,62 @@ jQuery(function(){
         timerStopPending = null;
     })
 
+    /* --- Task list: choose visible columns (remembered per developer in this browser) --- */
+    ;(function(){
+        var $table = $('#task_list');
+        if (!$table.length || !$table.data('columns-key')) return;
+        var storageKey = String($table.data('columns-key'));
+        var $style = $('<style id="task_list_column_style"></style>').appendTo('head');
+
+        function readHidden(){
+            try { var v = JSON.parse(localStorage.getItem(storageKey) || '[]'); return Array.isArray(v) ? v : []; }
+            catch (e) { return []; }
+        }
+        function saveHidden(hidden){
+            try { localStorage.setItem(storageKey, JSON.stringify(hidden)); } catch (e) {}
+        }
+        function apply(){
+            var hidden = readHidden(), rules = [];
+            $table.find('thead th[data-col]').each(function(i){
+                if (!$(this).data('locked') && hidden.indexOf($(this).data('col')) !== -1) {
+                    var n = i + 1;
+                    rules.push('#task_list thead tr > :nth-child(' + n + '), #task_list tbody tr > :nth-child(' + n + ')');
+                }
+            });
+            $style.text(rules.length ? rules.join(',\n') + ' { display: none; }' : '');
+        }
+
+        $('#task_columns_settings').on('click', function(e){
+            e.stopPropagation();
+            var hidden = readHidden(), $list = $('#modalTaskColumns .task-columns-list').empty();
+            $table.find('thead th[data-col]').each(function(){
+                var col = $(this).data('col'), locked = !!$(this).data('locked'), id = 'taskcol_' + col;
+                var $row = $('<label class="task-column-option"><input type="checkbox"><div class="task-column-label"></div></label>');
+                $row.css({display: 'flex', alignItems: 'center', gap: '10px', margin: '0 0 8px 0', cursor: locked ? 'default' : 'pointer', clear: 'both'});
+                $row.find('input').attr({id: id, value: col}).css({float: 'none', margin: 0, flex: '0 0 auto', width: '18px', height: '18px'})
+                    .prop('checked', locked || hidden.indexOf(col) === -1).prop('disabled', locked);
+                $row.find('.task-column-label').text($(this).data('label') + (locked ? ' (always shown)' : '')).toggleClass('text-muted', locked);
+                $list.append($row);
+            });
+            $('#modalTaskColumns').modal('show');
+        });
+
+        $('#modalTaskColumns').on('change', 'input[type=checkbox]', function(){
+            var hidden = [];
+            $('#modalTaskColumns input[type=checkbox]:not(:disabled):not(:checked)').each(function(){ hidden.push($(this).val()); });
+            saveHidden(hidden);
+            apply();
+        });
+
+        $('#modalTaskColumns .task-columns-reset').on('click', function(){
+            $('#modalTaskColumns input[type=checkbox]').prop('checked', true);
+            saveHidden([]);
+            apply();
+        });
+
+        apply();
+    })();
+
     $(document).on("click", ".others-working", function(e){
         e.stopPropagation();
         var others = $(this).data("others") || [];
