@@ -14,6 +14,7 @@ class Developersportal_model extends CI_Model{
                         ROW_NUMBER() OVER (PARTITION BY task_id ORDER BY start_time DESC) AS rn
                     FROM timesheet
                     WHERE status = 1
+                    AND developer_id = " . (int) $developer_id . "
                 ) ";
         $query .= "SELECT t.id
                     , t.uuid
@@ -89,8 +90,41 @@ class Developersportal_model extends CI_Model{
             $tn = isset($task->task_number) ? $task->task_number : '';
             $task->task_ref = $tn !== '' ? task_ref($pc, $sc, $tn) : '';
         }
+        $others = $this->getOthersWorking(array_column($results, 'id'), $developer_id);
+        foreach ($results as $task) {
+            $task->others_working = $others[(int) $task->id] ?? [];
+        }
         return $results;
 
+    }
+
+    /**
+     * Other developers with a timer currently running on the given tasks.
+     * @return array [task_id => [ (object){name, start_time}, ... ]]
+     */
+    public function getOthersWorking(array $task_ids, $developer_id)
+    {
+        $task_ids = array_values(array_unique(array_filter(array_map('intval', $task_ids))));
+        if (empty($task_ids)) {
+            return [];
+        }
+        $rows = $this->db->query("SELECT ts.task_id, COALESCE(NULLIF(TRIM(u.display_name), ''), NULLIF(TRIM(u.name), ''), u.email) AS name, u.photo, ts.start_time
+                    FROM timesheet ts
+                    JOIN users u ON u.id = ts.developer_id AND u.user_type = 'developer'
+                    WHERE ts.finish_time IS NULL
+                    AND ts.status = 1
+                    AND ts.developer_id <> " . (int) $developer_id . "
+                    AND ts.task_id IN (" . implode(',', $task_ids) . ")
+                    ORDER BY ts.start_time")->result();
+        $out = [];
+        foreach ($rows as $r) {
+            $out[(int) $r->task_id][] = (object) [
+                'name'       => $r->name,
+                'photo_url'  => !empty($r->photo) ? base_url('uploads/users/' . rawurlencode($r->photo)) : null,
+                'start_time' => $r->start_time,
+            ];
+        }
+        return $out;
     }
 
     /**
@@ -178,6 +212,8 @@ class Developersportal_model extends CI_Model{
             isset($task->sprint_code) ? $task->sprint_code : null,
             isset($task->task_number) ? $task->task_number : ''
         );
+        $others = $this->getOthersWorking([$task->id], $developer_id);
+        $task->others_working = $others[(int) $task->id] ?? [];
         $task->assigned_to = $this->db->select("u.name,u.email,u.user_type, u.photo")
                                     ->from("task_user tu")
                                     ->join("users u","u.id=tu.user_id","left")

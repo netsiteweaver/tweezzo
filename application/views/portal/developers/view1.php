@@ -167,6 +167,11 @@
                             class="btn stage-button stage-button-on_hold <?php echo ($task->stage=='on_hold') ? 'transparent' :'changeStage'?>">
                             On Hold</div>
                     </div>
+                    <?php if(!empty($task->others_working)):?>
+                    <div class="card-footer small text-primary">
+                        <i class="fa fa-users"></i> Also working on this now: <?php echo others_working_label($task->others_working);?>
+                    </div>
+                    <?php endif;?>
                     <?php if(!empty($running_task)):?>
                     <div class="card-footer">
                         <span data-task-id = "<?php echo $task->id;?>" class='cursor-pointer timer_stop task-view'><i style='color:red;' class="fa fa-stop-circle"></i> Stop Timer</span>

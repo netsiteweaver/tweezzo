@@ -1237,3 +1237,16 @@ function is_active_menu($controller, $method, $item, $controller_only = FALSE) {
 
     return $item_action === $current_action;
 }
+
+/**
+ * "Alice (since 10:32), Bob (since 23 Nov 18:05)" for Developersportal_model::getOthersWorking() rows. HTML-escaped.
+ */
+function others_working_label($others) {
+    $parts = [];
+    foreach ((array) $others as $o) {
+        $ts = strtotime($o->start_time);
+        $since = date('Y-m-d', $ts) === date('Y-m-d') ? date('H:i', $ts) : date('j M H:i', $ts);
+        $parts[] = htmlspecialchars($o->name, ENT_QUOTES, 'UTF-8') . " (since {$since})";
+    }
+    return implode(', ', $parts);
+}

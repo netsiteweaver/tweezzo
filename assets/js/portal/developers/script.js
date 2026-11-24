@@ -579,6 +579,30 @@ jQuery(function(){
         timerStopPending = null;
     })
 
+    $(document).on("click", ".others-working", function(e){
+        e.stopPropagation();
+        var others = $(this).data("others") || [];
+        var $list = $('#modalOthersWorking .others-working-list').empty();
+        $('#modalOthersWorking .others-working-task').text("Task: " + ($(this).data("task-name") || ""));
+        $.each(others, function(i, o){
+            var $item = $('<li class="list-group-item d-flex align-items-center gap-2"><div class="ow-avatar flex-shrink-0"></div><div><div class="ow-name fw-semibold"></div><div class="ow-since small text-muted"><i class="bi bi-stopwatch"></i> since <b></b></div></div></li>');
+            var avatarCss = {width: '36px', height: '36px', borderRadius: '50%'};
+            var initials = (o.name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(function(w){ return w.charAt(0).toUpperCase(); }).join('');
+            var $initials = $('<div class="d-flex align-items-center justify-content-center bg-secondary text-white small fw-semibold"></div>').css(avatarCss).text(initials);
+            if (o.photo) {
+                $('<img alt="">').attr('src', o.photo).css(avatarCss).css('object-fit', 'cover')
+                    .on('error', function(){ $(this).replaceWith($initials); })
+                    .appendTo($item.find('.ow-avatar'));
+            } else {
+                $item.find('.ow-avatar').append($initials);
+            }
+            $item.find('.ow-name').text(o.name || '');
+            $item.find('.ow-since b').text(o.since || '');
+            $item.appendTo($list);
+        });
+        $('#modalOthersWorking').modal("show");
+    })
+
     $('.timer_start').on("click",function(){
         if($(this).hasClass("running")) return false;
 

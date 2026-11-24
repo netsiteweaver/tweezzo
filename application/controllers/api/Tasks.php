@@ -118,7 +118,7 @@ class Tasks extends Api_Controller
             $notes = $task->notes; // public notes only (Customersportal_model::getTask)
         }
 
-        $this->ok([
+        $payload = [
             'task' => [
                 'uuid'            => $task->uuid,
                 'task_ref'        => $task->task_ref ?? $this->taskRef($task),
@@ -177,7 +177,11 @@ class Tasks extends Api_Controller
                 'assign'     => $this->staffCan('tasks', 'add'),
                 'stages'     => $this->allowedStages(),
             ],
-        ]);
+        ];
+        if ($this->isDeveloper()) {
+            $payload['others_working'] = self::othersWorking($task);
+        }
+        $this->ok($payload);
     }
 
     public function moveStage($uuid = '')
@@ -402,8 +406,16 @@ class Tasks extends Api_Controller
         if (!$this->isCustomer()) {
             $out['estimated_hours'] = isset($t->estimated_hours) && $t->estimated_hours !== null ? (float) $t->estimated_hours : null;
             $out['timer_running'] = !empty($t->start_time) && empty($t->finish_time);
+            $out['others_working'] = self::othersWorking($t);
         }
         return $out;
+    }
+
+    private static function othersWorking($t)
+    {
+        return array_map(function ($o) {
+            return ['name' => $o->name, 'photo_url' => $o->photo_url, 'since' => $o->start_time];
+        }, $t->others_working ?? []);
     }
 
     private function noteAuthor($n)

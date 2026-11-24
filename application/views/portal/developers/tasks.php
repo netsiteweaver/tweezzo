@@ -291,6 +291,18 @@
                         <td class='cursor-pointer '>
                             <i class="bi bi-stop-circle-fill timer_stop <?php echo ( ($task->start_time != "") && ($task->finish_time == "")) ? '' : 'd-none';?>" style="font-size:1.2em;color:#f00;"></i>
                             <i class="bi bi-play-circle-fill timer_start <?php echo ( ($task->start_time != "") && ($task->finish_time == "")) ? 'd-none' : '';?>" style="font-size:1.2em;color:#999;"></i>
+                            <?php if(!empty($task->others_working)):?>
+                            <?php
+                                $othersData = array_map(function($o){
+                                    $ts = strtotime($o->start_time);
+                                    return ['name' => $o->name, 'photo' => $o->photo_url, 'since' => date('Y-m-d', $ts) === date('Y-m-d') ? date('H:i', $ts) : date('j M H:i', $ts)];
+                                }, $task->others_working);
+                            ?>
+                            <div class="small text-primary text-nowrap mt-1 others-working"
+                                data-task-name="<?php echo htmlspecialchars(trim(($task->task_ref ?? '') . ' ' . $task->task_name), ENT_QUOTES, 'UTF-8');?>"
+                                data-others="<?php echo htmlspecialchars(json_encode($othersData), ENT_QUOTES, 'UTF-8');?>"
+                                title="Also working on this: <?php echo others_working_label($task->others_working);?>"><i class="bi bi-people-fill"></i> <?php echo count($task->others_working);?></div>
+                            <?php endif;?>
                         </td>
                         <td>
                             <a href="portal/developers/view?task_uuid=<?php echo "{$task->uuid}&customer_id={$this->input->get('customer_id')}&project_id={$this->input->get('project_id')}&sprint_id={$this->input->get('sprint_id')}";?>">
@@ -395,6 +407,22 @@
 </div>
 
 <!-- Modal -->
+<!-- Who else is working on a task -->
+<div class="modal fade" id="modalOthersWorking" tabindex="-1" aria-labelledby="modalOthersWorkingTitle" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalOthersWorkingTitle"><i class="bi bi-people-fill"></i> Also working on this</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="small text-muted mb-2 others-working-task"></div>
+        <ul class="list-group others-working-list"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="modalTaskTimer" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">

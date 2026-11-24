@@ -35,13 +35,22 @@ class Timesheets_model extends CI_Model
 
     public function stopTimer()
     {
-        $task_id = $this->input->post("task_id");
+        $task_id = (int) $this->input->post("task_id");
+        $developer_id = (int) $_SESSION['developer_id'];
 
-        $check_duration = $this->db->query("SELECT TIMESTAMPDIFF(MINUTE, start_time, NOW()) as mins FROM timesheet WHERE task_id = '{$task_id}' AND finish_time IS NULL")->row()->mins;
+        $check_duration = $this->db->query("SELECT TIMESTAMPDIFF(MINUTE, start_time, NOW()) as mins FROM timesheet WHERE task_id = '{$task_id}' AND developer_id = '{$developer_id}' AND finish_time IS NULL")->row();
+
+        if(empty($check_duration)){
+            return array(
+                'result'    =>  false,
+                'reason'    =>  'You have no running timer on this task'
+            );
+        }
+        $check_duration = $check_duration->mins;
 
         if($check_duration == 0){
-            // $this->db->query("UPDATE timesheet SET `status` = '0' WHERE task_id = '{$task_id}' AND finish_time IS NULL");
-            $this->db->query("DELETE FROM timesheet WHERE task_id = '{$task_id}' AND finish_time IS NULL");
+            // $this->db->query("UPDATE timesheet SET `status` = '0' WHERE task_id = '{$task_id}' AND developer_id = '{$developer_id}' AND finish_time IS NULL");
+            $this->db->query("DELETE FROM timesheet WHERE task_id = '{$task_id}' AND developer_id = '{$developer_id}' AND finish_time IS NULL");
             return array(
                 'result'    =>  false,
                 'reason'    =>  'Duration less than one minute will be discarded'
@@ -54,7 +63,7 @@ class Timesheets_model extends CI_Model
                                 finish_time = NOW(),
                                 duration_minutes = TIMESTAMPDIFF(MINUTE, start_time, NOW())
                             WHERE 
-                                task_id = '{$task_id}' AND finish_time IS NULL");  
+                                task_id = '{$task_id}' AND developer_id = '{$developer_id}' AND finish_time IS NULL");  
 
         return array(
             "result"        =>  true,
