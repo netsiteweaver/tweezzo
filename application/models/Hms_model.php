@@ -21,10 +21,29 @@ class Hms_model extends CI_Model
         return !empty($this->cfg['app_url']) && !empty($this->cfg['api_token']);
     }
 
-    /** Approved quotations, newest first. */
-    public function quotations($pendingOnly = false)
+    /**
+     * Import from HMS lists nothing dated before this, as YYYY-MM-DD ('' = no limit).
+     * The setting is either a fixed date ('2026-01-01') or a period back from today ('-12 months', '-1 year').
+     */
+    public function importStartDate()
     {
-        return $this->request('GET', 'quotations' . ($pendingOnly ? '?pending=1' : ''));
+        $value = isset($this->cfg['import_start_date']) ? trim((string) $this->cfg['import_start_date']) : '';
+        if ($value === '') {
+            return '';
+        }
+        $time = strtotime($value, strtotime('today'));
+        return ($time === false) ? '' : date('Y-m-d', $time);
+    }
+
+    /** Approved quotations, newest first, optionally dated between $from and $to (YYYY-MM-DD, inclusive). */
+    public function quotations($pendingOnly = false, $from = '', $to = '')
+    {
+        $query = array_filter([
+            'pending' => $pendingOnly ? 1 : '',
+            'from' => (string) $from,
+            'to' => (string) $to,
+        ], 'strlen');
+        return $this->request('GET', 'quotations' . (!empty($query) ? '?' . http_build_query($query) : ''));
     }
 
     /** One approved quotation with its line items. */

@@ -26,14 +26,47 @@ class Hms_import extends MY_Controller
         $this->data['page_title'] = "Import from HMS";
 
         $show_all = ($this->input->get('show') === 'all');
-        $response = $this->Hms_model->quotations(!$show_all);
+        $date_from = $this->validDate($this->input->get('from'));
+        $date_to = $this->validDate($this->input->get('to'));
+        if ($date_from !== '' && $date_to !== '' && $date_from > $date_to) {
+            list($date_from, $date_to) = [$date_to, $date_from];
+        }
+        // Old quotations are never imported: never ask HMS for anything before the configured start
+        $start_date = $this->validDate($this->Hms_model->importStartDate());
+        $query_from = ($start_date !== '' && ($date_from === '' || $date_from < $start_date)) ? $start_date : $date_from;
+        if ($date_from !== '' && $date_from < $start_date) {
+            $date_from = $start_date;
+        }
+        $this->data['start_date'] = $start_date;
+        $response = $this->Hms_model->quotations(!$show_all, $query_from, $date_to);
 
         $this->data['show_all'] = $show_all;
+        // Picked by the user (the start date alone does not count as a filter)
+        $this->data['has_range'] = (($date_from !== '' && $date_from !== $start_date) || $date_to !== '');
+        // The list always starts at the start date: show it in the From box
+        $this->data['date_from'] = $query_from;
+        $this->data['date_to'] = $date_to;
         $this->data['error'] = $response['ok'] ? '' : $response['error'];
-        $this->data['quotations'] = $response['ok'] ? $response['data']['quotations'] : [];
+        $quotations = $response['ok'] ? $response['data']['quotations'] : [];
+        // Also filtered here, in case HMS is an older version that ignores from/to
+        if ($query_from !== '' || $date_to !== '') {
+            $quotations = array_values(array_filter($quotations, function ($q) use ($query_from, $date_to) {
+                $d = substr((string) $q['date'], 0, 10);
+                return ($query_from === '' || $d >= $query_from) && ($date_to === '' || $d <= $date_to);
+            }));
+        }
+        $this->data['quotations'] = $quotations;
 
         $this->data["content"] = $this->load->view("hms_import/index", $this->data, true);
         $this->load->view("/layouts/default", $this->data);
+    }
+
+    /** YYYY-MM-DD, or '' when empty or not a real date. */
+    private function validDate($value)
+    {
+        $value = trim((string) $value);
+        $d = DateTime::createFromFormat('!Y-m-d', $value);
+        return ($d && $d->format('Y-m-d') === $value) ? $value : '';
     }
 
     public function preview($uuid = '')

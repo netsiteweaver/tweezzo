@@ -57,6 +57,9 @@ $config['hms'] = array(
 	'app_url' => 'http://hms.local/',
 	'api_token' => tweezzo_hms_api_token(),
 	'timeout_seconds' => 15,
+	// Import from HMS: quotations dated before this are never listed. '' = no limit.
+	// Either a fixed date ('2026-10-01') or a period back from today ('-6 months', '-1 year'), which moves forward every day.
+	'import_start_date' => '-2 months',
 	// Validated sprints still unpaid: HMS reminds the client every N days (cron sendGoLivePaymentReminders)
 	'payment_reminder_days' => 7,
 );
