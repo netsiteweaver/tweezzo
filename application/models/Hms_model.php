@@ -193,6 +193,14 @@ class Hms_model extends CI_Model
                 'not_approved' => 'This quotation is not approved in HMS.',
             ];
             $code = isset($data['error']) ? (string) $data['error'] : '';
+            if ($code === 'unauthorized' && !empty($data['reason'])) {
+                $why = [
+                    'hms_has_no_token' => 'HMS has no token set (~/.secrets/hms_tweezzo_api_token on the HMS account is missing or unreadable).',
+                    'no_token_received' => 'the token did not reach HMS PHP (Authorization header dropped: check the HMS .htaccess and code are deployed).',
+                    'token_mismatch' => 'the two tokens differ.',
+                ];
+                $reasons['unauthorized'] .= ' Reason: ' . (isset($why[$data['reason']]) ? $why[$data['reason']] : (string) $data['reason']);
+            }
             return ['ok' => false, 'error' => isset($reasons[$code]) ? $reasons[$code] : 'HMS error: ' . ($code !== '' ? $code : 'HTTP ' . $status), 'data' => $data];
         }
         return ['ok' => true, 'error' => '', 'data' => $data];
