@@ -38,3 +38,6 @@ uploads/*.*
 uploads/meetings/*.*
 uploads/company/*.*
 uploads/tickets/*.*
+
+# Shared HMS token (application/config/hms.php)
+application/config/hms_token.php

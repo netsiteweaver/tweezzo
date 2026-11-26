@@ -6,9 +6,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 | api_token is a shared secret and is NOT stored in this repository. It must match the token HMS reads
 | (HMS application/config/tweezzo.php). It is read from, in order:
-|   1. the TWEEZZO_HMS_API_TOKEN environment variable
-|   2. the file /etc/tweezzo/hms_api_token (own server)
-|   3. the file ~/.secrets/tweezzo_hms_api_token, in the home folder of the account PHP runs as (shared hosting)
+|   1. application/config/hms_token.php (not in git), containing:  <?php return 'the-token';
+|   2. the TWEEZZO_HMS_API_TOKEN environment variable
+|   3. the file /etc/tweezzo/hms_api_token (own server)
+|   4. the file ~/.secrets/tweezzo_hms_api_token, in the home folder of the account PHP runs as (shared hosting)
 | Files: token on the first line. Never put the file inside a web-served folder (public_html, or /var/www/html on
 | a dev box). Make it readable by the web server and cron users only (chmod 640, or 600 on shared hosting).
 | Crons run through the PHP CLI, so an Apache SetEnv alone is not enough: prefer a file.
@@ -17,6 +18,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 if (!function_exists('tweezzo_hms_api_token')) {
 	function tweezzo_hms_api_token()
 	{
+		$local = APPPATH . 'config/hms_token.php';
+		if (is_file($local)) {
+			$token = include $local;
+			if (is_string($token) && trim($token) !== '') {
+				return trim($token);
+			}
+		}
 		$env = getenv('TWEEZZO_HMS_API_TOKEN');
 		if (is_string($env) && trim($env) !== '') {
 			return trim($env);
