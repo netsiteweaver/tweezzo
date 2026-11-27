@@ -126,14 +126,24 @@ $cleanQuery = http_build_query($queryArray);
             echo '[' . $stageCount . ']';
         ?></div>
     </div>
+    <input type="password" name="fake-password" autocomplete="new-password" style="position:absolute; top:-1000px; left:-1000px;">
+    <div class="col-md-2">
+        <label for="search">Search</label>
+        <div class="input-group">
+            <input type="text" class="form-control task-listing-search" name="search_text" id="search_text" placeholder="Search in tasks..." aria-label="Search in tasks...e" aria-describedby="basic-addon2" value="<?php echo htmlspecialchars((string) $this->input->get("search_text"), ENT_QUOTES);?>">
+            <div class="input-group-append search cursor-pointer">
+                <span class="input-group-text" id="basic-addon2"><i class="fa fa-binoculars"></i></span>
+            </div>
+        </div>
+    </div>
     <?php
         $moreFiltersActive = 0;
-        foreach (['notes_only','work_type','source','billable','search_text','assigned_to'] as $f) {
+        foreach (['notes_only','work_type','source','billable','assigned_to'] as $f) {
             if ((string) $this->input->get($f) !== '') $moreFiltersActive++;
         }
         if ((isset($closed_filter) ? $closed_filter : 'open') !== 'open') $moreFiltersActive++;
     ?>
-    <div class="col-md-2 mt-4">
+    <div class="col-md-auto mt-4">
         <button type="button" class="btn btn-block btn-outline-secondary toggle-more-filters" data-toggle="collapse" data-target="#tasks-more-filters" aria-controls="tasks-more-filters">
             <i class="fa fa-sliders"></i> More filters
             <?php if ($moreFiltersActive > 0): ?><span class="badge badge-info ml-1" title="Active filters in this panel"><?php echo $moreFiltersActive; ?></span><?php endif; ?>
@@ -216,19 +226,6 @@ $cleanQuery = http_build_query($queryArray);
             <option value="closed" <?php echo (isset($closed_filter) ? $closed_filter : 'open') === 'closed' ? 'selected' : ''; ?>>Closed only</option>
             <option value="all" <?php echo (isset($closed_filter) ? $closed_filter : 'open') === 'all' ? 'selected' : ''; ?>>Open and closed</option>
         </select>
-    </div>
-    <input type="password" name="fake-password" autocomplete="new-password" style="position:absolute; top:-1000px; left:-1000px;">
-    <div class="col-md-2">
-        <label for="search">Search</label>
-        <div class="input-group mb-3">
-            <input type="text" class="form-control task-listing-search" name="search_text" id="search_text" placeholder="Search in tasks..." aria-label="Search in tasks...e" aria-describedby="basic-addon2" value="<?php echo $this->input->get("search_text");?>">
-            <div class="input-group-append search cursor-pointer">
-                <span class="input-group-text" id="basic-addon2"><i class="fa fa-binoculars"></i></span>
-            </div>
-        </div>
-
-        <!-- <label for="search">Search</label> -->
-        <!-- <input class='form-control' type="search" name="search" placeholder="Search in tasks..." value=""> -->
     </div>
 
     
