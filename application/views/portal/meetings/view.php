@@ -13,7 +13,7 @@ $is_planned = ($note->status === 'planned');
              data-status="<?php echo htmlspecialchars($note->status); ?>"
              data-viewer-type="<?php echo htmlspecialchars($share->participant_type); ?>"
              data-viewer-id="<?php echo (int) $share->participant_id; ?>"
-             data-can-contribute="<?php echo ($is_live && $share->can_contribute == 1) ? 1 : 0; ?>">
+             data-can-contribute="<?php echo $is_live ? 1 : 0; ?>">
 
             <div class="d-flex flex-wrap align-items-center justify-content-between mb-2">
                 <h4 class="mb-0">
@@ -96,7 +96,7 @@ $is_planned = ($note->status === 'planned');
                     <span><span class="badge bg-danger meeting-float-unread d-none"></span> <button type="button" class="btn btn-sm btn-link p-0 meeting-float-toggle" aria-label="Minimise messages"></button></span>
                 </div>
                 <div class="card-body meeting-float-body">
-                    <div class="meeting-float-form meeting-entry-form <?php echo ($is_live && $share->can_contribute == 1) ? '' : 'd-none'; ?>">
+                    <div class="meeting-float-form meeting-entry-form <?php echo $is_live ? '' : 'd-none'; ?>">
                         <textarea class="form-control meeting-entry-input" rows="2"></textarea>
                         <div class="d-flex align-items-center justify-content-between mt-2">
                             <small class="text-muted">Enter to send &middot; Shift+Enter for a new line</small>

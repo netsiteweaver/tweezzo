@@ -238,7 +238,7 @@ $is_shared_session = ($is_live || $is_planned);
                         <div class="share-people" data-type="developer"></div>
                     </div>
                 </div>
-                <p class="text-muted small mt-3 mb-0">Tick the people to share with. Use <i class="fa fa-comment"></i> to also let someone send messages. Each person gets an email with a link to the note.</p>
+                <p class="text-muted small mt-3 mb-0">Tick the people to share with. Everyone shared with can follow the notes live and send messages while the meeting is live. Each person gets an email with a link to the note.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>

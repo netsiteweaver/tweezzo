@@ -470,7 +470,8 @@ class Meeting_note_model extends CI_Model
             return ['result' => true, 'status' => 'planned', 'meeting_datetime' => $access['note']->meeting_datetime, 'participants' => $participants];
         }
         $payload = $this->poll_payload($access['note'], $sinceVersion, $sinceEntryId);
-        $payload['can_contribute'] = ($access['share']->can_contribute == 1 && $access['note']->status === 'live');
+        // Every participant can send messages while the meeting is live
+        $payload['can_contribute'] = ($access['note']->status === 'live');
         $payload['participants'] = $participants;
         $payload['host_state'] = $this->host_state($access['note']);
         $payload['host_badge'] = $this->host_state_badge($payload['host_state']);
@@ -485,9 +486,6 @@ class Meeting_note_model extends CI_Model
         }
         if ($access['note']->status !== 'live') {
             return ['result' => false, 'reason' => $access['note']->status === 'planned' ? "This meeting hasn't started yet." : 'This meeting has ended.'];
-        }
-        if ($access['share']->can_contribute != 1) {
-            return ['result' => false, 'reason' => "You don't have permission to send messages."];
         }
         $entryId = $this->add_entry($noteId, $type, $participantId, $body);
         return $entryId === false

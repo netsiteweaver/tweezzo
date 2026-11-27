@@ -1,7 +1,8 @@
 <?php $lieu_labels = ['our' => 'Our office', 'client' => 'Client office', 'online' => 'Online', 'other' => 'Other']; ?>
 <div class="row mt-4">
     <div class="col-md-12">
-        <h4 class="mb-3"><i class="bi bi-people me-2"></i>Meetings</h4>
+        <h4 class="mb-1"><i class="bi bi-people me-2"></i>Meeting notes</h4>
+        <p class="text-muted mb-3">Notes shared live with others in the meeting.</p>
         <?php if (empty($meetings)): ?>
             <div class="alert alert-info">No meeting notes have been shared with you yet.</div>
         <?php else: ?>
@@ -25,7 +26,6 @@
                         <td>
                             <?php if ($meeting->status === 'live'): ?>
                                 <?php echo $this->Meeting_note_model->host_state_badge($this->Meeting_note_model->host_state($meeting)); ?>
-                                <?php if ($meeting->can_contribute == 1): ?><span class="badge bg-secondary ms-1" title="You can send messages"><i class="bi bi-chat-dots"></i></span><?php endif; ?>
                             <?php elseif ($meeting->status === 'planned'): ?>
                                 <span class="badge bg-info text-dark"><i class="bi bi-calendar-event me-1"></i>Upcoming</span>
                             <?php else: ?>

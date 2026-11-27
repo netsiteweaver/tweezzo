@@ -233,7 +233,6 @@ jQuery(function(){
                     ' <span class="badge badge-' + (s.participant_type === 'customer' ? 'success' : 'secondary') + '">' + (s.participant_type === 'customer' ? 'Client' : 'Developer') + '</span>' +
                 '</span>' +
                 '<span class="text-nowrap">' +
-                    '<label class="small mb-0 mr-2" title="Can send messages"><input type="checkbox" class="share-toggle-contribute" ' + (s.can_contribute == 1 ? 'checked' : '') + '> <i class="fa fa-comment"></i></label>' +
                     '<button type="button" class="btn btn-xs btn-link text-danger p-0 share-remove" title="Stop sharing"><i class="fa fa-times"></i></button>' +
                 '</span>' +
             '</li>';
@@ -262,7 +261,6 @@ jQuery(function(){
                         '<input type="checkbox" class="form-check-input share-pick" id="sp-' + key + '">' +
                         '<label class="form-check-label" for="sp-' + key + '">' + esc(p.name) + '<br><small class="text-muted">' + esc(p.email) + '</small></label>' +
                     '</div>' +
-                    '<label class="small mb-0 text-nowrap" title="Can send messages"><input type="checkbox" class="share-pick-contribute"> <i class="fa fa-comment"></i></label>' +
                 '</li>';
             });
             $(this).html(html + '</ul>');
@@ -296,12 +294,6 @@ jQuery(function(){
     });
 
     $shareModal.on('change', '.share-pick', updateShareCount);
-    // Allowing entries implies sharing.
-    $shareModal.on('change', '.share-pick-contribute', function(){
-        if ($(this).is(':checked')) $(this).closest('.share-person').find('.share-pick').prop('checked', true);
-        updateShareCount();
-    });
-
     $shareModal.on('click', '.share-select-all', function(e){
         e.preventDefault();
         var $visible = $shareModal.find('.share-people[data-type="' + $(this).data('type') + '"] .share-person:not(.d-none) .share-pick');
@@ -314,7 +306,7 @@ jQuery(function(){
         var people = [];
         $shareModal.find('.share-pick:checked').each(function(){
             var $li = $(this).closest('.share-person');
-            people.push({ type: $li.data('type'), id: $li.data('id'), can_contribute: $li.find('.share-pick-contribute').is(':checked') ? 1 : 0 });
+            people.push({ type: $li.data('type'), id: $li.data('id'), can_contribute: 1 }); // everyone in the meeting can send messages
         });
         if (!people.length) return;
         $(this).prop('disabled', true);
@@ -326,13 +318,6 @@ jQuery(function(){
             }
             if (response.reason) alertify.alert(response.reason);
         }, 'json').always(function(){ updateShareCount(); });
-    });
-
-    $('.live-shares').on('change', '.share-toggle-contribute', function(){
-        var shareId = $(this).closest('li').data('share-id');
-        $.post(url('share_update'), { share_id: shareId, can_contribute: $(this).is(':checked') ? 1 : 0 }, function(){
-            alertify.success('Permission updated');
-        }, 'json');
     });
 
     $('.live-shares').on('click', '.share-remove', function(){
