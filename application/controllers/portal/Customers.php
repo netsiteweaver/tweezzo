@@ -162,8 +162,33 @@ class Customers extends CI_Controller
     public function dashboard()
     {
         $this->data['page_title'] = "Dashboard";
-        $this->data['dashboard_stats'] = $this->Customersportal_model->getDashboardStats($_SESSION['customer_access_id']);
         $this->data['dashboard_sprints'] = $this->Customersportal_model->getDashboardSprintProgress($_SESSION['customer_access_id']);
+
+        $access_id = (int) $_SESSION['customer_access_id'];
+        $this->data['customer_first_name'] = trim(strtok((string) ($_SESSION['customer_name'] ?? ''), ' '));
+        $this->data['can_validate'] = $this->Customersportal_model->canValidate($access_id);
+        $this->data['awaiting_review'] = $this->Customersportal_model->getTasksAwaitingReview($access_id, 5);
+        $this->data['recent_updates'] = $this->Customersportal_model->getRecentTeamUpdates($access_id, 14, 8);
+
+        // Support tickets where the team is waiting on the customer
+        $ticket_customer_id = $this->_ticketCustomerId(); // also loads Tickets_model
+        $this->data['pending_tickets'] = array_values(array_filter(
+            $this->Tickets_model->listForCustomer($ticket_customer_id, 'active'),
+            function ($t) { return $t->status === 'pending_customer'; }
+        ));
+
+        // Meetings happening now or planned (live first, then soonest planned)
+        $this->load->model("Meeting_note_model");
+        $meetings = array_filter(
+            $this->Meeting_note_model->notes_shared_with('customer', $access_id),
+            function ($m) { return in_array($m->status, ['live', 'planned'], true); }
+        );
+        usort($meetings, function ($a, $b) {
+            if ($a->status !== $b->status) return $a->status === 'live' ? -1 : 1;
+            return strcmp((string) $a->meeting_datetime, (string) $b->meeting_datetime);
+        });
+        $this->data['upcoming_meetings'] = array_slice($meetings, 0, 3);
+
         $this->data['content'][] = $this->load->view("/portal/customers/dashboard", $this->data, true);
         $this->load->view("/portal/customers/shared/layout", $this->data);
     }

@@ -388,6 +388,13 @@ class Customersportal_model extends CI_Model
                 p.name AS project_name,
                 COUNT(t.id) AS tasks_count,
                 SUM(CASE WHEN t.stage = 'completed' THEN 1 ELSE 0 END) AS completed_tasks,
+                SUM(CASE WHEN t.stage = 'new' THEN 1 ELSE 0 END) AS new_tasks,
+                SUM(CASE WHEN t.stage = 'in_progress' THEN 1 ELSE 0 END) AS in_progress_tasks,
+                SUM(CASE WHEN t.stage = 'testing' THEN 1 ELSE 0 END) AS testing_tasks,
+                SUM(CASE WHEN t.stage = 'staging' THEN 1 ELSE 0 END) AS staging_tasks,
+                SUM(CASE WHEN t.stage = 'validated' THEN 1 ELSE 0 END) AS validated_tasks,
+                SUM(CASE WHEN t.stage = 'on_hold' THEN 1 ELSE 0 END) AS on_hold_tasks,
+                SUM(CASE WHEN t.stage = 'stopped' THEN 1 ELSE 0 END) AS stopped_tasks,
                 ROUND(
                     AVG(
                         CASE t.stage
@@ -417,6 +424,95 @@ class Customersportal_model extends CI_Model
             GROUP BY s.id, s.name, p.name
             ORDER BY progress_pct ASC, s.name ASC
         ")->result();
+    }
+
+    /** True when the task belongs to the customer behind this portal login. */
+    public function taskBelongsToAccess($task_id, $customer_access_id)
+    {
+        $customer_id = $this->customerIdForAccess($customer_access_id);
+        if ($customer_id <= 0 || (int) $task_id <= 0) {
+            return false;
+        }
+        return $this->db->from('tasks t')
+            ->join('sprints s', 's.id = t.sprint_id')
+            ->join('projects p', 'p.id = s.project_id')
+            ->where(['t.id' => (int) $task_id, 'p.customer_id' => $customer_id])
+            ->count_all_results() > 0;
+    }
+
+    /** customer_id behind a portal login, or 0. */
+    private function customerIdForAccess($customer_access_id)
+    {
+        $row = $this->db->select('customer_id')->from('customer_access')
+            ->where('id', (int) $customer_access_id)->get()->row();
+        return $row ? (int) $row->customer_id : 0;
+    }
+
+    /**
+     * Open tasks waiting for the customer's review (stage = staging), oldest first.
+     * Returns ['total' => int, 'tasks' => [..first $limit..]].
+     */
+    public function getTasksAwaitingReview($customer_access_id, $limit = 5)
+    {
+        $customer_id = $this->customerIdForAccess($customer_access_id);
+        if ($customer_id <= 0) {
+            return ['total' => 0, 'tasks' => []];
+        }
+        $rows = $this->db->select("t.id, t.uuid, t.name, t.task_number, t.section,
+                (SELECT MAX(h.created_on) FROM stage_change_history h WHERE h.task_id = t.id AND h.new_stage = 'staging') AS staging_since,
+                s.name AS sprint_name, s.code AS sprint_code, p.name AS project_name, p.code AS project_code", false)
+            ->from('tasks t')
+            ->join('sprints s', 's.id = t.sprint_id')
+            ->join('projects p', 'p.id = s.project_id')
+            ->join('customers c', 'c.customer_id = p.customer_id')
+            ->where(['t.status' => 1, 't.closed' => 0, 't.stage' => 'staging'])
+            ->where(['s.status' => 1, 's.active' => 1, 'p.active' => 1, 'c.status' => 1, 'c.active' => 1])
+            ->where('c.customer_id', $customer_id)
+            ->order_by('staging_since IS NULL', '', false)
+            ->order_by('staging_since', 'ASC')
+            ->get()->result();
+
+        if (!function_exists('task_ref')) {
+            $this->load->helper('general');
+        }
+        foreach ($rows as $r) {
+            $r->task_ref = task_ref($r->project_code, $r->sprint_code, $r->task_number);
+        }
+        return ['total' => count($rows), 'tasks' => array_slice($rows, 0, (int) $limit)];
+    }
+
+    /**
+     * Latest public notes written by the team (not by the customer) on this customer's open tasks.
+     */
+    public function getRecentTeamUpdates($customer_access_id, $days = 14, $limit = 8)
+    {
+        $customer_id = $this->customerIdForAccess($customer_access_id);
+        if ($customer_id <= 0) {
+            return [];
+        }
+        $rows = $this->db->select('tn.id, tn.notes, tn.created_on, u.name AS author_name, u.display_name AS author_display_name, t.uuid AS task_uuid, t.name AS task_name, t.task_number, s.code AS sprint_code, p.code AS project_code')
+            ->from('task_notes tn')
+            ->join('tasks t', 't.id = tn.task_id')
+            ->join('sprints s', 's.id = t.sprint_id')
+            ->join('projects p', 'p.id = s.project_id')
+            ->join('customers c', 'c.customer_id = p.customer_id')
+            ->join('users u', 'u.id = tn.created_by', 'left')
+            ->where(['tn.status' => 1, 'tn.display_type' => 'public'])
+            ->group_start()->where('tn.created_by_customer IS NULL', null, false)->or_where('tn.created_by_customer', 0)->group_end()
+            ->where(['t.status' => 1, 's.status' => 1, 's.active' => 1, 'p.active' => 1])
+            ->where('c.customer_id', $customer_id)
+            ->where('tn.created_on >=', date('Y-m-d H:i:s', strtotime('-' . (int) $days . ' days')))
+            ->order_by('tn.created_on', 'DESC')
+            ->limit((int) $limit)
+            ->get()->result();
+
+        if (!function_exists('task_ref')) {
+            $this->load->helper('general');
+        }
+        foreach ($rows as $r) {
+            $r->task_ref = task_ref($r->project_code, $r->sprint_code, $r->task_number);
+        }
+        return $rows;
     }
 
     /**
@@ -636,6 +732,10 @@ class Customersportal_model extends CI_Model
         // $customer_id = $this->db->select()->from("customer_access")->where("id",$_SESSION['customer_access_id'])->get()->row()->customer_id;
 
         if ( (empty($task_id)) || (empty(trim($note))) ) {
+            return false;
+        }
+        // Only on tasks that belong to this customer
+        if (!$this->taskBelongsToAccess($task_id, (int) $_SESSION['customer_access_id'])) {
             return false;
         }
 
