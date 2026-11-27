@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Developersportal_model extends CI_Model{
 
-    public function getMyTasks($developer_id, $customer_id="",$project_id="",$sprint_id="",$stageJson="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$notes_only="",$due_in_days="")
+    public function getMyTasks($developer_id, $customer_id="",$project_id="",$sprint_id="",$stageJson="",$order_by="",$order_dir="asc",$page=1,$rows_per_page=10,$notes_only="",$due_in_days="",$search_text="")
     {
         if( (empty($page)) || ($page <= 0) ) $page =1;
         $offset = ( ($page-1)*$rows_per_page);  
@@ -64,6 +64,14 @@ class Developersportal_model extends CI_Model{
         if(!empty($due_in_days) && is_numeric($due_in_days)) {
             $due_in_days = (int)$due_in_days;
             $query .= " AND t.due_date IS NOT NULL AND t.due_date >= CURDATE() AND t.due_date <= CURDATE() + INTERVAL {$due_in_days} DAY";
+        }
+        $search_text = trim((string) $search_text);
+        if($search_text !== '') {
+            $like = $this->db->escape('%' . $this->db->escape_like_str($search_text) . '%');
+            $query .= " AND (t.name LIKE {$like} OR t.description LIKE {$like} OR t.section LIKE {$like}"
+                    . " OR t.stage LIKE {$like} OR t.task_number LIKE {$like} OR s.name LIKE {$like}"
+                    . " OR p.name LIKE {$like} OR c.company_name LIKE {$like}"
+                    . " OR CONCAT(IFNULL(p.code,''), '-', IFNULL(s.code,''), '-', IFNULL(t.task_number,'')) LIKE {$like})";
         }
         $query .= " GROUP BY t.id";
         if($notes_only=="without") {

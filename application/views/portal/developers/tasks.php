@@ -167,6 +167,14 @@
 
             <div class="row mb-4">
 
+                <div class="col-md-3">
+                    <label for="search_text">Search</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control dev-task-search" name="search_text" id="search_text" placeholder="Search in tasks..." autocomplete="off" value="<?php echo htmlspecialchars((string) $this->input->get("search_text"), ENT_QUOTES);?>">
+                        <span class="input-group-text dev-task-search-btn cursor-pointer" title="Search"><i class="bi bi-search"></i></span>
+                    </div>
+                </div>
+
                 <div class="col-md-1 d-none">
                     <label for="">Display</label>
                     <select name="display" id="display" class="form-control">

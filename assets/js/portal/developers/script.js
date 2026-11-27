@@ -331,7 +331,7 @@ jQuery(function(){
         window.location.href = base_url + "portal/developers/tasks?sprint_id="+sprintId+"&project_id="+projectId+"&customer_id="+customerId;
     });
 
-    $('.view-notes').on("click", function() {
+    $(document).on("click", ".view-notes", function() {
         let taskId = $(this).closest("tr").data("id");
         let taskNumber = $(this).closest("tr").find("td.task-number").html();
         let taskSection = $(this).closest("tr").find("td.task-section").html();
@@ -453,6 +453,53 @@ jQuery(function(){
         $('form#tasks').trigger("submit");
     })
 
+    // Task list search: runs while typing (debounced) and swaps only the table rows
+    // and totals - no page reload, so typing is never interrupted.
+    ;(function(){
+        var $search = $('form#tasks #search_text');
+        if (!$search.length || !$('#task_list').length) return;
+        var timer = null, xhr = null, last = $search.val();
+
+        function run(force){
+            clearTimeout(timer);
+            var current = $search.val();
+            if (!force && current.trim() === (last || '').trim()) return;
+            last = current;
+            if (xhr) xhr.abort();
+            var url = base_url + 'portal/developers/tasks?' + $('form#tasks').serialize();
+            $('#task_list tbody, #task_list tfoot').css({opacity: 0.5, transition: 'opacity .15s'});
+            $('.dev-task-search-btn i').attr('class', 'spinner-border spinner-border-sm');
+
+            xhr = $.ajax({ url: url, method: 'GET', dataType: 'html', showLoader: false })
+                .done(function(html){
+                    var $doc = $('<div>').append($.parseHTML(html));
+                    var $newTable = $doc.find('#task_list');
+                    if (!$newTable.length) { window.location.href = url; return; } // e.g. session expired
+                    $('#task_list tbody').replaceWith($newTable.find('tbody'));
+                    $('#task_list tfoot').replaceWith($newTable.find('tfoot'));
+                    try { history.replaceState(null, '', url); } catch (e) {}
+                })
+                .fail(function(x, status){
+                    if (status !== 'abort') alertify.error('Search failed, please try again.');
+                })
+                .always(function(x, status){
+                    if (status === 'abort') return;
+                    xhr = null;
+                    $('#task_list tbody, #task_list tfoot').css({opacity: ''});
+                    $('.dev-task-search-btn i').attr('class', 'bi bi-search');
+                });
+        }
+
+        $search.on('input', function(){
+            clearTimeout(timer);
+            timer = setTimeout(function(){ run(false); }, 400);
+        }).on('keydown', function(e){
+            if (e.key === 'Enter') { e.preventDefault(); run(true); }      // don't submit the form (page reload)
+            else if (e.key === 'Escape') { $(this).val(''); run(false); }
+        });
+        $('.dev-task-search-btn').on('click', function(){ run(true); });
+    })();
+
     $('#reset').on("click", function(){
         resetForm();
     })
@@ -515,7 +562,7 @@ jQuery(function(){
     // Listing: stopping asks where the task is now (keep the stage, or move it to testing / staging).
     var timerStopPending = null;
 
-    $('.timer_stop').on("click",function(){
+    $(document).on("click", ".timer_stop", function(){
         if($(this).hasClass("running")) return false;
         let item = $(this);
         let actionType = $(this).hasClass("task-view") ? 'view' : 'listing';
@@ -659,7 +706,7 @@ jQuery(function(){
         $('#modalOthersWorking').modal("show");
     })
 
-    $('.timer_start').on("click",function(){
+    $(document).on("click", ".timer_start", function(){
         if($(this).hasClass("running")) return false;
 
         // $(this).addClass("running");
@@ -1153,6 +1200,7 @@ function resetForm()
     $('#order_by').val("");
     $('#order_dir').val("");
     $('#display').val("");
+    $('#search_text').val("");
 
     $('form#tasks').trigger("submit");
 }
