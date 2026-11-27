@@ -9,6 +9,9 @@
         margin-bottom: 3px;
     }
 
+    .more-filters-chevron { transition: transform .2s ease; }
+    .toggle-more-filters[aria-expanded="true"] .more-filters-chevron { transform: rotate(180deg); }
+
     img.user:hover {
         transform: scale(4);
         -webkit-transition: all 0.5s ease;
@@ -67,20 +70,6 @@ if(isset($queryArray['task_uuid'])) unset($queryArray['task_uuid']);
 $cleanQuery = http_build_query($queryArray);
 ?>
 <div class="row no-print">
-    <div class="col-xs-2 mt-4">
-        <?php if($perms['add']): ?>
-        <a href="<?php echo base_url("tasks/add?customer_id=".$this->input->get('customer_id')."&sprint_id=".$this->input->get("sprint_id")."&project_id=".$this->input->get("project_id")); ?>"><button
-                class="btn btn-flat btn-success"><i class="fa fa-plus"></i> Add</button></a>
-        <?php endif; ?>
-        <?php if($perms['import']): ?>
-            <a href="<?php echo base_url("tasks/import/"); ?>"><button class="btn btn-flat btn-info"><i
-                    class="fa fa-upload"></i> Import</button></a>
-            <a href="<?php echo base_url("hms_import/index"); ?>"><button class="btn btn-flat btn-info"><i
-                    class="fa fa-file-invoice"></i> Import from HMS</button></a>
-        <?php endif; ?>
-    </div>
-</div>
-<div class="row no-print">
     <div class="col-md-2">
         <label for="">Customer</label>
         <select class="form-control monitor" id="customer_id">
@@ -137,6 +126,32 @@ $cleanQuery = http_build_query($queryArray);
             echo '[' . $stageCount . ']';
         ?></div>
     </div>
+    <?php
+        $moreFiltersActive = 0;
+        foreach (['notes_only','work_type','source','billable','search_text','assigned_to'] as $f) {
+            if ((string) $this->input->get($f) !== '') $moreFiltersActive++;
+        }
+        if ((isset($closed_filter) ? $closed_filter : 'open') !== 'open') $moreFiltersActive++;
+    ?>
+    <div class="col-md-2 mt-4">
+        <button type="button" class="btn btn-block btn-outline-secondary toggle-more-filters" data-toggle="collapse" data-target="#tasks-more-filters" aria-controls="tasks-more-filters">
+            <i class="fa fa-sliders"></i> More filters
+            <?php if ($moreFiltersActive > 0): ?><span class="badge badge-info ml-1" title="Active filters in this panel"><?php echo $moreFiltersActive; ?></span><?php endif; ?>
+            <i class="fa fa-chevron-down ml-1 more-filters-chevron"></i>
+        </button>
+    </div>
+    <div class="col-md mt-4 text-right">
+        <?php if($perms['import']): ?>
+            <a href="<?php echo base_url("hms_import/index"); ?>"><button class="btn btn-flat btn-info"><i
+                    class="fa fa-file-invoice"></i> Import from HMS</button></a>
+        <?php endif; ?>
+    </div>
+</div>
+<div id="tasks-more-filters" class="collapse no-print<?php echo $moreFiltersActive > 0 ? ' show' : ''; ?>">
+<script>
+    try { if (localStorage.getItem('tasks_listing_more_filters') === 'open') document.getElementById('tasks-more-filters').classList.add('show'); } catch (e) {}
+</script>
+<div class="row no-print">
     <!-- <div class="col-md-2">
         <label for="">Stage</label>
         <select name="" id="stage" class="form-control monitor">
@@ -350,6 +365,7 @@ $cleanQuery = http_build_query($queryArray);
     </div>
     <?php endif;?>
 </div>
+</div><!-- /#tasks-more-filters -->
 
 <?php
     ob_start();
@@ -373,6 +389,7 @@ $cleanQuery = http_build_query($queryArray);
     ));
 ?>
 
+<div id="tasks-results">
 <div class="row">
     <div class="col-md-12 text-right font-italic text-italic" style='font-size:0.8em;color:#999'>
         <?php echo "Displaying " . count($tasks) . " of " . $total_rows . " tasks";?>
@@ -592,6 +609,7 @@ $cleanQuery = http_build_query($queryArray);
 </div>
 
 <?php if( (isset($pagination)) && (!empty($pagination)) ) echo $pagination;?>
+</div><!-- /#tasks-results -->
 
 <!-- Modal -->
 <div class="modal fade" id="modalAssignUsers" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"

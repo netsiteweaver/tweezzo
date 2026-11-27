@@ -34,7 +34,7 @@ jQuery(function(){
         }
     });
 
-    $('.view-notes').on("click", function() {
+    $(document).on("click", ".view-notes", function() {
         let taskId = $(this).closest("tr").data("id");
         let taskNumber = $(this).closest("tr").find("td.task-number .task-ref-text").text() || $(this).closest("tr").find("td.task-number").text();
         let taskSection = $(this).closest("tr").find("td.task-section").html();
@@ -186,7 +186,7 @@ jQuery(function(){
         )
     })
 
-    $('.close-task').on("click", function() {
+    $(document).on("click", ".close-task", function() {
         let row = $(this);
         let stage = $(this).closest("tr").find(".stage").text().trim().toLocaleLowerCase();
         let id = $(this).closest("tr").data("id");
@@ -241,7 +241,7 @@ jQuery(function(){
         // }
     })
 
-    $('.select_task').on("click", function() {
+    $(document).on("click", ".select_task", function() {
         let selected = $('#task-list tbody tr td input.select_task:checked').length
         if(selected>0){
             $('#withSelectedBtn').removeClass("disabled");
@@ -250,7 +250,7 @@ jQuery(function(){
         }
     })
 
-    $('.select_all_tasks').on("click", function() {
+    $(document).on("click", ".select_all_tasks", function() {
         if(!$(this).is(":checked")) {
             $('#task-list tbody tr td input.select_task').prop("checked",false);
             $('#withSelectedBtn').addClass("disabled");
@@ -551,18 +551,6 @@ jQuery(function(){
         let customer_id = overrides.customer_id !== undefined ? overrides.customer_id : $('#customer_id').val();
         let project_id = overrides.project_id !== undefined ? overrides.project_id : $('#project_id').val();
         let sprint_id = overrides.sprint_id !== undefined ? overrides.sprint_id : $('#sprint_id').val();
-        let stage = $('#stage').val();
-        let order_by = $('#order_by').val();
-        let order_dir = $('#order_dir').val();
-        let display = $('#display').val();
-        let assigned_to = $('#assigned_to').val();
-        let notes_only = $('#notes_only').val();
-        let search_text = $('#search_text').val();
-        let work_type = $('#work_type').val();
-        let source = $('#source').val();
-        let billable = $('#billable').val();
-        let closed_filter = $('#closed_filter').val();
-
         if(customer_id!=='') {
             localStorage.setItem('LastSelectedCustomer',customer_id);
         }else{
@@ -586,8 +574,16 @@ jQuery(function(){
 
         Overlay("on");
         setTimeout(function(){
-            window.location.href = base_url + 'tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+stage+"&order_by="+order_by+"&order_dir="+order_dir+"&display="+display+"&assigned_to="+assigned_to+"&notes_only="+notes_only+"&search_text="+encodeURIComponent(search_text)+"&work_type="+work_type+"&source="+encodeURIComponent(source)+"&billable="+billable+"&closed_filter="+encodeURIComponent(closed_filter);
+            window.location.href = buildListingUrl(overrides);
         },100)
+    }
+
+    function buildListingUrl(overrides){
+        overrides = overrides || {};
+        let customer_id = overrides.customer_id !== undefined ? overrides.customer_id : $('#customer_id').val();
+        let project_id = overrides.project_id !== undefined ? overrides.project_id : $('#project_id').val();
+        let sprint_id = overrides.sprint_id !== undefined ? overrides.sprint_id : $('#sprint_id').val();
+        return base_url + 'tasks/listing?customer_id='+customer_id+"&project_id="+project_id+"&sprint_id="+sprint_id+"&stage="+$('#stage').val()+"&order_by="+$('#order_by').val()+"&order_dir="+$('#order_dir').val()+"&display="+$('#display').val()+"&assigned_to="+$('#assigned_to').val()+"&notes_only="+$('#notes_only').val()+"&search_text="+encodeURIComponent($('#search_text').val())+"&work_type="+$('#work_type').val()+"&source="+encodeURIComponent($('#source').val())+"&billable="+$('#billable').val()+"&closed_filter="+encodeURIComponent($('#closed_filter').val());
     }
 
     $('#customer_id').on("change",function(e){
@@ -650,10 +646,77 @@ jQuery(function(){
         navigateWithFilters();
     })
 
+    // Search: fetch the listing in the background and swap only the results
+    // (counts, table, pagination) - no page reload, typing is never interrupted.
+    let searchDebounceTimer = null;
+    let searchXhr = null;
+    let lastSearchText = $('#search_text').val();
+
+    function runAsyncSearch(force){
+        clearTimeout(searchDebounceTimer);
+        let current = $('#search_text').val();
+        if(!force && current.trim() === (lastSearchText || '').trim()) return;
+        lastSearchText = current;
+
+        if(searchXhr) searchXhr.abort();
+        let url = buildListingUrl();
+        $('#tasks-results').css({opacity: 0.5, transition: 'opacity .15s'});
+        $('.search .input-group-text i').removeClass('fa-binoculars').addClass('fa-spinner fa-spin');
+
+        searchXhr = $.ajax({ url: url, method: 'GET', dataType: 'html' })
+            .done(function(html){
+                let $doc = $('<div>').append($.parseHTML(html));
+                let $results = $doc.find('#tasks-results');
+                if(!$results.length){
+                    // Unexpected response (e.g. session expired -> login page): fall back to a normal load
+                    window.location.href = url;
+                    return;
+                }
+                $('#tasks-results').html($results.html());
+                $('.toggle-more-filters .badge').remove();
+                $('.toggle-more-filters .fa-sliders').after($doc.find('.toggle-more-filters .badge').first());
+                $('#withSelectedBtn').addClass('disabled');
+                $('#tasks-results [data-toggle="tooltip"]').tooltip();
+                try { history.replaceState(null, '', url); } catch(e) {}
+            })
+            .fail(function(xhr, status){
+                if(status !== 'abort') toastr.error('Search failed, please try again.');
+            })
+            .always(function(xhr, status){
+                if(status === 'abort') return;
+                searchXhr = null;
+                $('#tasks-results').css({opacity: ''});
+                $('.search .input-group-text i').removeClass('fa-spinner fa-spin').addClass('fa-binoculars');
+            });
+    }
+
     $('.search').on("click", function(){
-        Overlay("on");
-        $('.monitor').trigger("change");
+        runAsyncSearch(true);
     })
+
+    $('#search_text').on("input", function(){
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(function(){ runAsyncSearch(false); }, 400);
+    }).on("keydown", function(e){
+        // Handled here instead of the generic body handler in main.js (which reloads the page)
+        if(e.key === 'Enter'){
+            e.preventDefault();
+            e.stopPropagation();
+            runAsyncSearch(true);
+        }else if(e.key === 'Escape'){
+            e.stopPropagation();
+            $(this).val('');
+            runAsyncSearch(false);
+        }
+    });
+
+    // "More filters" panel: remember open/closed per browser
+    $('#tasks-more-filters')
+        .on('shown.bs.collapse', function(){ try { localStorage.setItem('tasks_listing_more_filters', 'open'); } catch(e) {} })
+        .on('hidden.bs.collapse', function(){ try { localStorage.setItem('tasks_listing_more_filters', 'closed'); } catch(e) {} });
+
+    let moreFiltersOpen = $('#tasks-more-filters').hasClass('show');
+    $('.toggle-more-filters').attr('aria-expanded', moreFiltersOpen ? 'true' : 'false').toggleClass('collapsed', !moreFiltersOpen);
 
     $('.choose-stages').on("click", function() {
         let stagesJSON = $('input[name=stage]').val();
@@ -728,7 +791,7 @@ jQuery(function(){
     $('[data-toggle="tooltip"]').tooltip();
     
     // Show alert on click for completed date info
-    $('.completed-date-info').on('click', function(e) {
+    $(document).on('click', '.completed-date-info', function(e) {
         e.preventDefault();
         var completedDate = $(this).data('completed-date');
         if(typeof alertify !== 'undefined') {
